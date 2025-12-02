@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>CLI Reference | GrpCurl.Net </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="CLI Reference | GrpCurl.Net ">
+      
+      
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="GrpCurl.Net">
+            GrpCurl.Net
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="cli-reference">CLI Reference</h1>
+
+<p>Complete reference for all GrpCurl.Net commands and options.</p>
+<h2 id="commands">Commands</h2>
+<p>GrpCurl.Net provides three main commands:</p>
+<ul>
+<li><code>list</code> - List services or methods</li>
+<li><code>describe</code> - Describe protobuf symbols</li>
+<li><code>invoke</code> - Invoke gRPC methods</li>
+</ul>
+<h2 id="global-options">Global Options</h2>
+<p>These options are available for all commands:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--plaintext</code></td>
+<td>Use plaintext HTTP/2 (no TLS)</td>
+</tr>
+<tr>
+<td><code>--insecure</code></td>
+<td>Skip TLS certificate verification</td>
+</tr>
+<tr>
+<td><code>--cacert &lt;path&gt;</code></td>
+<td>CA certificate file for server validation</td>
+</tr>
+<tr>
+<td><code>--cert &lt;path&gt;</code></td>
+<td>Client certificate file for mutual TLS</td>
+</tr>
+<tr>
+<td><code>--key &lt;path&gt;</code></td>
+<td>Client private key file for mutual TLS</td>
+</tr>
+<tr>
+<td><code>--connect-timeout &lt;duration&gt;</code></td>
+<td>Connection timeout (e.g., <code>10s</code>, <code>1m</code>, <code>500ms</code>)</td>
+</tr>
+<tr>
+<td><code>--authority &lt;value&gt;</code></td>
+<td>Value for <code>:authority</code> header and TLS server name</td>
+</tr>
+<tr>
+<td><code>--servername &lt;value&gt;</code></td>
+<td>Override TLS server name for certificate validation</td>
+</tr>
+<tr>
+<td><code>--user-agent &lt;value&gt;</code></td>
+<td>Custom User-Agent header value</td>
+</tr>
+<tr>
+<td><code>-v</code>, <code>--verbose</code></td>
+<td>Enable verbose output</td>
+</tr>
+<tr>
+<td><code>--vv</code>, <code>--very-verbose</code></td>
+<td>Enable very verbose output with timing details</td>
+</tr>
+<tr>
+<td><code>-H</code>, <code>--header &lt;header&gt;</code></td>
+<td>Add header to all requests (format: <code>name: value</code>)</td>
+</tr>
+<tr>
+<td><code>--reflect-header &lt;header&gt;</code></td>
+<td>Add header to reflection requests only</td>
+</tr>
+<tr>
+<td><code>--protoset &lt;path&gt;</code></td>
+<td>Use protoset file(s) instead of server reflection</td>
+</tr>
+<tr>
+<td><code>--protoset-out &lt;path&gt;</code></td>
+<td>Export FileDescriptorSet to file after operation</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="list-command">list Command</h2>
+<p>List available services or methods for a specific service.</p>
+<h3 id="syntax">Syntax</h3>
+<pre><code class="lang-bash">grpcurl list [options] [address] [service]
+</code></pre>
+<h3 id="arguments">Arguments</h3>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>address</code></td>
+<td>Server address (host:port). Required unless using <code>--protoset</code>.</td>
+</tr>
+<tr>
+<td><code>service</code></td>
+<td>Service name to list methods for. If omitted, lists all services.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="examples">Examples</h3>
+<pre><code class="lang-bash"># List all services
+grpcurl list --plaintext localhost:9090
+
+# List methods for a service
+grpcurl list --plaintext localhost:9090 my.package.Service
+
+# List services using protoset (offline)
+grpcurl list --protoset service.protoset
+
+# List and export protoset
+grpcurl list --plaintext --protoset-out export.protoset localhost:9090
+</code></pre>
+<hr>
+<h2 id="describe-command">describe Command</h2>
+<p>Describe a service, method, or message type.</p>
+<h3 id="syntax-1">Syntax</h3>
+<pre><code class="lang-bash">grpcurl describe [options] [address] [symbol]
+</code></pre>
+<h3 id="arguments-1">Arguments</h3>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>address</code></td>
+<td>Server address (host:port). Required unless using <code>--protoset</code>.</td>
+</tr>
+<tr>
+<td><code>symbol</code></td>
+<td>Symbol to describe (service, method, or message type). If omitted, describes all services.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="options">Options</h3>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--msg-template</code></td>
+<td>Output a JSON template for message types</td>
+</tr>
+</tbody>
+</table>
+<h3 id="examples-1">Examples</h3>
+<pre><code class="lang-bash"># Describe all services
+grpcurl describe --plaintext localhost:9090
+
+# Describe a specific service
+grpcurl describe --plaintext localhost:9090 my.package.Service
+
+# Describe a message type
+grpcurl describe --plaintext localhost:9090 my.package.MyMessage
+
+# Get JSON template for a message
+grpcurl describe --plaintext --msg-template localhost:9090 my.package.MyRequest
+</code></pre>
+<hr>
+<h2 id="invoke-command">invoke Command</h2>
+<p>Invoke a gRPC method.</p>
+<h3 id="syntax-2">Syntax</h3>
+<pre><code class="lang-bash">grpcurl invoke [options] &lt;address&gt; &lt;method&gt;
+</code></pre>
+<h3 id="arguments-2">Arguments</h3>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>address</code></td>
+<td>Server address (host:port). Required.</td>
+</tr>
+<tr>
+<td><code>method</code></td>
+<td>Method to invoke in format <code>Service/Method</code> or <code>package.Service/Method</code>. Required.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="options-1">Options</h3>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-d</code>, <code>--data &lt;json&gt;</code></td>
+<td>Request data as JSON. Use <code>@</code> to read from stdin.</td>
+</tr>
+<tr>
+<td><code>--emit-defaults</code></td>
+<td>Include default values in JSON output</td>
+</tr>
+<tr>
+<td><code>--allow-unknown-fields</code></td>
+<td>Allow unknown fields in JSON input</td>
+</tr>
+<tr>
+<td><code>--format-error</code></td>
+<td>Format error responses as JSON</td>
+</tr>
+<tr>
+<td><code>--max-msg-sz &lt;size&gt;</code></td>
+<td>Maximum message size (e.g., <code>4MB</code>, <code>10MB</code>)</td>
+</tr>
+<tr>
+<td><code>--max-time &lt;duration&gt;</code></td>
+<td>Maximum operation time / gRPC deadline</td>
+</tr>
+<tr>
+<td><code>--rpc-header &lt;header&gt;</code></td>
+<td>Add header to RPC requests only</td>
+</tr>
+</tbody>
+</table>
+<h3 id="examples-2">Examples</h3>
+<pre><code class="lang-bash"># Invoke unary method with inline JSON
+grpcurl invoke --plaintext \
+  -d '{&quot;name&quot;: &quot;World&quot;}' \
+  localhost:9090 my.package.Service/SayHello
+
+# Invoke with data from stdin
+echo '{&quot;name&quot;: &quot;World&quot;}' | grpcurl invoke --plaintext \
+  -d @ \
+  localhost:9090 my.package.Service/SayHello
+
+# Invoke with custom headers
+grpcurl invoke --plaintext \
+  -H &quot;Authorization: Bearer token123&quot; \
+  -H &quot;X-Request-Id: abc123&quot; \
+  -d '{}' \
+  localhost:9090 my.package.Service/GetData
+
+# Invoke with timeout
+grpcurl invoke --plaintext \
+  --max-time 30s \
+  -d '{}' \
+  localhost:9090 my.package.Service/LongRunningOperation
+
+# Invoke server streaming
+grpcurl invoke --plaintext \
+  -d '{&quot;count&quot;: 5}' \
+  localhost:9090 my.package.Service/StreamData
+
+# Invoke client streaming (multiple messages from stdin)
+echo '{&quot;value&quot;: 1}
+{&quot;value&quot;: 2}
+{&quot;value&quot;: 3}' | grpcurl invoke --plaintext \
+  -d @ \
+  localhost:9090 my.package.Service/AccumulateValues
+
+# Invoke bidirectional streaming
+echo '{&quot;message&quot;: &quot;hello&quot;}
+{&quot;message&quot;: &quot;world&quot;}' | grpcurl invoke --plaintext \
+  -d @ \
+  localhost:9090 my.package.Service/Chat
+</code></pre>
+<hr>
+<h2 id="duration-format">Duration Format</h2>
+<p>Duration values accept the following formats:</p>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Example</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Seconds</td>
+<td><code>30s</code></td>
+<td>30 seconds</td>
+</tr>
+<tr>
+<td>Milliseconds</td>
+<td><code>500ms</code></td>
+<td>500 milliseconds</td>
+</tr>
+<tr>
+<td>Minutes</td>
+<td><code>5m</code></td>
+<td>5 minutes</td>
+</tr>
+<tr>
+<td>Combined</td>
+<td><code>1m30s</code></td>
+<td>1 minute 30 seconds</td>
+</tr>
+</tbody>
+</table>
+<h2 id="size-format">Size Format</h2>
+<p>Size values accept the following formats:</p>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Example</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bytes</td>
+<td><code>1024</code></td>
+<td>1024 bytes</td>
+</tr>
+<tr>
+<td>Kilobytes</td>
+<td><code>64KB</code></td>
+<td>64 kilobytes</td>
+</tr>
+<tr>
+<td>Megabytes</td>
+<td><code>4MB</code></td>
+<td>4 megabytes</td>
+</tr>
+<tr>
+<td>Gigabytes</td>
+<td><code>1GB</code></td>
+<td>1 gigabyte</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="exit-codes">Exit Codes</h2>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Success</td>
+</tr>
+<tr>
+<td>1</td>
+<td>General error</td>
+</tr>
+<tr>
+<td>64+</td>
+<td>gRPC error (64 + StatusCode)</td>
+</tr>
+<tr>
+<td>130</td>
+<td>Cancelled by user (Ctrl+C)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="environment-variables">Environment Variables</h2>
+<p>Headers can reference environment variables using <code>${VAR_NAME}</code> syntax:</p>
+<pre><code class="lang-bash">grpcurl invoke --plaintext \
+  -H &quot;Authorization: Bearer ${AUTH_TOKEN}&quot; \
+  -d '{}' \
+  localhost:9090 my.package.Service/SecureMethod
+</code></pre>
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

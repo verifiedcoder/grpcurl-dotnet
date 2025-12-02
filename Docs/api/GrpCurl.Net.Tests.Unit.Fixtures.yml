@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.Tests.Unit.Fixtures
+  commentId: N:GrpCurl.Net.Tests.Unit.Fixtures
+  id: GrpCurl.Net.Tests.Unit.Fixtures
+  children:
+  - GrpCurl.Net.Tests.Unit.Fixtures.TestDescriptorProvider
+  langs:
+  - csharp
+  - vb
+  name: GrpCurl.Net.Tests.Unit.Fixtures
+  nameWithType: GrpCurl.Net.Tests.Unit.Fixtures
+  fullName: GrpCurl.Net.Tests.Unit.Fixtures
+  type: Namespace
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+references:
+- uid: GrpCurl.Net.Tests.Unit.Fixtures.TestDescriptorProvider
+  commentId: T:GrpCurl.Net.Tests.Unit.Fixtures.TestDescriptorProvider
+  href: GrpCurl.Net.Tests.Unit.Fixtures.TestDescriptorProvider.html
+  name: TestDescriptorProvider
+  nameWithType: TestDescriptorProvider
+  fullName: GrpCurl.Net.Tests.Unit.Fixtures.TestDescriptorProvider

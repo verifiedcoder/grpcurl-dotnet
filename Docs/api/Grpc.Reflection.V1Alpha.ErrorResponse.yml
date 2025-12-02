@@ -1,0 +1,1424 @@
+### YamlMime:ManagedReference
+items:
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse
+  commentId: T:Grpc.Reflection.V1Alpha.ErrorResponse
+  id: ErrorResponse
+  parent: Grpc.Reflection.V1Alpha
+  children:
+  - Grpc.Reflection.V1Alpha.ErrorResponse.#ctor
+  - Grpc.Reflection.V1Alpha.ErrorResponse.#ctor(Grpc.Reflection.V1Alpha.ErrorResponse)
+  - Grpc.Reflection.V1Alpha.ErrorResponse.CalculateSize
+  - Grpc.Reflection.V1Alpha.ErrorResponse.Clone
+  - Grpc.Reflection.V1Alpha.ErrorResponse.Descriptor
+  - Grpc.Reflection.V1Alpha.ErrorResponse.Equals(Grpc.Reflection.V1Alpha.ErrorResponse)
+  - Grpc.Reflection.V1Alpha.ErrorResponse.Equals(System.Object)
+  - Grpc.Reflection.V1Alpha.ErrorResponse.ErrorCode
+  - Grpc.Reflection.V1Alpha.ErrorResponse.ErrorCodeFieldNumber
+  - Grpc.Reflection.V1Alpha.ErrorResponse.ErrorMessage
+  - Grpc.Reflection.V1Alpha.ErrorResponse.ErrorMessageFieldNumber
+  - Grpc.Reflection.V1Alpha.ErrorResponse.GetHashCode
+  - Grpc.Reflection.V1Alpha.ErrorResponse.MergeFrom(Google.Protobuf.CodedInputStream)
+  - Grpc.Reflection.V1Alpha.ErrorResponse.MergeFrom(Grpc.Reflection.V1Alpha.ErrorResponse)
+  - Grpc.Reflection.V1Alpha.ErrorResponse.Parser
+  - Grpc.Reflection.V1Alpha.ErrorResponse.ToString
+  - Grpc.Reflection.V1Alpha.ErrorResponse.WriteTo(Google.Protobuf.CodedOutputStream)
+  langs:
+  - csharp
+  - vb
+  name: ErrorResponse
+  nameWithType: ErrorResponse
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse
+  type: Class
+  source:
+    id: ErrorResponse
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 2175
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  summary: The error code and error message sent by the server when an error occurs.
+  example: []
+  syntax:
+    content: 'public sealed class ErrorResponse : IMessage<ErrorResponse>, IEquatable<ErrorResponse>, IDeepCloneable<ErrorResponse>, IBufferMessage, IMessage'
+    content.vb: Public NotInheritable Class ErrorResponse Implements IMessage(Of ErrorResponse), IEquatable(Of ErrorResponse), IDeepCloneable(Of ErrorResponse), IBufferMessage, IMessage
+  inheritance:
+  - System.Object
+  implements:
+  - Google.Protobuf.IMessage{Grpc.Reflection.V1Alpha.ErrorResponse}
+  - System.IEquatable{Grpc.Reflection.V1Alpha.ErrorResponse}
+  - Google.Protobuf.IDeepCloneable{Grpc.Reflection.V1Alpha.ErrorResponse}
+  - Google.Protobuf.IBufferMessage
+  - Google.Protobuf.IMessage
+  inheritedMembers:
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.Parser
+  commentId: P:Grpc.Reflection.V1Alpha.ErrorResponse.Parser
+  id: Parser
+  parent: Grpc.Reflection.V1Alpha.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: Parser
+  nameWithType: ErrorResponse.Parser
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.Parser
+  type: Property
+  source:
+    id: Parser
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 2183
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  syntax:
+    content: public static MessageParser<ErrorResponse> Parser { get; }
+    parameters: []
+    return:
+      type: Google.Protobuf.MessageParser{Grpc.Reflection.V1Alpha.ErrorResponse}
+    content.vb: Public Shared ReadOnly Property Parser As MessageParser(Of ErrorResponse)
+  overload: Grpc.Reflection.V1Alpha.ErrorResponse.Parser*
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.Descriptor
+  commentId: P:Grpc.Reflection.V1Alpha.ErrorResponse.Descriptor
+  id: Descriptor
+  parent: Grpc.Reflection.V1Alpha.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: Descriptor
+  nameWithType: ErrorResponse.Descriptor
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.Descriptor
+  type: Property
+  source:
+    id: Descriptor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 2187
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  syntax:
+    content: public static MessageDescriptor Descriptor { get; }
+    parameters: []
+    return:
+      type: Google.Protobuf.Reflection.MessageDescriptor
+    content.vb: Public Shared ReadOnly Property Descriptor As MessageDescriptor
+  overload: Grpc.Reflection.V1Alpha.ErrorResponse.Descriptor*
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.#ctor
+  commentId: M:Grpc.Reflection.V1Alpha.ErrorResponse.#ctor
+  id: '#ctor'
+  parent: Grpc.Reflection.V1Alpha.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: ErrorResponse()
+  nameWithType: ErrorResponse.ErrorResponse()
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.ErrorResponse()
+  type: Constructor
+  source:
+    id: .ctor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 2199
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  syntax:
+    content: public ErrorResponse()
+    content.vb: Public Sub New()
+  overload: Grpc.Reflection.V1Alpha.ErrorResponse.#ctor*
+  nameWithType.vb: ErrorResponse.New()
+  fullName.vb: Grpc.Reflection.V1Alpha.ErrorResponse.New()
+  name.vb: New()
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.#ctor(Grpc.Reflection.V1Alpha.ErrorResponse)
+  commentId: M:Grpc.Reflection.V1Alpha.ErrorResponse.#ctor(Grpc.Reflection.V1Alpha.ErrorResponse)
+  id: '#ctor(Grpc.Reflection.V1Alpha.ErrorResponse)'
+  parent: Grpc.Reflection.V1Alpha.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: ErrorResponse(ErrorResponse)
+  nameWithType: ErrorResponse.ErrorResponse(ErrorResponse)
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.ErrorResponse(Grpc.Reflection.V1Alpha.ErrorResponse)
+  type: Constructor
+  source:
+    id: .ctor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 2207
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  syntax:
+    content: public ErrorResponse(ErrorResponse other)
+    parameters:
+    - id: other
+      type: Grpc.Reflection.V1Alpha.ErrorResponse
+    content.vb: Public Sub New(other As ErrorResponse)
+  overload: Grpc.Reflection.V1Alpha.ErrorResponse.#ctor*
+  nameWithType.vb: ErrorResponse.New(ErrorResponse)
+  fullName.vb: Grpc.Reflection.V1Alpha.ErrorResponse.New(Grpc.Reflection.V1Alpha.ErrorResponse)
+  name.vb: New(ErrorResponse)
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.Clone
+  commentId: M:Grpc.Reflection.V1Alpha.ErrorResponse.Clone
+  id: Clone
+  parent: Grpc.Reflection.V1Alpha.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: Clone()
+  nameWithType: ErrorResponse.Clone()
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.Clone()
+  type: Method
+  source:
+    id: Clone
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 2215
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  summary: Creates a deep clone of this object.
+  example: []
+  syntax:
+    content: public ErrorResponse Clone()
+    return:
+      type: Grpc.Reflection.V1Alpha.ErrorResponse
+      description: A deep clone of this object.
+    content.vb: Public Function Clone() As ErrorResponse
+  overload: Grpc.Reflection.V1Alpha.ErrorResponse.Clone*
+  implements:
+  - Google.Protobuf.IDeepCloneable{Grpc.Reflection.V1Alpha.ErrorResponse}.Clone
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.ErrorCodeFieldNumber
+  commentId: F:Grpc.Reflection.V1Alpha.ErrorResponse.ErrorCodeFieldNumber
+  id: ErrorCodeFieldNumber
+  parent: Grpc.Reflection.V1Alpha.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: ErrorCodeFieldNumber
+  nameWithType: ErrorResponse.ErrorCodeFieldNumber
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.ErrorCodeFieldNumber
+  type: Field
+  source:
+    id: ErrorCodeFieldNumber
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 2222
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  summary: Field number for the "error_code" field.
+  example: []
+  syntax:
+    content: public const int ErrorCodeFieldNumber = 1
+    return:
+      type: System.Int32
+    content.vb: Public Const ErrorCodeFieldNumber As Integer = 1
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.ErrorCode
+  commentId: P:Grpc.Reflection.V1Alpha.ErrorResponse.ErrorCode
+  id: ErrorCode
+  parent: Grpc.Reflection.V1Alpha.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: ErrorCode
+  nameWithType: ErrorResponse.ErrorCode
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.ErrorCode
+  type: Property
+  source:
+    id: ErrorCode
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 2227
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  summary: This field uses the error codes defined in grpc::StatusCode.
+  example: []
+  syntax:
+    content: public int ErrorCode { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ErrorCode As Integer
+  overload: Grpc.Reflection.V1Alpha.ErrorResponse.ErrorCode*
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.ErrorMessageFieldNumber
+  commentId: F:Grpc.Reflection.V1Alpha.ErrorResponse.ErrorMessageFieldNumber
+  id: ErrorMessageFieldNumber
+  parent: Grpc.Reflection.V1Alpha.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: ErrorMessageFieldNumber
+  nameWithType: ErrorResponse.ErrorMessageFieldNumber
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.ErrorMessageFieldNumber
+  type: Field
+  source:
+    id: ErrorMessageFieldNumber
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 2237
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  summary: Field number for the "error_message" field.
+  example: []
+  syntax:
+    content: public const int ErrorMessageFieldNumber = 2
+    return:
+      type: System.Int32
+    content.vb: Public Const ErrorMessageFieldNumber As Integer = 2
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.ErrorMessage
+  commentId: P:Grpc.Reflection.V1Alpha.ErrorResponse.ErrorMessage
+  id: ErrorMessage
+  parent: Grpc.Reflection.V1Alpha.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: ErrorMessage
+  nameWithType: ErrorResponse.ErrorMessage
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.ErrorMessage
+  type: Property
+  source:
+    id: ErrorMessage
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 2239
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  syntax:
+    content: public string ErrorMessage { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ErrorMessage As String
+  overload: Grpc.Reflection.V1Alpha.ErrorResponse.ErrorMessage*
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.Equals(System.Object)
+  commentId: M:Grpc.Reflection.V1Alpha.ErrorResponse.Equals(System.Object)
+  id: Equals(System.Object)
+  parent: Grpc.Reflection.V1Alpha.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: Equals(object)
+  nameWithType: ErrorResponse.Equals(object)
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.Equals(object)
+  type: Method
+  source:
+    id: Equals
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 2248
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  summary: Determines whether the specified object is equal to the current object.
+  example: []
+  syntax:
+    content: public override bool Equals(object other)
+    parameters:
+    - id: other
+      type: System.Object
+    return:
+      type: System.Boolean
+      description: <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the specified object  is equal to the current object; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
+    content.vb: Public Overrides Function Equals(other As Object) As Boolean
+  overridden: System.Object.Equals(System.Object)
+  overload: Grpc.Reflection.V1Alpha.ErrorResponse.Equals*
+  nameWithType.vb: ErrorResponse.Equals(Object)
+  fullName.vb: Grpc.Reflection.V1Alpha.ErrorResponse.Equals(Object)
+  name.vb: Equals(Object)
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.Equals(Grpc.Reflection.V1Alpha.ErrorResponse)
+  commentId: M:Grpc.Reflection.V1Alpha.ErrorResponse.Equals(Grpc.Reflection.V1Alpha.ErrorResponse)
+  id: Equals(Grpc.Reflection.V1Alpha.ErrorResponse)
+  parent: Grpc.Reflection.V1Alpha.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: Equals(ErrorResponse)
+  nameWithType: ErrorResponse.Equals(ErrorResponse)
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.Equals(Grpc.Reflection.V1Alpha.ErrorResponse)
+  type: Method
+  source:
+    id: Equals
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 2254
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  summary: Indicates whether the current object is equal to another object of the same type.
+  example: []
+  syntax:
+    content: public bool Equals(ErrorResponse other)
+    parameters:
+    - id: other
+      type: Grpc.Reflection.V1Alpha.ErrorResponse
+      description: An object to compare with this object.
+    return:
+      type: System.Boolean
+      description: <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the current object is equal to the <code class="paramref">other</code> parameter; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
+    content.vb: Public Function Equals(other As ErrorResponse) As Boolean
+  overload: Grpc.Reflection.V1Alpha.ErrorResponse.Equals*
+  implements:
+  - System.IEquatable{Grpc.Reflection.V1Alpha.ErrorResponse}.Equals(Grpc.Reflection.V1Alpha.ErrorResponse)
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.GetHashCode
+  commentId: M:Grpc.Reflection.V1Alpha.ErrorResponse.GetHashCode
+  id: GetHashCode
+  parent: Grpc.Reflection.V1Alpha.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: GetHashCode()
+  nameWithType: ErrorResponse.GetHashCode()
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.GetHashCode()
+  type: Method
+  source:
+    id: GetHashCode
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 2268
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  summary: Serves as the default hash function.
+  example: []
+  syntax:
+    content: public override int GetHashCode()
+    return:
+      type: System.Int32
+      description: A hash code for the current object.
+    content.vb: Public Overrides Function GetHashCode() As Integer
+  overridden: System.Object.GetHashCode
+  overload: Grpc.Reflection.V1Alpha.ErrorResponse.GetHashCode*
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.ToString
+  commentId: M:Grpc.Reflection.V1Alpha.ErrorResponse.ToString
+  id: ToString
+  parent: Grpc.Reflection.V1Alpha.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: ToString()
+  nameWithType: ErrorResponse.ToString()
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.ToString()
+  type: Method
+  source:
+    id: ToString
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 2280
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  summary: Returns a string that represents the current object.
+  example: []
+  syntax:
+    content: public override string ToString()
+    return:
+      type: System.String
+      description: A string that represents the current object.
+    content.vb: Public Overrides Function ToString() As String
+  overridden: System.Object.ToString
+  overload: Grpc.Reflection.V1Alpha.ErrorResponse.ToString*
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.WriteTo(Google.Protobuf.CodedOutputStream)
+  commentId: M:Grpc.Reflection.V1Alpha.ErrorResponse.WriteTo(Google.Protobuf.CodedOutputStream)
+  id: WriteTo(Google.Protobuf.CodedOutputStream)
+  parent: Grpc.Reflection.V1Alpha.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: WriteTo(CodedOutputStream)
+  nameWithType: ErrorResponse.WriteTo(CodedOutputStream)
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.WriteTo(Google.Protobuf.CodedOutputStream)
+  type: Method
+  source:
+    id: WriteTo
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 2286
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  summary: Writes the data to the given coded output stream.
+  example: []
+  syntax:
+    content: public void WriteTo(CodedOutputStream output)
+    parameters:
+    - id: output
+      type: Google.Protobuf.CodedOutputStream
+      description: Coded output stream to write the data to. Must not be null.
+    content.vb: Public Sub WriteTo(output As CodedOutputStream)
+  overload: Grpc.Reflection.V1Alpha.ErrorResponse.WriteTo*
+  implements:
+  - Google.Protobuf.IMessage.WriteTo(Google.Protobuf.CodedOutputStream)
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.CalculateSize
+  commentId: M:Grpc.Reflection.V1Alpha.ErrorResponse.CalculateSize
+  id: CalculateSize
+  parent: Grpc.Reflection.V1Alpha.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: CalculateSize()
+  nameWithType: ErrorResponse.CalculateSize()
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.CalculateSize()
+  type: Method
+  source:
+    id: CalculateSize
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 2324
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  summary: Calculates the size of this message in Protocol Buffer wire format, in bytes.
+  example: []
+  syntax:
+    content: public int CalculateSize()
+    return:
+      type: System.Int32
+      description: >-
+        The number of bytes required to write this message
+                    to a coded output stream.
+    content.vb: Public Function CalculateSize() As Integer
+  overload: Grpc.Reflection.V1Alpha.ErrorResponse.CalculateSize*
+  implements:
+  - Google.Protobuf.IMessage.CalculateSize
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.MergeFrom(Grpc.Reflection.V1Alpha.ErrorResponse)
+  commentId: M:Grpc.Reflection.V1Alpha.ErrorResponse.MergeFrom(Grpc.Reflection.V1Alpha.ErrorResponse)
+  id: MergeFrom(Grpc.Reflection.V1Alpha.ErrorResponse)
+  parent: Grpc.Reflection.V1Alpha.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: MergeFrom(ErrorResponse)
+  nameWithType: ErrorResponse.MergeFrom(ErrorResponse)
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.MergeFrom(Grpc.Reflection.V1Alpha.ErrorResponse)
+  type: Method
+  source:
+    id: MergeFrom
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 2340
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  summary: Merges the given message into this one.
+  remarks: See the user guide for precise merge semantics.
+  example: []
+  syntax:
+    content: public void MergeFrom(ErrorResponse other)
+    parameters:
+    - id: other
+      type: Grpc.Reflection.V1Alpha.ErrorResponse
+    content.vb: Public Sub MergeFrom(other As ErrorResponse)
+  overload: Grpc.Reflection.V1Alpha.ErrorResponse.MergeFrom*
+  implements:
+  - Google.Protobuf.IMessage{Grpc.Reflection.V1Alpha.ErrorResponse}.MergeFrom(Grpc.Reflection.V1Alpha.ErrorResponse)
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.MergeFrom(Google.Protobuf.CodedInputStream)
+  commentId: M:Grpc.Reflection.V1Alpha.ErrorResponse.MergeFrom(Google.Protobuf.CodedInputStream)
+  id: MergeFrom(Google.Protobuf.CodedInputStream)
+  parent: Grpc.Reflection.V1Alpha.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: MergeFrom(CodedInputStream)
+  nameWithType: ErrorResponse.MergeFrom(CodedInputStream)
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.MergeFrom(Google.Protobuf.CodedInputStream)
+  type: Method
+  source:
+    id: MergeFrom
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 2355
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  summary: Merges the data from the specified coded input stream with the current message.
+  remarks: See the user guide for precise merge semantics.
+  example: []
+  syntax:
+    content: public void MergeFrom(CodedInputStream input)
+    parameters:
+    - id: input
+      type: Google.Protobuf.CodedInputStream
+      description: ''
+    content.vb: Public Sub MergeFrom(input As CodedInputStream)
+  overload: Grpc.Reflection.V1Alpha.ErrorResponse.MergeFrom*
+  implements:
+  - Google.Protobuf.IMessage.MergeFrom(Google.Protobuf.CodedInputStream)
+references:
+- uid: Grpc.Reflection.V1Alpha
+  commentId: N:Grpc.Reflection.V1Alpha
+  href: Grpc.html
+  name: Grpc.Reflection.V1Alpha
+  nameWithType: Grpc.Reflection.V1Alpha
+  fullName: Grpc.Reflection.V1Alpha
+  spec.csharp:
+  - uid: Grpc
+    name: Grpc
+    href: Grpc.html
+  - name: .
+  - uid: Grpc.Reflection
+    name: Reflection
+    href: Grpc.Reflection.html
+  - name: .
+  - uid: Grpc.Reflection.V1Alpha
+    name: V1Alpha
+    href: Grpc.Reflection.V1Alpha.html
+  spec.vb:
+  - uid: Grpc
+    name: Grpc
+    href: Grpc.html
+  - name: .
+  - uid: Grpc.Reflection
+    name: Reflection
+    href: Grpc.Reflection.html
+  - name: .
+  - uid: Grpc.Reflection.V1Alpha
+    name: V1Alpha
+    href: Grpc.Reflection.V1Alpha.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Google.Protobuf.IMessage{Grpc.Reflection.V1Alpha.ErrorResponse}
+  commentId: T:Google.Protobuf.IMessage{Grpc.Reflection.V1Alpha.ErrorResponse}
+  parent: Google.Protobuf
+  definition: Google.Protobuf.IMessage`1
+  href: Grpc.Reflection.V1Alpha.ErrorResponse.html
+  name: IMessage<ErrorResponse>
+  nameWithType: IMessage<ErrorResponse>
+  fullName: Google.Protobuf.IMessage<Grpc.Reflection.V1Alpha.ErrorResponse>
+  nameWithType.vb: IMessage(Of ErrorResponse)
+  fullName.vb: Google.Protobuf.IMessage(Of Grpc.Reflection.V1Alpha.ErrorResponse)
+  name.vb: IMessage(Of ErrorResponse)
+  spec.csharp:
+  - uid: Google.Protobuf.IMessage`1
+    name: IMessage
+    isExternal: true
+  - name: <
+  - uid: Grpc.Reflection.V1Alpha.ErrorResponse
+    name: ErrorResponse
+    href: Grpc.Reflection.V1Alpha.ErrorResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: Google.Protobuf.IMessage`1
+    name: IMessage
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Grpc.Reflection.V1Alpha.ErrorResponse
+    name: ErrorResponse
+    href: Grpc.Reflection.V1Alpha.ErrorResponse.html
+  - name: )
+- uid: System.IEquatable{Grpc.Reflection.V1Alpha.ErrorResponse}
+  commentId: T:System.IEquatable{Grpc.Reflection.V1Alpha.ErrorResponse}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ErrorResponse>
+  nameWithType: IEquatable<ErrorResponse>
+  fullName: System.IEquatable<Grpc.Reflection.V1Alpha.ErrorResponse>
+  nameWithType.vb: IEquatable(Of ErrorResponse)
+  fullName.vb: System.IEquatable(Of Grpc.Reflection.V1Alpha.ErrorResponse)
+  name.vb: IEquatable(Of ErrorResponse)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Grpc.Reflection.V1Alpha.ErrorResponse
+    name: ErrorResponse
+    href: Grpc.Reflection.V1Alpha.ErrorResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Grpc.Reflection.V1Alpha.ErrorResponse
+    name: ErrorResponse
+    href: Grpc.Reflection.V1Alpha.ErrorResponse.html
+  - name: )
+- uid: Google.Protobuf.IDeepCloneable{Grpc.Reflection.V1Alpha.ErrorResponse}
+  commentId: T:Google.Protobuf.IDeepCloneable{Grpc.Reflection.V1Alpha.ErrorResponse}
+  parent: Google.Protobuf
+  definition: Google.Protobuf.IDeepCloneable`1
+  href: Grpc.Reflection.V1Alpha.ErrorResponse.html
+  name: IDeepCloneable<ErrorResponse>
+  nameWithType: IDeepCloneable<ErrorResponse>
+  fullName: Google.Protobuf.IDeepCloneable<Grpc.Reflection.V1Alpha.ErrorResponse>
+  nameWithType.vb: IDeepCloneable(Of ErrorResponse)
+  fullName.vb: Google.Protobuf.IDeepCloneable(Of Grpc.Reflection.V1Alpha.ErrorResponse)
+  name.vb: IDeepCloneable(Of ErrorResponse)
+  spec.csharp:
+  - uid: Google.Protobuf.IDeepCloneable`1
+    name: IDeepCloneable
+    isExternal: true
+  - name: <
+  - uid: Grpc.Reflection.V1Alpha.ErrorResponse
+    name: ErrorResponse
+    href: Grpc.Reflection.V1Alpha.ErrorResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: Google.Protobuf.IDeepCloneable`1
+    name: IDeepCloneable
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Grpc.Reflection.V1Alpha.ErrorResponse
+    name: ErrorResponse
+    href: Grpc.Reflection.V1Alpha.ErrorResponse.html
+  - name: )
+- uid: Google.Protobuf.IBufferMessage
+  commentId: T:Google.Protobuf.IBufferMessage
+  parent: Google.Protobuf
+  isExternal: true
+  name: IBufferMessage
+  nameWithType: IBufferMessage
+  fullName: Google.Protobuf.IBufferMessage
+- uid: Google.Protobuf.IMessage
+  commentId: T:Google.Protobuf.IMessage
+  parent: Google.Protobuf
+  isExternal: true
+  name: IMessage
+  nameWithType: IMessage
+  fullName: Google.Protobuf.IMessage
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Google.Protobuf.IMessage`1
+  commentId: T:Google.Protobuf.IMessage`1
+  isExternal: true
+  name: IMessage<T>
+  nameWithType: IMessage<T>
+  fullName: Google.Protobuf.IMessage<T>
+  nameWithType.vb: IMessage(Of T)
+  fullName.vb: Google.Protobuf.IMessage(Of T)
+  name.vb: IMessage(Of T)
+  spec.csharp:
+  - uid: Google.Protobuf.IMessage`1
+    name: IMessage
+    isExternal: true
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: Google.Protobuf.IMessage`1
+    name: IMessage
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Google.Protobuf
+  commentId: N:Google.Protobuf
+  isExternal: true
+  name: Google.Protobuf
+  nameWithType: Google.Protobuf
+  fullName: Google.Protobuf
+  spec.csharp:
+  - uid: Google
+    name: Google
+    isExternal: true
+  - name: .
+  - uid: Google.Protobuf
+    name: Protobuf
+    isExternal: true
+  spec.vb:
+  - uid: Google
+    name: Google
+    isExternal: true
+  - name: .
+  - uid: Google.Protobuf
+    name: Protobuf
+    isExternal: true
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Google.Protobuf.IDeepCloneable`1
+  commentId: T:Google.Protobuf.IDeepCloneable`1
+  isExternal: true
+  name: IDeepCloneable<T>
+  nameWithType: IDeepCloneable<T>
+  fullName: Google.Protobuf.IDeepCloneable<T>
+  nameWithType.vb: IDeepCloneable(Of T)
+  fullName.vb: Google.Protobuf.IDeepCloneable(Of T)
+  name.vb: IDeepCloneable(Of T)
+  spec.csharp:
+  - uid: Google.Protobuf.IDeepCloneable`1
+    name: IDeepCloneable
+    isExternal: true
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: Google.Protobuf.IDeepCloneable`1
+    name: IDeepCloneable
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.Parser*
+  commentId: Overload:Grpc.Reflection.V1Alpha.ErrorResponse.Parser
+  href: Grpc.Reflection.V1Alpha.ErrorResponse.html#Grpc_Reflection_V1Alpha_ErrorResponse_Parser
+  name: Parser
+  nameWithType: ErrorResponse.Parser
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.Parser
+- uid: Google.Protobuf.MessageParser{Grpc.Reflection.V1Alpha.ErrorResponse}
+  commentId: T:Google.Protobuf.MessageParser{Grpc.Reflection.V1Alpha.ErrorResponse}
+  parent: Google.Protobuf
+  definition: Google.Protobuf.MessageParser`1
+  href: Grpc.Reflection.V1Alpha.ErrorResponse.html
+  name: MessageParser<ErrorResponse>
+  nameWithType: MessageParser<ErrorResponse>
+  fullName: Google.Protobuf.MessageParser<Grpc.Reflection.V1Alpha.ErrorResponse>
+  nameWithType.vb: MessageParser(Of ErrorResponse)
+  fullName.vb: Google.Protobuf.MessageParser(Of Grpc.Reflection.V1Alpha.ErrorResponse)
+  name.vb: MessageParser(Of ErrorResponse)
+  spec.csharp:
+  - uid: Google.Protobuf.MessageParser`1
+    name: MessageParser
+    isExternal: true
+  - name: <
+  - uid: Grpc.Reflection.V1Alpha.ErrorResponse
+    name: ErrorResponse
+    href: Grpc.Reflection.V1Alpha.ErrorResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: Google.Protobuf.MessageParser`1
+    name: MessageParser
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Grpc.Reflection.V1Alpha.ErrorResponse
+    name: ErrorResponse
+    href: Grpc.Reflection.V1Alpha.ErrorResponse.html
+  - name: )
+- uid: Google.Protobuf.MessageParser`1
+  commentId: T:Google.Protobuf.MessageParser`1
+  isExternal: true
+  name: MessageParser<T>
+  nameWithType: MessageParser<T>
+  fullName: Google.Protobuf.MessageParser<T>
+  nameWithType.vb: MessageParser(Of T)
+  fullName.vb: Google.Protobuf.MessageParser(Of T)
+  name.vb: MessageParser(Of T)
+  spec.csharp:
+  - uid: Google.Protobuf.MessageParser`1
+    name: MessageParser
+    isExternal: true
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: Google.Protobuf.MessageParser`1
+    name: MessageParser
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.Descriptor*
+  commentId: Overload:Grpc.Reflection.V1Alpha.ErrorResponse.Descriptor
+  href: Grpc.Reflection.V1Alpha.ErrorResponse.html#Grpc_Reflection_V1Alpha_ErrorResponse_Descriptor
+  name: Descriptor
+  nameWithType: ErrorResponse.Descriptor
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.Descriptor
+- uid: Google.Protobuf.Reflection.MessageDescriptor
+  commentId: T:Google.Protobuf.Reflection.MessageDescriptor
+  parent: Google.Protobuf.Reflection
+  isExternal: true
+  name: MessageDescriptor
+  nameWithType: MessageDescriptor
+  fullName: Google.Protobuf.Reflection.MessageDescriptor
+- uid: Google.Protobuf.Reflection
+  commentId: N:Google.Protobuf.Reflection
+  isExternal: true
+  name: Google.Protobuf.Reflection
+  nameWithType: Google.Protobuf.Reflection
+  fullName: Google.Protobuf.Reflection
+  spec.csharp:
+  - uid: Google
+    name: Google
+    isExternal: true
+  - name: .
+  - uid: Google.Protobuf
+    name: Protobuf
+    isExternal: true
+  - name: .
+  - uid: Google.Protobuf.Reflection
+    name: Reflection
+    isExternal: true
+  spec.vb:
+  - uid: Google
+    name: Google
+    isExternal: true
+  - name: .
+  - uid: Google.Protobuf
+    name: Protobuf
+    isExternal: true
+  - name: .
+  - uid: Google.Protobuf.Reflection
+    name: Reflection
+    isExternal: true
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.#ctor*
+  commentId: Overload:Grpc.Reflection.V1Alpha.ErrorResponse.#ctor
+  href: Grpc.Reflection.V1Alpha.ErrorResponse.html#Grpc_Reflection_V1Alpha_ErrorResponse__ctor
+  name: ErrorResponse
+  nameWithType: ErrorResponse.ErrorResponse
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.ErrorResponse
+  nameWithType.vb: ErrorResponse.New
+  fullName.vb: Grpc.Reflection.V1Alpha.ErrorResponse.New
+  name.vb: New
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse
+  commentId: T:Grpc.Reflection.V1Alpha.ErrorResponse
+  parent: Grpc.Reflection.V1Alpha
+  href: Grpc.Reflection.V1Alpha.ErrorResponse.html
+  name: ErrorResponse
+  nameWithType: ErrorResponse
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.Clone*
+  commentId: Overload:Grpc.Reflection.V1Alpha.ErrorResponse.Clone
+  href: Grpc.Reflection.V1Alpha.ErrorResponse.html#Grpc_Reflection_V1Alpha_ErrorResponse_Clone
+  name: Clone
+  nameWithType: ErrorResponse.Clone
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.Clone
+- uid: Google.Protobuf.IDeepCloneable{Grpc.Reflection.V1Alpha.ErrorResponse}.Clone
+  commentId: M:Google.Protobuf.IDeepCloneable{Grpc.Reflection.V1Alpha.ErrorResponse}.Clone
+  parent: Google.Protobuf.IDeepCloneable{Grpc.Reflection.V1Alpha.ErrorResponse}
+  definition: Google.Protobuf.IDeepCloneable`1.Clone
+  name: Clone()
+  nameWithType: IDeepCloneable<ErrorResponse>.Clone()
+  fullName: Google.Protobuf.IDeepCloneable<Grpc.Reflection.V1Alpha.ErrorResponse>.Clone()
+  nameWithType.vb: IDeepCloneable(Of ErrorResponse).Clone()
+  fullName.vb: Google.Protobuf.IDeepCloneable(Of Grpc.Reflection.V1Alpha.ErrorResponse).Clone()
+  spec.csharp:
+  - uid: Google.Protobuf.IDeepCloneable{Grpc.Reflection.V1Alpha.ErrorResponse}.Clone
+    name: Clone
+    isExternal: true
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Google.Protobuf.IDeepCloneable{Grpc.Reflection.V1Alpha.ErrorResponse}.Clone
+    name: Clone
+    isExternal: true
+  - name: (
+  - name: )
+- uid: Google.Protobuf.IDeepCloneable`1.Clone
+  commentId: M:Google.Protobuf.IDeepCloneable`1.Clone
+  isExternal: true
+  name: Clone()
+  nameWithType: IDeepCloneable<T>.Clone()
+  fullName: Google.Protobuf.IDeepCloneable<T>.Clone()
+  nameWithType.vb: IDeepCloneable(Of T).Clone()
+  fullName.vb: Google.Protobuf.IDeepCloneable(Of T).Clone()
+  spec.csharp:
+  - uid: Google.Protobuf.IDeepCloneable`1.Clone
+    name: Clone
+    isExternal: true
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Google.Protobuf.IDeepCloneable`1.Clone
+    name: Clone
+    isExternal: true
+  - name: (
+  - name: )
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.ErrorCode*
+  commentId: Overload:Grpc.Reflection.V1Alpha.ErrorResponse.ErrorCode
+  href: Grpc.Reflection.V1Alpha.ErrorResponse.html#Grpc_Reflection_V1Alpha_ErrorResponse_ErrorCode
+  name: ErrorCode
+  nameWithType: ErrorResponse.ErrorCode
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.ErrorCode
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.ErrorMessage*
+  commentId: Overload:Grpc.Reflection.V1Alpha.ErrorResponse.ErrorMessage
+  href: Grpc.Reflection.V1Alpha.ErrorResponse.html#Grpc_Reflection_V1Alpha_ErrorResponse_ErrorMessage
+  name: ErrorMessage
+  nameWithType: ErrorResponse.ErrorMessage
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.ErrorMessage
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.Equals*
+  commentId: Overload:Grpc.Reflection.V1Alpha.ErrorResponse.Equals
+  href: Grpc.Reflection.V1Alpha.ErrorResponse.html#Grpc_Reflection_V1Alpha_ErrorResponse_Equals_System_Object_
+  name: Equals
+  nameWithType: ErrorResponse.Equals
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.Equals
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.IEquatable{Grpc.Reflection.V1Alpha.ErrorResponse}.Equals(Grpc.Reflection.V1Alpha.ErrorResponse)
+  commentId: M:System.IEquatable{Grpc.Reflection.V1Alpha.ErrorResponse}.Equals(Grpc.Reflection.V1Alpha.ErrorResponse)
+  parent: System.IEquatable{Grpc.Reflection.V1Alpha.ErrorResponse}
+  definition: System.IEquatable`1.Equals(`0)
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1.equals
+  name: Equals(ErrorResponse)
+  nameWithType: IEquatable<ErrorResponse>.Equals(ErrorResponse)
+  fullName: System.IEquatable<Grpc.Reflection.V1Alpha.ErrorResponse>.Equals(Grpc.Reflection.V1Alpha.ErrorResponse)
+  nameWithType.vb: IEquatable(Of ErrorResponse).Equals(ErrorResponse)
+  fullName.vb: System.IEquatable(Of Grpc.Reflection.V1Alpha.ErrorResponse).Equals(Grpc.Reflection.V1Alpha.ErrorResponse)
+  spec.csharp:
+  - uid: System.IEquatable{Grpc.Reflection.V1Alpha.ErrorResponse}.Equals(Grpc.Reflection.V1Alpha.ErrorResponse)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1.equals
+  - name: (
+  - uid: Grpc.Reflection.V1Alpha.ErrorResponse
+    name: ErrorResponse
+    href: Grpc.Reflection.V1Alpha.ErrorResponse.html
+  - name: )
+  spec.vb:
+  - uid: System.IEquatable{Grpc.Reflection.V1Alpha.ErrorResponse}.Equals(Grpc.Reflection.V1Alpha.ErrorResponse)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1.equals
+  - name: (
+  - uid: Grpc.Reflection.V1Alpha.ErrorResponse
+    name: ErrorResponse
+    href: Grpc.Reflection.V1Alpha.ErrorResponse.html
+  - name: )
+- uid: System.IEquatable`1.Equals(`0)
+  commentId: M:System.IEquatable`1.Equals(`0)
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1.equals
+  name: Equals(T)
+  nameWithType: IEquatable<T>.Equals(T)
+  fullName: System.IEquatable<T>.Equals(T)
+  nameWithType.vb: IEquatable(Of T).Equals(T)
+  fullName.vb: System.IEquatable(Of T).Equals(T)
+  spec.csharp:
+  - uid: System.IEquatable`1.Equals(`0)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1.equals
+  - name: (
+  - name: T
+  - name: )
+  spec.vb:
+  - uid: System.IEquatable`1.Equals(`0)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1.equals
+  - name: (
+  - name: T
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.GetHashCode*
+  commentId: Overload:Grpc.Reflection.V1Alpha.ErrorResponse.GetHashCode
+  href: Grpc.Reflection.V1Alpha.ErrorResponse.html#Grpc_Reflection_V1Alpha_ErrorResponse_GetHashCode
+  name: GetHashCode
+  nameWithType: ErrorResponse.GetHashCode
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.GetHashCode
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.ToString*
+  commentId: Overload:Grpc.Reflection.V1Alpha.ErrorResponse.ToString
+  href: Grpc.Reflection.V1Alpha.ErrorResponse.html#Grpc_Reflection_V1Alpha_ErrorResponse_ToString
+  name: ToString
+  nameWithType: ErrorResponse.ToString
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.ToString
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.WriteTo*
+  commentId: Overload:Grpc.Reflection.V1Alpha.ErrorResponse.WriteTo
+  href: Grpc.Reflection.V1Alpha.ErrorResponse.html#Grpc_Reflection_V1Alpha_ErrorResponse_WriteTo_Google_Protobuf_CodedOutputStream_
+  name: WriteTo
+  nameWithType: ErrorResponse.WriteTo
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.WriteTo
+- uid: Google.Protobuf.IMessage.WriteTo(Google.Protobuf.CodedOutputStream)
+  commentId: M:Google.Protobuf.IMessage.WriteTo(Google.Protobuf.CodedOutputStream)
+  parent: Google.Protobuf.IMessage
+  isExternal: true
+  name: WriteTo(CodedOutputStream)
+  nameWithType: IMessage.WriteTo(CodedOutputStream)
+  fullName: Google.Protobuf.IMessage.WriteTo(Google.Protobuf.CodedOutputStream)
+  spec.csharp:
+  - uid: Google.Protobuf.IMessage.WriteTo(Google.Protobuf.CodedOutputStream)
+    name: WriteTo
+    isExternal: true
+  - name: (
+  - uid: Google.Protobuf.CodedOutputStream
+    name: CodedOutputStream
+    isExternal: true
+  - name: )
+  spec.vb:
+  - uid: Google.Protobuf.IMessage.WriteTo(Google.Protobuf.CodedOutputStream)
+    name: WriteTo
+    isExternal: true
+  - name: (
+  - uid: Google.Protobuf.CodedOutputStream
+    name: CodedOutputStream
+    isExternal: true
+  - name: )
+- uid: Google.Protobuf.CodedOutputStream
+  commentId: T:Google.Protobuf.CodedOutputStream
+  parent: Google.Protobuf
+  isExternal: true
+  name: CodedOutputStream
+  nameWithType: CodedOutputStream
+  fullName: Google.Protobuf.CodedOutputStream
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.CalculateSize*
+  commentId: Overload:Grpc.Reflection.V1Alpha.ErrorResponse.CalculateSize
+  href: Grpc.Reflection.V1Alpha.ErrorResponse.html#Grpc_Reflection_V1Alpha_ErrorResponse_CalculateSize
+  name: CalculateSize
+  nameWithType: ErrorResponse.CalculateSize
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.CalculateSize
+- uid: Google.Protobuf.IMessage.CalculateSize
+  commentId: M:Google.Protobuf.IMessage.CalculateSize
+  parent: Google.Protobuf.IMessage
+  isExternal: true
+  name: CalculateSize()
+  nameWithType: IMessage.CalculateSize()
+  fullName: Google.Protobuf.IMessage.CalculateSize()
+  spec.csharp:
+  - uid: Google.Protobuf.IMessage.CalculateSize
+    name: CalculateSize
+    isExternal: true
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Google.Protobuf.IMessage.CalculateSize
+    name: CalculateSize
+    isExternal: true
+  - name: (
+  - name: )
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse.MergeFrom*
+  commentId: Overload:Grpc.Reflection.V1Alpha.ErrorResponse.MergeFrom
+  href: Grpc.Reflection.V1Alpha.ErrorResponse.html#Grpc_Reflection_V1Alpha_ErrorResponse_MergeFrom_Grpc_Reflection_V1Alpha_ErrorResponse_
+  name: MergeFrom
+  nameWithType: ErrorResponse.MergeFrom
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse.MergeFrom
+- uid: Google.Protobuf.IMessage{Grpc.Reflection.V1Alpha.ErrorResponse}.MergeFrom(Grpc.Reflection.V1Alpha.ErrorResponse)
+  commentId: M:Google.Protobuf.IMessage{Grpc.Reflection.V1Alpha.ErrorResponse}.MergeFrom(Grpc.Reflection.V1Alpha.ErrorResponse)
+  parent: Google.Protobuf.IMessage{Grpc.Reflection.V1Alpha.ErrorResponse}
+  definition: Google.Protobuf.IMessage`1.MergeFrom(`0)
+  href: Grpc.Reflection.V1Alpha.ErrorResponse.html
+  name: MergeFrom(ErrorResponse)
+  nameWithType: IMessage<ErrorResponse>.MergeFrom(ErrorResponse)
+  fullName: Google.Protobuf.IMessage<Grpc.Reflection.V1Alpha.ErrorResponse>.MergeFrom(Grpc.Reflection.V1Alpha.ErrorResponse)
+  nameWithType.vb: IMessage(Of ErrorResponse).MergeFrom(ErrorResponse)
+  fullName.vb: Google.Protobuf.IMessage(Of Grpc.Reflection.V1Alpha.ErrorResponse).MergeFrom(Grpc.Reflection.V1Alpha.ErrorResponse)
+  spec.csharp:
+  - uid: Google.Protobuf.IMessage{Grpc.Reflection.V1Alpha.ErrorResponse}.MergeFrom(Grpc.Reflection.V1Alpha.ErrorResponse)
+    name: MergeFrom
+    isExternal: true
+  - name: (
+  - uid: Grpc.Reflection.V1Alpha.ErrorResponse
+    name: ErrorResponse
+    href: Grpc.Reflection.V1Alpha.ErrorResponse.html
+  - name: )
+  spec.vb:
+  - uid: Google.Protobuf.IMessage{Grpc.Reflection.V1Alpha.ErrorResponse}.MergeFrom(Grpc.Reflection.V1Alpha.ErrorResponse)
+    name: MergeFrom
+    isExternal: true
+  - name: (
+  - uid: Grpc.Reflection.V1Alpha.ErrorResponse
+    name: ErrorResponse
+    href: Grpc.Reflection.V1Alpha.ErrorResponse.html
+  - name: )
+- uid: Google.Protobuf.IMessage`1.MergeFrom(`0)
+  commentId: M:Google.Protobuf.IMessage`1.MergeFrom(`0)
+  isExternal: true
+  name: MergeFrom(T)
+  nameWithType: IMessage<T>.MergeFrom(T)
+  fullName: Google.Protobuf.IMessage<T>.MergeFrom(T)
+  nameWithType.vb: IMessage(Of T).MergeFrom(T)
+  fullName.vb: Google.Protobuf.IMessage(Of T).MergeFrom(T)
+  spec.csharp:
+  - uid: Google.Protobuf.IMessage`1.MergeFrom(`0)
+    name: MergeFrom
+    isExternal: true
+  - name: (
+  - name: T
+  - name: )
+  spec.vb:
+  - uid: Google.Protobuf.IMessage`1.MergeFrom(`0)
+    name: MergeFrom
+    isExternal: true
+  - name: (
+  - name: T
+  - name: )
+- uid: Google.Protobuf.IMessage.MergeFrom(Google.Protobuf.CodedInputStream)
+  commentId: M:Google.Protobuf.IMessage.MergeFrom(Google.Protobuf.CodedInputStream)
+  parent: Google.Protobuf.IMessage
+  isExternal: true
+  name: MergeFrom(CodedInputStream)
+  nameWithType: IMessage.MergeFrom(CodedInputStream)
+  fullName: Google.Protobuf.IMessage.MergeFrom(Google.Protobuf.CodedInputStream)
+  spec.csharp:
+  - uid: Google.Protobuf.IMessage.MergeFrom(Google.Protobuf.CodedInputStream)
+    name: MergeFrom
+    isExternal: true
+  - name: (
+  - uid: Google.Protobuf.CodedInputStream
+    name: CodedInputStream
+    isExternal: true
+  - name: )
+  spec.vb:
+  - uid: Google.Protobuf.IMessage.MergeFrom(Google.Protobuf.CodedInputStream)
+    name: MergeFrom
+    isExternal: true
+  - name: (
+  - uid: Google.Protobuf.CodedInputStream
+    name: CodedInputStream
+    isExternal: true
+  - name: )
+- uid: Google.Protobuf.CodedInputStream
+  commentId: T:Google.Protobuf.CodedInputStream
+  parent: Google.Protobuf
+  isExternal: true
+  name: CodedInputStream
+  nameWithType: CodedInputStream
+  fullName: Google.Protobuf.CodedInputStream

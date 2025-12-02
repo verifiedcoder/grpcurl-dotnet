@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources
+  commentId: N:GrpCurl.Net.Tests.Integration.DescriptorSources
+  id: GrpCurl.Net.Tests.Integration.DescriptorSources
+  children:
+  - GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  langs:
+  - csharp
+  - vb
+  name: GrpCurl.Net.Tests.Integration.DescriptorSources
+  nameWithType: GrpCurl.Net.Tests.Integration.DescriptorSources
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources
+  type: Namespace
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+references:
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  commentId: T:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  href: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.html
+  name: ReflectionSourceTests
+  nameWithType: ReflectionSourceTests
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests

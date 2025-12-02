@@ -1,0 +1,1070 @@
+{
+  "source_base_path": "/home/rweeks/DEV/GRPCURL/GrpCurl.Net/Docs",
+  "xrefmap": "xrefmap.yml",
+  "files": [
+    {
+      "type": "Resource",
+      "output": {
+        "resource": {
+          "relative_path": "index.json"
+        }
+      }
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.DescriptorSources.IDescriptorSource.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.DescriptorSources.IDescriptorSource.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.DescriptorSources.IDescriptorSource",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.DescriptorSources.IDescriptorSource.yml\" sourcestartlinenumber=\"1\">Provides access to protobuf descriptors for gRPC services.\nCan be backed by server reflection, proto files, or protoset files.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.DescriptorSources.ProtosetSource.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.DescriptorSources.ProtosetSource.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.DescriptorSources.ProtosetSource",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.DescriptorSources.ProtosetSource.yml\" sourcestartlinenumber=\"1\">Descriptor source that loads descriptors from compiled FileDescriptorSet files (protoset files).\nThese files are created using: protoc --descriptor_set_out=output.protoset --include_imports input.proto</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.DescriptorSources.ReflectionSource.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.DescriptorSources.ReflectionSource.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.DescriptorSources.ReflectionSource",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.DescriptorSources.ReflectionSource.yml\" sourcestartlinenumber=\"1\">Descriptor source that uses gRPC server reflection to dynamically discover service schemas.\nRequires the server to have the grpc.reflection.v1alpha.ServerReflection service enabled.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.DescriptorSources.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.DescriptorSources.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.DescriptorSources",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Exceptions.GrpcCommandException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Exceptions.GrpcCommandException.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Exceptions.GrpcCommandException",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.Exceptions.GrpcCommandException.yml\" sourcestartlinenumber=\"1\">Exception thrown by command handlers to signal an error that should result in a specific exit code.\nThis replaces Environment.Exit() calls to allow proper cleanup and testability.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Exceptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Exceptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Exceptions",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Invocation.AsyncStreamExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Invocation.AsyncStreamExtensions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Invocation.AsyncStreamExtensions",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.Invocation.AsyncStreamExtensions.yml\" sourcestartlinenumber=\"1\">Extension methods for async streams.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Invocation.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Invocation.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Invocation",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.TestServer.Protos.EchoStatus.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.TestServer.Protos.EchoStatus.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.TestServer.Protos.EchoStatus",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.TestServer.Protos.EchoStatus.yml\" sourcestartlinenumber=\"1\">A protobuf representation for grpc status. This is used by test\nclients to specify a status that the server should attempt to return.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.TestServer.Protos.Empty.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.TestServer.Protos.Empty.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.TestServer.Protos.Empty",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.TestServer.Protos.Payload.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.TestServer.Protos.Payload.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.TestServer.Protos.Payload",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.TestServer.Protos.Payload.yml\" sourcestartlinenumber=\"1\">A block of data, to simply increase gRPC message size.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.TestServer.Protos.PayloadType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.TestServer.Protos.PayloadType.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.TestServer.Protos.PayloadType",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.TestServer.Protos.PayloadType.yml\" sourcestartlinenumber=\"1\">The type of payload that should be returned.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.TestServer.Protos.ResponseParameters.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.TestServer.Protos.ResponseParameters.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.TestServer.Protos.ResponseParameters",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.TestServer.Protos.ResponseParameters.yml\" sourcestartlinenumber=\"1\">Configuration for a particular response.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.TestServer.Protos.SimpleRequest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.TestServer.Protos.SimpleRequest.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.TestServer.Protos.SimpleRequest",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.TestServer.Protos.SimpleRequest.yml\" sourcestartlinenumber=\"1\">Unary request.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.TestServer.Protos.SimpleResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.TestServer.Protos.SimpleResponse.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.TestServer.Protos.SimpleResponse",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.TestServer.Protos.SimpleResponse.yml\" sourcestartlinenumber=\"1\">Unary response, as configured by the request.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest.yml\" sourcestartlinenumber=\"1\">Client-streaming request.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.TestServer.Protos.StreamingInputCallResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.TestServer.Protos.StreamingInputCallResponse.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.TestServer.Protos.StreamingInputCallResponse",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.TestServer.Protos.StreamingInputCallResponse.yml\" sourcestartlinenumber=\"1\">Client-streaming response.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest.yml\" sourcestartlinenumber=\"1\">Server-streaming request.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse.yml\" sourcestartlinenumber=\"1\">Server-streaming response, as configured by the request and parameters.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.TestServer.Protos.TestReflection.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.TestServer.Protos.TestReflection.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.TestServer.Protos.TestReflection",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.TestServer.Protos.TestReflection.yml\" sourcestartlinenumber=\"1\">Holder for reflection information generated from Protos/test.proto</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.yml\" sourcestartlinenumber=\"1\">Base class for server-side implementations of TestService</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.TestServer.Protos.TestService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.TestServer.Protos.TestService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.TestServer.Protos.TestService",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.TestServer.Protos.TestService.yml\" sourcestartlinenumber=\"1\">A simple service to test the various types of RPCs and experiment with\nperformance with various types of payload.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase.yml\" sourcestartlinenumber=\"1\">Base class for server-side implementations of UnimplementedService</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.TestServer.Protos.UnimplementedService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.TestServer.Protos.UnimplementedService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.TestServer.Protos.UnimplementedService",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.TestServer.Protos.UnimplementedService.yml\" sourcestartlinenumber=\"1\">A simple service NOT implemented at servers so clients can test for\nthat case.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.TestServer.Protos.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.TestServer.Protos.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.TestServer.Protos",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.TestServer.Services.MetadataConstants.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.TestServer.Services.MetadataConstants.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.TestServer.Services.MetadataConstants",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.TestServer.Services.MetadataConstants.yml\" sourcestartlinenumber=\"1\">Metadata header constants for controlling test server behavior.\nThese match the Go grpcurl test server implementation.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.TestServer.Services.MetadataProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.TestServer.Services.MetadataProcessor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.TestServer.Services.MetadataProcessor",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.TestServer.Services.MetadataProcessor.yml\" sourcestartlinenumber=\"1\">Processes incoming metadata to extract test control headers.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.TestServer.Services.TestServiceImpl.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.TestServer.Services.TestServiceImpl.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.TestServer.Services.TestServiceImpl",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.TestServer.Services.TestServiceImpl.yml\" sourcestartlinenumber=\"1\">Implementation of TestService with metadata-driven behavior control.\nMirrors the Go grpcurl test server for feature parity testing.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.TestServer.Services.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.TestServer.Services.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.TestServer.Services",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.yml\" sourcestartlinenumber=\"1\">Integration tests for ReflectionSource against a real gRPC server with reflection enabled.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Integration.DescriptorSources.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Integration.DescriptorSources.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Integration.DescriptorSources",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Integration.Fixtures.GrpcServerCollection.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Integration.Fixtures.GrpcServerCollection.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Integration.Fixtures.GrpcServerCollection",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.Tests.Integration.Fixtures.GrpcServerCollection.yml\" sourcestartlinenumber=\"1\">Collection definition for tests that share the gRPC server fixture.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture.yml\" sourcestartlinenumber=\"1\">Fixture that starts an in-process gRPC server for integration testing.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Integration.Fixtures.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Integration.Fixtures.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Integration.Fixtures",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.yml\" sourcestartlinenumber=\"1\">Integration tests for DynamicInvoker against a real gRPC server.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.yml\" sourcestartlinenumber=\"1\">Advanced streaming scenario tests for DynamicInvoker.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Integration.Invocation.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Integration.Invocation.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Integration.Invocation",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Unit.Commands.CommandConstantsTests.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Unit.Commands.CommandConstantsTests.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Unit.Commands.CommandConstantsTests",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Unit.Commands.DescribeCommandTests.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Unit.Commands.DescribeCommandTests.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Unit.Commands.DescribeCommandTests",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Unit.Commands.ListCommandTests.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Unit.Commands.ListCommandTests.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Unit.Commands.ListCommandTests",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Unit.Commands.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Unit.Commands.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Unit.Commands",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.yml\" sourcestartlinenumber=\"1\">Tests for ProtosetSource which loads descriptors from compiled FileDescriptorSet files.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Unit.DescriptorSources.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Unit.DescriptorSources.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Unit.DescriptorSources",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Unit.Exceptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Unit.Exceptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Unit.Exceptions",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Unit.Fixtures.TestDescriptorProvider.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Unit.Fixtures.TestDescriptorProvider.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Unit.Fixtures.TestDescriptorProvider",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.Tests.Unit.Fixtures.TestDescriptorProvider.yml\" sourcestartlinenumber=\"1\">Provides message descriptors for unit testing by loading protoset files.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Unit.Fixtures.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Unit.Fixtures.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Unit.Fixtures",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.yml\" sourcestartlinenumber=\"1\">Tests for ProtobufReader and ProtobufWriter which handle binary protobuf\nserialization and deserialization for SimpleDynamicMessage.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.yml\" sourcestartlinenumber=\"1\">Comprehensive tests for SimpleDynamicMessage covering all field types,\nJSON parsing, serialization, and edge cases.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.yml\" sourcestartlinenumber=\"1\">Tests for WellKnownTypeHandler which handles conversion of Google protobuf\nwell-known types between JSON and protobuf formats.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Unit.Invocation.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Unit.Invocation.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Unit.Invocation",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests",
+      "Summary": "<p sourcefile=\"api/GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.yml\" sourcestartlinenumber=\"1\">Tests for GrpcChannelFactory utility methods including duration parsing,\nsize parsing, metadata creation, and channel configuration.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/GrpCurl.Net.Tests.Unit.Utilities.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/GrpCurl.Net.Tests.Unit.Utilities.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "GrpCurl.Net.Tests.Unit.Utilities",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Grpc.Reflection.V1Alpha.ErrorResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Grpc.Reflection.V1Alpha.ErrorResponse.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Grpc.Reflection.V1Alpha.ErrorResponse",
+      "Summary": "<p sourcefile=\"api/Grpc.Reflection.V1Alpha.ErrorResponse.yml\" sourcestartlinenumber=\"1\">The error code and error message sent by the server when an error occurs.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Grpc.Reflection.V1Alpha.ExtensionNumberResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Grpc.Reflection.V1Alpha.ExtensionNumberResponse.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Grpc.Reflection.V1Alpha.ExtensionNumberResponse",
+      "Summary": "<p sourcefile=\"api/Grpc.Reflection.V1Alpha.ExtensionNumberResponse.yml\" sourcestartlinenumber=\"1\">A list of extension numbers sent by the server answering\nall_extension_numbers_of_type request.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Grpc.Reflection.V1Alpha.ExtensionRequest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Grpc.Reflection.V1Alpha.ExtensionRequest.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Grpc.Reflection.V1Alpha.ExtensionRequest",
+      "Summary": "<p sourcefile=\"api/Grpc.Reflection.V1Alpha.ExtensionRequest.yml\" sourcestartlinenumber=\"1\">The type name and extension number sent by the client when requesting\nfile_containing_extension.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Grpc.Reflection.V1Alpha.FileDescriptorResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Grpc.Reflection.V1Alpha.FileDescriptorResponse.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Grpc.Reflection.V1Alpha.FileDescriptorResponse",
+      "Summary": "<p sourcefile=\"api/Grpc.Reflection.V1Alpha.FileDescriptorResponse.yml\" sourcestartlinenumber=\"1\">Serialized FileDescriptorProto messages sent by the server answering\na file_by_filename, file_containing_symbol, or file_containing_extension\nrequest.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Grpc.Reflection.V1Alpha.ListServiceResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Grpc.Reflection.V1Alpha.ListServiceResponse.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Grpc.Reflection.V1Alpha.ListServiceResponse",
+      "Summary": "<p sourcefile=\"api/Grpc.Reflection.V1Alpha.ListServiceResponse.yml\" sourcestartlinenumber=\"1\">A list of ServiceResponse sent by the server answering list_services request.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Grpc.Reflection.V1Alpha.ReflectionReflection.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Grpc.Reflection.V1Alpha.ReflectionReflection.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Grpc.Reflection.V1Alpha.ReflectionReflection",
+      "Summary": "<p sourcefile=\"api/Grpc.Reflection.V1Alpha.ReflectionReflection.yml\" sourcestartlinenumber=\"1\">Holder for reflection information generated from Protos/reflection.proto</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Grpc.Reflection.V1Alpha.ServerReflection.ServerReflectionClient.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Grpc.Reflection.V1Alpha.ServerReflection.ServerReflectionClient.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Grpc.Reflection.V1Alpha.ServerReflection.ServerReflectionClient",
+      "Summary": "<p sourcefile=\"api/Grpc.Reflection.V1Alpha.ServerReflection.ServerReflectionClient.yml\" sourcestartlinenumber=\"1\">Client for ServerReflection</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Grpc.Reflection.V1Alpha.ServerReflection.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Grpc.Reflection.V1Alpha.ServerReflection.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Grpc.Reflection.V1Alpha.ServerReflection",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase",
+      "Summary": "<p sourcefile=\"api/Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.yml\" sourcestartlinenumber=\"1\">Enum of possible cases for the &quot;message_request&quot; oneof.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Grpc.Reflection.V1Alpha.ServerReflectionRequest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Grpc.Reflection.V1Alpha.ServerReflectionRequest.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Grpc.Reflection.V1Alpha.ServerReflectionRequest",
+      "Summary": "<p sourcefile=\"api/Grpc.Reflection.V1Alpha.ServerReflectionRequest.yml\" sourcestartlinenumber=\"1\">The message sent by the client when calling ServerReflectionInfo method.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase",
+      "Summary": "<p sourcefile=\"api/Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.yml\" sourcestartlinenumber=\"1\">Enum of possible cases for the &quot;message_response&quot; oneof.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Grpc.Reflection.V1Alpha.ServerReflectionResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Grpc.Reflection.V1Alpha.ServerReflectionResponse.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Grpc.Reflection.V1Alpha.ServerReflectionResponse",
+      "Summary": "<p sourcefile=\"api/Grpc.Reflection.V1Alpha.ServerReflectionResponse.yml\" sourcestartlinenumber=\"1\">The message sent by the server to answer ServerReflectionInfo method.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Grpc.Reflection.V1Alpha.ServiceResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Grpc.Reflection.V1Alpha.ServiceResponse.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Grpc.Reflection.V1Alpha.ServiceResponse",
+      "Summary": "<p sourcefile=\"api/Grpc.Reflection.V1Alpha.ServiceResponse.yml\" sourcestartlinenumber=\"1\">The information of a single service used by ListServiceResponse to answer\nlist_services request.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Grpc.Reflection.V1Alpha.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Grpc.Reflection.V1Alpha.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Grpc.Reflection.V1Alpha",
+      "Summary": null
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "api/toc.yml",
+      "output": {
+        ".json": {
+          "relative_path": "api/toc.json"
+        },
+        ".html": {
+          "relative_path": "api/toc.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/architecture.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/architecture.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/cli-reference.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/cli-reference.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/examples.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/examples.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "articles/toc.yml",
+      "output": {
+        ".json": {
+          "relative_path": "articles/toc.json"
+        },
+        ".html": {
+          "relative_path": "articles/toc.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "getting-started.md",
+      "output": {
+        ".html": {
+          "relative_path": "getting-started.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "index.md",
+      "output": {
+        ".html": {
+          "relative_path": "index.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "introduction.md",
+      "output": {
+        ".html": {
+          "relative_path": "introduction.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "toc.yml",
+      "output": {
+        ".json": {
+          "relative_path": "toc.json"
+        },
+        ".html": {
+          "relative_path": "toc.html"
+        }
+      },
+      "version": ""
+    }
+  ],
+  "groups": [
+    {
+      "xrefmap": "xrefmap.yml"
+    }
+  ]
+}

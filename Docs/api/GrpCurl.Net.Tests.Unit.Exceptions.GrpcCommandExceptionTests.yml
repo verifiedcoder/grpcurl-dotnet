@@ -1,0 +1,754 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests
+  commentId: T:GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests
+  id: GrpcCommandExceptionTests
+  parent: GrpCurl.Net.Tests.Unit.Exceptions
+  children:
+  - GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithEmptyMessage_SetsMessage
+  - GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithLargeExitCode_SetsExitCode
+  - GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithMessageAndExitCode_SetsProperties
+  - GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithMessageOnly_SetsDefaultExitCode
+  - GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithNegativeExitCode_SetsExitCode
+  - GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithZeroExitCode_SetsExitCode
+  - GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.ExitCode_CommonValues_AreSupported(System.Int32,System.String)
+  - GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.ExitCode_RpcStatusCodes_CanBeEncoded
+  - GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.GrpcCommandException_CanBeCaught_AsException
+  - GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.GrpcCommandException_InheritsFromException
+  langs:
+  - csharp
+  - vb
+  name: GrpcCommandExceptionTests
+  nameWithType: GrpcCommandExceptionTests
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests
+  type: Class
+  source:
+    id: GrpcCommandExceptionTests
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Exceptions/GrpcCommandExceptionTests.cs
+    startLine: 4
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Exceptions
+  syntax:
+    content: public class GrpcCommandExceptionTests
+    content.vb: Public Class GrpcCommandExceptionTests
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithMessageOnly_SetsDefaultExitCode
+  commentId: M:GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithMessageOnly_SetsDefaultExitCode
+  id: Constructor_WithMessageOnly_SetsDefaultExitCode
+  parent: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests
+  langs:
+  - csharp
+  - vb
+  name: Constructor_WithMessageOnly_SetsDefaultExitCode()
+  nameWithType: GrpcCommandExceptionTests.Constructor_WithMessageOnly_SetsDefaultExitCode()
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithMessageOnly_SetsDefaultExitCode()
+  type: Method
+  source:
+    id: Constructor_WithMessageOnly_SetsDefaultExitCode
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Exceptions/GrpcCommandExceptionTests.cs
+    startLine: 8
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Exceptions
+  syntax:
+    content: >-
+      [Fact]
+
+      public void Constructor_WithMessageOnly_SetsDefaultExitCode()
+    content.vb: >-
+      <Fact>
+
+      Public Sub Constructor_WithMessageOnly_SetsDefaultExitCode()
+  overload: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithMessageOnly_SetsDefaultExitCode*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithMessageAndExitCode_SetsProperties
+  commentId: M:GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithMessageAndExitCode_SetsProperties
+  id: Constructor_WithMessageAndExitCode_SetsProperties
+  parent: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests
+  langs:
+  - csharp
+  - vb
+  name: Constructor_WithMessageAndExitCode_SetsProperties()
+  nameWithType: GrpcCommandExceptionTests.Constructor_WithMessageAndExitCode_SetsProperties()
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithMessageAndExitCode_SetsProperties()
+  type: Method
+  source:
+    id: Constructor_WithMessageAndExitCode_SetsProperties
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Exceptions/GrpcCommandExceptionTests.cs
+    startLine: 17
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Exceptions
+  syntax:
+    content: >-
+      [Fact]
+
+      public void Constructor_WithMessageAndExitCode_SetsProperties()
+    content.vb: >-
+      <Fact>
+
+      Public Sub Constructor_WithMessageAndExitCode_SetsProperties()
+  overload: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithMessageAndExitCode_SetsProperties*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithZeroExitCode_SetsExitCode
+  commentId: M:GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithZeroExitCode_SetsExitCode
+  id: Constructor_WithZeroExitCode_SetsExitCode
+  parent: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests
+  langs:
+  - csharp
+  - vb
+  name: Constructor_WithZeroExitCode_SetsExitCode()
+  nameWithType: GrpcCommandExceptionTests.Constructor_WithZeroExitCode_SetsExitCode()
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithZeroExitCode_SetsExitCode()
+  type: Method
+  source:
+    id: Constructor_WithZeroExitCode_SetsExitCode
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Exceptions/GrpcCommandExceptionTests.cs
+    startLine: 26
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Exceptions
+  syntax:
+    content: >-
+      [Fact]
+
+      public void Constructor_WithZeroExitCode_SetsExitCode()
+    content.vb: >-
+      <Fact>
+
+      Public Sub Constructor_WithZeroExitCode_SetsExitCode()
+  overload: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithZeroExitCode_SetsExitCode*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithNegativeExitCode_SetsExitCode
+  commentId: M:GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithNegativeExitCode_SetsExitCode
+  id: Constructor_WithNegativeExitCode_SetsExitCode
+  parent: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests
+  langs:
+  - csharp
+  - vb
+  name: Constructor_WithNegativeExitCode_SetsExitCode()
+  nameWithType: GrpcCommandExceptionTests.Constructor_WithNegativeExitCode_SetsExitCode()
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithNegativeExitCode_SetsExitCode()
+  type: Method
+  source:
+    id: Constructor_WithNegativeExitCode_SetsExitCode
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Exceptions/GrpcCommandExceptionTests.cs
+    startLine: 34
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Exceptions
+  syntax:
+    content: >-
+      [Fact]
+
+      public void Constructor_WithNegativeExitCode_SetsExitCode()
+    content.vb: >-
+      <Fact>
+
+      Public Sub Constructor_WithNegativeExitCode_SetsExitCode()
+  overload: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithNegativeExitCode_SetsExitCode*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithLargeExitCode_SetsExitCode
+  commentId: M:GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithLargeExitCode_SetsExitCode
+  id: Constructor_WithLargeExitCode_SetsExitCode
+  parent: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests
+  langs:
+  - csharp
+  - vb
+  name: Constructor_WithLargeExitCode_SetsExitCode()
+  nameWithType: GrpcCommandExceptionTests.Constructor_WithLargeExitCode_SetsExitCode()
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithLargeExitCode_SetsExitCode()
+  type: Method
+  source:
+    id: Constructor_WithLargeExitCode_SetsExitCode
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Exceptions/GrpcCommandExceptionTests.cs
+    startLine: 42
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Exceptions
+  syntax:
+    content: >-
+      [Fact]
+
+      public void Constructor_WithLargeExitCode_SetsExitCode()
+    content.vb: >-
+      <Fact>
+
+      Public Sub Constructor_WithLargeExitCode_SetsExitCode()
+  overload: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithLargeExitCode_SetsExitCode*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithEmptyMessage_SetsMessage
+  commentId: M:GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithEmptyMessage_SetsMessage
+  id: Constructor_WithEmptyMessage_SetsMessage
+  parent: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests
+  langs:
+  - csharp
+  - vb
+  name: Constructor_WithEmptyMessage_SetsMessage()
+  nameWithType: GrpcCommandExceptionTests.Constructor_WithEmptyMessage_SetsMessage()
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithEmptyMessage_SetsMessage()
+  type: Method
+  source:
+    id: Constructor_WithEmptyMessage_SetsMessage
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Exceptions/GrpcCommandExceptionTests.cs
+    startLine: 50
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Exceptions
+  syntax:
+    content: >-
+      [Fact]
+
+      public void Constructor_WithEmptyMessage_SetsMessage()
+    content.vb: >-
+      <Fact>
+
+      Public Sub Constructor_WithEmptyMessage_SetsMessage()
+  overload: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithEmptyMessage_SetsMessage*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.GrpcCommandException_InheritsFromException
+  commentId: M:GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.GrpcCommandException_InheritsFromException
+  id: GrpcCommandException_InheritsFromException
+  parent: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests
+  langs:
+  - csharp
+  - vb
+  name: GrpcCommandException_InheritsFromException()
+  nameWithType: GrpcCommandExceptionTests.GrpcCommandException_InheritsFromException()
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.GrpcCommandException_InheritsFromException()
+  type: Method
+  source:
+    id: GrpcCommandException_InheritsFromException
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Exceptions/GrpcCommandExceptionTests.cs
+    startLine: 63
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Exceptions
+  syntax:
+    content: >-
+      [Fact]
+
+      public void GrpcCommandException_InheritsFromException()
+    content.vb: >-
+      <Fact>
+
+      Public Sub GrpcCommandException_InheritsFromException()
+  overload: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.GrpcCommandException_InheritsFromException*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.GrpcCommandException_CanBeCaught_AsException
+  commentId: M:GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.GrpcCommandException_CanBeCaught_AsException
+  id: GrpcCommandException_CanBeCaught_AsException
+  parent: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests
+  langs:
+  - csharp
+  - vb
+  name: GrpcCommandException_CanBeCaught_AsException()
+  nameWithType: GrpcCommandExceptionTests.GrpcCommandException_CanBeCaught_AsException()
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.GrpcCommandException_CanBeCaught_AsException()
+  type: Method
+  source:
+    id: GrpcCommandException_CanBeCaught_AsException
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Exceptions/GrpcCommandExceptionTests.cs
+    startLine: 71
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Exceptions
+  syntax:
+    content: >-
+      [Fact]
+
+      public void GrpcCommandException_CanBeCaught_AsException()
+    content.vb: >-
+      <Fact>
+
+      Public Sub GrpcCommandException_CanBeCaught_AsException()
+  overload: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.GrpcCommandException_CanBeCaught_AsException*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.ExitCode_CommonValues_AreSupported(System.Int32,System.String)
+  commentId: M:GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.ExitCode_CommonValues_AreSupported(System.Int32,System.String)
+  id: ExitCode_CommonValues_AreSupported(System.Int32,System.String)
+  parent: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests
+  langs:
+  - csharp
+  - vb
+  name: ExitCode_CommonValues_AreSupported(int, string)
+  nameWithType: GrpcCommandExceptionTests.ExitCode_CommonValues_AreSupported(int, string)
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.ExitCode_CommonValues_AreSupported(int, string)
+  type: Method
+  source:
+    id: ExitCode_CommonValues_AreSupported
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Exceptions/GrpcCommandExceptionTests.cs
+    startLine: 94
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Exceptions
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { 0, "Success" })]
+
+      [InlineData(new object[] { 1, "General error" })]
+
+      [InlineData(new object[] { 64, "RPC base code" })]
+
+      [InlineData(new object[] { 130, "User cancellation (Ctrl+C)" })]
+
+      public void ExitCode_CommonValues_AreSupported(int exitCode, string description)
+    parameters:
+    - id: exitCode
+      type: System.Int32
+    - id: description
+      type: System.String
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { 0, "Success" })>
+
+      <InlineData(New Object() { 1, "General error" })>
+
+      <InlineData(New Object() { 64, "RPC base code" })>
+
+      <InlineData(New Object() { 130, "User cancellation (Ctrl+C)" })>
+
+      Public Sub ExitCode_CommonValues_AreSupported(exitCode As Integer, description As String)
+  overload: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.ExitCode_CommonValues_AreSupported*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: GrpcCommandExceptionTests.ExitCode_CommonValues_AreSupported(Integer, String)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.ExitCode_CommonValues_AreSupported(Integer, String)
+  name.vb: ExitCode_CommonValues_AreSupported(Integer, String)
+- uid: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.ExitCode_RpcStatusCodes_CanBeEncoded
+  commentId: M:GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.ExitCode_RpcStatusCodes_CanBeEncoded
+  id: ExitCode_RpcStatusCodes_CanBeEncoded
+  parent: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests
+  langs:
+  - csharp
+  - vb
+  name: ExitCode_RpcStatusCodes_CanBeEncoded()
+  nameWithType: GrpcCommandExceptionTests.ExitCode_RpcStatusCodes_CanBeEncoded()
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.ExitCode_RpcStatusCodes_CanBeEncoded()
+  type: Method
+  source:
+    id: ExitCode_RpcStatusCodes_CanBeEncoded
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Exceptions/GrpcCommandExceptionTests.cs
+    startLine: 106
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Exceptions
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ExitCode_RpcStatusCodes_CanBeEncoded()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ExitCode_RpcStatusCodes_CanBeEncoded()
+  overload: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.ExitCode_RpcStatusCodes_CanBeEncoded*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+references:
+- uid: GrpCurl.Net.Tests.Unit.Exceptions
+  commentId: N:GrpCurl.Net.Tests.Unit.Exceptions
+  href: GrpCurl.html
+  name: GrpCurl.Net.Tests.Unit.Exceptions
+  nameWithType: GrpCurl.Net.Tests.Unit.Exceptions
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions
+  spec.csharp:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit
+    name: Unit
+    href: GrpCurl.Net.Tests.Unit.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit.Exceptions
+    name: Exceptions
+    href: GrpCurl.Net.Tests.Unit.Exceptions.html
+  spec.vb:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit
+    name: Unit
+    href: GrpCurl.Net.Tests.Unit.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit.Exceptions
+    name: Exceptions
+    href: GrpCurl.Net.Tests.Unit.Exceptions.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithMessageOnly_SetsDefaultExitCode*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithMessageOnly_SetsDefaultExitCode
+  href: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.html#GrpCurl_Net_Tests_Unit_Exceptions_GrpcCommandExceptionTests_Constructor_WithMessageOnly_SetsDefaultExitCode
+  name: Constructor_WithMessageOnly_SetsDefaultExitCode
+  nameWithType: GrpcCommandExceptionTests.Constructor_WithMessageOnly_SetsDefaultExitCode
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithMessageOnly_SetsDefaultExitCode
+- uid: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithMessageAndExitCode_SetsProperties*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithMessageAndExitCode_SetsProperties
+  href: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.html#GrpCurl_Net_Tests_Unit_Exceptions_GrpcCommandExceptionTests_Constructor_WithMessageAndExitCode_SetsProperties
+  name: Constructor_WithMessageAndExitCode_SetsProperties
+  nameWithType: GrpcCommandExceptionTests.Constructor_WithMessageAndExitCode_SetsProperties
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithMessageAndExitCode_SetsProperties
+- uid: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithZeroExitCode_SetsExitCode*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithZeroExitCode_SetsExitCode
+  href: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.html#GrpCurl_Net_Tests_Unit_Exceptions_GrpcCommandExceptionTests_Constructor_WithZeroExitCode_SetsExitCode
+  name: Constructor_WithZeroExitCode_SetsExitCode
+  nameWithType: GrpcCommandExceptionTests.Constructor_WithZeroExitCode_SetsExitCode
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithZeroExitCode_SetsExitCode
+- uid: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithNegativeExitCode_SetsExitCode*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithNegativeExitCode_SetsExitCode
+  href: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.html#GrpCurl_Net_Tests_Unit_Exceptions_GrpcCommandExceptionTests_Constructor_WithNegativeExitCode_SetsExitCode
+  name: Constructor_WithNegativeExitCode_SetsExitCode
+  nameWithType: GrpcCommandExceptionTests.Constructor_WithNegativeExitCode_SetsExitCode
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithNegativeExitCode_SetsExitCode
+- uid: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithLargeExitCode_SetsExitCode*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithLargeExitCode_SetsExitCode
+  href: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.html#GrpCurl_Net_Tests_Unit_Exceptions_GrpcCommandExceptionTests_Constructor_WithLargeExitCode_SetsExitCode
+  name: Constructor_WithLargeExitCode_SetsExitCode
+  nameWithType: GrpcCommandExceptionTests.Constructor_WithLargeExitCode_SetsExitCode
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithLargeExitCode_SetsExitCode
+- uid: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithEmptyMessage_SetsMessage*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithEmptyMessage_SetsMessage
+  href: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.html#GrpCurl_Net_Tests_Unit_Exceptions_GrpcCommandExceptionTests_Constructor_WithEmptyMessage_SetsMessage
+  name: Constructor_WithEmptyMessage_SetsMessage
+  nameWithType: GrpcCommandExceptionTests.Constructor_WithEmptyMessage_SetsMessage
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.Constructor_WithEmptyMessage_SetsMessage
+- uid: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.GrpcCommandException_InheritsFromException*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.GrpcCommandException_InheritsFromException
+  href: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.html#GrpCurl_Net_Tests_Unit_Exceptions_GrpcCommandExceptionTests_GrpcCommandException_InheritsFromException
+  name: GrpcCommandException_InheritsFromException
+  nameWithType: GrpcCommandExceptionTests.GrpcCommandException_InheritsFromException
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.GrpcCommandException_InheritsFromException
+- uid: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.GrpcCommandException_CanBeCaught_AsException*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.GrpcCommandException_CanBeCaught_AsException
+  href: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.html#GrpCurl_Net_Tests_Unit_Exceptions_GrpcCommandExceptionTests_GrpcCommandException_CanBeCaught_AsException
+  name: GrpcCommandException_CanBeCaught_AsException
+  nameWithType: GrpcCommandExceptionTests.GrpcCommandException_CanBeCaught_AsException
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.GrpcCommandException_CanBeCaught_AsException
+- uid: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.ExitCode_CommonValues_AreSupported*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.ExitCode_CommonValues_AreSupported
+  href: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.html#GrpCurl_Net_Tests_Unit_Exceptions_GrpcCommandExceptionTests_ExitCode_CommonValues_AreSupported_System_Int32_System_String_
+  name: ExitCode_CommonValues_AreSupported
+  nameWithType: GrpcCommandExceptionTests.ExitCode_CommonValues_AreSupported
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.ExitCode_CommonValues_AreSupported
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.ExitCode_RpcStatusCodes_CanBeEncoded*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.ExitCode_RpcStatusCodes_CanBeEncoded
+  href: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.html#GrpCurl_Net_Tests_Unit_Exceptions_GrpcCommandExceptionTests_ExitCode_RpcStatusCodes_CanBeEncoded
+  name: ExitCode_RpcStatusCodes_CanBeEncoded
+  nameWithType: GrpcCommandExceptionTests.ExitCode_RpcStatusCodes_CanBeEncoded
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.ExitCode_RpcStatusCodes_CanBeEncoded

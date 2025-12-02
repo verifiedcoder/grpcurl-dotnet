@@ -1,0 +1,412 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.DescriptorSources.IDescriptorSource
+  commentId: T:GrpCurl.Net.DescriptorSources.IDescriptorSource
+  id: IDescriptorSource
+  parent: GrpCurl.Net.DescriptorSources
+  children:
+  - GrpCurl.Net.DescriptorSources.IDescriptorSource.FileDescriptorSet
+  - GrpCurl.Net.DescriptorSources.IDescriptorSource.FindSymbolAsync(System.String,System.Threading.CancellationToken)
+  - GrpCurl.Net.DescriptorSources.IDescriptorSource.ListServicesAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IDescriptorSource
+  nameWithType: IDescriptorSource
+  fullName: GrpCurl.Net.DescriptorSources.IDescriptorSource
+  type: Interface
+  source:
+    id: IDescriptorSource
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/DescriptorSources/IDescriptorSource.cs
+    startLine: 8
+  assemblies:
+  - GrpCurl.Net
+  namespace: GrpCurl.Net.DescriptorSources
+  summary: >-
+    Provides access to protobuf descriptors for gRPC services.
+
+    Can be backed by server reflection, proto files, or protoset files.
+  example: []
+  syntax:
+    content: public interface IDescriptorSource
+    content.vb: Public Interface IDescriptorSource
+- uid: GrpCurl.Net.DescriptorSources.IDescriptorSource.FileDescriptorSet
+  commentId: P:GrpCurl.Net.DescriptorSources.IDescriptorSource.FileDescriptorSet
+  id: FileDescriptorSet
+  parent: GrpCurl.Net.DescriptorSources.IDescriptorSource
+  langs:
+  - csharp
+  - vb
+  name: FileDescriptorSet
+  nameWithType: IDescriptorSource.FileDescriptorSet
+  fullName: GrpCurl.Net.DescriptorSources.IDescriptorSource.FileDescriptorSet
+  type: Property
+  source:
+    id: FileDescriptorSet
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/DescriptorSources/IDescriptorSource.cs
+    startLine: 13
+  assemblies:
+  - GrpCurl.Net
+  namespace: GrpCurl.Net.DescriptorSources
+  summary: Gets the file descriptor set containing all loaded descriptors.
+  example: []
+  syntax:
+    content: FileDescriptorSet? FileDescriptorSet { get; }
+    parameters: []
+    return:
+      type: Google.Protobuf.Reflection.FileDescriptorSet
+    content.vb: ReadOnly Property FileDescriptorSet As FileDescriptorSet
+  overload: GrpCurl.Net.DescriptorSources.IDescriptorSource.FileDescriptorSet*
+- uid: GrpCurl.Net.DescriptorSources.IDescriptorSource.ListServicesAsync(System.Threading.CancellationToken)
+  commentId: M:GrpCurl.Net.DescriptorSources.IDescriptorSource.ListServicesAsync(System.Threading.CancellationToken)
+  id: ListServicesAsync(System.Threading.CancellationToken)
+  parent: GrpCurl.Net.DescriptorSources.IDescriptorSource
+  langs:
+  - csharp
+  - vb
+  name: ListServicesAsync(CancellationToken)
+  nameWithType: IDescriptorSource.ListServicesAsync(CancellationToken)
+  fullName: GrpCurl.Net.DescriptorSources.IDescriptorSource.ListServicesAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    id: ListServicesAsync
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/DescriptorSources/IDescriptorSource.cs
+    startLine: 19
+  assemblies:
+  - GrpCurl.Net
+  namespace: GrpCurl.Net.DescriptorSources
+  summary: Lists all available service names.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<string>> ListServicesAsync(CancellationToken cancellationToken = default)
+    parameters:
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{System.String}}
+      description: Fully-qualified service names
+    content.vb: Function ListServicesAsync(cancellationToken As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of String))
+  overload: GrpCurl.Net.DescriptorSources.IDescriptorSource.ListServicesAsync*
+- uid: GrpCurl.Net.DescriptorSources.IDescriptorSource.FindSymbolAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:GrpCurl.Net.DescriptorSources.IDescriptorSource.FindSymbolAsync(System.String,System.Threading.CancellationToken)
+  id: FindSymbolAsync(System.String,System.Threading.CancellationToken)
+  parent: GrpCurl.Net.DescriptorSources.IDescriptorSource
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync(string, CancellationToken)
+  nameWithType: IDescriptorSource.FindSymbolAsync(string, CancellationToken)
+  fullName: GrpCurl.Net.DescriptorSources.IDescriptorSource.FindSymbolAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    id: FindSymbolAsync
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/DescriptorSources/IDescriptorSource.cs
+    startLine: 27
+  assemblies:
+  - GrpCurl.Net
+  namespace: GrpCurl.Net.DescriptorSources
+  summary: Finds a descriptor for the given fully-qualified symbol name.
+  example: []
+  syntax:
+    content: Task<IDescriptor?> FindSymbolAsync(string fullyQualifiedName, CancellationToken cancellationToken = default)
+    parameters:
+    - id: fullyQualifiedName
+      type: System.String
+      description: The fully-qualified name (e.g., "my.package.Service")
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+      description: Cancellation token
+    return:
+      type: System.Threading.Tasks.Task{Google.Protobuf.Reflection.IDescriptor}
+      description: The descriptor for the symbol, or null if not found
+    content.vb: Function FindSymbolAsync(fullyQualifiedName As String, cancellationToken As CancellationToken = Nothing) As Task(Of IDescriptor)
+  overload: GrpCurl.Net.DescriptorSources.IDescriptorSource.FindSymbolAsync*
+  nameWithType.vb: IDescriptorSource.FindSymbolAsync(String, CancellationToken)
+  fullName.vb: GrpCurl.Net.DescriptorSources.IDescriptorSource.FindSymbolAsync(String, System.Threading.CancellationToken)
+  name.vb: FindSymbolAsync(String, CancellationToken)
+references:
+- uid: GrpCurl.Net.DescriptorSources
+  commentId: N:GrpCurl.Net.DescriptorSources
+  href: GrpCurl.html
+  name: GrpCurl.Net.DescriptorSources
+  nameWithType: GrpCurl.Net.DescriptorSources
+  fullName: GrpCurl.Net.DescriptorSources
+  spec.csharp:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.DescriptorSources
+    name: DescriptorSources
+    href: GrpCurl.Net.DescriptorSources.html
+  spec.vb:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.DescriptorSources
+    name: DescriptorSources
+    href: GrpCurl.Net.DescriptorSources.html
+- uid: GrpCurl.Net.DescriptorSources.IDescriptorSource.FileDescriptorSet*
+  commentId: Overload:GrpCurl.Net.DescriptorSources.IDescriptorSource.FileDescriptorSet
+  href: GrpCurl.Net.DescriptorSources.IDescriptorSource.html#GrpCurl_Net_DescriptorSources_IDescriptorSource_FileDescriptorSet
+  name: FileDescriptorSet
+  nameWithType: IDescriptorSource.FileDescriptorSet
+  fullName: GrpCurl.Net.DescriptorSources.IDescriptorSource.FileDescriptorSet
+- uid: Google.Protobuf.Reflection.FileDescriptorSet
+  commentId: T:Google.Protobuf.Reflection.FileDescriptorSet
+  parent: Google.Protobuf.Reflection
+  isExternal: true
+  name: FileDescriptorSet
+  nameWithType: FileDescriptorSet
+  fullName: Google.Protobuf.Reflection.FileDescriptorSet
+- uid: Google.Protobuf.Reflection
+  commentId: N:Google.Protobuf.Reflection
+  isExternal: true
+  name: Google.Protobuf.Reflection
+  nameWithType: Google.Protobuf.Reflection
+  fullName: Google.Protobuf.Reflection
+  spec.csharp:
+  - uid: Google
+    name: Google
+    isExternal: true
+  - name: .
+  - uid: Google.Protobuf
+    name: Protobuf
+    isExternal: true
+  - name: .
+  - uid: Google.Protobuf.Reflection
+    name: Reflection
+    isExternal: true
+  spec.vb:
+  - uid: Google
+    name: Google
+    isExternal: true
+  - name: .
+  - uid: Google.Protobuf
+    name: Protobuf
+    isExternal: true
+  - name: .
+  - uid: Google.Protobuf.Reflection
+    name: Reflection
+    isExternal: true
+- uid: GrpCurl.Net.DescriptorSources.IDescriptorSource.ListServicesAsync*
+  commentId: Overload:GrpCurl.Net.DescriptorSources.IDescriptorSource.ListServicesAsync
+  href: GrpCurl.Net.DescriptorSources.IDescriptorSource.html#GrpCurl_Net_DescriptorSources_IDescriptorSource_ListServicesAsync_System_Threading_CancellationToken_
+  name: ListServicesAsync
+  nameWithType: IDescriptorSource.ListServicesAsync
+  fullName: GrpCurl.Net.DescriptorSources.IDescriptorSource.ListServicesAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{System.String}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{System.String}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<string>>
+  nameWithType: Task<IReadOnlyList<string>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of String))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of String))
+  name.vb: Task(Of IReadOnlyList(Of String))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: GrpCurl.Net.DescriptorSources.IDescriptorSource.FindSymbolAsync*
+  commentId: Overload:GrpCurl.Net.DescriptorSources.IDescriptorSource.FindSymbolAsync
+  href: GrpCurl.Net.DescriptorSources.IDescriptorSource.html#GrpCurl_Net_DescriptorSources_IDescriptorSource_FindSymbolAsync_System_String_System_Threading_CancellationToken_
+  name: FindSymbolAsync
+  nameWithType: IDescriptorSource.FindSymbolAsync
+  fullName: GrpCurl.Net.DescriptorSources.IDescriptorSource.FindSymbolAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{Google.Protobuf.Reflection.IDescriptor}
+  commentId: T:System.Threading.Tasks.Task{Google.Protobuf.Reflection.IDescriptor}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IDescriptor>
+  nameWithType: Task<IDescriptor>
+  fullName: System.Threading.Tasks.Task<Google.Protobuf.Reflection.IDescriptor>
+  nameWithType.vb: Task(Of IDescriptor)
+  fullName.vb: System.Threading.Tasks.Task(Of Google.Protobuf.Reflection.IDescriptor)
+  name.vb: Task(Of IDescriptor)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Google.Protobuf.Reflection.IDescriptor
+    name: IDescriptor
+    isExternal: true
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Google.Protobuf.Reflection.IDescriptor
+    name: IDescriptor
+    isExternal: true
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System

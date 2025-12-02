@@ -1,0 +1,630 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests
+  commentId: T:GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests
+  id: InvokeCommandTests
+  parent: GrpCurl.Net.Tests.Unit.Commands
+  children:
+  - GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_AddressArgument_IsRequired
+  - GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasAddressArgument
+  - GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasDescription
+  - GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasMethodArgument
+  - GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasMultipleOptions
+  - GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasTwoArguments
+  - GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_MethodArgument_IsRequired
+  - GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_ReturnsValidCommand
+  langs:
+  - csharp
+  - vb
+  name: InvokeCommandTests
+  nameWithType: InvokeCommandTests
+  fullName: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests
+  type: Class
+  source:
+    id: InvokeCommandTests
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Commands/InvokeCommandTests.cs
+    startLine: 5
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Commands
+  syntax:
+    content: public class InvokeCommandTests
+    content.vb: Public Class InvokeCommandTests
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_ReturnsValidCommand
+  commentId: M:GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_ReturnsValidCommand
+  id: Create_ReturnsValidCommand
+  parent: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests
+  langs:
+  - csharp
+  - vb
+  name: Create_ReturnsValidCommand()
+  nameWithType: InvokeCommandTests.Create_ReturnsValidCommand()
+  fullName: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_ReturnsValidCommand()
+  type: Method
+  source:
+    id: Create_ReturnsValidCommand
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Commands/InvokeCommandTests.cs
+    startLine: 7
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Commands
+  syntax:
+    content: >-
+      [Fact]
+
+      public void Create_ReturnsValidCommand()
+    content.vb: >-
+      <Fact>
+
+      Public Sub Create_ReturnsValidCommand()
+  overload: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_ReturnsValidCommand*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasDescription
+  commentId: M:GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasDescription
+  id: Create_HasDescription
+  parent: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests
+  langs:
+  - csharp
+  - vb
+  name: Create_HasDescription()
+  nameWithType: InvokeCommandTests.Create_HasDescription()
+  fullName: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasDescription()
+  type: Method
+  source:
+    id: Create_HasDescription
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Commands/InvokeCommandTests.cs
+    startLine: 16
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Commands
+  syntax:
+    content: >-
+      [Fact]
+
+      public void Create_HasDescription()
+    content.vb: >-
+      <Fact>
+
+      Public Sub Create_HasDescription()
+  overload: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasDescription*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasTwoArguments
+  commentId: M:GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasTwoArguments
+  id: Create_HasTwoArguments
+  parent: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests
+  langs:
+  - csharp
+  - vb
+  name: Create_HasTwoArguments()
+  nameWithType: InvokeCommandTests.Create_HasTwoArguments()
+  fullName: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasTwoArguments()
+  type: Method
+  source:
+    id: Create_HasTwoArguments
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Commands/InvokeCommandTests.cs
+    startLine: 25
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Commands
+  syntax:
+    content: >-
+      [Fact]
+
+      public void Create_HasTwoArguments()
+    content.vb: >-
+      <Fact>
+
+      Public Sub Create_HasTwoArguments()
+  overload: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasTwoArguments*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasAddressArgument
+  commentId: M:GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasAddressArgument
+  id: Create_HasAddressArgument
+  parent: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests
+  langs:
+  - csharp
+  - vb
+  name: Create_HasAddressArgument()
+  nameWithType: InvokeCommandTests.Create_HasAddressArgument()
+  fullName: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasAddressArgument()
+  type: Method
+  source:
+    id: Create_HasAddressArgument
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Commands/InvokeCommandTests.cs
+    startLine: 33
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Commands
+  syntax:
+    content: >-
+      [Fact]
+
+      public void Create_HasAddressArgument()
+    content.vb: >-
+      <Fact>
+
+      Public Sub Create_HasAddressArgument()
+  overload: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasAddressArgument*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasMethodArgument
+  commentId: M:GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasMethodArgument
+  id: Create_HasMethodArgument
+  parent: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests
+  langs:
+  - csharp
+  - vb
+  name: Create_HasMethodArgument()
+  nameWithType: InvokeCommandTests.Create_HasMethodArgument()
+  fullName: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasMethodArgument()
+  type: Method
+  source:
+    id: Create_HasMethodArgument
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Commands/InvokeCommandTests.cs
+    startLine: 42
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Commands
+  syntax:
+    content: >-
+      [Fact]
+
+      public void Create_HasMethodArgument()
+    content.vb: >-
+      <Fact>
+
+      Public Sub Create_HasMethodArgument()
+  overload: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasMethodArgument*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_AddressArgument_IsRequired
+  commentId: M:GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_AddressArgument_IsRequired
+  id: Create_AddressArgument_IsRequired
+  parent: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests
+  langs:
+  - csharp
+  - vb
+  name: Create_AddressArgument_IsRequired()
+  nameWithType: InvokeCommandTests.Create_AddressArgument_IsRequired()
+  fullName: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_AddressArgument_IsRequired()
+  type: Method
+  source:
+    id: Create_AddressArgument_IsRequired
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Commands/InvokeCommandTests.cs
+    startLine: 51
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Commands
+  syntax:
+    content: >-
+      [Fact]
+
+      public void Create_AddressArgument_IsRequired()
+    content.vb: >-
+      <Fact>
+
+      Public Sub Create_AddressArgument_IsRequired()
+  overload: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_AddressArgument_IsRequired*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_MethodArgument_IsRequired
+  commentId: M:GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_MethodArgument_IsRequired
+  id: Create_MethodArgument_IsRequired
+  parent: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests
+  langs:
+  - csharp
+  - vb
+  name: Create_MethodArgument_IsRequired()
+  nameWithType: InvokeCommandTests.Create_MethodArgument_IsRequired()
+  fullName: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_MethodArgument_IsRequired()
+  type: Method
+  source:
+    id: Create_MethodArgument_IsRequired
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Commands/InvokeCommandTests.cs
+    startLine: 61
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Commands
+  syntax:
+    content: >-
+      [Fact]
+
+      public void Create_MethodArgument_IsRequired()
+    content.vb: >-
+      <Fact>
+
+      Public Sub Create_MethodArgument_IsRequired()
+  overload: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_MethodArgument_IsRequired*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasMultipleOptions
+  commentId: M:GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasMultipleOptions
+  id: Create_HasMultipleOptions
+  parent: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests
+  langs:
+  - csharp
+  - vb
+  name: Create_HasMultipleOptions()
+  nameWithType: InvokeCommandTests.Create_HasMultipleOptions()
+  fullName: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasMultipleOptions()
+  type: Method
+  source:
+    id: Create_HasMultipleOptions
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Commands/InvokeCommandTests.cs
+    startLine: 71
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Commands
+  syntax:
+    content: >-
+      [Fact]
+
+      public void Create_HasMultipleOptions()
+    content.vb: >-
+      <Fact>
+
+      Public Sub Create_HasMultipleOptions()
+  overload: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasMultipleOptions*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+references:
+- uid: GrpCurl.Net.Tests.Unit.Commands
+  commentId: N:GrpCurl.Net.Tests.Unit.Commands
+  href: GrpCurl.html
+  name: GrpCurl.Net.Tests.Unit.Commands
+  nameWithType: GrpCurl.Net.Tests.Unit.Commands
+  fullName: GrpCurl.Net.Tests.Unit.Commands
+  spec.csharp:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit
+    name: Unit
+    href: GrpCurl.Net.Tests.Unit.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit.Commands
+    name: Commands
+    href: GrpCurl.Net.Tests.Unit.Commands.html
+  spec.vb:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit
+    name: Unit
+    href: GrpCurl.Net.Tests.Unit.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit.Commands
+    name: Commands
+    href: GrpCurl.Net.Tests.Unit.Commands.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_ReturnsValidCommand*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_ReturnsValidCommand
+  href: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.html#GrpCurl_Net_Tests_Unit_Commands_InvokeCommandTests_Create_ReturnsValidCommand
+  name: Create_ReturnsValidCommand
+  nameWithType: InvokeCommandTests.Create_ReturnsValidCommand
+  fullName: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_ReturnsValidCommand
+- uid: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasDescription*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasDescription
+  href: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.html#GrpCurl_Net_Tests_Unit_Commands_InvokeCommandTests_Create_HasDescription
+  name: Create_HasDescription
+  nameWithType: InvokeCommandTests.Create_HasDescription
+  fullName: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasDescription
+- uid: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasTwoArguments*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasTwoArguments
+  href: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.html#GrpCurl_Net_Tests_Unit_Commands_InvokeCommandTests_Create_HasTwoArguments
+  name: Create_HasTwoArguments
+  nameWithType: InvokeCommandTests.Create_HasTwoArguments
+  fullName: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasTwoArguments
+- uid: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasAddressArgument*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasAddressArgument
+  href: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.html#GrpCurl_Net_Tests_Unit_Commands_InvokeCommandTests_Create_HasAddressArgument
+  name: Create_HasAddressArgument
+  nameWithType: InvokeCommandTests.Create_HasAddressArgument
+  fullName: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasAddressArgument
+- uid: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasMethodArgument*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasMethodArgument
+  href: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.html#GrpCurl_Net_Tests_Unit_Commands_InvokeCommandTests_Create_HasMethodArgument
+  name: Create_HasMethodArgument
+  nameWithType: InvokeCommandTests.Create_HasMethodArgument
+  fullName: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasMethodArgument
+- uid: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_AddressArgument_IsRequired*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_AddressArgument_IsRequired
+  href: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.html#GrpCurl_Net_Tests_Unit_Commands_InvokeCommandTests_Create_AddressArgument_IsRequired
+  name: Create_AddressArgument_IsRequired
+  nameWithType: InvokeCommandTests.Create_AddressArgument_IsRequired
+  fullName: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_AddressArgument_IsRequired
+- uid: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_MethodArgument_IsRequired*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_MethodArgument_IsRequired
+  href: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.html#GrpCurl_Net_Tests_Unit_Commands_InvokeCommandTests_Create_MethodArgument_IsRequired
+  name: Create_MethodArgument_IsRequired
+  nameWithType: InvokeCommandTests.Create_MethodArgument_IsRequired
+  fullName: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_MethodArgument_IsRequired
+- uid: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasMultipleOptions*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasMultipleOptions
+  href: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.html#GrpCurl_Net_Tests_Unit_Commands_InvokeCommandTests_Create_HasMultipleOptions
+  name: Create_HasMultipleOptions
+  nameWithType: InvokeCommandTests.Create_HasMultipleOptions
+  fullName: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.Create_HasMultipleOptions

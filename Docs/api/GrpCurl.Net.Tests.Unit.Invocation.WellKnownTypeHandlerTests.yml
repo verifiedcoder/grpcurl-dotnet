@@ -1,0 +1,3574 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  commentId: T:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  id: WellKnownTypeHandlerTests
+  parent: GrpCurl.Net.Tests.Unit.Invocation
+  children:
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_EmptyObject_ReturnsEmptyMessage
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_NonObjectValue_ReturnsNull
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_ValidObject_ParsesTypeUrl
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_WithEmbeddedFields_SerializesValue
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_EmptyString_ReturnsNull
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_ExcessivePrecision_TruncatesCorrectly(System.String)
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_InvalidNumber_ReturnsNull
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_MissingSuffix_ReturnsNull
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_NonStringValue_ReturnsNull
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_ValidFormat_ParsesCorrectly(System.String,System.Int64,System.Int32)
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertEmpty_ReturnsEmptyMessage
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_EmptyString_ReturnsEmptyMessage
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_NonStringValue_ReturnsNull
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_ValidPaths_ParsesCorrectly(System.String,System.String[])
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_WithWhitespace_TrimsCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_EmptyArray_ReturnsEmptyList
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_NestedArrays_ParsesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_NonArrayValue_ReturnsNull
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_ValidArray_ParsesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_EmptyObject_ReturnsEmptyMessage
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_NestedObjects_ParsesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_NonObjectValue_ReturnsNull
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_ValidObject_ParsesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_EmptyString_ReturnsNull
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_InvalidDateFormat_ReturnsNull
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_LocalTime_ConvertsToUtc
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_NonStringValue_ReturnsNull
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_ValidRfc3339_ParsesCorrectly(System.String,System.Int64,System.Int32)
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_ArrayValue_CreatesListValue
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_BoolValue_ParsesCorrectly(System.String,System.Boolean)
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_NullValue_ParsesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_NumberValue_ParsesCorrectly(System.String,System.Double)
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_ObjectValue_CreatesStructValue
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_StringValue_ParsesCorrectly(System.String,System.String)
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_TracksOneofField
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_BoolValue_ParsesCorrectly(System.String,System.String,System.Boolean)
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_BytesValue_ParsesCorrectly(System.String,System.String)
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_DoubleValue_ParsesCorrectly(System.String,System.String)
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_FloatValue_ParsesCorrectly(System.String,System.String)
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_Int32Value_ParsesCorrectly(System.String,System.String,System.Int32)
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_Int64Value_ParsesCorrectly(System.String,System.String)
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_StringValue_ParsesCorrectly(System.String,System.String,System.String)
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_UInt32Value_ParsesCorrectly(System.String,System.String)
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_UInt64Value_ParsesCorrectly(System.String,System.String)
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_EmptyMessage_WritesEmptyObject
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_WithTypeUrl_IncludesTypeField
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_WithValue_IncludesEmbeddedFields
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_PreciseNanos_FormatsCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_WholeSeconds_FormatsCorrectly(System.Int64,System.Int32,System.String)
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_WithNanos_IncludesFractional
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteEmptyJson_WritesEmptyObject
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_EmptyPaths_WritesEmptyString
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_MultiplePaths_WritesCommaSeparated
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_SinglePath_WritesAsString
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_EmptyArray_WritesEmptyArray
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_NoValuesField_WritesEmptyArray
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_NullValues_WritesNullElements
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_ValidArray_WritesJsonArray
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteStructJson_EmptyStruct_WritesEmptyObject
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteStructJson_ValidStruct_WritesObject
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_Epoch_FormatsCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_ValidTimestamp_FormatsAsRfc3339
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_WithNanos_IncludesFractionalSeconds
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_BoolFalse_WritesFalse
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_BoolTrue_WritesTrue
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_EmptyMessage_WritesNull
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_NullValue_WritesNull
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_NumberValue_WritesNumber
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_StringValue_WritesQuotedString
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_BoolValue_WritesTrueOrFalse
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_Int32Value_WritesRawValue
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_MissingValue_WritesNull
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_StringValue_WritesQuotedString
+  langs:
+  - csharp
+  - vb
+  name: WellKnownTypeHandlerTests
+  nameWithType: WellKnownTypeHandlerTests
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  type: Class
+  source:
+    id: WellKnownTypeHandlerTests
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 13
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  summary: >-
+    Tests for WellKnownTypeHandler which handles conversion of Google protobuf
+
+    well-known types between JSON and protobuf formats.
+  example: []
+  syntax:
+    content: public class WellKnownTypeHandlerTests
+    content.vb: Public Class WellKnownTypeHandlerTests
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_ValidRfc3339_ParsesCorrectly(System.String,System.Int64,System.Int32)
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_ValidRfc3339_ParsesCorrectly(System.String,System.Int64,System.Int32)
+  id: ConvertTimestamp_ValidRfc3339_ParsesCorrectly(System.String,System.Int64,System.Int32)
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertTimestamp_ValidRfc3339_ParsesCorrectly(string, long, int)
+  nameWithType: WellKnownTypeHandlerTests.ConvertTimestamp_ValidRfc3339_ParsesCorrectly(string, long, int)
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_ValidRfc3339_ParsesCorrectly(string, long, int)
+  type: Method
+  source:
+    id: ConvertTimestamp_ValidRfc3339_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 17
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "2024-01-15T10:30:00Z", 1705314600, 0 })]
+
+      [InlineData(new object[] { "2024-01-15T10:30:00.123Z", 1705314600, 123000000 })]
+
+      [InlineData(new object[] { "2024-01-15T10:30:00.123456789Z", 1705314600, 123456789 })]
+
+      [InlineData(new object[] { "1970-01-01T00:00:00Z", 0, 0 })]
+
+      [InlineData(new object[] { "2000-01-01T00:00:00Z", 946684800, 0 })]
+
+      public void ConvertTimestamp_ValidRfc3339_ParsesCorrectly(string timestamp, long expectedSeconds, int expectedNanos)
+    parameters:
+    - id: timestamp
+      type: System.String
+    - id: expectedSeconds
+      type: System.Int64
+    - id: expectedNanos
+      type: System.Int32
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "2024-01-15T10:30:00Z", 1705314600, 0 })>
+
+      <InlineData(New Object() { "2024-01-15T10:30:00.123Z", 1705314600, 123000000 })>
+
+      <InlineData(New Object() { "2024-01-15T10:30:00.123456789Z", 1705314600, 123456789 })>
+
+      <InlineData(New Object() { "1970-01-01T00:00:00Z", 0, 0 })>
+
+      <InlineData(New Object() { "2000-01-01T00:00:00Z", 946684800, 0 })>
+
+      Public Sub ConvertTimestamp_ValidRfc3339_ParsesCorrectly(timestamp As String, expectedSeconds As Long, expectedNanos As Integer)
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_ValidRfc3339_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: WellKnownTypeHandlerTests.ConvertTimestamp_ValidRfc3339_ParsesCorrectly(String, Long, Integer)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_ValidRfc3339_ParsesCorrectly(String, Long, Integer)
+  name.vb: ConvertTimestamp_ValidRfc3339_ParsesCorrectly(String, Long, Integer)
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_NonStringValue_ReturnsNull
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_NonStringValue_ReturnsNull
+  id: ConvertTimestamp_NonStringValue_ReturnsNull
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertTimestamp_NonStringValue_ReturnsNull()
+  nameWithType: WellKnownTypeHandlerTests.ConvertTimestamp_NonStringValue_ReturnsNull()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_NonStringValue_ReturnsNull()
+  type: Method
+  source:
+    id: ConvertTimestamp_NonStringValue_ReturnsNull
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 41
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertTimestamp_NonStringValue_ReturnsNull()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertTimestamp_NonStringValue_ReturnsNull()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_NonStringValue_ReturnsNull*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_EmptyString_ReturnsNull
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_EmptyString_ReturnsNull
+  id: ConvertTimestamp_EmptyString_ReturnsNull
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertTimestamp_EmptyString_ReturnsNull()
+  nameWithType: WellKnownTypeHandlerTests.ConvertTimestamp_EmptyString_ReturnsNull()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_EmptyString_ReturnsNull()
+  type: Method
+  source:
+    id: ConvertTimestamp_EmptyString_ReturnsNull
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 52
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertTimestamp_EmptyString_ReturnsNull()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertTimestamp_EmptyString_ReturnsNull()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_EmptyString_ReturnsNull*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_InvalidDateFormat_ReturnsNull
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_InvalidDateFormat_ReturnsNull
+  id: ConvertTimestamp_InvalidDateFormat_ReturnsNull
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertTimestamp_InvalidDateFormat_ReturnsNull()
+  nameWithType: WellKnownTypeHandlerTests.ConvertTimestamp_InvalidDateFormat_ReturnsNull()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_InvalidDateFormat_ReturnsNull()
+  type: Method
+  source:
+    id: ConvertTimestamp_InvalidDateFormat_ReturnsNull
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 63
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertTimestamp_InvalidDateFormat_ReturnsNull()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertTimestamp_InvalidDateFormat_ReturnsNull()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_InvalidDateFormat_ReturnsNull*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_LocalTime_ConvertsToUtc
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_LocalTime_ConvertsToUtc
+  id: ConvertTimestamp_LocalTime_ConvertsToUtc
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertTimestamp_LocalTime_ConvertsToUtc()
+  nameWithType: WellKnownTypeHandlerTests.ConvertTimestamp_LocalTime_ConvertsToUtc()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_LocalTime_ConvertsToUtc()
+  type: Method
+  source:
+    id: ConvertTimestamp_LocalTime_ConvertsToUtc
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 74
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertTimestamp_LocalTime_ConvertsToUtc()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertTimestamp_LocalTime_ConvertsToUtc()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_LocalTime_ConvertsToUtc*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_ValidFormat_ParsesCorrectly(System.String,System.Int64,System.Int32)
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_ValidFormat_ParsesCorrectly(System.String,System.Int64,System.Int32)
+  id: ConvertDuration_ValidFormat_ParsesCorrectly(System.String,System.Int64,System.Int32)
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertDuration_ValidFormat_ParsesCorrectly(string, long, int)
+  nameWithType: WellKnownTypeHandlerTests.ConvertDuration_ValidFormat_ParsesCorrectly(string, long, int)
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_ValidFormat_ParsesCorrectly(string, long, int)
+  type: Method
+  source:
+    id: ConvertDuration_ValidFormat_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 92
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "10s", 10, 0 })]
+
+      [InlineData(new object[] { "1.5s", 1, 500000000 })]
+
+      [InlineData(new object[] { "0s", 0, 0 })]
+
+      [InlineData(new object[] { "3600s", 3600, 0 })]
+
+      [InlineData(new object[] { "1.000000001s", 1, 1 })]
+
+      [InlineData(new object[] { "0.123456789s", 0, 123456789 })]
+
+      public void ConvertDuration_ValidFormat_ParsesCorrectly(string duration, long expectedSeconds, int expectedNanos)
+    parameters:
+    - id: duration
+      type: System.String
+    - id: expectedSeconds
+      type: System.Int64
+    - id: expectedNanos
+      type: System.Int32
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "10s", 10, 0 })>
+
+      <InlineData(New Object() { "1.5s", 1, 500000000 })>
+
+      <InlineData(New Object() { "0s", 0, 0 })>
+
+      <InlineData(New Object() { "3600s", 3600, 0 })>
+
+      <InlineData(New Object() { "1.000000001s", 1, 1 })>
+
+      <InlineData(New Object() { "0.123456789s", 0, 123456789 })>
+
+      Public Sub ConvertDuration_ValidFormat_ParsesCorrectly(duration As String, expectedSeconds As Long, expectedNanos As Integer)
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_ValidFormat_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: WellKnownTypeHandlerTests.ConvertDuration_ValidFormat_ParsesCorrectly(String, Long, Integer)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_ValidFormat_ParsesCorrectly(String, Long, Integer)
+  name.vb: ConvertDuration_ValidFormat_ParsesCorrectly(String, Long, Integer)
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_NonStringValue_ReturnsNull
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_NonStringValue_ReturnsNull
+  id: ConvertDuration_NonStringValue_ReturnsNull
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertDuration_NonStringValue_ReturnsNull()
+  nameWithType: WellKnownTypeHandlerTests.ConvertDuration_NonStringValue_ReturnsNull()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_NonStringValue_ReturnsNull()
+  type: Method
+  source:
+    id: ConvertDuration_NonStringValue_ReturnsNull
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 116
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertDuration_NonStringValue_ReturnsNull()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertDuration_NonStringValue_ReturnsNull()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_NonStringValue_ReturnsNull*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_MissingSuffix_ReturnsNull
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_MissingSuffix_ReturnsNull
+  id: ConvertDuration_MissingSuffix_ReturnsNull
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertDuration_MissingSuffix_ReturnsNull()
+  nameWithType: WellKnownTypeHandlerTests.ConvertDuration_MissingSuffix_ReturnsNull()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_MissingSuffix_ReturnsNull()
+  type: Method
+  source:
+    id: ConvertDuration_MissingSuffix_ReturnsNull
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 127
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertDuration_MissingSuffix_ReturnsNull()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertDuration_MissingSuffix_ReturnsNull()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_MissingSuffix_ReturnsNull*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_InvalidNumber_ReturnsNull
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_InvalidNumber_ReturnsNull
+  id: ConvertDuration_InvalidNumber_ReturnsNull
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertDuration_InvalidNumber_ReturnsNull()
+  nameWithType: WellKnownTypeHandlerTests.ConvertDuration_InvalidNumber_ReturnsNull()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_InvalidNumber_ReturnsNull()
+  type: Method
+  source:
+    id: ConvertDuration_InvalidNumber_ReturnsNull
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 138
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertDuration_InvalidNumber_ReturnsNull()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertDuration_InvalidNumber_ReturnsNull()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_InvalidNumber_ReturnsNull*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_EmptyString_ReturnsNull
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_EmptyString_ReturnsNull
+  id: ConvertDuration_EmptyString_ReturnsNull
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertDuration_EmptyString_ReturnsNull()
+  nameWithType: WellKnownTypeHandlerTests.ConvertDuration_EmptyString_ReturnsNull()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_EmptyString_ReturnsNull()
+  type: Method
+  source:
+    id: ConvertDuration_EmptyString_ReturnsNull
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 149
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertDuration_EmptyString_ReturnsNull()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertDuration_EmptyString_ReturnsNull()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_EmptyString_ReturnsNull*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_ExcessivePrecision_TruncatesCorrectly(System.String)
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_ExcessivePrecision_TruncatesCorrectly(System.String)
+  id: ConvertDuration_ExcessivePrecision_TruncatesCorrectly(System.String)
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertDuration_ExcessivePrecision_TruncatesCorrectly(string)
+  nameWithType: WellKnownTypeHandlerTests.ConvertDuration_ExcessivePrecision_TruncatesCorrectly(string)
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_ExcessivePrecision_TruncatesCorrectly(string)
+  type: Method
+  source:
+    id: ConvertDuration_ExcessivePrecision_TruncatesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 160
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "1.123456789012s" })]
+
+      public void ConvertDuration_ExcessivePrecision_TruncatesCorrectly(string duration)
+    parameters:
+    - id: duration
+      type: System.String
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "1.123456789012s" })>
+
+      Public Sub ConvertDuration_ExcessivePrecision_TruncatesCorrectly(duration As String)
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_ExcessivePrecision_TruncatesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: WellKnownTypeHandlerTests.ConvertDuration_ExcessivePrecision_TruncatesCorrectly(String)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_ExcessivePrecision_TruncatesCorrectly(String)
+  name.vb: ConvertDuration_ExcessivePrecision_TruncatesCorrectly(String)
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_Int32Value_ParsesCorrectly(System.String,System.String,System.Int32)
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_Int32Value_ParsesCorrectly(System.String,System.String,System.Int32)
+  id: ConvertWrapperType_Int32Value_ParsesCorrectly(System.String,System.String,System.Int32)
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertWrapperType_Int32Value_ParsesCorrectly(string, string, int)
+  nameWithType: WellKnownTypeHandlerTests.ConvertWrapperType_Int32Value_ParsesCorrectly(string, string, int)
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_Int32Value_ParsesCorrectly(string, string, int)
+  type: Method
+  source:
+    id: ConvertWrapperType_Int32Value_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 179
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "google.protobuf.Int32Value", "42", 42 })]
+
+      [InlineData(new object[] { "google.protobuf.Int32Value", "-100", -100 })]
+
+      [InlineData(new object[] { "google.protobuf.Int32Value", "0", 0 })]
+
+      public void ConvertWrapperType_Int32Value_ParsesCorrectly(string typeName, string jsonValue, int expected)
+    parameters:
+    - id: typeName
+      type: System.String
+    - id: jsonValue
+      type: System.String
+    - id: expected
+      type: System.Int32
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "google.protobuf.Int32Value", "42", 42 })>
+
+      <InlineData(New Object() { "google.protobuf.Int32Value", "-100", -100 })>
+
+      <InlineData(New Object() { "google.protobuf.Int32Value", "0", 0 })>
+
+      Public Sub ConvertWrapperType_Int32Value_ParsesCorrectly(typeName As String, jsonValue As String, expected As Integer)
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_Int32Value_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: WellKnownTypeHandlerTests.ConvertWrapperType_Int32Value_ParsesCorrectly(String, String, Integer)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_Int32Value_ParsesCorrectly(String, String, Integer)
+  name.vb: ConvertWrapperType_Int32Value_ParsesCorrectly(String, String, Integer)
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_Int64Value_ParsesCorrectly(System.String,System.String)
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_Int64Value_ParsesCorrectly(System.String,System.String)
+  id: ConvertWrapperType_Int64Value_ParsesCorrectly(System.String,System.String)
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertWrapperType_Int64Value_ParsesCorrectly(string, string)
+  nameWithType: WellKnownTypeHandlerTests.ConvertWrapperType_Int64Value_ParsesCorrectly(string, string)
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_Int64Value_ParsesCorrectly(string, string)
+  type: Method
+  source:
+    id: ConvertWrapperType_Int64Value_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 195
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "google.protobuf.Int64Value", "9223372036854775807" })]
+
+      [InlineData(new object[] { "google.protobuf.Int64Value", "-9223372036854775808" })]
+
+      public void ConvertWrapperType_Int64Value_ParsesCorrectly(string typeName, string jsonValue)
+    parameters:
+    - id: typeName
+      type: System.String
+    - id: jsonValue
+      type: System.String
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "google.protobuf.Int64Value", "9223372036854775807" })>
+
+      <InlineData(New Object() { "google.protobuf.Int64Value", "-9223372036854775808" })>
+
+      Public Sub ConvertWrapperType_Int64Value_ParsesCorrectly(typeName As String, jsonValue As String)
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_Int64Value_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: WellKnownTypeHandlerTests.ConvertWrapperType_Int64Value_ParsesCorrectly(String, String)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_Int64Value_ParsesCorrectly(String, String)
+  name.vb: ConvertWrapperType_Int64Value_ParsesCorrectly(String, String)
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_UInt32Value_ParsesCorrectly(System.String,System.String)
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_UInt32Value_ParsesCorrectly(System.String,System.String)
+  id: ConvertWrapperType_UInt32Value_ParsesCorrectly(System.String,System.String)
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertWrapperType_UInt32Value_ParsesCorrectly(string, string)
+  nameWithType: WellKnownTypeHandlerTests.ConvertWrapperType_UInt32Value_ParsesCorrectly(string, string)
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_UInt32Value_ParsesCorrectly(string, string)
+  type: Method
+  source:
+    id: ConvertWrapperType_UInt32Value_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 211
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "google.protobuf.UInt32Value", "4294967295" })]
+
+      [InlineData(new object[] { "google.protobuf.UInt32Value", "0" })]
+
+      public void ConvertWrapperType_UInt32Value_ParsesCorrectly(string typeName, string jsonValue)
+    parameters:
+    - id: typeName
+      type: System.String
+    - id: jsonValue
+      type: System.String
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "google.protobuf.UInt32Value", "4294967295" })>
+
+      <InlineData(New Object() { "google.protobuf.UInt32Value", "0" })>
+
+      Public Sub ConvertWrapperType_UInt32Value_ParsesCorrectly(typeName As String, jsonValue As String)
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_UInt32Value_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: WellKnownTypeHandlerTests.ConvertWrapperType_UInt32Value_ParsesCorrectly(String, String)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_UInt32Value_ParsesCorrectly(String, String)
+  name.vb: ConvertWrapperType_UInt32Value_ParsesCorrectly(String, String)
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_UInt64Value_ParsesCorrectly(System.String,System.String)
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_UInt64Value_ParsesCorrectly(System.String,System.String)
+  id: ConvertWrapperType_UInt64Value_ParsesCorrectly(System.String,System.String)
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertWrapperType_UInt64Value_ParsesCorrectly(string, string)
+  nameWithType: WellKnownTypeHandlerTests.ConvertWrapperType_UInt64Value_ParsesCorrectly(string, string)
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_UInt64Value_ParsesCorrectly(string, string)
+  type: Method
+  source:
+    id: ConvertWrapperType_UInt64Value_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 227
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "google.protobuf.UInt64Value", "18446744073709551615" })]
+
+      public void ConvertWrapperType_UInt64Value_ParsesCorrectly(string typeName, string jsonValue)
+    parameters:
+    - id: typeName
+      type: System.String
+    - id: jsonValue
+      type: System.String
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "google.protobuf.UInt64Value", "18446744073709551615" })>
+
+      Public Sub ConvertWrapperType_UInt64Value_ParsesCorrectly(typeName As String, jsonValue As String)
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_UInt64Value_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: WellKnownTypeHandlerTests.ConvertWrapperType_UInt64Value_ParsesCorrectly(String, String)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_UInt64Value_ParsesCorrectly(String, String)
+  name.vb: ConvertWrapperType_UInt64Value_ParsesCorrectly(String, String)
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_FloatValue_ParsesCorrectly(System.String,System.String)
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_FloatValue_ParsesCorrectly(System.String,System.String)
+  id: ConvertWrapperType_FloatValue_ParsesCorrectly(System.String,System.String)
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertWrapperType_FloatValue_ParsesCorrectly(string, string)
+  nameWithType: WellKnownTypeHandlerTests.ConvertWrapperType_FloatValue_ParsesCorrectly(string, string)
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_FloatValue_ParsesCorrectly(string, string)
+  type: Method
+  source:
+    id: ConvertWrapperType_FloatValue_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 242
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "google.protobuf.FloatValue", "3.14" })]
+
+      [InlineData(new object[] { "google.protobuf.FloatValue", "-0.5" })]
+
+      [InlineData(new object[] { "google.protobuf.FloatValue", "0" })]
+
+      public void ConvertWrapperType_FloatValue_ParsesCorrectly(string typeName, string jsonValue)
+    parameters:
+    - id: typeName
+      type: System.String
+    - id: jsonValue
+      type: System.String
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "google.protobuf.FloatValue", "3.14" })>
+
+      <InlineData(New Object() { "google.protobuf.FloatValue", "-0.5" })>
+
+      <InlineData(New Object() { "google.protobuf.FloatValue", "0" })>
+
+      Public Sub ConvertWrapperType_FloatValue_ParsesCorrectly(typeName As String, jsonValue As String)
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_FloatValue_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: WellKnownTypeHandlerTests.ConvertWrapperType_FloatValue_ParsesCorrectly(String, String)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_FloatValue_ParsesCorrectly(String, String)
+  name.vb: ConvertWrapperType_FloatValue_ParsesCorrectly(String, String)
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_DoubleValue_ParsesCorrectly(System.String,System.String)
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_DoubleValue_ParsesCorrectly(System.String,System.String)
+  id: ConvertWrapperType_DoubleValue_ParsesCorrectly(System.String,System.String)
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertWrapperType_DoubleValue_ParsesCorrectly(string, string)
+  nameWithType: WellKnownTypeHandlerTests.ConvertWrapperType_DoubleValue_ParsesCorrectly(string, string)
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_DoubleValue_ParsesCorrectly(string, string)
+  type: Method
+  source:
+    id: ConvertWrapperType_DoubleValue_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 259
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "google.protobuf.DoubleValue", "3.141592653589793" })]
+
+      [InlineData(new object[] { "google.protobuf.DoubleValue", "-1e10" })]
+
+      public void ConvertWrapperType_DoubleValue_ParsesCorrectly(string typeName, string jsonValue)
+    parameters:
+    - id: typeName
+      type: System.String
+    - id: jsonValue
+      type: System.String
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "google.protobuf.DoubleValue", "3.141592653589793" })>
+
+      <InlineData(New Object() { "google.protobuf.DoubleValue", "-1e10" })>
+
+      Public Sub ConvertWrapperType_DoubleValue_ParsesCorrectly(typeName As String, jsonValue As String)
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_DoubleValue_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: WellKnownTypeHandlerTests.ConvertWrapperType_DoubleValue_ParsesCorrectly(String, String)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_DoubleValue_ParsesCorrectly(String, String)
+  name.vb: ConvertWrapperType_DoubleValue_ParsesCorrectly(String, String)
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_BoolValue_ParsesCorrectly(System.String,System.String,System.Boolean)
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_BoolValue_ParsesCorrectly(System.String,System.String,System.Boolean)
+  id: ConvertWrapperType_BoolValue_ParsesCorrectly(System.String,System.String,System.Boolean)
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertWrapperType_BoolValue_ParsesCorrectly(string, string, bool)
+  nameWithType: WellKnownTypeHandlerTests.ConvertWrapperType_BoolValue_ParsesCorrectly(string, string, bool)
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_BoolValue_ParsesCorrectly(string, string, bool)
+  type: Method
+  source:
+    id: ConvertWrapperType_BoolValue_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 275
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "google.protobuf.BoolValue", "true", true })]
+
+      [InlineData(new object[] { "google.protobuf.BoolValue", "false", false })]
+
+      public void ConvertWrapperType_BoolValue_ParsesCorrectly(string typeName, string jsonValue, bool expected)
+    parameters:
+    - id: typeName
+      type: System.String
+    - id: jsonValue
+      type: System.String
+    - id: expected
+      type: System.Boolean
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "google.protobuf.BoolValue", "true", True })>
+
+      <InlineData(New Object() { "google.protobuf.BoolValue", "false", False })>
+
+      Public Sub ConvertWrapperType_BoolValue_ParsesCorrectly(typeName As String, jsonValue As String, expected As Boolean)
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_BoolValue_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: WellKnownTypeHandlerTests.ConvertWrapperType_BoolValue_ParsesCorrectly(String, String, Boolean)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_BoolValue_ParsesCorrectly(String, String, Boolean)
+  name.vb: ConvertWrapperType_BoolValue_ParsesCorrectly(String, String, Boolean)
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_StringValue_ParsesCorrectly(System.String,System.String,System.String)
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_StringValue_ParsesCorrectly(System.String,System.String,System.String)
+  id: ConvertWrapperType_StringValue_ParsesCorrectly(System.String,System.String,System.String)
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertWrapperType_StringValue_ParsesCorrectly(string, string, string)
+  nameWithType: WellKnownTypeHandlerTests.ConvertWrapperType_StringValue_ParsesCorrectly(string, string, string)
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_StringValue_ParsesCorrectly(string, string, string)
+  type: Method
+  source:
+    id: ConvertWrapperType_StringValue_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 290
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "google.protobuf.StringValue", "\"hello world\"", "hello world" })]
+
+      [InlineData(new object[] { "google.protobuf.StringValue", "\"\"", "" })]
+
+      [InlineData(new object[] { "google.protobuf.StringValue", "\"unicode: \\u00e9\"", "unicode: é" })]
+
+      public void ConvertWrapperType_StringValue_ParsesCorrectly(string typeName, string jsonValue, string expected)
+    parameters:
+    - id: typeName
+      type: System.String
+    - id: jsonValue
+      type: System.String
+    - id: expected
+      type: System.String
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "google.protobuf.StringValue", """hello world""", "hello world" })>
+
+      <InlineData(New Object() { "google.protobuf.StringValue", """""", "" })>
+
+      <InlineData(New Object() { "google.protobuf.StringValue", """unicode: \u00e9""", "unicode: é" })>
+
+      Public Sub ConvertWrapperType_StringValue_ParsesCorrectly(typeName As String, jsonValue As String, expected As String)
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_StringValue_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: WellKnownTypeHandlerTests.ConvertWrapperType_StringValue_ParsesCorrectly(String, String, String)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_StringValue_ParsesCorrectly(String, String, String)
+  name.vb: ConvertWrapperType_StringValue_ParsesCorrectly(String, String, String)
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_BytesValue_ParsesCorrectly(System.String,System.String)
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_BytesValue_ParsesCorrectly(System.String,System.String)
+  id: ConvertWrapperType_BytesValue_ParsesCorrectly(System.String,System.String)
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertWrapperType_BytesValue_ParsesCorrectly(string, string)
+  nameWithType: WellKnownTypeHandlerTests.ConvertWrapperType_BytesValue_ParsesCorrectly(string, string)
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_BytesValue_ParsesCorrectly(string, string)
+  type: Method
+  source:
+    id: ConvertWrapperType_BytesValue_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 306
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "google.protobuf.BytesValue", "\"SGVsbG8=\"" })]
+
+      public void ConvertWrapperType_BytesValue_ParsesCorrectly(string typeName, string jsonValue)
+    parameters:
+    - id: typeName
+      type: System.String
+    - id: jsonValue
+      type: System.String
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "google.protobuf.BytesValue", """SGVsbG8=""" })>
+
+      Public Sub ConvertWrapperType_BytesValue_ParsesCorrectly(typeName As String, jsonValue As String)
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_BytesValue_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: WellKnownTypeHandlerTests.ConvertWrapperType_BytesValue_ParsesCorrectly(String, String)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_BytesValue_ParsesCorrectly(String, String)
+  name.vb: ConvertWrapperType_BytesValue_ParsesCorrectly(String, String)
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_ValidObject_ParsesTypeUrl
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_ValidObject_ParsesTypeUrl
+  id: ConvertAny_ValidObject_ParsesTypeUrl
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertAny_ValidObject_ParsesTypeUrl()
+  nameWithType: WellKnownTypeHandlerTests.ConvertAny_ValidObject_ParsesTypeUrl()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_ValidObject_ParsesTypeUrl()
+  type: Method
+  source:
+    id: ConvertAny_ValidObject_ParsesTypeUrl
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 324
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertAny_ValidObject_ParsesTypeUrl()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertAny_ValidObject_ParsesTypeUrl()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_ValidObject_ParsesTypeUrl*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_NonObjectValue_ReturnsNull
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_NonObjectValue_ReturnsNull
+  id: ConvertAny_NonObjectValue_ReturnsNull
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertAny_NonObjectValue_ReturnsNull()
+  nameWithType: WellKnownTypeHandlerTests.ConvertAny_NonObjectValue_ReturnsNull()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_NonObjectValue_ReturnsNull()
+  type: Method
+  source:
+    id: ConvertAny_NonObjectValue_ReturnsNull
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 338
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertAny_NonObjectValue_ReturnsNull()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertAny_NonObjectValue_ReturnsNull()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_NonObjectValue_ReturnsNull*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_WithEmbeddedFields_SerializesValue
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_WithEmbeddedFields_SerializesValue
+  id: ConvertAny_WithEmbeddedFields_SerializesValue
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertAny_WithEmbeddedFields_SerializesValue()
+  nameWithType: WellKnownTypeHandlerTests.ConvertAny_WithEmbeddedFields_SerializesValue()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_WithEmbeddedFields_SerializesValue()
+  type: Method
+  source:
+    id: ConvertAny_WithEmbeddedFields_SerializesValue
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 349
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertAny_WithEmbeddedFields_SerializesValue()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertAny_WithEmbeddedFields_SerializesValue()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_WithEmbeddedFields_SerializesValue*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_EmptyObject_ReturnsEmptyMessage
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_EmptyObject_ReturnsEmptyMessage
+  id: ConvertAny_EmptyObject_ReturnsEmptyMessage
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertAny_EmptyObject_ReturnsEmptyMessage()
+  nameWithType: WellKnownTypeHandlerTests.ConvertAny_EmptyObject_ReturnsEmptyMessage()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_EmptyObject_ReturnsEmptyMessage()
+  type: Method
+  source:
+    id: ConvertAny_EmptyObject_ReturnsEmptyMessage
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 367
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertAny_EmptyObject_ReturnsEmptyMessage()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertAny_EmptyObject_ReturnsEmptyMessage()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_EmptyObject_ReturnsEmptyMessage*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertEmpty_ReturnsEmptyMessage
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertEmpty_ReturnsEmptyMessage
+  id: ConvertEmpty_ReturnsEmptyMessage
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertEmpty_ReturnsEmptyMessage()
+  nameWithType: WellKnownTypeHandlerTests.ConvertEmpty_ReturnsEmptyMessage()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertEmpty_ReturnsEmptyMessage()
+  type: Method
+  source:
+    id: ConvertEmpty_ReturnsEmptyMessage
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 382
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertEmpty_ReturnsEmptyMessage()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertEmpty_ReturnsEmptyMessage()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertEmpty_ReturnsEmptyMessage*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_ValidPaths_ParsesCorrectly(System.String,System.String[])
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_ValidPaths_ParsesCorrectly(System.String,System.String[])
+  id: ConvertFieldMask_ValidPaths_ParsesCorrectly(System.String,System.String[])
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertFieldMask_ValidPaths_ParsesCorrectly(string, string[])
+  nameWithType: WellKnownTypeHandlerTests.ConvertFieldMask_ValidPaths_ParsesCorrectly(string, string[])
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_ValidPaths_ParsesCorrectly(string, string[])
+  type: Method
+  source:
+    id: ConvertFieldMask_ValidPaths_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 397
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "name,email,age", new string[] { "name", "email", "age" } })]
+
+      [InlineData(new object[] { "user.name", new string[] { "user.name" } })]
+
+      [InlineData(new object[] { "field1", new string[] { "field1" } })]
+
+      public void ConvertFieldMask_ValidPaths_ParsesCorrectly(string fieldMask, string[] expectedPaths)
+    parameters:
+    - id: fieldMask
+      type: System.String
+    - id: expectedPaths
+      type: System.String[]
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "name,email,age", New String() { "name", "email", "age" } })>
+
+      <InlineData(New Object() { "user.name", New String() { "user.name" } })>
+
+      <InlineData(New Object() { "field1", New String() { "field1" } })>
+
+      Public Sub ConvertFieldMask_ValidPaths_ParsesCorrectly(fieldMask As String, expectedPaths As String())
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_ValidPaths_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: WellKnownTypeHandlerTests.ConvertFieldMask_ValidPaths_ParsesCorrectly(String, String())
+  fullName.vb: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_ValidPaths_ParsesCorrectly(String, String())
+  name.vb: ConvertFieldMask_ValidPaths_ParsesCorrectly(String, String())
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_EmptyString_ReturnsEmptyMessage
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_EmptyString_ReturnsEmptyMessage
+  id: ConvertFieldMask_EmptyString_ReturnsEmptyMessage
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertFieldMask_EmptyString_ReturnsEmptyMessage()
+  nameWithType: WellKnownTypeHandlerTests.ConvertFieldMask_EmptyString_ReturnsEmptyMessage()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_EmptyString_ReturnsEmptyMessage()
+  type: Method
+  source:
+    id: ConvertFieldMask_EmptyString_ReturnsEmptyMessage
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 415
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertFieldMask_EmptyString_ReturnsEmptyMessage()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertFieldMask_EmptyString_ReturnsEmptyMessage()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_EmptyString_ReturnsEmptyMessage*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_NonStringValue_ReturnsNull
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_NonStringValue_ReturnsNull
+  id: ConvertFieldMask_NonStringValue_ReturnsNull
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertFieldMask_NonStringValue_ReturnsNull()
+  nameWithType: WellKnownTypeHandlerTests.ConvertFieldMask_NonStringValue_ReturnsNull()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_NonStringValue_ReturnsNull()
+  type: Method
+  source:
+    id: ConvertFieldMask_NonStringValue_ReturnsNull
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 426
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertFieldMask_NonStringValue_ReturnsNull()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertFieldMask_NonStringValue_ReturnsNull()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_NonStringValue_ReturnsNull*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_WithWhitespace_TrimsCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_WithWhitespace_TrimsCorrectly
+  id: ConvertFieldMask_WithWhitespace_TrimsCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertFieldMask_WithWhitespace_TrimsCorrectly()
+  nameWithType: WellKnownTypeHandlerTests.ConvertFieldMask_WithWhitespace_TrimsCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_WithWhitespace_TrimsCorrectly()
+  type: Method
+  source:
+    id: ConvertFieldMask_WithWhitespace_TrimsCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 437
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertFieldMask_WithWhitespace_TrimsCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertFieldMask_WithWhitespace_TrimsCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_WithWhitespace_TrimsCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_ValidObject_ParsesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_ValidObject_ParsesCorrectly
+  id: ConvertStruct_ValidObject_ParsesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertStruct_ValidObject_ParsesCorrectly()
+  nameWithType: WellKnownTypeHandlerTests.ConvertStruct_ValidObject_ParsesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_ValidObject_ParsesCorrectly()
+  type: Method
+  source:
+    id: ConvertStruct_ValidObject_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 452
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertStruct_ValidObject_ParsesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertStruct_ValidObject_ParsesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_ValidObject_ParsesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_EmptyObject_ReturnsEmptyMessage
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_EmptyObject_ReturnsEmptyMessage
+  id: ConvertStruct_EmptyObject_ReturnsEmptyMessage
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertStruct_EmptyObject_ReturnsEmptyMessage()
+  nameWithType: WellKnownTypeHandlerTests.ConvertStruct_EmptyObject_ReturnsEmptyMessage()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_EmptyObject_ReturnsEmptyMessage()
+  type: Method
+  source:
+    id: ConvertStruct_EmptyObject_ReturnsEmptyMessage
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 467
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertStruct_EmptyObject_ReturnsEmptyMessage()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertStruct_EmptyObject_ReturnsEmptyMessage()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_EmptyObject_ReturnsEmptyMessage*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_NonObjectValue_ReturnsNull
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_NonObjectValue_ReturnsNull
+  id: ConvertStruct_NonObjectValue_ReturnsNull
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertStruct_NonObjectValue_ReturnsNull()
+  nameWithType: WellKnownTypeHandlerTests.ConvertStruct_NonObjectValue_ReturnsNull()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_NonObjectValue_ReturnsNull()
+  type: Method
+  source:
+    id: ConvertStruct_NonObjectValue_ReturnsNull
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 478
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertStruct_NonObjectValue_ReturnsNull()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertStruct_NonObjectValue_ReturnsNull()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_NonObjectValue_ReturnsNull*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_NestedObjects_ParsesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_NestedObjects_ParsesCorrectly
+  id: ConvertStruct_NestedObjects_ParsesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertStruct_NestedObjects_ParsesCorrectly()
+  nameWithType: WellKnownTypeHandlerTests.ConvertStruct_NestedObjects_ParsesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_NestedObjects_ParsesCorrectly()
+  type: Method
+  source:
+    id: ConvertStruct_NestedObjects_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 489
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertStruct_NestedObjects_ParsesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertStruct_NestedObjects_ParsesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_NestedObjects_ParsesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_NullValue_ParsesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_NullValue_ParsesCorrectly
+  id: ConvertValue_NullValue_ParsesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertValue_NullValue_ParsesCorrectly()
+  nameWithType: WellKnownTypeHandlerTests.ConvertValue_NullValue_ParsesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_NullValue_ParsesCorrectly()
+  type: Method
+  source:
+    id: ConvertValue_NullValue_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 507
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertValue_NullValue_ParsesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertValue_NullValue_ParsesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_NullValue_ParsesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_NumberValue_ParsesCorrectly(System.String,System.Double)
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_NumberValue_ParsesCorrectly(System.String,System.Double)
+  id: ConvertValue_NumberValue_ParsesCorrectly(System.String,System.Double)
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertValue_NumberValue_ParsesCorrectly(string, double)
+  nameWithType: WellKnownTypeHandlerTests.ConvertValue_NumberValue_ParsesCorrectly(string, double)
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_NumberValue_ParsesCorrectly(string, double)
+  type: Method
+  source:
+    id: ConvertValue_NumberValue_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 520
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "42", 42 })]
+
+      [InlineData(new object[] { "3.14", 3.14 })]
+
+      [InlineData(new object[] { "-100", -100 })]
+
+      [InlineData(new object[] { "0", 0 })]
+
+      public void ConvertValue_NumberValue_ParsesCorrectly(string jsonValue, double expected)
+    parameters:
+    - id: jsonValue
+      type: System.String
+    - id: expected
+      type: System.Double
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "42", 42 })>
+
+      <InlineData(New Object() { "3.14", 3.14 })>
+
+      <InlineData(New Object() { "-100", -100 })>
+
+      <InlineData(New Object() { "0", 0 })>
+
+      Public Sub ConvertValue_NumberValue_ParsesCorrectly(jsonValue As String, expected As Double)
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_NumberValue_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: WellKnownTypeHandlerTests.ConvertValue_NumberValue_ParsesCorrectly(String, Double)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_NumberValue_ParsesCorrectly(String, Double)
+  name.vb: ConvertValue_NumberValue_ParsesCorrectly(String, Double)
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_StringValue_ParsesCorrectly(System.String,System.String)
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_StringValue_ParsesCorrectly(System.String,System.String)
+  id: ConvertValue_StringValue_ParsesCorrectly(System.String,System.String)
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertValue_StringValue_ParsesCorrectly(string, string)
+  nameWithType: WellKnownTypeHandlerTests.ConvertValue_StringValue_ParsesCorrectly(string, string)
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_StringValue_ParsesCorrectly(string, string)
+  type: Method
+  source:
+    id: ConvertValue_StringValue_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 537
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "\"hello\"", "hello" })]
+
+      [InlineData(new object[] { "\"\"", "" })]
+
+      public void ConvertValue_StringValue_ParsesCorrectly(string jsonValue, string expected)
+    parameters:
+    - id: jsonValue
+      type: System.String
+    - id: expected
+      type: System.String
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { """hello""", "hello" })>
+
+      <InlineData(New Object() { """""", "" })>
+
+      Public Sub ConvertValue_StringValue_ParsesCorrectly(jsonValue As String, expected As String)
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_StringValue_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: WellKnownTypeHandlerTests.ConvertValue_StringValue_ParsesCorrectly(String, String)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_StringValue_ParsesCorrectly(String, String)
+  name.vb: ConvertValue_StringValue_ParsesCorrectly(String, String)
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_BoolValue_ParsesCorrectly(System.String,System.Boolean)
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_BoolValue_ParsesCorrectly(System.String,System.Boolean)
+  id: ConvertValue_BoolValue_ParsesCorrectly(System.String,System.Boolean)
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertValue_BoolValue_ParsesCorrectly(string, bool)
+  nameWithType: WellKnownTypeHandlerTests.ConvertValue_BoolValue_ParsesCorrectly(string, bool)
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_BoolValue_ParsesCorrectly(string, bool)
+  type: Method
+  source:
+    id: ConvertValue_BoolValue_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 552
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "true", true })]
+
+      [InlineData(new object[] { "false", false })]
+
+      public void ConvertValue_BoolValue_ParsesCorrectly(string jsonValue, bool expected)
+    parameters:
+    - id: jsonValue
+      type: System.String
+    - id: expected
+      type: System.Boolean
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "true", True })>
+
+      <InlineData(New Object() { "false", False })>
+
+      Public Sub ConvertValue_BoolValue_ParsesCorrectly(jsonValue As String, expected As Boolean)
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_BoolValue_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: WellKnownTypeHandlerTests.ConvertValue_BoolValue_ParsesCorrectly(String, Boolean)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_BoolValue_ParsesCorrectly(String, Boolean)
+  name.vb: ConvertValue_BoolValue_ParsesCorrectly(String, Boolean)
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_ObjectValue_CreatesStructValue
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_ObjectValue_CreatesStructValue
+  id: ConvertValue_ObjectValue_CreatesStructValue
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertValue_ObjectValue_CreatesStructValue()
+  nameWithType: WellKnownTypeHandlerTests.ConvertValue_ObjectValue_CreatesStructValue()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_ObjectValue_CreatesStructValue()
+  type: Method
+  source:
+    id: ConvertValue_ObjectValue_CreatesStructValue
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 567
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertValue_ObjectValue_CreatesStructValue()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertValue_ObjectValue_CreatesStructValue()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_ObjectValue_CreatesStructValue*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_ArrayValue_CreatesListValue
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_ArrayValue_CreatesListValue
+  id: ConvertValue_ArrayValue_CreatesListValue
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertValue_ArrayValue_CreatesListValue()
+  nameWithType: WellKnownTypeHandlerTests.ConvertValue_ArrayValue_CreatesListValue()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_ArrayValue_CreatesListValue()
+  type: Method
+  source:
+    id: ConvertValue_ArrayValue_CreatesListValue
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 580
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertValue_ArrayValue_CreatesListValue()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertValue_ArrayValue_CreatesListValue()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_ArrayValue_CreatesListValue*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_TracksOneofField
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_TracksOneofField
+  id: ConvertValue_TracksOneofField
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertValue_TracksOneofField()
+  nameWithType: WellKnownTypeHandlerTests.ConvertValue_TracksOneofField()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_TracksOneofField()
+  type: Method
+  source:
+    id: ConvertValue_TracksOneofField
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 593
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertValue_TracksOneofField()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertValue_TracksOneofField()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_TracksOneofField*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_ValidArray_ParsesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_ValidArray_ParsesCorrectly
+  id: ConvertListValue_ValidArray_ParsesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertListValue_ValidArray_ParsesCorrectly()
+  nameWithType: WellKnownTypeHandlerTests.ConvertListValue_ValidArray_ParsesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_ValidArray_ParsesCorrectly()
+  type: Method
+  source:
+    id: ConvertListValue_ValidArray_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 614
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertListValue_ValidArray_ParsesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertListValue_ValidArray_ParsesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_ValidArray_ParsesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_EmptyArray_ReturnsEmptyList
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_EmptyArray_ReturnsEmptyList
+  id: ConvertListValue_EmptyArray_ReturnsEmptyList
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertListValue_EmptyArray_ReturnsEmptyList()
+  nameWithType: WellKnownTypeHandlerTests.ConvertListValue_EmptyArray_ReturnsEmptyList()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_EmptyArray_ReturnsEmptyList()
+  type: Method
+  source:
+    id: ConvertListValue_EmptyArray_ReturnsEmptyList
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 628
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertListValue_EmptyArray_ReturnsEmptyList()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertListValue_EmptyArray_ReturnsEmptyList()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_EmptyArray_ReturnsEmptyList*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_NonArrayValue_ReturnsNull
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_NonArrayValue_ReturnsNull
+  id: ConvertListValue_NonArrayValue_ReturnsNull
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertListValue_NonArrayValue_ReturnsNull()
+  nameWithType: WellKnownTypeHandlerTests.ConvertListValue_NonArrayValue_ReturnsNull()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_NonArrayValue_ReturnsNull()
+  type: Method
+  source:
+    id: ConvertListValue_NonArrayValue_ReturnsNull
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 642
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertListValue_NonArrayValue_ReturnsNull()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertListValue_NonArrayValue_ReturnsNull()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_NonArrayValue_ReturnsNull*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_NestedArrays_ParsesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_NestedArrays_ParsesCorrectly
+  id: ConvertListValue_NestedArrays_ParsesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: ConvertListValue_NestedArrays_ParsesCorrectly()
+  nameWithType: WellKnownTypeHandlerTests.ConvertListValue_NestedArrays_ParsesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_NestedArrays_ParsesCorrectly()
+  type: Method
+  source:
+    id: ConvertListValue_NestedArrays_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 653
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ConvertListValue_NestedArrays_ParsesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ConvertListValue_NestedArrays_ParsesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_NestedArrays_ParsesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_ValidTimestamp_FormatsAsRfc3339
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_ValidTimestamp_FormatsAsRfc3339
+  id: WriteTimestampJson_ValidTimestamp_FormatsAsRfc3339
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteTimestampJson_ValidTimestamp_FormatsAsRfc3339()
+  nameWithType: WellKnownTypeHandlerTests.WriteTimestampJson_ValidTimestamp_FormatsAsRfc3339()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_ValidTimestamp_FormatsAsRfc3339()
+  type: Method
+  source:
+    id: WriteTimestampJson_ValidTimestamp_FormatsAsRfc3339
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 670
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteTimestampJson_ValidTimestamp_FormatsAsRfc3339()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteTimestampJson_ValidTimestamp_FormatsAsRfc3339()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_ValidTimestamp_FormatsAsRfc3339*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_WithNanos_IncludesFractionalSeconds
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_WithNanos_IncludesFractionalSeconds
+  id: WriteTimestampJson_WithNanos_IncludesFractionalSeconds
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteTimestampJson_WithNanos_IncludesFractionalSeconds()
+  nameWithType: WellKnownTypeHandlerTests.WriteTimestampJson_WithNanos_IncludesFractionalSeconds()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_WithNanos_IncludesFractionalSeconds()
+  type: Method
+  source:
+    id: WriteTimestampJson_WithNanos_IncludesFractionalSeconds
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 689
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteTimestampJson_WithNanos_IncludesFractionalSeconds()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteTimestampJson_WithNanos_IncludesFractionalSeconds()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_WithNanos_IncludesFractionalSeconds*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_Epoch_FormatsCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_Epoch_FormatsCorrectly
+  id: WriteTimestampJson_Epoch_FormatsCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteTimestampJson_Epoch_FormatsCorrectly()
+  nameWithType: WellKnownTypeHandlerTests.WriteTimestampJson_Epoch_FormatsCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_Epoch_FormatsCorrectly()
+  type: Method
+  source:
+    id: WriteTimestampJson_Epoch_FormatsCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 706
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteTimestampJson_Epoch_FormatsCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteTimestampJson_Epoch_FormatsCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_Epoch_FormatsCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_WholeSeconds_FormatsCorrectly(System.Int64,System.Int32,System.String)
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_WholeSeconds_FormatsCorrectly(System.Int64,System.Int32,System.String)
+  id: WriteDurationJson_WholeSeconds_FormatsCorrectly(System.Int64,System.Int32,System.String)
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteDurationJson_WholeSeconds_FormatsCorrectly(long, int, string)
+  nameWithType: WellKnownTypeHandlerTests.WriteDurationJson_WholeSeconds_FormatsCorrectly(long, int, string)
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_WholeSeconds_FormatsCorrectly(long, int, string)
+  type: Method
+  source:
+    id: WriteDurationJson_WholeSeconds_FormatsCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 727
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { 10, 0, "\"10s\"" })]
+
+      [InlineData(new object[] { 0, 0, "\"0s\"" })]
+
+      [InlineData(new object[] { 3600, 0, "\"3600s\"" })]
+
+      public void WriteDurationJson_WholeSeconds_FormatsCorrectly(long seconds, int nanos, string expected)
+    parameters:
+    - id: seconds
+      type: System.Int64
+    - id: nanos
+      type: System.Int32
+    - id: expected
+      type: System.String
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { 10, 0, """10s""" })>
+
+      <InlineData(New Object() { 0, 0, """0s""" })>
+
+      <InlineData(New Object() { 3600, 0, """3600s""" })>
+
+      Public Sub WriteDurationJson_WholeSeconds_FormatsCorrectly(seconds As Long, nanos As Integer, expected As String)
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_WholeSeconds_FormatsCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: WellKnownTypeHandlerTests.WriteDurationJson_WholeSeconds_FormatsCorrectly(Long, Integer, String)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_WholeSeconds_FormatsCorrectly(Long, Integer, String)
+  name.vb: WriteDurationJson_WholeSeconds_FormatsCorrectly(Long, Integer, String)
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_WithNanos_IncludesFractional
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_WithNanos_IncludesFractional
+  id: WriteDurationJson_WithNanos_IncludesFractional
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteDurationJson_WithNanos_IncludesFractional()
+  nameWithType: WellKnownTypeHandlerTests.WriteDurationJson_WithNanos_IncludesFractional()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_WithNanos_IncludesFractional()
+  type: Method
+  source:
+    id: WriteDurationJson_WithNanos_IncludesFractional
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 746
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteDurationJson_WithNanos_IncludesFractional()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteDurationJson_WithNanos_IncludesFractional()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_WithNanos_IncludesFractional*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_PreciseNanos_FormatsCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_PreciseNanos_FormatsCorrectly
+  id: WriteDurationJson_PreciseNanos_FormatsCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteDurationJson_PreciseNanos_FormatsCorrectly()
+  nameWithType: WellKnownTypeHandlerTests.WriteDurationJson_PreciseNanos_FormatsCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_PreciseNanos_FormatsCorrectly()
+  type: Method
+  source:
+    id: WriteDurationJson_PreciseNanos_FormatsCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 762
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteDurationJson_PreciseNanos_FormatsCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteDurationJson_PreciseNanos_FormatsCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_PreciseNanos_FormatsCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_Int32Value_WritesRawValue
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_Int32Value_WritesRawValue
+  id: WriteWrapperJson_Int32Value_WritesRawValue
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteWrapperJson_Int32Value_WritesRawValue()
+  nameWithType: WellKnownTypeHandlerTests.WriteWrapperJson_Int32Value_WritesRawValue()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_Int32Value_WritesRawValue()
+  type: Method
+  source:
+    id: WriteWrapperJson_Int32Value_WritesRawValue
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 782
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteWrapperJson_Int32Value_WritesRawValue()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteWrapperJson_Int32Value_WritesRawValue()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_Int32Value_WritesRawValue*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_StringValue_WritesQuotedString
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_StringValue_WritesQuotedString
+  id: WriteWrapperJson_StringValue_WritesQuotedString
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteWrapperJson_StringValue_WritesQuotedString()
+  nameWithType: WellKnownTypeHandlerTests.WriteWrapperJson_StringValue_WritesQuotedString()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_StringValue_WritesQuotedString()
+  type: Method
+  source:
+    id: WriteWrapperJson_StringValue_WritesQuotedString
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 796
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteWrapperJson_StringValue_WritesQuotedString()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteWrapperJson_StringValue_WritesQuotedString()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_StringValue_WritesQuotedString*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_BoolValue_WritesTrueOrFalse
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_BoolValue_WritesTrueOrFalse
+  id: WriteWrapperJson_BoolValue_WritesTrueOrFalse
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteWrapperJson_BoolValue_WritesTrueOrFalse()
+  nameWithType: WellKnownTypeHandlerTests.WriteWrapperJson_BoolValue_WritesTrueOrFalse()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_BoolValue_WritesTrueOrFalse()
+  type: Method
+  source:
+    id: WriteWrapperJson_BoolValue_WritesTrueOrFalse
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 810
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteWrapperJson_BoolValue_WritesTrueOrFalse()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteWrapperJson_BoolValue_WritesTrueOrFalse()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_BoolValue_WritesTrueOrFalse*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_MissingValue_WritesNull
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_MissingValue_WritesNull
+  id: WriteWrapperJson_MissingValue_WritesNull
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteWrapperJson_MissingValue_WritesNull()
+  nameWithType: WellKnownTypeHandlerTests.WriteWrapperJson_MissingValue_WritesNull()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_MissingValue_WritesNull()
+  type: Method
+  source:
+    id: WriteWrapperJson_MissingValue_WritesNull
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 824
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteWrapperJson_MissingValue_WritesNull()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteWrapperJson_MissingValue_WritesNull()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_MissingValue_WritesNull*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_WithTypeUrl_IncludesTypeField
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_WithTypeUrl_IncludesTypeField
+  id: WriteAnyJson_WithTypeUrl_IncludesTypeField
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteAnyJson_WithTypeUrl_IncludesTypeField()
+  nameWithType: WellKnownTypeHandlerTests.WriteAnyJson_WithTypeUrl_IncludesTypeField()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_WithTypeUrl_IncludesTypeField()
+  type: Method
+  source:
+    id: WriteAnyJson_WithTypeUrl_IncludesTypeField
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 841
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteAnyJson_WithTypeUrl_IncludesTypeField()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteAnyJson_WithTypeUrl_IncludesTypeField()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_WithTypeUrl_IncludesTypeField*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_WithValue_IncludesEmbeddedFields
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_WithValue_IncludesEmbeddedFields
+  id: WriteAnyJson_WithValue_IncludesEmbeddedFields
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteAnyJson_WithValue_IncludesEmbeddedFields()
+  nameWithType: WellKnownTypeHandlerTests.WriteAnyJson_WithValue_IncludesEmbeddedFields()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_WithValue_IncludesEmbeddedFields()
+  type: Method
+  source:
+    id: WriteAnyJson_WithValue_IncludesEmbeddedFields
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 857
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteAnyJson_WithValue_IncludesEmbeddedFields()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteAnyJson_WithValue_IncludesEmbeddedFields()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_WithValue_IncludesEmbeddedFields*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_EmptyMessage_WritesEmptyObject
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_EmptyMessage_WritesEmptyObject
+  id: WriteAnyJson_EmptyMessage_WritesEmptyObject
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteAnyJson_EmptyMessage_WritesEmptyObject()
+  nameWithType: WellKnownTypeHandlerTests.WriteAnyJson_EmptyMessage_WritesEmptyObject()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_EmptyMessage_WritesEmptyObject()
+  type: Method
+  source:
+    id: WriteAnyJson_EmptyMessage_WritesEmptyObject
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 875
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteAnyJson_EmptyMessage_WritesEmptyObject()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteAnyJson_EmptyMessage_WritesEmptyObject()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_EmptyMessage_WritesEmptyObject*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteEmptyJson_WritesEmptyObject
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteEmptyJson_WritesEmptyObject
+  id: WriteEmptyJson_WritesEmptyObject
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteEmptyJson_WritesEmptyObject()
+  nameWithType: WellKnownTypeHandlerTests.WriteEmptyJson_WritesEmptyObject()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteEmptyJson_WritesEmptyObject()
+  type: Method
+  source:
+    id: WriteEmptyJson_WritesEmptyObject
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 891
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteEmptyJson_WritesEmptyObject()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteEmptyJson_WritesEmptyObject()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteEmptyJson_WritesEmptyObject*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_MultiplePaths_WritesCommaSeparated
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_MultiplePaths_WritesCommaSeparated
+  id: WriteFieldMaskJson_MultiplePaths_WritesCommaSeparated
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteFieldMaskJson_MultiplePaths_WritesCommaSeparated()
+  nameWithType: WellKnownTypeHandlerTests.WriteFieldMaskJson_MultiplePaths_WritesCommaSeparated()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_MultiplePaths_WritesCommaSeparated()
+  type: Method
+  source:
+    id: WriteFieldMaskJson_MultiplePaths_WritesCommaSeparated
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 904
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteFieldMaskJson_MultiplePaths_WritesCommaSeparated()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteFieldMaskJson_MultiplePaths_WritesCommaSeparated()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_MultiplePaths_WritesCommaSeparated*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_SinglePath_WritesAsString
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_SinglePath_WritesAsString
+  id: WriteFieldMaskJson_SinglePath_WritesAsString
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteFieldMaskJson_SinglePath_WritesAsString()
+  nameWithType: WellKnownTypeHandlerTests.WriteFieldMaskJson_SinglePath_WritesAsString()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_SinglePath_WritesAsString()
+  type: Method
+  source:
+    id: WriteFieldMaskJson_SinglePath_WritesAsString
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 918
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteFieldMaskJson_SinglePath_WritesAsString()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteFieldMaskJson_SinglePath_WritesAsString()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_SinglePath_WritesAsString*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_EmptyPaths_WritesEmptyString
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_EmptyPaths_WritesEmptyString
+  id: WriteFieldMaskJson_EmptyPaths_WritesEmptyString
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteFieldMaskJson_EmptyPaths_WritesEmptyString()
+  nameWithType: WellKnownTypeHandlerTests.WriteFieldMaskJson_EmptyPaths_WritesEmptyString()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_EmptyPaths_WritesEmptyString()
+  type: Method
+  source:
+    id: WriteFieldMaskJson_EmptyPaths_WritesEmptyString
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 932
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteFieldMaskJson_EmptyPaths_WritesEmptyString()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteFieldMaskJson_EmptyPaths_WritesEmptyString()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_EmptyPaths_WritesEmptyString*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteStructJson_ValidStruct_WritesObject
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteStructJson_ValidStruct_WritesObject
+  id: WriteStructJson_ValidStruct_WritesObject
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteStructJson_ValidStruct_WritesObject()
+  nameWithType: WellKnownTypeHandlerTests.WriteStructJson_ValidStruct_WritesObject()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteStructJson_ValidStruct_WritesObject()
+  type: Method
+  source:
+    id: WriteStructJson_ValidStruct_WritesObject
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 948
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteStructJson_ValidStruct_WritesObject()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteStructJson_ValidStruct_WritesObject()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteStructJson_ValidStruct_WritesObject*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteStructJson_EmptyStruct_WritesEmptyObject
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteStructJson_EmptyStruct_WritesEmptyObject
+  id: WriteStructJson_EmptyStruct_WritesEmptyObject
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteStructJson_EmptyStruct_WritesEmptyObject()
+  nameWithType: WellKnownTypeHandlerTests.WriteStructJson_EmptyStruct_WritesEmptyObject()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteStructJson_EmptyStruct_WritesEmptyObject()
+  type: Method
+  source:
+    id: WriteStructJson_EmptyStruct_WritesEmptyObject
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 972
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteStructJson_EmptyStruct_WritesEmptyObject()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteStructJson_EmptyStruct_WritesEmptyObject()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteStructJson_EmptyStruct_WritesEmptyObject*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_NullValue_WritesNull
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_NullValue_WritesNull
+  id: WriteValueJson_NullValue_WritesNull
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteValueJson_NullValue_WritesNull()
+  nameWithType: WellKnownTypeHandlerTests.WriteValueJson_NullValue_WritesNull()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_NullValue_WritesNull()
+  type: Method
+  source:
+    id: WriteValueJson_NullValue_WritesNull
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 988
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteValueJson_NullValue_WritesNull()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteValueJson_NullValue_WritesNull()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_NullValue_WritesNull*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_NumberValue_WritesNumber
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_NumberValue_WritesNumber
+  id: WriteValueJson_NumberValue_WritesNumber
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteValueJson_NumberValue_WritesNumber()
+  nameWithType: WellKnownTypeHandlerTests.WriteValueJson_NumberValue_WritesNumber()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_NumberValue_WritesNumber()
+  type: Method
+  source:
+    id: WriteValueJson_NumberValue_WritesNumber
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 1002
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteValueJson_NumberValue_WritesNumber()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteValueJson_NumberValue_WritesNumber()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_NumberValue_WritesNumber*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_StringValue_WritesQuotedString
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_StringValue_WritesQuotedString
+  id: WriteValueJson_StringValue_WritesQuotedString
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteValueJson_StringValue_WritesQuotedString()
+  nameWithType: WellKnownTypeHandlerTests.WriteValueJson_StringValue_WritesQuotedString()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_StringValue_WritesQuotedString()
+  type: Method
+  source:
+    id: WriteValueJson_StringValue_WritesQuotedString
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 1016
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteValueJson_StringValue_WritesQuotedString()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteValueJson_StringValue_WritesQuotedString()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_StringValue_WritesQuotedString*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_BoolTrue_WritesTrue
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_BoolTrue_WritesTrue
+  id: WriteValueJson_BoolTrue_WritesTrue
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteValueJson_BoolTrue_WritesTrue()
+  nameWithType: WellKnownTypeHandlerTests.WriteValueJson_BoolTrue_WritesTrue()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_BoolTrue_WritesTrue()
+  type: Method
+  source:
+    id: WriteValueJson_BoolTrue_WritesTrue
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 1030
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteValueJson_BoolTrue_WritesTrue()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteValueJson_BoolTrue_WritesTrue()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_BoolTrue_WritesTrue*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_BoolFalse_WritesFalse
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_BoolFalse_WritesFalse
+  id: WriteValueJson_BoolFalse_WritesFalse
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteValueJson_BoolFalse_WritesFalse()
+  nameWithType: WellKnownTypeHandlerTests.WriteValueJson_BoolFalse_WritesFalse()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_BoolFalse_WritesFalse()
+  type: Method
+  source:
+    id: WriteValueJson_BoolFalse_WritesFalse
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 1044
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteValueJson_BoolFalse_WritesFalse()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteValueJson_BoolFalse_WritesFalse()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_BoolFalse_WritesFalse*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_EmptyMessage_WritesNull
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_EmptyMessage_WritesNull
+  id: WriteValueJson_EmptyMessage_WritesNull
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteValueJson_EmptyMessage_WritesNull()
+  nameWithType: WellKnownTypeHandlerTests.WriteValueJson_EmptyMessage_WritesNull()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_EmptyMessage_WritesNull()
+  type: Method
+  source:
+    id: WriteValueJson_EmptyMessage_WritesNull
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 1058
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteValueJson_EmptyMessage_WritesNull()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteValueJson_EmptyMessage_WritesNull()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_EmptyMessage_WritesNull*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_ValidArray_WritesJsonArray
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_ValidArray_WritesJsonArray
+  id: WriteListValueJson_ValidArray_WritesJsonArray
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteListValueJson_ValidArray_WritesJsonArray()
+  nameWithType: WellKnownTypeHandlerTests.WriteListValueJson_ValidArray_WritesJsonArray()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_ValidArray_WritesJsonArray()
+  type: Method
+  source:
+    id: WriteListValueJson_ValidArray_WritesJsonArray
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 1075
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteListValueJson_ValidArray_WritesJsonArray()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteListValueJson_ValidArray_WritesJsonArray()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_ValidArray_WritesJsonArray*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_EmptyArray_WritesEmptyArray
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_EmptyArray_WritesEmptyArray
+  id: WriteListValueJson_EmptyArray_WritesEmptyArray
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteListValueJson_EmptyArray_WritesEmptyArray()
+  nameWithType: WellKnownTypeHandlerTests.WriteListValueJson_EmptyArray_WritesEmptyArray()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_EmptyArray_WritesEmptyArray()
+  type: Method
+  source:
+    id: WriteListValueJson_EmptyArray_WritesEmptyArray
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 1098
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteListValueJson_EmptyArray_WritesEmptyArray()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteListValueJson_EmptyArray_WritesEmptyArray()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_EmptyArray_WritesEmptyArray*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_NoValuesField_WritesEmptyArray
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_NoValuesField_WritesEmptyArray
+  id: WriteListValueJson_NoValuesField_WritesEmptyArray
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteListValueJson_NoValuesField_WritesEmptyArray()
+  nameWithType: WellKnownTypeHandlerTests.WriteListValueJson_NoValuesField_WritesEmptyArray()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_NoValuesField_WritesEmptyArray()
+  type: Method
+  source:
+    id: WriteListValueJson_NoValuesField_WritesEmptyArray
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 1112
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteListValueJson_NoValuesField_WritesEmptyArray()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteListValueJson_NoValuesField_WritesEmptyArray()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_NoValuesField_WritesEmptyArray*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_NullValues_WritesNullElements
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_NullValues_WritesNullElements
+  id: WriteListValueJson_NullValues_WritesNullElements
+  parent: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: WriteListValueJson_NullValues_WritesNullElements()
+  nameWithType: WellKnownTypeHandlerTests.WriteListValueJson_NullValues_WritesNullElements()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_NullValues_WritesNullElements()
+  type: Method
+  source:
+    id: WriteListValueJson_NullValues_WritesNullElements
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/WellKnownTypeHandlerTests.cs
+    startLine: 1124
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteListValueJson_NullValues_WritesNullElements()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteListValueJson_NullValues_WritesNullElements()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_NullValues_WritesNullElements*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+references:
+- uid: GrpCurl.Net.Tests.Unit.Invocation
+  commentId: N:GrpCurl.Net.Tests.Unit.Invocation
+  href: GrpCurl.html
+  name: GrpCurl.Net.Tests.Unit.Invocation
+  nameWithType: GrpCurl.Net.Tests.Unit.Invocation
+  fullName: GrpCurl.Net.Tests.Unit.Invocation
+  spec.csharp:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit
+    name: Unit
+    href: GrpCurl.Net.Tests.Unit.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit.Invocation
+    name: Invocation
+    href: GrpCurl.Net.Tests.Unit.Invocation.html
+  spec.vb:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit
+    name: Unit
+    href: GrpCurl.Net.Tests.Unit.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit.Invocation
+    name: Invocation
+    href: GrpCurl.Net.Tests.Unit.Invocation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_ValidRfc3339_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_ValidRfc3339_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertTimestamp_ValidRfc3339_ParsesCorrectly_System_String_System_Int64_System_Int32_
+  name: ConvertTimestamp_ValidRfc3339_ParsesCorrectly
+  nameWithType: WellKnownTypeHandlerTests.ConvertTimestamp_ValidRfc3339_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_ValidRfc3339_ParsesCorrectly
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_NonStringValue_ReturnsNull*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_NonStringValue_ReturnsNull
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertTimestamp_NonStringValue_ReturnsNull
+  name: ConvertTimestamp_NonStringValue_ReturnsNull
+  nameWithType: WellKnownTypeHandlerTests.ConvertTimestamp_NonStringValue_ReturnsNull
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_NonStringValue_ReturnsNull
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_EmptyString_ReturnsNull*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_EmptyString_ReturnsNull
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertTimestamp_EmptyString_ReturnsNull
+  name: ConvertTimestamp_EmptyString_ReturnsNull
+  nameWithType: WellKnownTypeHandlerTests.ConvertTimestamp_EmptyString_ReturnsNull
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_EmptyString_ReturnsNull
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_InvalidDateFormat_ReturnsNull*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_InvalidDateFormat_ReturnsNull
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertTimestamp_InvalidDateFormat_ReturnsNull
+  name: ConvertTimestamp_InvalidDateFormat_ReturnsNull
+  nameWithType: WellKnownTypeHandlerTests.ConvertTimestamp_InvalidDateFormat_ReturnsNull
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_InvalidDateFormat_ReturnsNull
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_LocalTime_ConvertsToUtc*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_LocalTime_ConvertsToUtc
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertTimestamp_LocalTime_ConvertsToUtc
+  name: ConvertTimestamp_LocalTime_ConvertsToUtc
+  nameWithType: WellKnownTypeHandlerTests.ConvertTimestamp_LocalTime_ConvertsToUtc
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_LocalTime_ConvertsToUtc
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_ValidFormat_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_ValidFormat_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertDuration_ValidFormat_ParsesCorrectly_System_String_System_Int64_System_Int32_
+  name: ConvertDuration_ValidFormat_ParsesCorrectly
+  nameWithType: WellKnownTypeHandlerTests.ConvertDuration_ValidFormat_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_ValidFormat_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_NonStringValue_ReturnsNull*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_NonStringValue_ReturnsNull
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertDuration_NonStringValue_ReturnsNull
+  name: ConvertDuration_NonStringValue_ReturnsNull
+  nameWithType: WellKnownTypeHandlerTests.ConvertDuration_NonStringValue_ReturnsNull
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_NonStringValue_ReturnsNull
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_MissingSuffix_ReturnsNull*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_MissingSuffix_ReturnsNull
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertDuration_MissingSuffix_ReturnsNull
+  name: ConvertDuration_MissingSuffix_ReturnsNull
+  nameWithType: WellKnownTypeHandlerTests.ConvertDuration_MissingSuffix_ReturnsNull
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_MissingSuffix_ReturnsNull
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_InvalidNumber_ReturnsNull*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_InvalidNumber_ReturnsNull
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertDuration_InvalidNumber_ReturnsNull
+  name: ConvertDuration_InvalidNumber_ReturnsNull
+  nameWithType: WellKnownTypeHandlerTests.ConvertDuration_InvalidNumber_ReturnsNull
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_InvalidNumber_ReturnsNull
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_EmptyString_ReturnsNull*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_EmptyString_ReturnsNull
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertDuration_EmptyString_ReturnsNull
+  name: ConvertDuration_EmptyString_ReturnsNull
+  nameWithType: WellKnownTypeHandlerTests.ConvertDuration_EmptyString_ReturnsNull
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_EmptyString_ReturnsNull
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_ExcessivePrecision_TruncatesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_ExcessivePrecision_TruncatesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertDuration_ExcessivePrecision_TruncatesCorrectly_System_String_
+  name: ConvertDuration_ExcessivePrecision_TruncatesCorrectly
+  nameWithType: WellKnownTypeHandlerTests.ConvertDuration_ExcessivePrecision_TruncatesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_ExcessivePrecision_TruncatesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_Int32Value_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_Int32Value_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_Int32Value_ParsesCorrectly_System_String_System_String_System_Int32_
+  name: ConvertWrapperType_Int32Value_ParsesCorrectly
+  nameWithType: WellKnownTypeHandlerTests.ConvertWrapperType_Int32Value_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_Int32Value_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_Int64Value_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_Int64Value_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_Int64Value_ParsesCorrectly_System_String_System_String_
+  name: ConvertWrapperType_Int64Value_ParsesCorrectly
+  nameWithType: WellKnownTypeHandlerTests.ConvertWrapperType_Int64Value_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_Int64Value_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_UInt32Value_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_UInt32Value_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_UInt32Value_ParsesCorrectly_System_String_System_String_
+  name: ConvertWrapperType_UInt32Value_ParsesCorrectly
+  nameWithType: WellKnownTypeHandlerTests.ConvertWrapperType_UInt32Value_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_UInt32Value_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_UInt64Value_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_UInt64Value_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_UInt64Value_ParsesCorrectly_System_String_System_String_
+  name: ConvertWrapperType_UInt64Value_ParsesCorrectly
+  nameWithType: WellKnownTypeHandlerTests.ConvertWrapperType_UInt64Value_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_UInt64Value_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_FloatValue_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_FloatValue_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_FloatValue_ParsesCorrectly_System_String_System_String_
+  name: ConvertWrapperType_FloatValue_ParsesCorrectly
+  nameWithType: WellKnownTypeHandlerTests.ConvertWrapperType_FloatValue_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_FloatValue_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_DoubleValue_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_DoubleValue_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_DoubleValue_ParsesCorrectly_System_String_System_String_
+  name: ConvertWrapperType_DoubleValue_ParsesCorrectly
+  nameWithType: WellKnownTypeHandlerTests.ConvertWrapperType_DoubleValue_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_DoubleValue_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_BoolValue_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_BoolValue_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_BoolValue_ParsesCorrectly_System_String_System_String_System_Boolean_
+  name: ConvertWrapperType_BoolValue_ParsesCorrectly
+  nameWithType: WellKnownTypeHandlerTests.ConvertWrapperType_BoolValue_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_BoolValue_ParsesCorrectly
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_StringValue_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_StringValue_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_StringValue_ParsesCorrectly_System_String_System_String_System_String_
+  name: ConvertWrapperType_StringValue_ParsesCorrectly
+  nameWithType: WellKnownTypeHandlerTests.ConvertWrapperType_StringValue_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_StringValue_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_BytesValue_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_BytesValue_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_BytesValue_ParsesCorrectly_System_String_System_String_
+  name: ConvertWrapperType_BytesValue_ParsesCorrectly
+  nameWithType: WellKnownTypeHandlerTests.ConvertWrapperType_BytesValue_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_BytesValue_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_ValidObject_ParsesTypeUrl*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_ValidObject_ParsesTypeUrl
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertAny_ValidObject_ParsesTypeUrl
+  name: ConvertAny_ValidObject_ParsesTypeUrl
+  nameWithType: WellKnownTypeHandlerTests.ConvertAny_ValidObject_ParsesTypeUrl
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_ValidObject_ParsesTypeUrl
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_NonObjectValue_ReturnsNull*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_NonObjectValue_ReturnsNull
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertAny_NonObjectValue_ReturnsNull
+  name: ConvertAny_NonObjectValue_ReturnsNull
+  nameWithType: WellKnownTypeHandlerTests.ConvertAny_NonObjectValue_ReturnsNull
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_NonObjectValue_ReturnsNull
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_WithEmbeddedFields_SerializesValue*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_WithEmbeddedFields_SerializesValue
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertAny_WithEmbeddedFields_SerializesValue
+  name: ConvertAny_WithEmbeddedFields_SerializesValue
+  nameWithType: WellKnownTypeHandlerTests.ConvertAny_WithEmbeddedFields_SerializesValue
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_WithEmbeddedFields_SerializesValue
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_EmptyObject_ReturnsEmptyMessage*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_EmptyObject_ReturnsEmptyMessage
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertAny_EmptyObject_ReturnsEmptyMessage
+  name: ConvertAny_EmptyObject_ReturnsEmptyMessage
+  nameWithType: WellKnownTypeHandlerTests.ConvertAny_EmptyObject_ReturnsEmptyMessage
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_EmptyObject_ReturnsEmptyMessage
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertEmpty_ReturnsEmptyMessage*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertEmpty_ReturnsEmptyMessage
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertEmpty_ReturnsEmptyMessage
+  name: ConvertEmpty_ReturnsEmptyMessage
+  nameWithType: WellKnownTypeHandlerTests.ConvertEmpty_ReturnsEmptyMessage
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertEmpty_ReturnsEmptyMessage
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_ValidPaths_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_ValidPaths_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertFieldMask_ValidPaths_ParsesCorrectly_System_String_System_String___
+  name: ConvertFieldMask_ValidPaths_ParsesCorrectly
+  nameWithType: WellKnownTypeHandlerTests.ConvertFieldMask_ValidPaths_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_ValidPaths_ParsesCorrectly
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_EmptyString_ReturnsEmptyMessage*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_EmptyString_ReturnsEmptyMessage
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertFieldMask_EmptyString_ReturnsEmptyMessage
+  name: ConvertFieldMask_EmptyString_ReturnsEmptyMessage
+  nameWithType: WellKnownTypeHandlerTests.ConvertFieldMask_EmptyString_ReturnsEmptyMessage
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_EmptyString_ReturnsEmptyMessage
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_NonStringValue_ReturnsNull*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_NonStringValue_ReturnsNull
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertFieldMask_NonStringValue_ReturnsNull
+  name: ConvertFieldMask_NonStringValue_ReturnsNull
+  nameWithType: WellKnownTypeHandlerTests.ConvertFieldMask_NonStringValue_ReturnsNull
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_NonStringValue_ReturnsNull
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_WithWhitespace_TrimsCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_WithWhitespace_TrimsCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertFieldMask_WithWhitespace_TrimsCorrectly
+  name: ConvertFieldMask_WithWhitespace_TrimsCorrectly
+  nameWithType: WellKnownTypeHandlerTests.ConvertFieldMask_WithWhitespace_TrimsCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_WithWhitespace_TrimsCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_ValidObject_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_ValidObject_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertStruct_ValidObject_ParsesCorrectly
+  name: ConvertStruct_ValidObject_ParsesCorrectly
+  nameWithType: WellKnownTypeHandlerTests.ConvertStruct_ValidObject_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_ValidObject_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_EmptyObject_ReturnsEmptyMessage*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_EmptyObject_ReturnsEmptyMessage
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertStruct_EmptyObject_ReturnsEmptyMessage
+  name: ConvertStruct_EmptyObject_ReturnsEmptyMessage
+  nameWithType: WellKnownTypeHandlerTests.ConvertStruct_EmptyObject_ReturnsEmptyMessage
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_EmptyObject_ReturnsEmptyMessage
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_NonObjectValue_ReturnsNull*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_NonObjectValue_ReturnsNull
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertStruct_NonObjectValue_ReturnsNull
+  name: ConvertStruct_NonObjectValue_ReturnsNull
+  nameWithType: WellKnownTypeHandlerTests.ConvertStruct_NonObjectValue_ReturnsNull
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_NonObjectValue_ReturnsNull
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_NestedObjects_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_NestedObjects_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertStruct_NestedObjects_ParsesCorrectly
+  name: ConvertStruct_NestedObjects_ParsesCorrectly
+  nameWithType: WellKnownTypeHandlerTests.ConvertStruct_NestedObjects_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_NestedObjects_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_NullValue_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_NullValue_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertValue_NullValue_ParsesCorrectly
+  name: ConvertValue_NullValue_ParsesCorrectly
+  nameWithType: WellKnownTypeHandlerTests.ConvertValue_NullValue_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_NullValue_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_NumberValue_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_NumberValue_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertValue_NumberValue_ParsesCorrectly_System_String_System_Double_
+  name: ConvertValue_NumberValue_ParsesCorrectly
+  nameWithType: WellKnownTypeHandlerTests.ConvertValue_NumberValue_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_NumberValue_ParsesCorrectly
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_StringValue_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_StringValue_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertValue_StringValue_ParsesCorrectly_System_String_System_String_
+  name: ConvertValue_StringValue_ParsesCorrectly
+  nameWithType: WellKnownTypeHandlerTests.ConvertValue_StringValue_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_StringValue_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_BoolValue_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_BoolValue_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertValue_BoolValue_ParsesCorrectly_System_String_System_Boolean_
+  name: ConvertValue_BoolValue_ParsesCorrectly
+  nameWithType: WellKnownTypeHandlerTests.ConvertValue_BoolValue_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_BoolValue_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_ObjectValue_CreatesStructValue*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_ObjectValue_CreatesStructValue
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertValue_ObjectValue_CreatesStructValue
+  name: ConvertValue_ObjectValue_CreatesStructValue
+  nameWithType: WellKnownTypeHandlerTests.ConvertValue_ObjectValue_CreatesStructValue
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_ObjectValue_CreatesStructValue
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_ArrayValue_CreatesListValue*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_ArrayValue_CreatesListValue
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertValue_ArrayValue_CreatesListValue
+  name: ConvertValue_ArrayValue_CreatesListValue
+  nameWithType: WellKnownTypeHandlerTests.ConvertValue_ArrayValue_CreatesListValue
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_ArrayValue_CreatesListValue
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_TracksOneofField*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_TracksOneofField
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertValue_TracksOneofField
+  name: ConvertValue_TracksOneofField
+  nameWithType: WellKnownTypeHandlerTests.ConvertValue_TracksOneofField
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_TracksOneofField
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_ValidArray_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_ValidArray_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertListValue_ValidArray_ParsesCorrectly
+  name: ConvertListValue_ValidArray_ParsesCorrectly
+  nameWithType: WellKnownTypeHandlerTests.ConvertListValue_ValidArray_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_ValidArray_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_EmptyArray_ReturnsEmptyList*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_EmptyArray_ReturnsEmptyList
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertListValue_EmptyArray_ReturnsEmptyList
+  name: ConvertListValue_EmptyArray_ReturnsEmptyList
+  nameWithType: WellKnownTypeHandlerTests.ConvertListValue_EmptyArray_ReturnsEmptyList
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_EmptyArray_ReturnsEmptyList
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_NonArrayValue_ReturnsNull*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_NonArrayValue_ReturnsNull
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertListValue_NonArrayValue_ReturnsNull
+  name: ConvertListValue_NonArrayValue_ReturnsNull
+  nameWithType: WellKnownTypeHandlerTests.ConvertListValue_NonArrayValue_ReturnsNull
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_NonArrayValue_ReturnsNull
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_NestedArrays_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_NestedArrays_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertListValue_NestedArrays_ParsesCorrectly
+  name: ConvertListValue_NestedArrays_ParsesCorrectly
+  nameWithType: WellKnownTypeHandlerTests.ConvertListValue_NestedArrays_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_NestedArrays_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_ValidTimestamp_FormatsAsRfc3339*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_ValidTimestamp_FormatsAsRfc3339
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteTimestampJson_ValidTimestamp_FormatsAsRfc3339
+  name: WriteTimestampJson_ValidTimestamp_FormatsAsRfc3339
+  nameWithType: WellKnownTypeHandlerTests.WriteTimestampJson_ValidTimestamp_FormatsAsRfc3339
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_ValidTimestamp_FormatsAsRfc3339
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_WithNanos_IncludesFractionalSeconds*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_WithNanos_IncludesFractionalSeconds
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteTimestampJson_WithNanos_IncludesFractionalSeconds
+  name: WriteTimestampJson_WithNanos_IncludesFractionalSeconds
+  nameWithType: WellKnownTypeHandlerTests.WriteTimestampJson_WithNanos_IncludesFractionalSeconds
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_WithNanos_IncludesFractionalSeconds
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_Epoch_FormatsCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_Epoch_FormatsCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteTimestampJson_Epoch_FormatsCorrectly
+  name: WriteTimestampJson_Epoch_FormatsCorrectly
+  nameWithType: WellKnownTypeHandlerTests.WriteTimestampJson_Epoch_FormatsCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_Epoch_FormatsCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_WholeSeconds_FormatsCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_WholeSeconds_FormatsCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteDurationJson_WholeSeconds_FormatsCorrectly_System_Int64_System_Int32_System_String_
+  name: WriteDurationJson_WholeSeconds_FormatsCorrectly
+  nameWithType: WellKnownTypeHandlerTests.WriteDurationJson_WholeSeconds_FormatsCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_WholeSeconds_FormatsCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_WithNanos_IncludesFractional*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_WithNanos_IncludesFractional
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteDurationJson_WithNanos_IncludesFractional
+  name: WriteDurationJson_WithNanos_IncludesFractional
+  nameWithType: WellKnownTypeHandlerTests.WriteDurationJson_WithNanos_IncludesFractional
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_WithNanos_IncludesFractional
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_PreciseNanos_FormatsCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_PreciseNanos_FormatsCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteDurationJson_PreciseNanos_FormatsCorrectly
+  name: WriteDurationJson_PreciseNanos_FormatsCorrectly
+  nameWithType: WellKnownTypeHandlerTests.WriteDurationJson_PreciseNanos_FormatsCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_PreciseNanos_FormatsCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_Int32Value_WritesRawValue*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_Int32Value_WritesRawValue
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteWrapperJson_Int32Value_WritesRawValue
+  name: WriteWrapperJson_Int32Value_WritesRawValue
+  nameWithType: WellKnownTypeHandlerTests.WriteWrapperJson_Int32Value_WritesRawValue
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_Int32Value_WritesRawValue
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_StringValue_WritesQuotedString*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_StringValue_WritesQuotedString
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteWrapperJson_StringValue_WritesQuotedString
+  name: WriteWrapperJson_StringValue_WritesQuotedString
+  nameWithType: WellKnownTypeHandlerTests.WriteWrapperJson_StringValue_WritesQuotedString
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_StringValue_WritesQuotedString
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_BoolValue_WritesTrueOrFalse*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_BoolValue_WritesTrueOrFalse
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteWrapperJson_BoolValue_WritesTrueOrFalse
+  name: WriteWrapperJson_BoolValue_WritesTrueOrFalse
+  nameWithType: WellKnownTypeHandlerTests.WriteWrapperJson_BoolValue_WritesTrueOrFalse
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_BoolValue_WritesTrueOrFalse
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_MissingValue_WritesNull*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_MissingValue_WritesNull
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteWrapperJson_MissingValue_WritesNull
+  name: WriteWrapperJson_MissingValue_WritesNull
+  nameWithType: WellKnownTypeHandlerTests.WriteWrapperJson_MissingValue_WritesNull
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_MissingValue_WritesNull
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_WithTypeUrl_IncludesTypeField*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_WithTypeUrl_IncludesTypeField
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteAnyJson_WithTypeUrl_IncludesTypeField
+  name: WriteAnyJson_WithTypeUrl_IncludesTypeField
+  nameWithType: WellKnownTypeHandlerTests.WriteAnyJson_WithTypeUrl_IncludesTypeField
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_WithTypeUrl_IncludesTypeField
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_WithValue_IncludesEmbeddedFields*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_WithValue_IncludesEmbeddedFields
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteAnyJson_WithValue_IncludesEmbeddedFields
+  name: WriteAnyJson_WithValue_IncludesEmbeddedFields
+  nameWithType: WellKnownTypeHandlerTests.WriteAnyJson_WithValue_IncludesEmbeddedFields
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_WithValue_IncludesEmbeddedFields
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_EmptyMessage_WritesEmptyObject*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_EmptyMessage_WritesEmptyObject
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteAnyJson_EmptyMessage_WritesEmptyObject
+  name: WriteAnyJson_EmptyMessage_WritesEmptyObject
+  nameWithType: WellKnownTypeHandlerTests.WriteAnyJson_EmptyMessage_WritesEmptyObject
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_EmptyMessage_WritesEmptyObject
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteEmptyJson_WritesEmptyObject*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteEmptyJson_WritesEmptyObject
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteEmptyJson_WritesEmptyObject
+  name: WriteEmptyJson_WritesEmptyObject
+  nameWithType: WellKnownTypeHandlerTests.WriteEmptyJson_WritesEmptyObject
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteEmptyJson_WritesEmptyObject
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_MultiplePaths_WritesCommaSeparated*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_MultiplePaths_WritesCommaSeparated
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteFieldMaskJson_MultiplePaths_WritesCommaSeparated
+  name: WriteFieldMaskJson_MultiplePaths_WritesCommaSeparated
+  nameWithType: WellKnownTypeHandlerTests.WriteFieldMaskJson_MultiplePaths_WritesCommaSeparated
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_MultiplePaths_WritesCommaSeparated
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_SinglePath_WritesAsString*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_SinglePath_WritesAsString
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteFieldMaskJson_SinglePath_WritesAsString
+  name: WriteFieldMaskJson_SinglePath_WritesAsString
+  nameWithType: WellKnownTypeHandlerTests.WriteFieldMaskJson_SinglePath_WritesAsString
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_SinglePath_WritesAsString
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_EmptyPaths_WritesEmptyString*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_EmptyPaths_WritesEmptyString
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteFieldMaskJson_EmptyPaths_WritesEmptyString
+  name: WriteFieldMaskJson_EmptyPaths_WritesEmptyString
+  nameWithType: WellKnownTypeHandlerTests.WriteFieldMaskJson_EmptyPaths_WritesEmptyString
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_EmptyPaths_WritesEmptyString
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteStructJson_ValidStruct_WritesObject*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteStructJson_ValidStruct_WritesObject
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteStructJson_ValidStruct_WritesObject
+  name: WriteStructJson_ValidStruct_WritesObject
+  nameWithType: WellKnownTypeHandlerTests.WriteStructJson_ValidStruct_WritesObject
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteStructJson_ValidStruct_WritesObject
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteStructJson_EmptyStruct_WritesEmptyObject*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteStructJson_EmptyStruct_WritesEmptyObject
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteStructJson_EmptyStruct_WritesEmptyObject
+  name: WriteStructJson_EmptyStruct_WritesEmptyObject
+  nameWithType: WellKnownTypeHandlerTests.WriteStructJson_EmptyStruct_WritesEmptyObject
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteStructJson_EmptyStruct_WritesEmptyObject
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_NullValue_WritesNull*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_NullValue_WritesNull
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteValueJson_NullValue_WritesNull
+  name: WriteValueJson_NullValue_WritesNull
+  nameWithType: WellKnownTypeHandlerTests.WriteValueJson_NullValue_WritesNull
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_NullValue_WritesNull
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_NumberValue_WritesNumber*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_NumberValue_WritesNumber
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteValueJson_NumberValue_WritesNumber
+  name: WriteValueJson_NumberValue_WritesNumber
+  nameWithType: WellKnownTypeHandlerTests.WriteValueJson_NumberValue_WritesNumber
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_NumberValue_WritesNumber
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_StringValue_WritesQuotedString*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_StringValue_WritesQuotedString
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteValueJson_StringValue_WritesQuotedString
+  name: WriteValueJson_StringValue_WritesQuotedString
+  nameWithType: WellKnownTypeHandlerTests.WriteValueJson_StringValue_WritesQuotedString
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_StringValue_WritesQuotedString
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_BoolTrue_WritesTrue*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_BoolTrue_WritesTrue
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteValueJson_BoolTrue_WritesTrue
+  name: WriteValueJson_BoolTrue_WritesTrue
+  nameWithType: WellKnownTypeHandlerTests.WriteValueJson_BoolTrue_WritesTrue
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_BoolTrue_WritesTrue
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_BoolFalse_WritesFalse*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_BoolFalse_WritesFalse
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteValueJson_BoolFalse_WritesFalse
+  name: WriteValueJson_BoolFalse_WritesFalse
+  nameWithType: WellKnownTypeHandlerTests.WriteValueJson_BoolFalse_WritesFalse
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_BoolFalse_WritesFalse
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_EmptyMessage_WritesNull*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_EmptyMessage_WritesNull
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteValueJson_EmptyMessage_WritesNull
+  name: WriteValueJson_EmptyMessage_WritesNull
+  nameWithType: WellKnownTypeHandlerTests.WriteValueJson_EmptyMessage_WritesNull
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_EmptyMessage_WritesNull
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_ValidArray_WritesJsonArray*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_ValidArray_WritesJsonArray
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteListValueJson_ValidArray_WritesJsonArray
+  name: WriteListValueJson_ValidArray_WritesJsonArray
+  nameWithType: WellKnownTypeHandlerTests.WriteListValueJson_ValidArray_WritesJsonArray
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_ValidArray_WritesJsonArray
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_EmptyArray_WritesEmptyArray*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_EmptyArray_WritesEmptyArray
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteListValueJson_EmptyArray_WritesEmptyArray
+  name: WriteListValueJson_EmptyArray_WritesEmptyArray
+  nameWithType: WellKnownTypeHandlerTests.WriteListValueJson_EmptyArray_WritesEmptyArray
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_EmptyArray_WritesEmptyArray
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_NoValuesField_WritesEmptyArray*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_NoValuesField_WritesEmptyArray
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteListValueJson_NoValuesField_WritesEmptyArray
+  name: WriteListValueJson_NoValuesField_WritesEmptyArray
+  nameWithType: WellKnownTypeHandlerTests.WriteListValueJson_NoValuesField_WritesEmptyArray
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_NoValuesField_WritesEmptyArray
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_NullValues_WritesNullElements*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_NullValues_WritesNullElements
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html#GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteListValueJson_NullValues_WritesNullElements
+  name: WriteListValueJson_NullValues_WritesNullElements
+  nameWithType: WellKnownTypeHandlerTests.WriteListValueJson_NullValues_WritesNullElements
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_NullValues_WritesNullElements

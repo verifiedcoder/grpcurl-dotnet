@@ -1,0 +1,196 @@
+### YamlMime:ManagedReference
+items:
+- uid: Grpc.Reflection.V1Alpha
+  commentId: N:Grpc.Reflection.V1Alpha
+  id: Grpc.Reflection.V1Alpha
+  children:
+  - Grpc.Reflection.V1Alpha.ErrorResponse
+  - Grpc.Reflection.V1Alpha.ExtensionNumberResponse
+  - Grpc.Reflection.V1Alpha.ExtensionRequest
+  - Grpc.Reflection.V1Alpha.FileDescriptorResponse
+  - Grpc.Reflection.V1Alpha.ListServiceResponse
+  - Grpc.Reflection.V1Alpha.ReflectionReflection
+  - Grpc.Reflection.V1Alpha.ServerReflection
+  - Grpc.Reflection.V1Alpha.ServerReflection.ServerReflectionClient
+  - Grpc.Reflection.V1Alpha.ServerReflectionRequest
+  - Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+  - Grpc.Reflection.V1Alpha.ServerReflectionResponse
+  - Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+  - Grpc.Reflection.V1Alpha.ServiceResponse
+  langs:
+  - csharp
+  - vb
+  name: Grpc.Reflection.V1Alpha
+  nameWithType: Grpc.Reflection.V1Alpha
+  fullName: Grpc.Reflection.V1Alpha
+  type: Namespace
+  assemblies:
+  - GrpCurl.Net
+references:
+- uid: Grpc.Reflection.V1Alpha.ReflectionReflection
+  commentId: T:Grpc.Reflection.V1Alpha.ReflectionReflection
+  href: Grpc.Reflection.V1Alpha.ReflectionReflection.html
+  name: ReflectionReflection
+  nameWithType: ReflectionReflection
+  fullName: Grpc.Reflection.V1Alpha.ReflectionReflection
+- uid: Grpc.Reflection.V1Alpha.ServerReflectionRequest
+  commentId: T:Grpc.Reflection.V1Alpha.ServerReflectionRequest
+  parent: Grpc.Reflection.V1Alpha
+  href: Grpc.Reflection.V1Alpha.ServerReflectionRequest.html
+  name: ServerReflectionRequest
+  nameWithType: ServerReflectionRequest
+  fullName: Grpc.Reflection.V1Alpha.ServerReflectionRequest
+- uid: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+  commentId: T:Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+  parent: Grpc.Reflection.V1Alpha
+  href: Grpc.Reflection.V1Alpha.ServerReflectionRequest.html
+  name: ServerReflectionRequest.MessageRequestOneofCase
+  nameWithType: ServerReflectionRequest.MessageRequestOneofCase
+  fullName: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+  spec.csharp:
+  - uid: Grpc.Reflection.V1Alpha.ServerReflectionRequest
+    name: ServerReflectionRequest
+    href: Grpc.Reflection.V1Alpha.ServerReflectionRequest.html
+  - name: .
+  - uid: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+    name: MessageRequestOneofCase
+    href: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.html
+  spec.vb:
+  - uid: Grpc.Reflection.V1Alpha.ServerReflectionRequest
+    name: ServerReflectionRequest
+    href: Grpc.Reflection.V1Alpha.ServerReflectionRequest.html
+  - name: .
+  - uid: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+    name: MessageRequestOneofCase
+    href: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.html
+- uid: Grpc.Reflection.V1Alpha.ExtensionRequest
+  commentId: T:Grpc.Reflection.V1Alpha.ExtensionRequest
+  parent: Grpc.Reflection.V1Alpha
+  href: Grpc.Reflection.V1Alpha.ExtensionRequest.html
+  name: ExtensionRequest
+  nameWithType: ExtensionRequest
+  fullName: Grpc.Reflection.V1Alpha.ExtensionRequest
+- uid: Grpc.Reflection.V1Alpha.ServerReflectionResponse
+  commentId: T:Grpc.Reflection.V1Alpha.ServerReflectionResponse
+  parent: Grpc.Reflection.V1Alpha
+  href: Grpc.Reflection.V1Alpha.ServerReflectionResponse.html
+  name: ServerReflectionResponse
+  nameWithType: ServerReflectionResponse
+  fullName: Grpc.Reflection.V1Alpha.ServerReflectionResponse
+- uid: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+  commentId: T:Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+  parent: Grpc.Reflection.V1Alpha
+  href: Grpc.Reflection.V1Alpha.ServerReflectionResponse.html
+  name: ServerReflectionResponse.MessageResponseOneofCase
+  nameWithType: ServerReflectionResponse.MessageResponseOneofCase
+  fullName: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+  spec.csharp:
+  - uid: Grpc.Reflection.V1Alpha.ServerReflectionResponse
+    name: ServerReflectionResponse
+    href: Grpc.Reflection.V1Alpha.ServerReflectionResponse.html
+  - name: .
+  - uid: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+    name: MessageResponseOneofCase
+    href: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.html
+  spec.vb:
+  - uid: Grpc.Reflection.V1Alpha.ServerReflectionResponse
+    name: ServerReflectionResponse
+    href: Grpc.Reflection.V1Alpha.ServerReflectionResponse.html
+  - name: .
+  - uid: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+    name: MessageResponseOneofCase
+    href: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.html
+- uid: Grpc.Reflection.V1Alpha.FileDescriptorResponse
+  commentId: T:Grpc.Reflection.V1Alpha.FileDescriptorResponse
+  parent: Grpc.Reflection.V1Alpha
+  href: Grpc.Reflection.V1Alpha.FileDescriptorResponse.html
+  name: FileDescriptorResponse
+  nameWithType: FileDescriptorResponse
+  fullName: Grpc.Reflection.V1Alpha.FileDescriptorResponse
+- uid: Grpc.Reflection.V1Alpha.ExtensionNumberResponse
+  commentId: T:Grpc.Reflection.V1Alpha.ExtensionNumberResponse
+  parent: Grpc.Reflection.V1Alpha
+  href: Grpc.Reflection.V1Alpha.ExtensionNumberResponse.html
+  name: ExtensionNumberResponse
+  nameWithType: ExtensionNumberResponse
+  fullName: Grpc.Reflection.V1Alpha.ExtensionNumberResponse
+- uid: Grpc.Reflection.V1Alpha.ListServiceResponse
+  commentId: T:Grpc.Reflection.V1Alpha.ListServiceResponse
+  parent: Grpc.Reflection.V1Alpha
+  href: Grpc.Reflection.V1Alpha.ListServiceResponse.html
+  name: ListServiceResponse
+  nameWithType: ListServiceResponse
+  fullName: Grpc.Reflection.V1Alpha.ListServiceResponse
+- uid: Grpc.Reflection.V1Alpha.ServiceResponse
+  commentId: T:Grpc.Reflection.V1Alpha.ServiceResponse
+  parent: Grpc.Reflection.V1Alpha
+  href: Grpc.Reflection.V1Alpha.ServiceResponse.html
+  name: ServiceResponse
+  nameWithType: ServiceResponse
+  fullName: Grpc.Reflection.V1Alpha.ServiceResponse
+- uid: Grpc.Reflection.V1Alpha.ErrorResponse
+  commentId: T:Grpc.Reflection.V1Alpha.ErrorResponse
+  parent: Grpc.Reflection.V1Alpha
+  href: Grpc.Reflection.V1Alpha.ErrorResponse.html
+  name: ErrorResponse
+  nameWithType: ErrorResponse
+  fullName: Grpc.Reflection.V1Alpha.ErrorResponse
+- uid: Grpc.Reflection.V1Alpha.ServerReflection
+  commentId: T:Grpc.Reflection.V1Alpha.ServerReflection
+  href: Grpc.Reflection.V1Alpha.ServerReflection.html
+  name: ServerReflection
+  nameWithType: ServerReflection
+  fullName: Grpc.Reflection.V1Alpha.ServerReflection
+- uid: Grpc.Reflection.V1Alpha.ServerReflection.ServerReflectionClient
+  commentId: T:Grpc.Reflection.V1Alpha.ServerReflection.ServerReflectionClient
+  parent: Grpc.Reflection.V1Alpha
+  href: Grpc.Reflection.V1Alpha.ServerReflection.html
+  name: ServerReflection.ServerReflectionClient
+  nameWithType: ServerReflection.ServerReflectionClient
+  fullName: Grpc.Reflection.V1Alpha.ServerReflection.ServerReflectionClient
+  spec.csharp:
+  - uid: Grpc.Reflection.V1Alpha.ServerReflection
+    name: ServerReflection
+    href: Grpc.Reflection.V1Alpha.ServerReflection.html
+  - name: .
+  - uid: Grpc.Reflection.V1Alpha.ServerReflection.ServerReflectionClient
+    name: ServerReflectionClient
+    href: Grpc.Reflection.V1Alpha.ServerReflection.ServerReflectionClient.html
+  spec.vb:
+  - uid: Grpc.Reflection.V1Alpha.ServerReflection
+    name: ServerReflection
+    href: Grpc.Reflection.V1Alpha.ServerReflection.html
+  - name: .
+  - uid: Grpc.Reflection.V1Alpha.ServerReflection.ServerReflectionClient
+    name: ServerReflectionClient
+    href: Grpc.Reflection.V1Alpha.ServerReflection.ServerReflectionClient.html
+- uid: Grpc.Reflection.V1Alpha
+  commentId: N:Grpc.Reflection.V1Alpha
+  href: Grpc.html
+  name: Grpc.Reflection.V1Alpha
+  nameWithType: Grpc.Reflection.V1Alpha
+  fullName: Grpc.Reflection.V1Alpha
+  spec.csharp:
+  - uid: Grpc
+    name: Grpc
+    href: Grpc.html
+  - name: .
+  - uid: Grpc.Reflection
+    name: Reflection
+    href: Grpc.Reflection.html
+  - name: .
+  - uid: Grpc.Reflection.V1Alpha
+    name: V1Alpha
+    href: Grpc.Reflection.V1Alpha.html
+  spec.vb:
+  - uid: Grpc
+    name: Grpc
+    href: Grpc.html
+  - name: .
+  - uid: Grpc.Reflection
+    name: Reflection
+    href: Grpc.Reflection.html
+  - name: .
+  - uid: Grpc.Reflection.V1Alpha
+    name: V1Alpha
+    href: Grpc.Reflection.V1Alpha.html

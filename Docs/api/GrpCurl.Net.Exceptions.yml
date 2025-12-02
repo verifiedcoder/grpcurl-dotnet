@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.Exceptions
+  commentId: N:GrpCurl.Net.Exceptions
+  id: GrpCurl.Net.Exceptions
+  children:
+  - GrpCurl.Net.Exceptions.GrpcCommandException
+  langs:
+  - csharp
+  - vb
+  name: GrpCurl.Net.Exceptions
+  nameWithType: GrpCurl.Net.Exceptions
+  fullName: GrpCurl.Net.Exceptions
+  type: Namespace
+  assemblies:
+  - GrpCurl.Net
+references:
+- uid: GrpCurl.Net.Exceptions.GrpcCommandException
+  commentId: T:GrpCurl.Net.Exceptions.GrpcCommandException
+  href: GrpCurl.Net.Exceptions.GrpcCommandException.html
+  name: GrpcCommandException
+  nameWithType: GrpcCommandException
+  fullName: GrpCurl.Net.Exceptions.GrpcCommandException

@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.Invocation
+  commentId: N:GrpCurl.Net.Invocation
+  id: GrpCurl.Net.Invocation
+  children:
+  - GrpCurl.Net.Invocation.AsyncStreamExtensions
+  langs:
+  - csharp
+  - vb
+  name: GrpCurl.Net.Invocation
+  nameWithType: GrpCurl.Net.Invocation
+  fullName: GrpCurl.Net.Invocation
+  type: Namespace
+  assemblies:
+  - GrpCurl.Net
+references:
+- uid: GrpCurl.Net.Invocation.AsyncStreamExtensions
+  commentId: T:GrpCurl.Net.Invocation.AsyncStreamExtensions
+  href: GrpCurl.Net.Invocation.AsyncStreamExtensions.html
+  name: AsyncStreamExtensions
+  nameWithType: AsyncStreamExtensions
+  fullName: GrpCurl.Net.Invocation.AsyncStreamExtensions

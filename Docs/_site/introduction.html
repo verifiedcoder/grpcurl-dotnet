@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Introduction | GrpCurl.Net </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Introduction | GrpCurl.Net ">
+      
+      
+      <link rel="icon" href="favicon.ico">
+      <link rel="stylesheet" href="public/docfx.min.css">
+      <link rel="stylesheet" href="public/main.css">
+      <meta name="docfx:navrel" content="toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="index.html">
+            <img id="logo" class="svg" src="logo.svg" alt="GrpCurl.Net">
+            GrpCurl.Net
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+
+      <div class="content">
+        <div class="actionbar">
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="introduction">Introduction</h1>
+
+<p>GrpCurl.Net is a modern .NET implementation of <a href="https://github.com/fullstorydev/grpcurl">grpcurl</a>, a command-line tool for interacting with gRPC servers. It enables you to invoke gRPC methods using JSON requests without needing pre-compiled client stubs.</p>
+<h2 id="what-is-grpcurlnet">What is GrpCurl.Net?</h2>
+<p>GrpCurl.Net is a cross-platform CLI tool that makes it easy to:</p>
+<ul>
+<li><strong>Explore gRPC APIs</strong> - List services and methods, describe message types</li>
+<li><strong>Test gRPC endpoints</strong> - Invoke methods with JSON payloads</li>
+<li><strong>Debug gRPC applications</strong> - Verbose output with timing information</li>
+<li><strong>Work offline</strong> - Export and use protoset files without server reflection</li>
+</ul>
+<h2 id="comparison-with-go-grpcurl">Comparison with Go grpcurl</h2>
+<p>GrpCurl.Net is a .NET port of the original Go-based grpcurl tool. Both tools share the same core functionality:</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Go grpcurl</th>
+<th>GrpCurl.Net</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Server reflection</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Protoset files</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Proto file parsing</td>
+<td>Yes</td>
+<td>No*</td>
+</tr>
+<tr>
+<td>All streaming types</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>TLS/mTLS</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Custom headers</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Verbose output</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Timing information</td>
+<td>Basic</td>
+<td>Detailed</td>
+</tr>
+<tr>
+<td>Colored output</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<p>*GrpCurl.Net does not support parsing <code>.proto</code> files at runtime. Use server reflection or pre-compiled protoset files instead.</p>
+<h2 id="supported-features">Supported Features</h2>
+<h3 id="commands">Commands</h3>
+<ul>
+<li><strong><code>list</code></strong> - List available services or methods for a specific service</li>
+<li><strong><code>describe</code></strong> - Describe services, methods, or message types with optional JSON templates</li>
+<li><strong><code>invoke</code></strong> - Invoke gRPC methods with JSON request data</li>
+</ul>
+<h3 id="grpc-method-types">gRPC Method Types</h3>
+<p>All four gRPC method types are fully supported:</p>
+<ul>
+<li><strong>Unary</strong> - Single request, single response</li>
+<li><strong>Server Streaming</strong> - Single request, stream of responses</li>
+<li><strong>Client Streaming</strong> - Stream of requests, single response</li>
+<li><strong>Bidirectional Streaming</strong> - Stream of requests and responses</li>
+</ul>
+<h3 id="schema-discovery">Schema Discovery</h3>
+<p>Two methods for discovering protobuf schemas:</p>
+<ol>
+<li><strong>Server Reflection</strong> - Query running servers via the gRPC reflection protocol</li>
+<li><strong>Protoset Files</strong> - Use pre-compiled FileDescriptorSet files</li>
+</ol>
+<h3 id="connection-options">Connection Options</h3>
+<ul>
+<li>Plaintext HTTP/2 (<code>--plaintext</code>)</li>
+<li>TLS with custom CA certificates (<code>--cacert</code>)</li>
+<li>Mutual TLS with client certificates (<code>--cert</code>, <code>--key</code>)</li>
+<li>Skip certificate verification (<code>--insecure</code>)</li>
+<li>Custom authority header (<code>--authority</code>)</li>
+<li>Custom server name for TLS (<code>--servername</code>)</li>
+</ul>
+<h3 id="requestresponse-options">Request/Response Options</h3>
+<ul>
+<li>Custom headers (<code>-H</code>, <code>--rpc-header</code>, <code>--reflect-header</code>)</li>
+<li>Request data from stdin (<code>-d @</code>)</li>
+<li>Emit default values (<code>--emit-defaults</code>)</li>
+<li>Allow unknown JSON fields (<code>--allow-unknown-fields</code>)</li>
+<li>Connection timeout (<code>--connect-timeout</code>)</li>
+<li>Operation timeout (<code>--max-time</code>)</li>
+<li>Message size limits (<code>--max-msg-sz</code>)</li>
+</ul>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li><strong>.NET 10.0</strong> or later</li>
+<li>A gRPC server with one of:
+<ul>
+<li>Server reflection enabled, or</li>
+<li>Pre-compiled protoset files</li>
+</ul>
+</li>
+</ul>
+<h2 id="architecture">Architecture</h2>
+<p>GrpCurl.Net is built with modern .NET practices:</p>
+<ul>
+<li><strong>Async/await throughout</strong> - Non-blocking I/O operations</li>
+<li><strong>IAsyncEnumerable</strong> - Natural streaming support</li>
+<li><strong>System.CommandLine</strong> - Modern CLI argument parsing</li>
+<li><strong>Spectre.Console</strong> - Rich terminal output with colors and tables</li>
+<li><strong>Google.Protobuf</strong> - Official protobuf runtime for .NET</li>
+</ul>
+<p>For more details on the internal architecture, see <a href="articles/architecture.html">Architecture</a>.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

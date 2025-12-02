@@ -1,0 +1,37 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.Tests.Unit.Invocation
+  commentId: N:GrpCurl.Net.Tests.Unit.Invocation
+  id: GrpCurl.Net.Tests.Unit.Invocation
+  children:
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  - GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  langs:
+  - csharp
+  - vb
+  name: GrpCurl.Net.Tests.Unit.Invocation
+  nameWithType: GrpCurl.Net.Tests.Unit.Invocation
+  fullName: GrpCurl.Net.Tests.Unit.Invocation
+  type: Namespace
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+references:
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  commentId: T:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html
+  name: ProtobufReaderWriterTests
+  nameWithType: ProtobufReaderWriterTests
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  commentId: T:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html
+  name: SimpleDynamicMessageTests
+  nameWithType: SimpleDynamicMessageTests
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+- uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  commentId: T:GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+  href: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.html
+  name: WellKnownTypeHandlerTests
+  nameWithType: WellKnownTypeHandlerTests
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests

@@ -1,0 +1,1670 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  commentId: T:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  id: ProtobufReaderWriterTests
+  parent: GrpCurl.Net.Tests.Unit.Invocation
+  children:
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_EmptyMessage_ReturnsZero
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithNestedMessage_CalculatesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithRepeatedField_CalculatesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithScalarFields_CalculatesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_EmptyInput_ReturnsEmptyMessage
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_NestedMessage_ReadsCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_RepeatedMessageField_ReadsCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_UnknownField_SkipsCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidBool_ReadsCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidInt32_ReadsCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidString_ReadsCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_AllScalarTypes_Succeeds
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_ComplexMessage_Succeeds
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_EmptyMessage_Succeeds
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_LargeByteArray_Succeeds
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_MessageWithRepeatedField_Succeeds
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_MultipleNestedLevels_Succeeds
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_NegativeIntegers_Succeeds(System.Int32)
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_VariousVarintSizes_Succeeds(System.Int32)
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_BoolField_SerializesCorrectly(System.Boolean)
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_BytesField_SerializesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_DeeplyNestedMessage_SerializesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EmptyBytesField_SerializesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EmptyRepeatedField_SerializesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EnumField_SerializesCorrectly(System.Int32)
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_Int32Field_SerializesCorrectly(System.Int32)
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_NestedMessage_SerializesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_NullFieldValue_SkipsField
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_RepeatedMessageField_SerializesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_StringField_SerializesCorrectly(System.String)
+  langs:
+  - csharp
+  - vb
+  name: ProtobufReaderWriterTests
+  nameWithType: ProtobufReaderWriterTests
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  type: Class
+  source:
+    id: ProtobufReaderWriterTests
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 11
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  summary: >-
+    Tests for ProtobufReader and ProtobufWriter which handle binary protobuf
+
+    serialization and deserialization for SimpleDynamicMessage.
+  example: []
+  syntax:
+    content: public class ProtobufReaderWriterTests
+    content.vb: Public Class ProtobufReaderWriterTests
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_Int32Field_SerializesCorrectly(System.Int32)
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_Int32Field_SerializesCorrectly(System.Int32)
+  id: WriteTo_Int32Field_SerializesCorrectly(System.Int32)
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: WriteTo_Int32Field_SerializesCorrectly(int)
+  nameWithType: ProtobufReaderWriterTests.WriteTo_Int32Field_SerializesCorrectly(int)
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_Int32Field_SerializesCorrectly(int)
+  type: Method
+  source:
+    id: WriteTo_Int32Field_SerializesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 15
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { 0 })]
+
+      [InlineData(new object[] { 42 })]
+
+      [InlineData(new object[] { -100 })]
+
+      [InlineData(new object[] { 2147483647 })]
+
+      [InlineData(new object[] { -2147483648 })]
+
+      public void WriteTo_Int32Field_SerializesCorrectly(int value)
+    parameters:
+    - id: value
+      type: System.Int32
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { 0 })>
+
+      <InlineData(New Object() { 42 })>
+
+      <InlineData(New Object() { -100 })>
+
+      <InlineData(New Object() { 2147483647 })>
+
+      <InlineData(New Object() { -2147483648 })>
+
+      Public Sub WriteTo_Int32Field_SerializesCorrectly(value As Integer)
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_Int32Field_SerializesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: ProtobufReaderWriterTests.WriteTo_Int32Field_SerializesCorrectly(Integer)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_Int32Field_SerializesCorrectly(Integer)
+  name.vb: WriteTo_Int32Field_SerializesCorrectly(Integer)
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_StringField_SerializesCorrectly(System.String)
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_StringField_SerializesCorrectly(System.String)
+  id: WriteTo_StringField_SerializesCorrectly(System.String)
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: WriteTo_StringField_SerializesCorrectly(string)
+  nameWithType: ProtobufReaderWriterTests.WriteTo_StringField_SerializesCorrectly(string)
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_StringField_SerializesCorrectly(string)
+  type: Method
+  source:
+    id: WriteTo_StringField_SerializesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 35
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "" })]
+
+      [InlineData(new object[] { "hello" })]
+
+      [InlineData(new object[] { "hello world with special chars: éàü" })]
+
+      [InlineData(new object[] { "unicode: 日本語" })]
+
+      public void WriteTo_StringField_SerializesCorrectly(string value)
+    parameters:
+    - id: value
+      type: System.String
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "" })>
+
+      <InlineData(New Object() { "hello" })>
+
+      <InlineData(New Object() { "hello world with special chars: éàü" })>
+
+      <InlineData(New Object() { "unicode: 日本語" })>
+
+      Public Sub WriteTo_StringField_SerializesCorrectly(value As String)
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_StringField_SerializesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: ProtobufReaderWriterTests.WriteTo_StringField_SerializesCorrectly(String)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_StringField_SerializesCorrectly(String)
+  name.vb: WriteTo_StringField_SerializesCorrectly(String)
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_BoolField_SerializesCorrectly(System.Boolean)
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_BoolField_SerializesCorrectly(System.Boolean)
+  id: WriteTo_BoolField_SerializesCorrectly(System.Boolean)
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: WriteTo_BoolField_SerializesCorrectly(bool)
+  nameWithType: ProtobufReaderWriterTests.WriteTo_BoolField_SerializesCorrectly(bool)
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_BoolField_SerializesCorrectly(bool)
+  type: Method
+  source:
+    id: WriteTo_BoolField_SerializesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 54
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { true })]
+
+      [InlineData(new object[] { false })]
+
+      public void WriteTo_BoolField_SerializesCorrectly(bool value)
+    parameters:
+    - id: value
+      type: System.Boolean
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { True })>
+
+      <InlineData(New Object() { False })>
+
+      Public Sub WriteTo_BoolField_SerializesCorrectly(value As Boolean)
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_BoolField_SerializesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: ProtobufReaderWriterTests.WriteTo_BoolField_SerializesCorrectly(Boolean)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_BoolField_SerializesCorrectly(Boolean)
+  name.vb: WriteTo_BoolField_SerializesCorrectly(Boolean)
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EnumField_SerializesCorrectly(System.Int32)
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EnumField_SerializesCorrectly(System.Int32)
+  id: WriteTo_EnumField_SerializesCorrectly(System.Int32)
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: WriteTo_EnumField_SerializesCorrectly(int)
+  nameWithType: ProtobufReaderWriterTests.WriteTo_EnumField_SerializesCorrectly(int)
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EnumField_SerializesCorrectly(int)
+  type: Method
+  source:
+    id: WriteTo_EnumField_SerializesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 71
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { 0 })]
+
+      [InlineData(new object[] { 1 })]
+
+      [InlineData(new object[] { 2 })]
+
+      public void WriteTo_EnumField_SerializesCorrectly(int enumValue)
+    parameters:
+    - id: enumValue
+      type: System.Int32
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { 0 })>
+
+      <InlineData(New Object() { 1 })>
+
+      <InlineData(New Object() { 2 })>
+
+      Public Sub WriteTo_EnumField_SerializesCorrectly(enumValue As Integer)
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EnumField_SerializesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: ProtobufReaderWriterTests.WriteTo_EnumField_SerializesCorrectly(Integer)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EnumField_SerializesCorrectly(Integer)
+  name.vb: WriteTo_EnumField_SerializesCorrectly(Integer)
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_BytesField_SerializesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_BytesField_SerializesCorrectly
+  id: WriteTo_BytesField_SerializesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: WriteTo_BytesField_SerializesCorrectly()
+  nameWithType: ProtobufReaderWriterTests.WriteTo_BytesField_SerializesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_BytesField_SerializesCorrectly()
+  type: Method
+  source:
+    id: WriteTo_BytesField_SerializesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 89
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteTo_BytesField_SerializesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteTo_BytesField_SerializesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_BytesField_SerializesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EmptyBytesField_SerializesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EmptyBytesField_SerializesCorrectly
+  id: WriteTo_EmptyBytesField_SerializesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: WriteTo_EmptyBytesField_SerializesCorrectly()
+  nameWithType: ProtobufReaderWriterTests.WriteTo_EmptyBytesField_SerializesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EmptyBytesField_SerializesCorrectly()
+  type: Method
+  source:
+    id: WriteTo_EmptyBytesField_SerializesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 105
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteTo_EmptyBytesField_SerializesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteTo_EmptyBytesField_SerializesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EmptyBytesField_SerializesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_NestedMessage_SerializesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_NestedMessage_SerializesCorrectly
+  id: WriteTo_NestedMessage_SerializesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: WriteTo_NestedMessage_SerializesCorrectly()
+  nameWithType: ProtobufReaderWriterTests.WriteTo_NestedMessage_SerializesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_NestedMessage_SerializesCorrectly()
+  type: Method
+  source:
+    id: WriteTo_NestedMessage_SerializesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 124
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteTo_NestedMessage_SerializesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteTo_NestedMessage_SerializesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_NestedMessage_SerializesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_DeeplyNestedMessage_SerializesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_DeeplyNestedMessage_SerializesCorrectly
+  id: WriteTo_DeeplyNestedMessage_SerializesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: WriteTo_DeeplyNestedMessage_SerializesCorrectly()
+  nameWithType: ProtobufReaderWriterTests.WriteTo_DeeplyNestedMessage_SerializesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_DeeplyNestedMessage_SerializesCorrectly()
+  type: Method
+  source:
+    id: WriteTo_DeeplyNestedMessage_SerializesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 152
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteTo_DeeplyNestedMessage_SerializesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteTo_DeeplyNestedMessage_SerializesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_DeeplyNestedMessage_SerializesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_RepeatedMessageField_SerializesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_RepeatedMessageField_SerializesCorrectly
+  id: WriteTo_RepeatedMessageField_SerializesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: WriteTo_RepeatedMessageField_SerializesCorrectly()
+  nameWithType: ProtobufReaderWriterTests.WriteTo_RepeatedMessageField_SerializesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_RepeatedMessageField_SerializesCorrectly()
+  type: Method
+  source:
+    id: WriteTo_RepeatedMessageField_SerializesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 184
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteTo_RepeatedMessageField_SerializesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteTo_RepeatedMessageField_SerializesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_RepeatedMessageField_SerializesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EmptyRepeatedField_SerializesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EmptyRepeatedField_SerializesCorrectly
+  id: WriteTo_EmptyRepeatedField_SerializesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: WriteTo_EmptyRepeatedField_SerializesCorrectly()
+  nameWithType: ProtobufReaderWriterTests.WriteTo_EmptyRepeatedField_SerializesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EmptyRepeatedField_SerializesCorrectly()
+  type: Method
+  source:
+    id: WriteTo_EmptyRepeatedField_SerializesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 223
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteTo_EmptyRepeatedField_SerializesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteTo_EmptyRepeatedField_SerializesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EmptyRepeatedField_SerializesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_EmptyMessage_ReturnsZero
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_EmptyMessage_ReturnsZero
+  id: CalculateSize_EmptyMessage_ReturnsZero
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: CalculateSize_EmptyMessage_ReturnsZero()
+  nameWithType: ProtobufReaderWriterTests.CalculateSize_EmptyMessage_ReturnsZero()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_EmptyMessage_ReturnsZero()
+  type: Method
+  source:
+    id: CalculateSize_EmptyMessage_ReturnsZero
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 245
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void CalculateSize_EmptyMessage_ReturnsZero()
+    content.vb: >-
+      <Fact>
+
+      Public Sub CalculateSize_EmptyMessage_ReturnsZero()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_EmptyMessage_ReturnsZero*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithScalarFields_CalculatesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithScalarFields_CalculatesCorrectly
+  id: CalculateSize_WithScalarFields_CalculatesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: CalculateSize_WithScalarFields_CalculatesCorrectly()
+  nameWithType: ProtobufReaderWriterTests.CalculateSize_WithScalarFields_CalculatesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithScalarFields_CalculatesCorrectly()
+  type: Method
+  source:
+    id: CalculateSize_WithScalarFields_CalculatesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 256
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void CalculateSize_WithScalarFields_CalculatesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub CalculateSize_WithScalarFields_CalculatesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithScalarFields_CalculatesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithNestedMessage_CalculatesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithNestedMessage_CalculatesCorrectly
+  id: CalculateSize_WithNestedMessage_CalculatesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: CalculateSize_WithNestedMessage_CalculatesCorrectly()
+  nameWithType: ProtobufReaderWriterTests.CalculateSize_WithNestedMessage_CalculatesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithNestedMessage_CalculatesCorrectly()
+  type: Method
+  source:
+    id: CalculateSize_WithNestedMessage_CalculatesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 272
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void CalculateSize_WithNestedMessage_CalculatesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub CalculateSize_WithNestedMessage_CalculatesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithNestedMessage_CalculatesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithRepeatedField_CalculatesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithRepeatedField_CalculatesCorrectly
+  id: CalculateSize_WithRepeatedField_CalculatesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: CalculateSize_WithRepeatedField_CalculatesCorrectly()
+  nameWithType: ProtobufReaderWriterTests.CalculateSize_WithRepeatedField_CalculatesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithRepeatedField_CalculatesCorrectly()
+  type: Method
+  source:
+    id: CalculateSize_WithRepeatedField_CalculatesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 293
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void CalculateSize_WithRepeatedField_CalculatesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub CalculateSize_WithRepeatedField_CalculatesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithRepeatedField_CalculatesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidInt32_ReadsCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidInt32_ReadsCorrectly
+  id: MergeFrom_ValidInt32_ReadsCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: MergeFrom_ValidInt32_ReadsCorrectly()
+  nameWithType: ProtobufReaderWriterTests.MergeFrom_ValidInt32_ReadsCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidInt32_ReadsCorrectly()
+  type: Method
+  source:
+    id: MergeFrom_ValidInt32_ReadsCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 321
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void MergeFrom_ValidInt32_ReadsCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub MergeFrom_ValidInt32_ReadsCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidInt32_ReadsCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidString_ReadsCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidString_ReadsCorrectly
+  id: MergeFrom_ValidString_ReadsCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: MergeFrom_ValidString_ReadsCorrectly()
+  nameWithType: ProtobufReaderWriterTests.MergeFrom_ValidString_ReadsCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidString_ReadsCorrectly()
+  type: Method
+  source:
+    id: MergeFrom_ValidString_ReadsCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 338
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void MergeFrom_ValidString_ReadsCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub MergeFrom_ValidString_ReadsCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidString_ReadsCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidBool_ReadsCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidBool_ReadsCorrectly
+  id: MergeFrom_ValidBool_ReadsCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: MergeFrom_ValidBool_ReadsCorrectly()
+  nameWithType: ProtobufReaderWriterTests.MergeFrom_ValidBool_ReadsCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidBool_ReadsCorrectly()
+  type: Method
+  source:
+    id: MergeFrom_ValidBool_ReadsCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 355
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void MergeFrom_ValidBool_ReadsCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub MergeFrom_ValidBool_ReadsCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidBool_ReadsCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_UnknownField_SkipsCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_UnknownField_SkipsCorrectly
+  id: MergeFrom_UnknownField_SkipsCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: MergeFrom_UnknownField_SkipsCorrectly()
+  nameWithType: ProtobufReaderWriterTests.MergeFrom_UnknownField_SkipsCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_UnknownField_SkipsCorrectly()
+  type: Method
+  source:
+    id: MergeFrom_UnknownField_SkipsCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 373
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void MergeFrom_UnknownField_SkipsCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub MergeFrom_UnknownField_SkipsCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_UnknownField_SkipsCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_NestedMessage_ReadsCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_NestedMessage_ReadsCorrectly
+  id: MergeFrom_NestedMessage_ReadsCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: MergeFrom_NestedMessage_ReadsCorrectly()
+  nameWithType: ProtobufReaderWriterTests.MergeFrom_NestedMessage_ReadsCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_NestedMessage_ReadsCorrectly()
+  type: Method
+  source:
+    id: MergeFrom_NestedMessage_ReadsCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 404
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void MergeFrom_NestedMessage_ReadsCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub MergeFrom_NestedMessage_ReadsCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_NestedMessage_ReadsCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_RepeatedMessageField_ReadsCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_RepeatedMessageField_ReadsCorrectly
+  id: MergeFrom_RepeatedMessageField_ReadsCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: MergeFrom_RepeatedMessageField_ReadsCorrectly()
+  nameWithType: ProtobufReaderWriterTests.MergeFrom_RepeatedMessageField_ReadsCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_RepeatedMessageField_ReadsCorrectly()
+  type: Method
+  source:
+    id: MergeFrom_RepeatedMessageField_ReadsCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 434
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void MergeFrom_RepeatedMessageField_ReadsCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub MergeFrom_RepeatedMessageField_ReadsCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_RepeatedMessageField_ReadsCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_EmptyMessage_Succeeds
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_EmptyMessage_Succeeds
+  id: RoundTrip_EmptyMessage_Succeeds
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: RoundTrip_EmptyMessage_Succeeds()
+  nameWithType: ProtobufReaderWriterTests.RoundTrip_EmptyMessage_Succeeds()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_EmptyMessage_Succeeds()
+  type: Method
+  source:
+    id: RoundTrip_EmptyMessage_Succeeds
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 465
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void RoundTrip_EmptyMessage_Succeeds()
+    content.vb: >-
+      <Fact>
+
+      Public Sub RoundTrip_EmptyMessage_Succeeds()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_EmptyMessage_Succeeds*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_AllScalarTypes_Succeeds
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_AllScalarTypes_Succeeds
+  id: RoundTrip_AllScalarTypes_Succeeds
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: RoundTrip_AllScalarTypes_Succeeds()
+  nameWithType: ProtobufReaderWriterTests.RoundTrip_AllScalarTypes_Succeeds()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_AllScalarTypes_Succeeds()
+  type: Method
+  source:
+    id: RoundTrip_AllScalarTypes_Succeeds
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 477
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void RoundTrip_AllScalarTypes_Succeeds()
+    content.vb: >-
+      <Fact>
+
+      Public Sub RoundTrip_AllScalarTypes_Succeeds()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_AllScalarTypes_Succeeds*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_ComplexMessage_Succeeds
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_ComplexMessage_Succeeds
+  id: RoundTrip_ComplexMessage_Succeeds
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: RoundTrip_ComplexMessage_Succeeds()
+  nameWithType: ProtobufReaderWriterTests.RoundTrip_ComplexMessage_Succeeds()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_ComplexMessage_Succeeds()
+  type: Method
+  source:
+    id: RoundTrip_ComplexMessage_Succeeds
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 502
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void RoundTrip_ComplexMessage_Succeeds()
+    content.vb: >-
+      <Fact>
+
+      Public Sub RoundTrip_ComplexMessage_Succeeds()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_ComplexMessage_Succeeds*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_MessageWithRepeatedField_Succeeds
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_MessageWithRepeatedField_Succeeds
+  id: RoundTrip_MessageWithRepeatedField_Succeeds
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: RoundTrip_MessageWithRepeatedField_Succeeds()
+  nameWithType: ProtobufReaderWriterTests.RoundTrip_MessageWithRepeatedField_Succeeds()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_MessageWithRepeatedField_Succeeds()
+  type: Method
+  source:
+    id: RoundTrip_MessageWithRepeatedField_Succeeds
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 550
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void RoundTrip_MessageWithRepeatedField_Succeeds()
+    content.vb: >-
+      <Fact>
+
+      Public Sub RoundTrip_MessageWithRepeatedField_Succeeds()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_MessageWithRepeatedField_Succeeds*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_LargeByteArray_Succeeds
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_LargeByteArray_Succeeds
+  id: RoundTrip_LargeByteArray_Succeeds
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: RoundTrip_LargeByteArray_Succeeds()
+  nameWithType: ProtobufReaderWriterTests.RoundTrip_LargeByteArray_Succeeds()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_LargeByteArray_Succeeds()
+  type: Method
+  source:
+    id: RoundTrip_LargeByteArray_Succeeds
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 589
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void RoundTrip_LargeByteArray_Succeeds()
+    content.vb: >-
+      <Fact>
+
+      Public Sub RoundTrip_LargeByteArray_Succeeds()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_LargeByteArray_Succeeds*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_VariousVarintSizes_Succeeds(System.Int32)
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_VariousVarintSizes_Succeeds(System.Int32)
+  id: RoundTrip_VariousVarintSizes_Succeeds(System.Int32)
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: RoundTrip_VariousVarintSizes_Succeeds(int)
+  nameWithType: ProtobufReaderWriterTests.RoundTrip_VariousVarintSizes_Succeeds(int)
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_VariousVarintSizes_Succeeds(int)
+  type: Method
+  source:
+    id: RoundTrip_VariousVarintSizes_Succeeds
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 609
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { 0 })]
+
+      [InlineData(new object[] { 1 })]
+
+      [InlineData(new object[] { 127 })]
+
+      [InlineData(new object[] { 128 })]
+
+      [InlineData(new object[] { 16383 })]
+
+      [InlineData(new object[] { 16384 })]
+
+      [InlineData(new object[] { 2097151 })]
+
+      [InlineData(new object[] { 2097152 })]
+
+      public void RoundTrip_VariousVarintSizes_Succeeds(int value)
+    parameters:
+    - id: value
+      type: System.Int32
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { 0 })>
+
+      <InlineData(New Object() { 1 })>
+
+      <InlineData(New Object() { 127 })>
+
+      <InlineData(New Object() { 128 })>
+
+      <InlineData(New Object() { 16383 })>
+
+      <InlineData(New Object() { 16384 })>
+
+      <InlineData(New Object() { 2097151 })>
+
+      <InlineData(New Object() { 2097152 })>
+
+      Public Sub RoundTrip_VariousVarintSizes_Succeeds(value As Integer)
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_VariousVarintSizes_Succeeds*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: ProtobufReaderWriterTests.RoundTrip_VariousVarintSizes_Succeeds(Integer)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_VariousVarintSizes_Succeeds(Integer)
+  name.vb: RoundTrip_VariousVarintSizes_Succeeds(Integer)
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_NegativeIntegers_Succeeds(System.Int32)
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_NegativeIntegers_Succeeds(System.Int32)
+  id: RoundTrip_NegativeIntegers_Succeeds(System.Int32)
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: RoundTrip_NegativeIntegers_Succeeds(int)
+  nameWithType: ProtobufReaderWriterTests.RoundTrip_NegativeIntegers_Succeeds(int)
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_NegativeIntegers_Succeeds(int)
+  type: Method
+  source:
+    id: RoundTrip_NegativeIntegers_Succeeds
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 631
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { -1 })]
+
+      [InlineData(new object[] { -127 })]
+
+      [InlineData(new object[] { -128 })]
+
+      [InlineData(new object[] { -16383 })]
+
+      [InlineData(new object[] { -2097151 })]
+
+      public void RoundTrip_NegativeIntegers_Succeeds(int value)
+    parameters:
+    - id: value
+      type: System.Int32
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { -1 })>
+
+      <InlineData(New Object() { -127 })>
+
+      <InlineData(New Object() { -128 })>
+
+      <InlineData(New Object() { -16383 })>
+
+      <InlineData(New Object() { -2097151 })>
+
+      Public Sub RoundTrip_NegativeIntegers_Succeeds(value As Integer)
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_NegativeIntegers_Succeeds*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: ProtobufReaderWriterTests.RoundTrip_NegativeIntegers_Succeeds(Integer)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_NegativeIntegers_Succeeds(Integer)
+  name.vb: RoundTrip_NegativeIntegers_Succeeds(Integer)
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_NullFieldValue_SkipsField
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_NullFieldValue_SkipsField
+  id: WriteTo_NullFieldValue_SkipsField
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: WriteTo_NullFieldValue_SkipsField()
+  nameWithType: ProtobufReaderWriterTests.WriteTo_NullFieldValue_SkipsField()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_NullFieldValue_SkipsField()
+  type: Method
+  source:
+    id: WriteTo_NullFieldValue_SkipsField
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 654
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void WriteTo_NullFieldValue_SkipsField()
+    content.vb: >-
+      <Fact>
+
+      Public Sub WriteTo_NullFieldValue_SkipsField()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_NullFieldValue_SkipsField*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_EmptyInput_ReturnsEmptyMessage
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_EmptyInput_ReturnsEmptyMessage
+  id: MergeFrom_EmptyInput_ReturnsEmptyMessage
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: MergeFrom_EmptyInput_ReturnsEmptyMessage()
+  nameWithType: ProtobufReaderWriterTests.MergeFrom_EmptyInput_ReturnsEmptyMessage()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_EmptyInput_ReturnsEmptyMessage()
+  type: Method
+  source:
+    id: MergeFrom_EmptyInput_ReturnsEmptyMessage
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 668
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void MergeFrom_EmptyInput_ReturnsEmptyMessage()
+    content.vb: >-
+      <Fact>
+
+      Public Sub MergeFrom_EmptyInput_ReturnsEmptyMessage()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_EmptyInput_ReturnsEmptyMessage*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_MultipleNestedLevels_Succeeds
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_MultipleNestedLevels_Succeeds
+  id: RoundTrip_MultipleNestedLevels_Succeeds
+  parent: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+  langs:
+  - csharp
+  - vb
+  name: RoundTrip_MultipleNestedLevels_Succeeds()
+  nameWithType: ProtobufReaderWriterTests.RoundTrip_MultipleNestedLevels_Succeeds()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_MultipleNestedLevels_Succeeds()
+  type: Method
+  source:
+    id: RoundTrip_MultipleNestedLevels_Succeeds
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/ProtobufReaderWriterTests.cs
+    startLine: 681
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void RoundTrip_MultipleNestedLevels_Succeeds()
+    content.vb: >-
+      <Fact>
+
+      Public Sub RoundTrip_MultipleNestedLevels_Succeeds()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_MultipleNestedLevels_Succeeds*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+references:
+- uid: GrpCurl.Net.Tests.Unit.Invocation
+  commentId: N:GrpCurl.Net.Tests.Unit.Invocation
+  href: GrpCurl.html
+  name: GrpCurl.Net.Tests.Unit.Invocation
+  nameWithType: GrpCurl.Net.Tests.Unit.Invocation
+  fullName: GrpCurl.Net.Tests.Unit.Invocation
+  spec.csharp:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit
+    name: Unit
+    href: GrpCurl.Net.Tests.Unit.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit.Invocation
+    name: Invocation
+    href: GrpCurl.Net.Tests.Unit.Invocation.html
+  spec.vb:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit
+    name: Unit
+    href: GrpCurl.Net.Tests.Unit.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit.Invocation
+    name: Invocation
+    href: GrpCurl.Net.Tests.Unit.Invocation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_Int32Field_SerializesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_Int32Field_SerializesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_WriteTo_Int32Field_SerializesCorrectly_System_Int32_
+  name: WriteTo_Int32Field_SerializesCorrectly
+  nameWithType: ProtobufReaderWriterTests.WriteTo_Int32Field_SerializesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_Int32Field_SerializesCorrectly
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_StringField_SerializesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_StringField_SerializesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_WriteTo_StringField_SerializesCorrectly_System_String_
+  name: WriteTo_StringField_SerializesCorrectly
+  nameWithType: ProtobufReaderWriterTests.WriteTo_StringField_SerializesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_StringField_SerializesCorrectly
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_BoolField_SerializesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_BoolField_SerializesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_WriteTo_BoolField_SerializesCorrectly_System_Boolean_
+  name: WriteTo_BoolField_SerializesCorrectly
+  nameWithType: ProtobufReaderWriterTests.WriteTo_BoolField_SerializesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_BoolField_SerializesCorrectly
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EnumField_SerializesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EnumField_SerializesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_WriteTo_EnumField_SerializesCorrectly_System_Int32_
+  name: WriteTo_EnumField_SerializesCorrectly
+  nameWithType: ProtobufReaderWriterTests.WriteTo_EnumField_SerializesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EnumField_SerializesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_BytesField_SerializesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_BytesField_SerializesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_WriteTo_BytesField_SerializesCorrectly
+  name: WriteTo_BytesField_SerializesCorrectly
+  nameWithType: ProtobufReaderWriterTests.WriteTo_BytesField_SerializesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_BytesField_SerializesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EmptyBytesField_SerializesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EmptyBytesField_SerializesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_WriteTo_EmptyBytesField_SerializesCorrectly
+  name: WriteTo_EmptyBytesField_SerializesCorrectly
+  nameWithType: ProtobufReaderWriterTests.WriteTo_EmptyBytesField_SerializesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EmptyBytesField_SerializesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_NestedMessage_SerializesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_NestedMessage_SerializesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_WriteTo_NestedMessage_SerializesCorrectly
+  name: WriteTo_NestedMessage_SerializesCorrectly
+  nameWithType: ProtobufReaderWriterTests.WriteTo_NestedMessage_SerializesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_NestedMessage_SerializesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_DeeplyNestedMessage_SerializesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_DeeplyNestedMessage_SerializesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_WriteTo_DeeplyNestedMessage_SerializesCorrectly
+  name: WriteTo_DeeplyNestedMessage_SerializesCorrectly
+  nameWithType: ProtobufReaderWriterTests.WriteTo_DeeplyNestedMessage_SerializesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_DeeplyNestedMessage_SerializesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_RepeatedMessageField_SerializesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_RepeatedMessageField_SerializesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_WriteTo_RepeatedMessageField_SerializesCorrectly
+  name: WriteTo_RepeatedMessageField_SerializesCorrectly
+  nameWithType: ProtobufReaderWriterTests.WriteTo_RepeatedMessageField_SerializesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_RepeatedMessageField_SerializesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EmptyRepeatedField_SerializesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EmptyRepeatedField_SerializesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_WriteTo_EmptyRepeatedField_SerializesCorrectly
+  name: WriteTo_EmptyRepeatedField_SerializesCorrectly
+  nameWithType: ProtobufReaderWriterTests.WriteTo_EmptyRepeatedField_SerializesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_EmptyRepeatedField_SerializesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_EmptyMessage_ReturnsZero*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_EmptyMessage_ReturnsZero
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_CalculateSize_EmptyMessage_ReturnsZero
+  name: CalculateSize_EmptyMessage_ReturnsZero
+  nameWithType: ProtobufReaderWriterTests.CalculateSize_EmptyMessage_ReturnsZero
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_EmptyMessage_ReturnsZero
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithScalarFields_CalculatesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithScalarFields_CalculatesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_CalculateSize_WithScalarFields_CalculatesCorrectly
+  name: CalculateSize_WithScalarFields_CalculatesCorrectly
+  nameWithType: ProtobufReaderWriterTests.CalculateSize_WithScalarFields_CalculatesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithScalarFields_CalculatesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithNestedMessage_CalculatesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithNestedMessage_CalculatesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_CalculateSize_WithNestedMessage_CalculatesCorrectly
+  name: CalculateSize_WithNestedMessage_CalculatesCorrectly
+  nameWithType: ProtobufReaderWriterTests.CalculateSize_WithNestedMessage_CalculatesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithNestedMessage_CalculatesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithRepeatedField_CalculatesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithRepeatedField_CalculatesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_CalculateSize_WithRepeatedField_CalculatesCorrectly
+  name: CalculateSize_WithRepeatedField_CalculatesCorrectly
+  nameWithType: ProtobufReaderWriterTests.CalculateSize_WithRepeatedField_CalculatesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.CalculateSize_WithRepeatedField_CalculatesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidInt32_ReadsCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidInt32_ReadsCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_MergeFrom_ValidInt32_ReadsCorrectly
+  name: MergeFrom_ValidInt32_ReadsCorrectly
+  nameWithType: ProtobufReaderWriterTests.MergeFrom_ValidInt32_ReadsCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidInt32_ReadsCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidString_ReadsCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidString_ReadsCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_MergeFrom_ValidString_ReadsCorrectly
+  name: MergeFrom_ValidString_ReadsCorrectly
+  nameWithType: ProtobufReaderWriterTests.MergeFrom_ValidString_ReadsCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidString_ReadsCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidBool_ReadsCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidBool_ReadsCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_MergeFrom_ValidBool_ReadsCorrectly
+  name: MergeFrom_ValidBool_ReadsCorrectly
+  nameWithType: ProtobufReaderWriterTests.MergeFrom_ValidBool_ReadsCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_ValidBool_ReadsCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_UnknownField_SkipsCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_UnknownField_SkipsCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_MergeFrom_UnknownField_SkipsCorrectly
+  name: MergeFrom_UnknownField_SkipsCorrectly
+  nameWithType: ProtobufReaderWriterTests.MergeFrom_UnknownField_SkipsCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_UnknownField_SkipsCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_NestedMessage_ReadsCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_NestedMessage_ReadsCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_MergeFrom_NestedMessage_ReadsCorrectly
+  name: MergeFrom_NestedMessage_ReadsCorrectly
+  nameWithType: ProtobufReaderWriterTests.MergeFrom_NestedMessage_ReadsCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_NestedMessage_ReadsCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_RepeatedMessageField_ReadsCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_RepeatedMessageField_ReadsCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_MergeFrom_RepeatedMessageField_ReadsCorrectly
+  name: MergeFrom_RepeatedMessageField_ReadsCorrectly
+  nameWithType: ProtobufReaderWriterTests.MergeFrom_RepeatedMessageField_ReadsCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_RepeatedMessageField_ReadsCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_EmptyMessage_Succeeds*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_EmptyMessage_Succeeds
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_RoundTrip_EmptyMessage_Succeeds
+  name: RoundTrip_EmptyMessage_Succeeds
+  nameWithType: ProtobufReaderWriterTests.RoundTrip_EmptyMessage_Succeeds
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_EmptyMessage_Succeeds
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_AllScalarTypes_Succeeds*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_AllScalarTypes_Succeeds
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_RoundTrip_AllScalarTypes_Succeeds
+  name: RoundTrip_AllScalarTypes_Succeeds
+  nameWithType: ProtobufReaderWriterTests.RoundTrip_AllScalarTypes_Succeeds
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_AllScalarTypes_Succeeds
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_ComplexMessage_Succeeds*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_ComplexMessage_Succeeds
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_RoundTrip_ComplexMessage_Succeeds
+  name: RoundTrip_ComplexMessage_Succeeds
+  nameWithType: ProtobufReaderWriterTests.RoundTrip_ComplexMessage_Succeeds
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_ComplexMessage_Succeeds
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_MessageWithRepeatedField_Succeeds*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_MessageWithRepeatedField_Succeeds
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_RoundTrip_MessageWithRepeatedField_Succeeds
+  name: RoundTrip_MessageWithRepeatedField_Succeeds
+  nameWithType: ProtobufReaderWriterTests.RoundTrip_MessageWithRepeatedField_Succeeds
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_MessageWithRepeatedField_Succeeds
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_LargeByteArray_Succeeds*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_LargeByteArray_Succeeds
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_RoundTrip_LargeByteArray_Succeeds
+  name: RoundTrip_LargeByteArray_Succeeds
+  nameWithType: ProtobufReaderWriterTests.RoundTrip_LargeByteArray_Succeeds
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_LargeByteArray_Succeeds
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_VariousVarintSizes_Succeeds*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_VariousVarintSizes_Succeeds
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_RoundTrip_VariousVarintSizes_Succeeds_System_Int32_
+  name: RoundTrip_VariousVarintSizes_Succeeds
+  nameWithType: ProtobufReaderWriterTests.RoundTrip_VariousVarintSizes_Succeeds
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_VariousVarintSizes_Succeeds
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_NegativeIntegers_Succeeds*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_NegativeIntegers_Succeeds
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_RoundTrip_NegativeIntegers_Succeeds_System_Int32_
+  name: RoundTrip_NegativeIntegers_Succeeds
+  nameWithType: ProtobufReaderWriterTests.RoundTrip_NegativeIntegers_Succeeds
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_NegativeIntegers_Succeeds
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_NullFieldValue_SkipsField*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_NullFieldValue_SkipsField
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_WriteTo_NullFieldValue_SkipsField
+  name: WriteTo_NullFieldValue_SkipsField
+  nameWithType: ProtobufReaderWriterTests.WriteTo_NullFieldValue_SkipsField
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.WriteTo_NullFieldValue_SkipsField
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_EmptyInput_ReturnsEmptyMessage*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_EmptyInput_ReturnsEmptyMessage
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_MergeFrom_EmptyInput_ReturnsEmptyMessage
+  name: MergeFrom_EmptyInput_ReturnsEmptyMessage
+  nameWithType: ProtobufReaderWriterTests.MergeFrom_EmptyInput_ReturnsEmptyMessage
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.MergeFrom_EmptyInput_ReturnsEmptyMessage
+- uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_MultipleNestedLevels_Succeeds*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_MultipleNestedLevels_Succeeds
+  href: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.html#GrpCurl_Net_Tests_Unit_Invocation_ProtobufReaderWriterTests_RoundTrip_MultipleNestedLevels_Succeeds
+  name: RoundTrip_MultipleNestedLevels_Succeeds
+  nameWithType: ProtobufReaderWriterTests.RoundTrip_MultipleNestedLevels_Succeeds
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests.RoundTrip_MultipleNestedLevels_Succeeds

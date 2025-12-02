@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class ProtosetSourceTests | GrpCurl.Net </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class ProtosetSourceTests | GrpCurl.Net ">
+      
+      <meta name="description" content="Tests for ProtosetSource which loads descriptors from compiled FileDescriptorSet files.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="GrpCurl.Net">
+            GrpCurl.Net
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests">
+
+
+
+  <h1 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests" class="text-break">
+Class ProtosetSourceTests  
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="GrpCurl.html">GrpCurl</a>.<a class="xref" href="GrpCurl.Net.html">Net</a>.<a class="xref" href="GrpCurl.Net.Tests.html">Tests</a>.<a class="xref" href="GrpCurl.Net.Tests.Unit.html">Unit</a>.<a class="xref" href="GrpCurl.Net.Tests.Unit.DescriptorSources.html">DescriptorSources</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>GrpCurl.Net.Tests.Unit.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Tests for ProtosetSource which loads descriptors from compiled FileDescriptorSet files.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public class ProtosetSourceTests</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">ProtosetSourceTests</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests__ctor_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.#ctor*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests__ctor" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.#ctor">
+  ProtosetSourceTests()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ProtosetSourceTests()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FileDescriptorSet_AfterLoading_IsPopulated_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FileDescriptorSet_AfterLoading_IsPopulated*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FileDescriptorSet_AfterLoading_IsPopulated" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FileDescriptorSet_AfterLoading_IsPopulated">
+  FileDescriptorSet_AfterLoading_IsPopulated()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task FileDescriptorSet_AfterLoading_IsPopulated()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FileDescriptorSet_ContainsAllProtoFiles_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FileDescriptorSet_ContainsAllProtoFiles*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FileDescriptorSet_ContainsAllProtoFiles" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FileDescriptorSet_ContainsAllProtoFiles">
+  FileDescriptorSet_ContainsAllProtoFiles()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task FileDescriptorSet_ContainsAllProtoFiles()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors">
+  FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors">
+  FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_CaseSensitive_ReturnsNull_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_CaseSensitive_ReturnsNull*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_CaseSensitive_ReturnsNull" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_CaseSensitive_ReturnsNull">
+  FindSymbolAsync_CaseSensitive_ReturnsNull()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task FindSymbolAsync_CaseSensitive_ReturnsNull()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_ConcurrentCalls_AllSucceed_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ConcurrentCalls_AllSucceed*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_ConcurrentCalls_AllSucceed" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ConcurrentCalls_AllSucceed">
+  FindSymbolAsync_ConcurrentCalls_AllSucceed()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task FindSymbolAsync_ConcurrentCalls_AllSucceed()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_EmptyName_ReturnsNull_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_EmptyName_ReturnsNull*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_EmptyName_ReturnsNull" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_EmptyName_ReturnsNull">
+  FindSymbolAsync_EmptyName_ReturnsNull()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task FindSymbolAsync_EmptyName_ReturnsNull()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_EnumValue_ReturnsEnumValueDescriptor_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_EnumValue_ReturnsEnumValueDescriptor*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_EnumValue_ReturnsEnumValueDescriptor" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_EnumValue_ReturnsEnumValueDescriptor">
+  FindSymbolAsync_EnumValue_ReturnsEnumValueDescriptor()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task FindSymbolAsync_EnumValue_ReturnsEnumValueDescriptor()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor">
+  FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_ExistingField_ReturnsFieldDescriptor_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingField_ReturnsFieldDescriptor*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_ExistingField_ReturnsFieldDescriptor" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingField_ReturnsFieldDescriptor">
+  FindSymbolAsync_ExistingField_ReturnsFieldDescriptor()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task FindSymbolAsync_ExistingField_ReturnsFieldDescriptor()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor">
+  FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor">
+  FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_ExistingService_ReturnsServiceDescriptor_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingService_ReturnsServiceDescriptor*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_ExistingService_ReturnsServiceDescriptor" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingService_ReturnsServiceDescriptor">
+  FindSymbolAsync_ExistingService_ReturnsServiceDescriptor()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task FindSymbolAsync_ExistingService_ReturnsServiceDescriptor()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_NestedMessageField_ReturnsFieldDescriptor_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_NestedMessageField_ReturnsFieldDescriptor*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_NestedMessageField_ReturnsFieldDescriptor" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_NestedMessageField_ReturnsFieldDescriptor">
+  FindSymbolAsync_NestedMessageField_ReturnsFieldDescriptor()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task FindSymbolAsync_NestedMessageField_ReturnsFieldDescriptor()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_NonExistentService_ReturnsNull_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_NonExistentService_ReturnsNull*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_NonExistentService_ReturnsNull" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_NonExistentService_ReturnsNull">
+  FindSymbolAsync_NonExistentService_ReturnsNull()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task FindSymbolAsync_NonExistentService_ReturnsNull()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_PartialName_ReturnsNull_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_PartialName_ReturnsNull*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_PartialName_ReturnsNull" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_PartialName_ReturnsNull">
+  FindSymbolAsync_PartialName_ReturnsNull()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task FindSymbolAsync_PartialName_ReturnsNull()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_RepeatedField_ReturnsFieldDescriptor_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_RepeatedField_ReturnsFieldDescriptor*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_RepeatedField_ReturnsFieldDescriptor" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_RepeatedField_ReturnsFieldDescriptor">
+  FindSymbolAsync_RepeatedField_ReturnsFieldDescriptor()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task FindSymbolAsync_RepeatedField_ReturnsFieldDescriptor()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_WellKnownDuration_ReturnsDescriptor_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_WellKnownDuration_ReturnsDescriptor*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_WellKnownDuration_ReturnsDescriptor" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_WellKnownDuration_ReturnsDescriptor">
+  FindSymbolAsync_WellKnownDuration_ReturnsDescriptor()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task FindSymbolAsync_WellKnownDuration_ReturnsDescriptor()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_WellKnownTimestamp_ReturnsDescriptor_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_WellKnownTimestamp_ReturnsDescriptor*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_WellKnownTimestamp_ReturnsDescriptor" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_WellKnownTimestamp_ReturnsDescriptor">
+  FindSymbolAsync_WellKnownTimestamp_ReturnsDescriptor()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task FindSymbolAsync_WellKnownTimestamp_ReturnsDescriptor()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_ListServicesAsync_ConcurrentCalls_AllSucceed_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ConcurrentCalls_AllSucceed*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_ListServicesAsync_ConcurrentCalls_AllSucceed" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ConcurrentCalls_AllSucceed">
+  ListServicesAsync_ConcurrentCalls_AllSucceed()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task ListServicesAsync_ConcurrentCalls_AllSucceed()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_ListServicesAsync_EmptyProtoset_ReturnsEmptyList_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_EmptyProtoset_ReturnsEmptyList*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_ListServicesAsync_EmptyProtoset_ReturnsEmptyList" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_EmptyProtoset_ReturnsEmptyList">
+  ListServicesAsync_EmptyProtoset_ReturnsEmptyList()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task ListServicesAsync_EmptyProtoset_ReturnsEmptyList()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_ListServicesAsync_MultipleCallsReturnSameResults_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_MultipleCallsReturnSameResults*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_ListServicesAsync_MultipleCallsReturnSameResults" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_MultipleCallsReturnSameResults">
+  ListServicesAsync_MultipleCallsReturnSameResults()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task ListServicesAsync_MultipleCallsReturnSameResults()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_ListServicesAsync_ServicesAreSorted_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ServicesAreSorted*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_ListServicesAsync_ServicesAreSorted" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ServicesAreSorted">
+  ListServicesAsync_ServicesAreSorted()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task ListServicesAsync_ServicesAreSorted()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_ListServicesAsync_ValidProtoset_ReturnsServices_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ValidProtoset_ReturnsServices*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_ListServicesAsync_ValidProtoset_ReturnsServices" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ValidProtoset_ReturnsServices">
+  ListServicesAsync_ValidProtoset_ReturnsServices()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task ListServicesAsync_ValidProtoset_ReturnsServices()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully">
+  LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFileAsync_InvalidProtoset_ThrowsException_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_InvalidProtoset_ThrowsException*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFileAsync_InvalidProtoset_ThrowsException" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_InvalidProtoset_ThrowsException">
+  LoadFromFileAsync_InvalidProtoset_ThrowsException()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task LoadFromFileAsync_InvalidProtoset_ThrowsException()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFileAsync_NonExistentFile_ThrowsFileNotFoundException_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_NonExistentFile_ThrowsFileNotFoundException*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFileAsync_NonExistentFile_ThrowsFileNotFoundException" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_NonExistentFile_ThrowsFileNotFoundException">
+  LoadFromFileAsync_NonExistentFile_ThrowsFileNotFoundException()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task LoadFromFileAsync_NonExistentFile_ThrowsFileNotFoundException()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFileAsync_ValidProtoset_LoadsSuccessfully_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_ValidProtoset_LoadsSuccessfully*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFileAsync_ValidProtoset_LoadsSuccessfully" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_ValidProtoset_LoadsSuccessfully">
+  LoadFromFileAsync_ValidProtoset_LoadsSuccessfully()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task LoadFromFileAsync_ValidProtoset_LoadsSuccessfully()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully">
+  LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFileAsync_WithCancellationToken_RespectsCancellation_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_WithCancellationToken_RespectsCancellation*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFileAsync_WithCancellationToken_RespectsCancellation" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_WithCancellationToken_RespectsCancellation">
+  LoadFromFileAsync_WithCancellationToken_RespectsCancellation()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task LoadFromFileAsync_WithCancellationToken_RespectsCancellation()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFilesAsync_EmptyCollection_ReturnsEmptySource_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_EmptyCollection_ReturnsEmptySource*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFilesAsync_EmptyCollection_ReturnsEmptySource" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_EmptyCollection_ReturnsEmptySource">
+  LoadFromFilesAsync_EmptyCollection_ReturnsEmptySource()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task LoadFromFilesAsync_EmptyCollection_ReturnsEmptySource()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFilesAsync_MultipleProtosets_LoadsAll_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_MultipleProtosets_LoadsAll*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFilesAsync_MultipleProtosets_LoadsAll" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_MultipleProtosets_LoadsAll">
+  LoadFromFilesAsync_MultipleProtosets_LoadsAll()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task LoadFromFilesAsync_MultipleProtosets_LoadsAll()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFilesAsync_SingleFile_LoadsSuccessfully_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_SingleFile_LoadsSuccessfully*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFilesAsync_SingleFile_LoadsSuccessfully" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_SingleFile_LoadsSuccessfully">
+  LoadFromFilesAsync_SingleFile_LoadsSuccessfully()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task LoadFromFilesAsync_SingleFile_LoadsSuccessfully()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_MethodDescriptor_BidirectionalStreaming_HasCorrectProperties_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_BidirectionalStreaming_HasCorrectProperties*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_MethodDescriptor_BidirectionalStreaming_HasCorrectProperties" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_BidirectionalStreaming_HasCorrectProperties">
+  MethodDescriptor_BidirectionalStreaming_HasCorrectProperties()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task MethodDescriptor_BidirectionalStreaming_HasCorrectProperties()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_MethodDescriptor_ClientStreaming_HasCorrectProperties_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_ClientStreaming_HasCorrectProperties*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_MethodDescriptor_ClientStreaming_HasCorrectProperties" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_ClientStreaming_HasCorrectProperties">
+  MethodDescriptor_ClientStreaming_HasCorrectProperties()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task MethodDescriptor_ClientStreaming_HasCorrectProperties()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_MethodDescriptor_ServerStreaming_HasCorrectProperties_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_ServerStreaming_HasCorrectProperties*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_MethodDescriptor_ServerStreaming_HasCorrectProperties" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_ServerStreaming_HasCorrectProperties">
+  MethodDescriptor_ServerStreaming_HasCorrectProperties()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task MethodDescriptor_ServerStreaming_HasCorrectProperties()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_MethodDescriptor_UnaryCall_HasCorrectProperties_" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_UnaryCall_HasCorrectProperties*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_MethodDescriptor_UnaryCall_HasCorrectProperties" data-uid="GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_UnaryCall_HasCorrectProperties">
+  MethodDescriptor_UnaryCall_HasCorrectProperties()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task MethodDescriptor_UnaryCall_HasCorrectProperties()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

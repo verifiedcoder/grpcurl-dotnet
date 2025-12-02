@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Examples | GrpCurl.Net </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Examples | GrpCurl.Net ">
+      
+      
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="GrpCurl.Net">
+            GrpCurl.Net
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="examples">Examples</h1>
+
+<p>This page provides practical examples for common GrpCurl.Net use cases.</p>
+<h2 id="service-discovery">Service Discovery</h2>
+<h3 id="list-all-services">List All Services</h3>
+<pre><code class="lang-bash">grpcurl list --plaintext localhost:9090
+</code></pre>
+<h3 id="list-services-with-verbose-output">List Services with Verbose Output</h3>
+<pre><code class="lang-bash">grpcurl list --plaintext -v localhost:9090
+</code></pre>
+<p>Output includes connection details and timing:</p>
+<pre><code>[dim]Connecting to localhost:9090...[/]
+[dim]Protocol: HTTP/2 (plaintext)[/]
+[dim]Connected successfully, querying server reflection...[/]
+┌──────────────────────────────────────────────────┐
+│ Service                                          │
+├──────────────────────────────────────────────────┤
+│ grpc.reflection.v1alpha.ServerReflection         │
+│ testing.TestService                              │
+└──────────────────────────────────────────────────┘
+
+Total: 2 service(s)
+[dim]Operation completed in 45ms[/]
+</code></pre>
+<h3 id="list-methods-for-a-service">List Methods for a Service</h3>
+<pre><code class="lang-bash">grpcurl list --plaintext localhost:9090 testing.TestService
+</code></pre>
+<hr>
+<h2 id="describing-services-and-messages">Describing Services and Messages</h2>
+<h3 id="describe-a-service">Describe a Service</h3>
+<pre><code class="lang-bash">grpcurl describe --plaintext localhost:9090 testing.TestService
+</code></pre>
+<h3 id="describe-a-message-type">Describe a Message Type</h3>
+<pre><code class="lang-bash">grpcurl describe --plaintext localhost:9090 testing.SimpleRequest
+</code></pre>
+<h3 id="get-json-template-for-a-message">Get JSON Template for a Message</h3>
+<p>Very useful for understanding the expected request format:</p>
+<pre><code class="lang-bash">grpcurl describe --plaintext --msg-template localhost:9090 testing.SimpleRequest
+</code></pre>
+<p>Output:</p>
+<pre><code class="lang-json">{
+  &quot;responseType&quot;: &quot;COMPRESSABLE&quot;,
+  &quot;responseSize&quot;: 0,
+  &quot;payload&quot;: {
+    &quot;type&quot;: &quot;COMPRESSABLE&quot;,
+    &quot;body&quot;: &quot;&quot;
+  },
+  &quot;fillUsername&quot;: false,
+  &quot;fillOauthScope&quot;: false,
+  &quot;responseStatus&quot;: {
+    &quot;code&quot;: 0,
+    &quot;message&quot;: &quot;&quot;
+  }
+}
+</code></pre>
+<hr>
+<h2 id="invoking-methods">Invoking Methods</h2>
+<h3 id="simple-unary-call">Simple Unary Call</h3>
+<pre><code class="lang-bash">grpcurl invoke --plaintext localhost:9090 testing.TestService/EmptyCall
+</code></pre>
+<h3 id="unary-call-with-request-data">Unary Call with Request Data</h3>
+<pre><code class="lang-bash">grpcurl invoke --plaintext \
+  -d '{&quot;response_size&quot;: 20, &quot;fill_username&quot;: true}' \
+  localhost:9090 testing.TestService/UnaryCall
+</code></pre>
+<h3 id="server-streaming">Server Streaming</h3>
+<p>Request one message, receive multiple responses:</p>
+<pre><code class="lang-bash">grpcurl invoke --plaintext \
+  -d '{&quot;response_parameters&quot;: [{&quot;size&quot;: 10}, {&quot;size&quot;: 20}, {&quot;size&quot;: 30}]}' \
+  localhost:9090 testing.TestService/StreamingOutputCall
+</code></pre>
+<p>Output (multiple JSON objects):</p>
+<pre><code class="lang-json">{&quot;payload&quot;:{&quot;body&quot;:&quot;AAAAAAAAAA&quot;}}
+{&quot;payload&quot;:{&quot;body&quot;:&quot;AAAAAAAAAAAAAAAAAAAA&quot;}}
+{&quot;payload&quot;:{&quot;body&quot;:&quot;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&quot;}}
+</code></pre>
+<h3 id="client-streaming">Client Streaming</h3>
+<p>Send multiple messages, receive one response:</p>
+<pre><code class="lang-bash">echo '{&quot;payload&quot;: {&quot;body&quot;: &quot;AAAA&quot;}}
+{&quot;payload&quot;: {&quot;body&quot;: &quot;BBBB&quot;}}
+{&quot;payload&quot;: {&quot;body&quot;: &quot;CCCC&quot;}}' | \
+grpcurl invoke --plaintext -d @ localhost:9090 testing.TestService/StreamingInputCall
+</code></pre>
+<h3 id="bidirectional-streaming">Bidirectional Streaming</h3>
+<p>Send and receive multiple messages:</p>
+<pre><code class="lang-bash">echo '{&quot;response_parameters&quot;: [{&quot;size&quot;: 10}]}
+{&quot;response_parameters&quot;: [{&quot;size&quot;: 20}]}' | \
+grpcurl invoke --plaintext -d @ localhost:9090 testing.TestService/FullDuplexCall
+</code></pre>
+<hr>
+<h2 id="working-with-headers">Working with Headers</h2>
+<h3 id="add-custom-headers">Add Custom Headers</h3>
+<pre><code class="lang-bash">grpcurl invoke --plaintext \
+  -H &quot;Authorization: Bearer my-token&quot; \
+  -H &quot;X-Request-Id: req-12345&quot; \
+  -d '{}' \
+  localhost:9090 testing.TestService/EmptyCall
+</code></pre>
+<h3 id="different-headers-for-reflection-vs-rpc">Different Headers for Reflection vs RPC</h3>
+<p>Use <code>--reflect-header</code> for reflection-only headers and <code>--rpc-header</code> for RPC-only headers:</p>
+<pre><code class="lang-bash">grpcurl invoke --plaintext \
+  --reflect-header &quot;X-Reflect-Auth: reflect-token&quot; \
+  --rpc-header &quot;X-RPC-Auth: rpc-token&quot; \
+  -H &quot;X-Common: shared-value&quot; \
+  -d '{}' \
+  localhost:9090 testing.TestService/EmptyCall
+</code></pre>
+<h3 id="headers-with-environment-variables">Headers with Environment Variables</h3>
+<pre><code class="lang-bash">export AUTH_TOKEN=&quot;my-secret-token&quot;
+grpcurl invoke --plaintext \
+  -H &quot;Authorization: Bearer ${AUTH_TOKEN}&quot; \
+  -d '{}' \
+  localhost:9090 testing.TestService/EmptyCall
+</code></pre>
+<hr>
+<h2 id="using-protoset-files">Using Protoset Files</h2>
+<h3 id="generate-a-protoset-file">Generate a Protoset File</h3>
+<p>Using <code>protoc</code>:</p>
+<pre><code class="lang-bash">protoc --descriptor_set_out=service.protoset \
+  --include_imports \
+  service.proto
+</code></pre>
+<p>Or export from a running server:</p>
+<pre><code class="lang-bash">grpcurl list --plaintext --protoset-out service.protoset localhost:9090
+</code></pre>
+<h3 id="list-services-from-protoset-offline">List Services from Protoset (Offline)</h3>
+<pre><code class="lang-bash">grpcurl list --protoset service.protoset
+</code></pre>
+<h3 id="invoke-method-using-protoset">Invoke Method Using Protoset</h3>
+<pre><code class="lang-bash">grpcurl invoke --plaintext \
+  --protoset service.protoset \
+  -d '{&quot;name&quot;: &quot;World&quot;}' \
+  localhost:9090 my.package.Service/SayHello
+</code></pre>
+<hr>
+<h2 id="verbose-and-timing-output">Verbose and Timing Output</h2>
+<h3 id="verbose-mode">Verbose Mode</h3>
+<pre><code class="lang-bash">grpcurl invoke --plaintext -v \
+  -d '{&quot;response_size&quot;: 10}' \
+  localhost:9090 testing.TestService/UnaryCall
+</code></pre>
+<h3 id="very-verbose-mode-with-timing">Very Verbose Mode with Timing</h3>
+<pre><code class="lang-bash">grpcurl invoke --plaintext --vv \
+  -d '{&quot;response_size&quot;: 10}' \
+  localhost:9090 testing.TestService/UnaryCall
+</code></pre>
+<p>Output includes detailed timing:</p>
+<pre><code>┌────────────────────────────┬──────────────┐
+│ Phase                      │ Duration     │
+├────────────────────────────┼──────────────┤
+│ Connection Establishment   │ 12.34 ms     │
+│ Schema Discovery           │ 23.45 ms     │
+│ Request Preparation        │ 1.23 ms      │
+│ RPC Channel Setup          │ 2.34 ms      │
+│ Request Serialization      │ 0.45 ms      │
+│ Network Round Trip         │ 15.67 ms     │
+│ Response Deserialization   │ 0.56 ms      │
+├────────────────────────────┼──────────────┤
+│ Total                      │ 56.04 ms     │
+└────────────────────────────┴──────────────┘
+
+Request size: 24 bytes
+Response size: 42 bytes
+Messages: 1
+</code></pre>
+<hr>
+<h2 id="timeouts-and-limits">Timeouts and Limits</h2>
+<h3 id="connection-timeout">Connection Timeout</h3>
+<pre><code class="lang-bash">grpcurl invoke --plaintext \
+  --connect-timeout 5s \
+  -d '{}' \
+  localhost:9090 testing.TestService/EmptyCall
+</code></pre>
+<h3 id="operation-timeout-grpc-deadline">Operation Timeout (gRPC Deadline)</h3>
+<pre><code class="lang-bash">grpcurl invoke --plaintext \
+  --max-time 30s \
+  -d '{}' \
+  localhost:9090 testing.TestService/LongRunningOperation
+</code></pre>
+<h3 id="message-size-limits">Message Size Limits</h3>
+<pre><code class="lang-bash">grpcurl invoke --plaintext \
+  --max-msg-sz 10MB \
+  -d '{&quot;large_payload&quot;: &quot;...&quot;}' \
+  localhost:9090 testing.TestService/ProcessLargeData
+</code></pre>
+<hr>
+<h2 id="error-handling">Error Handling</h2>
+<h3 id="view-error-as-json">View Error as JSON</h3>
+<pre><code class="lang-bash">grpcurl invoke --plaintext \
+  --format-error \
+  -d '{&quot;response_status&quot;: {&quot;code&quot;: 3, &quot;message&quot;: &quot;Custom error&quot;}}' \
+  localhost:9090 testing.TestService/UnaryCall
+</code></pre>
+<p>Output:</p>
+<pre><code class="lang-json">{
+  &quot;error&quot;: {
+    &quot;code&quot;: 3,
+    &quot;message&quot;: &quot;Custom error&quot;,
+    &quot;status&quot;: &quot;InvalidArgument&quot;
+  }
+}
+</code></pre>
+<h3 id="allow-unknown-fields">Allow Unknown Fields</h3>
+<p>If your JSON contains fields not in the proto definition:</p>
+<pre><code class="lang-bash">grpcurl invoke --plaintext \
+  --allow-unknown-fields \
+  -d '{&quot;known_field&quot;: &quot;value&quot;, &quot;unknown_field&quot;: &quot;ignored&quot;}' \
+  localhost:9090 testing.TestService/UnaryCall
+</code></pre>
+<hr>
+<h2 id="tls-connections">TLS Connections</h2>
+<h3 id="tls-with-default-ca">TLS with Default CA</h3>
+<pre><code class="lang-bash">grpcurl invoke \
+  -d '{}' \
+  secure-server.example.com:443 my.package.Service/Method
+</code></pre>
+<h3 id="tls-with-custom-ca-certificate">TLS with Custom CA Certificate</h3>
+<pre><code class="lang-bash">grpcurl invoke \
+  --cacert /path/to/ca.crt \
+  -d '{}' \
+  secure-server.example.com:443 my.package.Service/Method
+</code></pre>
+<h3 id="mutual-tls-mtls">Mutual TLS (mTLS)</h3>
+<pre><code class="lang-bash">grpcurl invoke \
+  --cacert /path/to/ca.crt \
+  --cert /path/to/client.crt \
+  --key /path/to/client.key \
+  -d '{}' \
+  secure-server.example.com:443 my.package.Service/Method
+</code></pre>
+<h3 id="skip-certificate-verification-testing-only">Skip Certificate Verification (Testing Only)</h3>
+<pre><code class="lang-bash">grpcurl invoke --insecure \
+  -d '{}' \
+  secure-server.example.com:443 my.package.Service/Method
+</code></pre>
+<h3 id="custom-authority-header">Custom Authority Header</h3>
+<p>Useful for virtual hosting or when the server expects a specific host:</p>
+<pre><code class="lang-bash">grpcurl invoke \
+  --authority api.example.com \
+  -d '{}' \
+  10.0.0.1:443 my.package.Service/Method
+</code></pre>
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

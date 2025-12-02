@@ -1,0 +1,1165 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  commentId: T:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  id: ReflectionSourceTests
+  parent: GrpCurl.Net.Tests.Integration.DescriptorSources
+  children:
+  - GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.#ctor(GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture)
+  - GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FileDescriptorSet_AfterLoadingService_IsPopulated
+  - GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors
+  - GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors
+  - GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor
+  - GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor
+  - GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor
+  - GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingService_ReturnsServiceDescriptor
+  - GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_FieldAccessedViaMessage_ReturnsFieldDescriptor
+  - GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_NonExistentService_ReturnsNull
+  - GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_SequentialCalls_AllSucceed
+  - GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_UnimplementedService_ReturnsServiceDescriptor
+  - GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_MultipleCallsReturnSameResults
+  - GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ReturnsAvailableServices
+  - GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ReturnsReflectionService
+  - GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_SequentialCalls_AllSucceed
+  - GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ServicesAreSorted
+  - GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_WithCancellation_ThrowsCanceledException
+  langs:
+  - csharp
+  - vb
+  name: ReflectionSourceTests
+  nameWithType: ReflectionSourceTests
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  type: Class
+  source:
+    id: ReflectionSourceTests
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/DescriptorSources/ReflectionSourceTests.cs
+    startLine: 11
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.DescriptorSources
+  summary: Integration tests for ReflectionSource against a real gRPC server with reflection enabled.
+  example: []
+  syntax:
+    content: >-
+      [Collection("GrpcServer")]
+
+      public class ReflectionSourceTests
+    content.vb: >-
+      <Collection("GrpcServer")>
+
+      Public Class ReflectionSourceTests
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Xunit.CollectionAttribute
+    ctor: Xunit.CollectionAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: GrpcServer
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.#ctor(GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture)
+  commentId: M:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.#ctor(GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture)
+  id: '#ctor(GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture)'
+  parent: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  langs:
+  - csharp
+  - vb
+  name: ReflectionSourceTests(GrpcTestFixture)
+  nameWithType: ReflectionSourceTests.ReflectionSourceTests(GrpcTestFixture)
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ReflectionSourceTests(GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture)
+  type: Constructor
+  source:
+    id: .ctor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/DescriptorSources/ReflectionSourceTests.cs
+    startLine: 16
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.DescriptorSources
+  syntax:
+    content: public ReflectionSourceTests(GrpcTestFixture fixture)
+    parameters:
+    - id: fixture
+      type: GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture
+    content.vb: Public Sub New(fixture As GrpcTestFixture)
+  overload: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.#ctor*
+  nameWithType.vb: ReflectionSourceTests.New(GrpcTestFixture)
+  fullName.vb: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.New(GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture)
+  name.vb: New(GrpcTestFixture)
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ReturnsAvailableServices
+  commentId: M:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ReturnsAvailableServices
+  id: ListServicesAsync_ReturnsAvailableServices
+  parent: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  langs:
+  - csharp
+  - vb
+  name: ListServicesAsync_ReturnsAvailableServices()
+  nameWithType: ReflectionSourceTests.ListServicesAsync_ReturnsAvailableServices()
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ReturnsAvailableServices()
+  type: Method
+  source:
+    id: ListServicesAsync_ReturnsAvailableServices
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/DescriptorSources/ReflectionSourceTests.cs
+    startLine: 23
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task ListServicesAsync_ReturnsAvailableServices()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function ListServicesAsync_ReturnsAvailableServices() As Task
+  overload: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ReturnsAvailableServices*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ReturnsReflectionService
+  commentId: M:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ReturnsReflectionService
+  id: ListServicesAsync_ReturnsReflectionService
+  parent: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  langs:
+  - csharp
+  - vb
+  name: ListServicesAsync_ReturnsReflectionService()
+  nameWithType: ReflectionSourceTests.ListServicesAsync_ReturnsReflectionService()
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ReturnsReflectionService()
+  type: Method
+  source:
+    id: ListServicesAsync_ReturnsReflectionService
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/DescriptorSources/ReflectionSourceTests.cs
+    startLine: 36
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task ListServicesAsync_ReturnsReflectionService()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function ListServicesAsync_ReturnsReflectionService() As Task
+  overload: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ReturnsReflectionService*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ServicesAreSorted
+  commentId: M:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ServicesAreSorted
+  id: ListServicesAsync_ServicesAreSorted
+  parent: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  langs:
+  - csharp
+  - vb
+  name: ListServicesAsync_ServicesAreSorted()
+  nameWithType: ReflectionSourceTests.ListServicesAsync_ServicesAreSorted()
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ServicesAreSorted()
+  type: Method
+  source:
+    id: ListServicesAsync_ServicesAreSorted
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/DescriptorSources/ReflectionSourceTests.cs
+    startLine: 47
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task ListServicesAsync_ServicesAreSorted()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function ListServicesAsync_ServicesAreSorted() As Task
+  overload: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ServicesAreSorted*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_MultipleCallsReturnSameResults
+  commentId: M:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_MultipleCallsReturnSameResults
+  id: ListServicesAsync_MultipleCallsReturnSameResults
+  parent: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  langs:
+  - csharp
+  - vb
+  name: ListServicesAsync_MultipleCallsReturnSameResults()
+  nameWithType: ReflectionSourceTests.ListServicesAsync_MultipleCallsReturnSameResults()
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_MultipleCallsReturnSameResults()
+  type: Method
+  source:
+    id: ListServicesAsync_MultipleCallsReturnSameResults
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/DescriptorSources/ReflectionSourceTests.cs
+    startLine: 59
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task ListServicesAsync_MultipleCallsReturnSameResults()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function ListServicesAsync_MultipleCallsReturnSameResults() As Task
+  overload: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_MultipleCallsReturnSameResults*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_WithCancellation_ThrowsCanceledException
+  commentId: M:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_WithCancellation_ThrowsCanceledException
+  id: ListServicesAsync_WithCancellation_ThrowsCanceledException
+  parent: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  langs:
+  - csharp
+  - vb
+  name: ListServicesAsync_WithCancellation_ThrowsCanceledException()
+  nameWithType: ReflectionSourceTests.ListServicesAsync_WithCancellation_ThrowsCanceledException()
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_WithCancellation_ThrowsCanceledException()
+  type: Method
+  source:
+    id: ListServicesAsync_WithCancellation_ThrowsCanceledException
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/DescriptorSources/ReflectionSourceTests.cs
+    startLine: 71
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task ListServicesAsync_WithCancellation_ThrowsCanceledException()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function ListServicesAsync_WithCancellation_ThrowsCanceledException() As Task
+  overload: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_WithCancellation_ThrowsCanceledException*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingService_ReturnsServiceDescriptor
+  commentId: M:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingService_ReturnsServiceDescriptor
+  id: FindSymbolAsync_ExistingService_ReturnsServiceDescriptor
+  parent: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_ExistingService_ReturnsServiceDescriptor()
+  nameWithType: ReflectionSourceTests.FindSymbolAsync_ExistingService_ReturnsServiceDescriptor()
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingService_ReturnsServiceDescriptor()
+  type: Method
+  source:
+    id: FindSymbolAsync_ExistingService_ReturnsServiceDescriptor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/DescriptorSources/ReflectionSourceTests.cs
+    startLine: 87
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_ExistingService_ReturnsServiceDescriptor()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_ExistingService_ReturnsServiceDescriptor() As Task
+  overload: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingService_ReturnsServiceDescriptor*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_NonExistentService_ReturnsNull
+  commentId: M:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_NonExistentService_ReturnsNull
+  id: FindSymbolAsync_NonExistentService_ReturnsNull
+  parent: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_NonExistentService_ReturnsNull()
+  nameWithType: ReflectionSourceTests.FindSymbolAsync_NonExistentService_ReturnsNull()
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_NonExistentService_ReturnsNull()
+  type: Method
+  source:
+    id: FindSymbolAsync_NonExistentService_ReturnsNull
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/DescriptorSources/ReflectionSourceTests.cs
+    startLine: 100
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_NonExistentService_ReturnsNull()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_NonExistentService_ReturnsNull() As Task
+  overload: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_NonExistentService_ReturnsNull*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_UnimplementedService_ReturnsServiceDescriptor
+  commentId: M:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_UnimplementedService_ReturnsServiceDescriptor
+  id: FindSymbolAsync_UnimplementedService_ReturnsServiceDescriptor
+  parent: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_UnimplementedService_ReturnsServiceDescriptor()
+  nameWithType: ReflectionSourceTests.FindSymbolAsync_UnimplementedService_ReturnsServiceDescriptor()
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_UnimplementedService_ReturnsServiceDescriptor()
+  type: Method
+  source:
+    id: FindSymbolAsync_UnimplementedService_ReturnsServiceDescriptor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/DescriptorSources/ReflectionSourceTests.cs
+    startLine: 111
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_UnimplementedService_ReturnsServiceDescriptor()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_UnimplementedService_ReturnsServiceDescriptor() As Task
+  overload: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_UnimplementedService_ReturnsServiceDescriptor*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor
+  commentId: M:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor
+  id: FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor
+  parent: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor()
+  nameWithType: ReflectionSourceTests.FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor()
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor()
+  type: Method
+  source:
+    id: FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/DescriptorSources/ReflectionSourceTests.cs
+    startLine: 127
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor() As Task
+  overload: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors
+  commentId: M:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors
+  id: FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors
+  parent: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors()
+  nameWithType: ReflectionSourceTests.FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors()
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors()
+  type: Method
+  source:
+    id: FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/DescriptorSources/ReflectionSourceTests.cs
+    startLine: 140
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors() As Task
+  overload: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor
+  commentId: M:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor
+  id: FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor
+  parent: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor()
+  nameWithType: ReflectionSourceTests.FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor()
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor()
+  type: Method
+  source:
+    id: FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/DescriptorSources/ReflectionSourceTests.cs
+    startLine: 184
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor() As Task
+  overload: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors
+  commentId: M:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors
+  id: FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors
+  parent: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors()
+  nameWithType: ReflectionSourceTests.FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors()
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors()
+  type: Method
+  source:
+    id: FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/DescriptorSources/ReflectionSourceTests.cs
+    startLine: 197
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors() As Task
+  overload: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor
+  commentId: M:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor
+  id: FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor
+  parent: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor()
+  nameWithType: ReflectionSourceTests.FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor()
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor()
+  type: Method
+  source:
+    id: FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/DescriptorSources/ReflectionSourceTests.cs
+    startLine: 225
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor() As Task
+  overload: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_FieldAccessedViaMessage_ReturnsFieldDescriptor
+  commentId: M:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_FieldAccessedViaMessage_ReturnsFieldDescriptor
+  id: FindSymbolAsync_FieldAccessedViaMessage_ReturnsFieldDescriptor
+  parent: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_FieldAccessedViaMessage_ReturnsFieldDescriptor()
+  nameWithType: ReflectionSourceTests.FindSymbolAsync_FieldAccessedViaMessage_ReturnsFieldDescriptor()
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_FieldAccessedViaMessage_ReturnsFieldDescriptor()
+  type: Method
+  source:
+    id: FindSymbolAsync_FieldAccessedViaMessage_ReturnsFieldDescriptor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/DescriptorSources/ReflectionSourceTests.cs
+    startLine: 242
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_FieldAccessedViaMessage_ReturnsFieldDescriptor()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_FieldAccessedViaMessage_ReturnsFieldDescriptor() As Task
+  overload: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_FieldAccessedViaMessage_ReturnsFieldDescriptor*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FileDescriptorSet_AfterLoadingService_IsPopulated
+  commentId: M:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FileDescriptorSet_AfterLoadingService_IsPopulated
+  id: FileDescriptorSet_AfterLoadingService_IsPopulated
+  parent: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FileDescriptorSet_AfterLoadingService_IsPopulated()
+  nameWithType: ReflectionSourceTests.FileDescriptorSet_AfterLoadingService_IsPopulated()
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FileDescriptorSet_AfterLoadingService_IsPopulated()
+  type: Method
+  source:
+    id: FileDescriptorSet_AfterLoadingService_IsPopulated
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/DescriptorSources/ReflectionSourceTests.cs
+    startLine: 268
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FileDescriptorSet_AfterLoadingService_IsPopulated()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FileDescriptorSet_AfterLoadingService_IsPopulated() As Task
+  overload: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FileDescriptorSet_AfterLoadingService_IsPopulated*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_SequentialCalls_AllSucceed
+  commentId: M:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_SequentialCalls_AllSucceed
+  id: FindSymbolAsync_SequentialCalls_AllSucceed
+  parent: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_SequentialCalls_AllSucceed()
+  nameWithType: ReflectionSourceTests.FindSymbolAsync_SequentialCalls_AllSucceed()
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_SequentialCalls_AllSucceed()
+  type: Method
+  source:
+    id: FindSymbolAsync_SequentialCalls_AllSucceed
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/DescriptorSources/ReflectionSourceTests.cs
+    startLine: 285
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_SequentialCalls_AllSucceed()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_SequentialCalls_AllSucceed() As Task
+  overload: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_SequentialCalls_AllSucceed*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_SequentialCalls_AllSucceed
+  commentId: M:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_SequentialCalls_AllSucceed
+  id: ListServicesAsync_SequentialCalls_AllSucceed
+  parent: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+  langs:
+  - csharp
+  - vb
+  name: ListServicesAsync_SequentialCalls_AllSucceed()
+  nameWithType: ReflectionSourceTests.ListServicesAsync_SequentialCalls_AllSucceed()
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_SequentialCalls_AllSucceed()
+  type: Method
+  source:
+    id: ListServicesAsync_SequentialCalls_AllSucceed
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/DescriptorSources/ReflectionSourceTests.cs
+    startLine: 299
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task ListServicesAsync_SequentialCalls_AllSucceed()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function ListServicesAsync_SequentialCalls_AllSucceed() As Task
+  overload: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_SequentialCalls_AllSucceed*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+references:
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources
+  commentId: N:GrpCurl.Net.Tests.Integration.DescriptorSources
+  href: GrpCurl.html
+  name: GrpCurl.Net.Tests.Integration.DescriptorSources
+  nameWithType: GrpCurl.Net.Tests.Integration.DescriptorSources
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources
+  spec.csharp:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration
+    name: Integration
+    href: GrpCurl.Net.Tests.Integration.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration.DescriptorSources
+    name: DescriptorSources
+    href: GrpCurl.Net.Tests.Integration.DescriptorSources.html
+  spec.vb:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration
+    name: Integration
+    href: GrpCurl.Net.Tests.Integration.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration.DescriptorSources
+    name: DescriptorSources
+    href: GrpCurl.Net.Tests.Integration.DescriptorSources.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.#ctor*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.#ctor
+  href: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.html#GrpCurl_Net_Tests_Integration_DescriptorSources_ReflectionSourceTests__ctor_GrpCurl_Net_Tests_Integration_Fixtures_GrpcTestFixture_
+  name: ReflectionSourceTests
+  nameWithType: ReflectionSourceTests.ReflectionSourceTests
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ReflectionSourceTests
+  nameWithType.vb: ReflectionSourceTests.New
+  fullName.vb: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.New
+  name.vb: New
+- uid: GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture
+  commentId: T:GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture
+  parent: GrpCurl.Net.Tests.Integration.Fixtures
+  href: GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture.html
+  name: GrpcTestFixture
+  nameWithType: GrpcTestFixture
+  fullName: GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture
+- uid: GrpCurl.Net.Tests.Integration.Fixtures
+  commentId: N:GrpCurl.Net.Tests.Integration.Fixtures
+  href: GrpCurl.html
+  name: GrpCurl.Net.Tests.Integration.Fixtures
+  nameWithType: GrpCurl.Net.Tests.Integration.Fixtures
+  fullName: GrpCurl.Net.Tests.Integration.Fixtures
+  spec.csharp:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration
+    name: Integration
+    href: GrpCurl.Net.Tests.Integration.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration.Fixtures
+    name: Fixtures
+    href: GrpCurl.Net.Tests.Integration.Fixtures.html
+  spec.vb:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration
+    name: Integration
+    href: GrpCurl.Net.Tests.Integration.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration.Fixtures
+    name: Fixtures
+    href: GrpCurl.Net.Tests.Integration.Fixtures.html
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ReturnsAvailableServices*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ReturnsAvailableServices
+  href: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.html#GrpCurl_Net_Tests_Integration_DescriptorSources_ReflectionSourceTests_ListServicesAsync_ReturnsAvailableServices
+  name: ListServicesAsync_ReturnsAvailableServices
+  nameWithType: ReflectionSourceTests.ListServicesAsync_ReturnsAvailableServices
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ReturnsAvailableServices
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ReturnsReflectionService*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ReturnsReflectionService
+  href: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.html#GrpCurl_Net_Tests_Integration_DescriptorSources_ReflectionSourceTests_ListServicesAsync_ReturnsReflectionService
+  name: ListServicesAsync_ReturnsReflectionService
+  nameWithType: ReflectionSourceTests.ListServicesAsync_ReturnsReflectionService
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ReturnsReflectionService
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ServicesAreSorted*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ServicesAreSorted
+  href: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.html#GrpCurl_Net_Tests_Integration_DescriptorSources_ReflectionSourceTests_ListServicesAsync_ServicesAreSorted
+  name: ListServicesAsync_ServicesAreSorted
+  nameWithType: ReflectionSourceTests.ListServicesAsync_ServicesAreSorted
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_ServicesAreSorted
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_MultipleCallsReturnSameResults*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_MultipleCallsReturnSameResults
+  href: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.html#GrpCurl_Net_Tests_Integration_DescriptorSources_ReflectionSourceTests_ListServicesAsync_MultipleCallsReturnSameResults
+  name: ListServicesAsync_MultipleCallsReturnSameResults
+  nameWithType: ReflectionSourceTests.ListServicesAsync_MultipleCallsReturnSameResults
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_MultipleCallsReturnSameResults
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_WithCancellation_ThrowsCanceledException*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_WithCancellation_ThrowsCanceledException
+  href: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.html#GrpCurl_Net_Tests_Integration_DescriptorSources_ReflectionSourceTests_ListServicesAsync_WithCancellation_ThrowsCanceledException
+  name: ListServicesAsync_WithCancellation_ThrowsCanceledException
+  nameWithType: ReflectionSourceTests.ListServicesAsync_WithCancellation_ThrowsCanceledException
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_WithCancellation_ThrowsCanceledException
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingService_ReturnsServiceDescriptor*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingService_ReturnsServiceDescriptor
+  href: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.html#GrpCurl_Net_Tests_Integration_DescriptorSources_ReflectionSourceTests_FindSymbolAsync_ExistingService_ReturnsServiceDescriptor
+  name: FindSymbolAsync_ExistingService_ReturnsServiceDescriptor
+  nameWithType: ReflectionSourceTests.FindSymbolAsync_ExistingService_ReturnsServiceDescriptor
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingService_ReturnsServiceDescriptor
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_NonExistentService_ReturnsNull*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_NonExistentService_ReturnsNull
+  href: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.html#GrpCurl_Net_Tests_Integration_DescriptorSources_ReflectionSourceTests_FindSymbolAsync_NonExistentService_ReturnsNull
+  name: FindSymbolAsync_NonExistentService_ReturnsNull
+  nameWithType: ReflectionSourceTests.FindSymbolAsync_NonExistentService_ReturnsNull
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_NonExistentService_ReturnsNull
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_UnimplementedService_ReturnsServiceDescriptor*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_UnimplementedService_ReturnsServiceDescriptor
+  href: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.html#GrpCurl_Net_Tests_Integration_DescriptorSources_ReflectionSourceTests_FindSymbolAsync_UnimplementedService_ReturnsServiceDescriptor
+  name: FindSymbolAsync_UnimplementedService_ReturnsServiceDescriptor
+  nameWithType: ReflectionSourceTests.FindSymbolAsync_UnimplementedService_ReturnsServiceDescriptor
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_UnimplementedService_ReturnsServiceDescriptor
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor
+  href: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.html#GrpCurl_Net_Tests_Integration_DescriptorSources_ReflectionSourceTests_FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor
+  name: FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor
+  nameWithType: ReflectionSourceTests.FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors
+  href: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.html#GrpCurl_Net_Tests_Integration_DescriptorSources_ReflectionSourceTests_FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors
+  name: FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors
+  nameWithType: ReflectionSourceTests.FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor
+  href: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.html#GrpCurl_Net_Tests_Integration_DescriptorSources_ReflectionSourceTests_FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor
+  name: FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor
+  nameWithType: ReflectionSourceTests.FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors
+  href: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.html#GrpCurl_Net_Tests_Integration_DescriptorSources_ReflectionSourceTests_FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors
+  name: FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors
+  nameWithType: ReflectionSourceTests.FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor
+  href: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.html#GrpCurl_Net_Tests_Integration_DescriptorSources_ReflectionSourceTests_FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor
+  name: FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor
+  nameWithType: ReflectionSourceTests.FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_FieldAccessedViaMessage_ReturnsFieldDescriptor*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_FieldAccessedViaMessage_ReturnsFieldDescriptor
+  href: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.html#GrpCurl_Net_Tests_Integration_DescriptorSources_ReflectionSourceTests_FindSymbolAsync_FieldAccessedViaMessage_ReturnsFieldDescriptor
+  name: FindSymbolAsync_FieldAccessedViaMessage_ReturnsFieldDescriptor
+  nameWithType: ReflectionSourceTests.FindSymbolAsync_FieldAccessedViaMessage_ReturnsFieldDescriptor
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_FieldAccessedViaMessage_ReturnsFieldDescriptor
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FileDescriptorSet_AfterLoadingService_IsPopulated*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FileDescriptorSet_AfterLoadingService_IsPopulated
+  href: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.html#GrpCurl_Net_Tests_Integration_DescriptorSources_ReflectionSourceTests_FileDescriptorSet_AfterLoadingService_IsPopulated
+  name: FileDescriptorSet_AfterLoadingService_IsPopulated
+  nameWithType: ReflectionSourceTests.FileDescriptorSet_AfterLoadingService_IsPopulated
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FileDescriptorSet_AfterLoadingService_IsPopulated
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_SequentialCalls_AllSucceed*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_SequentialCalls_AllSucceed
+  href: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.html#GrpCurl_Net_Tests_Integration_DescriptorSources_ReflectionSourceTests_FindSymbolAsync_SequentialCalls_AllSucceed
+  name: FindSymbolAsync_SequentialCalls_AllSucceed
+  nameWithType: ReflectionSourceTests.FindSymbolAsync_SequentialCalls_AllSucceed
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.FindSymbolAsync_SequentialCalls_AllSucceed
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_SequentialCalls_AllSucceed*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_SequentialCalls_AllSucceed
+  href: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.html#GrpCurl_Net_Tests_Integration_DescriptorSources_ReflectionSourceTests_ListServicesAsync_SequentialCalls_AllSucceed
+  name: ListServicesAsync_SequentialCalls_AllSucceed
+  nameWithType: ReflectionSourceTests.ListServicesAsync_SequentialCalls_AllSucceed
+  fullName: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests.ListServicesAsync_SequentialCalls_AllSucceed

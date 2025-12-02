@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Architecture | GrpCurl.Net </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Architecture | GrpCurl.Net ">
+      
+      
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="GrpCurl.Net">
+            GrpCurl.Net
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="architecture">Architecture</h1>
+
+<p>This document describes the internal architecture of GrpCurl.Net and how its components work together.</p>
+<h2 id="overview">Overview</h2>
+<p>GrpCurl.Net is organized into several key components:</p>
+<pre><code>GrpCurl.Net
+├── Commands/           # CLI command handlers
+│   ├── ListCommand     # List services/methods
+│   ├── DescribeCommand # Describe symbols
+│   └── InvokeCommand   # Invoke methods
+├── DescriptorSources/  # Schema discovery
+│   ├── IDescriptorSource
+│   ├── ReflectionSource
+│   └── ProtosetSource
+├── Invocation/         # Dynamic method invocation
+│   └── DynamicInvoker
+├── Utilities/          # Shared utilities
+│   ├── GrpcChannelFactory
+│   └── ProtosetExporter
+└── Program.cs          # Entry point
+</code></pre>
+<h2 id="descriptor-sources">Descriptor Sources</h2>
+<p>The descriptor source abstraction allows GrpCurl.Net to discover protobuf schemas from different sources.</p>
+<h3 id="idescriptorsource-interface">IDescriptorSource Interface</h3>
+<pre><code class="lang-csharp">public interface IDescriptorSource
+{
+    FileDescriptorSet? FileDescriptorSet { get; }
+    Task&lt;IReadOnlyList&lt;string&gt;&gt; ListServicesAsync(CancellationToken cancellationToken = default);
+    Task&lt;IDescriptor?&gt; FindSymbolAsync(string fullyQualifiedName, CancellationToken cancellationToken = default);
+}
+</code></pre>
+<p>This interface provides:</p>
+<ul>
+<li><strong>FileDescriptorSet</strong> - Access to the underlying protobuf descriptors for export</li>
+<li><strong>ListServicesAsync</strong> - Enumerate all available services</li>
+<li><strong>FindSymbolAsync</strong> - Look up a specific symbol (service, method, message, etc.)</li>
+</ul>
+<h3 id="reflectionsource">ReflectionSource</h3>
+<p><a class="xref" href="../api/GrpCurl.Net.DescriptorSources.ReflectionSource.html">ReflectionSource</a> implements <code>IDescriptorSource</code> by querying a running gRPC server using the <a href="https://github.com/grpc/grpc/blob/master/doc/server-reflection.md">Server Reflection Protocol</a>.</p>
+<p>Key features:</p>
+<ul>
+<li>Uses <code>grpc.reflection.v1alpha.ServerReflection</code> service</li>
+<li>Caches discovered descriptors to minimize reflection calls</li>
+<li>Supports custom metadata for authenticated reflection requests</li>
+<li>Builds a complete <code>FileDescriptorSet</code> from cached descriptors</li>
+</ul>
+<pre><code class="lang-csharp">// Create from existing channel
+var source = new ReflectionSource(channel, metadata, ownsChannel: true);
+
+// Or create with address
+var source = ReflectionSource.Create(&quot;https://localhost:9090&quot;);
+</code></pre>
+<h3 id="protosetsource">ProtosetSource</h3>
+<p><a class="xref" href="../api/GrpCurl.Net.DescriptorSources.ProtosetSource.html">ProtosetSource</a> implements <code>IDescriptorSource</code> by loading pre-compiled FileDescriptorSet files (protoset files).</p>
+<p>Protoset files are created using <code>protoc</code>:</p>
+<pre><code class="lang-bash">protoc --descriptor_set_out=service.protoset --include_imports service.proto
+</code></pre>
+<p>Key features:</p>
+<ul>
+<li>Loads one or more protoset files</li>
+<li>Resolves dependencies between files</li>
+<li>Detects circular dependencies</li>
+<li>Provides offline operation without server access</li>
+</ul>
+<pre><code class="lang-csharp">// Load single file
+var source = await ProtosetSource.LoadFromFileAsync(&quot;service.protoset&quot;);
+
+// Load multiple files
+var source = await ProtosetSource.LoadFromFilesAsync(new[] { &quot;a.protoset&quot;, &quot;b.protoset&quot; });
+</code></pre>
+<h2 id="dynamic-invocation">Dynamic Invocation</h2>
+<p>The <code>DynamicInvoker</code> class handles invoking gRPC methods at runtime without pre-compiled stubs.</p>
+<h3 id="how-it-works">How It Works</h3>
+<ol>
+<li><strong>Method Resolution</strong> - Uses <code>MethodDescriptor</code> from descriptor source to understand the method signature</li>
+<li><strong>Message Creation</strong> - Creates <code>IMessage</code> instances dynamically from JSON using <code>SimpleDynamicMessage</code></li>
+<li><strong>Method Creation</strong> - Builds a <code>Method&lt;IMessage, IMessage&gt;</code> with appropriate serializers</li>
+<li><strong>Invocation</strong> - Uses <code>Grpc.Net.Client</code>'s <code>CallInvoker</code> to make the actual gRPC call</li>
+</ol>
+<h3 id="supported-method-types">Supported Method Types</h3>
+<pre><code class="lang-csharp">// Unary
+Task&lt;IMessage&gt; InvokeUnaryAsync(MethodDescriptor, IMessage request, ...)
+
+// Server streaming
+IAsyncEnumerable&lt;IMessage&gt; InvokeServerStreamingAsync(MethodDescriptor, IMessage request, ...)
+
+// Client streaming
+Task&lt;IMessage&gt; InvokeClientStreamingAsync(MethodDescriptor, IAsyncEnumerable&lt;IMessage&gt; requests, ...)
+
+// Bidirectional streaming
+IAsyncEnumerable&lt;IMessage&gt; InvokeDuplexStreamingAsync(MethodDescriptor, IAsyncEnumerable&lt;IMessage&gt; requests, ...)
+</code></pre>
+<h3 id="simpledynamicmessage">SimpleDynamicMessage</h3>
+<p>An internal class that implements <code>IMessage</code> for dynamic protobuf messages. It:</p>
+<ul>
+<li>Parses JSON to protobuf binary format</li>
+<li>Serializes protobuf binary to JSON</li>
+<li>Handles all protobuf field types including:
+<ul>
+<li>Scalars (int32, string, bool, etc.)</li>
+<li>Nested messages</li>
+<li>Repeated fields</li>
+<li>Map fields</li>
+<li>Oneof fields</li>
+<li>Well-known types (Timestamp, Duration, wrappers)</li>
+</ul>
+</li>
+</ul>
+<h2 id="channel-configuration">Channel Configuration</h2>
+<p><code>GrpcChannelFactory</code> handles the complexity of creating properly configured gRPC channels.</p>
+<h3 id="configuration-options">Configuration Options</h3>
+<pre><code class="lang-csharp">public class ChannelOptions
+{
+    public bool Plaintext { get; set; }
+    public bool InsecureSkipVerify { get; set; }
+    public string? CaCertPath { get; set; }
+    public string? ClientCertPath { get; set; }
+    public string? ClientKeyPath { get; set; }
+    public TimeSpan? ConnectTimeout { get; set; }
+    public int? MaxReceiveMessageSize { get; set; }
+    public int? MaxSendMessageSize { get; set; }
+    public string? Authority { get; set; }
+    public string? ServerName { get; set; }
+}
+</code></pre>
+<h3 id="tls-configuration">TLS Configuration</h3>
+<p>The factory supports multiple TLS scenarios:</p>
+<ol>
+<li><strong>Plaintext</strong> - HTTP/2 without TLS</li>
+<li><strong>Default TLS</strong> - System CA store</li>
+<li><strong>Custom CA</strong> - Specify CA certificate file</li>
+<li><strong>mTLS</strong> - Client certificate and key</li>
+<li><strong>Insecure</strong> - Skip certificate verification</li>
+</ol>
+<h3 id="metadata-creation">Metadata Creation</h3>
+<p>Headers are processed with environment variable expansion:</p>
+<pre><code class="lang-csharp">var metadata = GrpcChannelFactory.CreateMetadata(
+    headers: new[] { &quot;Authorization: Bearer ${TOKEN}&quot; },
+    userAgent: &quot;grpcurl-dotnet/1.0.0&quot;
+);
+</code></pre>
+<h2 id="command-structure">Command Structure</h2>
+<p>Commands are implemented using <a href="https://github.com/dotnet/command-line-api">System.CommandLine</a>:</p>
+<h3 id="command-handlers">Command Handlers</h3>
+<p>Each command (list, describe, invoke) has a corresponding handler class:</p>
+<ul>
+<li><code>ListCommandHandler</code> - Handles <code>list</code> command</li>
+<li><code>DescribeCommandHandler</code> - Handles <code>describe</code> command</li>
+<li><code>InvokeCommandHandler</code> - Handles <code>invoke</code> command</li>
+</ul>
+<h3 id="common-pattern">Common Pattern</h3>
+<pre><code class="lang-csharp">internal static class CommandHandler
+{
+    public static Command Create()
+    {
+        // Define arguments and options
+        var arg = new Argument&lt;string&gt;(&quot;name&quot;);
+        var opt = new Option&lt;bool&gt;(&quot;--flag&quot;);
+
+        // Create command
+        var command = new Command(&quot;name&quot;, &quot;description&quot;) { arg, opt };
+
+        // Set handler
+        command.SetAction(async (parseResult, _) =&gt;
+        {
+            var value = parseResult.GetValue(arg);
+            await ExecuteAsync(value, ...);
+        });
+
+        return command;
+    }
+}
+</code></pre>
+<h2 id="output-formatting">Output Formatting</h2>
+<p>GrpCurl.Net uses <a href="https://spectreconsole.net/">Spectre.Console</a> for rich terminal output:</p>
+<ul>
+<li><strong>Tables</strong> - Service and method listings</li>
+<li><strong>Panels</strong> - Symbol descriptions</li>
+<li><strong>Colors</strong> - Syntax highlighting and status indicators</li>
+<li><strong>Markup</strong> - Styled messages (<code>[red]Error:[/]</code>, <code>[dim]verbose text[/]</code>)</li>
+</ul>
+<h2 id="timing-context">Timing Context</h2>
+<p>The <code>TimingContext</code> class tracks execution phases for very verbose mode:</p>
+<pre><code class="lang-csharp">var timing = new TimingContext();
+
+timing.StartPhase(&quot;Connection Establishment&quot;);
+// ... connect ...
+
+timing.StartPhase(&quot;Schema Discovery&quot;);
+// ... discover schema ...
+
+timing.PrintSummary(); // Outputs timing table
+</code></pre>
+<h2 id="error-handling">Error Handling</h2>
+<h3 id="grpccommandexception">GrpcCommandException</h3>
+<p>A custom exception that carries an exit code:</p>
+<pre><code class="lang-csharp">public class GrpcCommandException : Exception
+{
+    public int ExitCode { get; }
+}
+</code></pre>
+<p>This allows commands to signal specific exit codes without calling <code>Environment.Exit()</code>, improving testability.</p>
+<h3 id="error-mapping">Error Mapping</h3>
+<p>gRPC status codes are mapped to exit codes:</p>
+<ul>
+<li>Exit code = 64 + gRPC status code</li>
+<li>Example: <code>StatusCode.NotFound</code> (5) = exit code 69</li>
+</ul>
+<h2 id="extensibility-points">Extensibility Points</h2>
+<h3 id="adding-a-new-descriptor-source">Adding a New Descriptor Source</h3>
+<ol>
+<li>Implement <code>IDescriptorSource</code></li>
+<li>Handle <code>FileDescriptorSet</code> for protoset export</li>
+<li>Cache descriptors for performance</li>
+</ol>
+<h3 id="adding-a-new-command">Adding a New Command</h3>
+<ol>
+<li>Create a new command handler class</li>
+<li>Add to root command in <code>Program.cs</code></li>
+<li>Follow existing patterns for options and error handling</li>
+</ol>
+<h2 id="dependencies">Dependencies</h2>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Grpc.Net.Client</code></td>
+<td>gRPC client implementation</td>
+</tr>
+<tr>
+<td><code>Google.Protobuf</code></td>
+<td>Protocol buffers runtime</td>
+</tr>
+<tr>
+<td><code>System.CommandLine</code></td>
+<td>CLI argument parsing</td>
+</tr>
+<tr>
+<td><code>Spectre.Console</code></td>
+<td>Terminal output formatting</td>
+</tr>
+</tbody>
+</table>
+<h2 id="testing">Testing</h2>
+<p>The codebase includes comprehensive tests:</p>
+<ul>
+<li><strong>Unit Tests</strong> - Test individual components in isolation</li>
+<li><strong>Integration Tests</strong> - Test against a real gRPC server (<code>TestServer</code>)</li>
+</ul>
+<p>Test categories:</p>
+<ul>
+<li>SimpleDynamicMessage tests - All protobuf field types</li>
+<li>Descriptor source tests - ReflectionSource and ProtosetSource</li>
+<li>Channel factory tests - TLS, metadata, environment variables</li>
+<li>Command tests - CLI argument parsing and execution</li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

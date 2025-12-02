@@ -1,0 +1,218 @@
+### YamlMime:ManagedReference
+items:
+- uid: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+  commentId: T:Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+  id: ServerReflectionRequest.MessageRequestOneofCase
+  parent: Grpc.Reflection.V1Alpha
+  children:
+  - Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.AllExtensionNumbersOfType
+  - Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.FileByFilename
+  - Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.FileContainingExtension
+  - Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.FileContainingSymbol
+  - Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.ListServices
+  - Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.None
+  langs:
+  - csharp
+  - vb
+  name: ServerReflectionRequest.MessageRequestOneofCase
+  nameWithType: ServerReflectionRequest.MessageRequestOneofCase
+  fullName: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+  type: Enum
+  source:
+    id: MessageRequestOneofCase
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 295
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  summary: Enum of possible cases for the "message_request" oneof.
+  example: []
+  syntax:
+    content: public enum ServerReflectionRequest.MessageRequestOneofCase
+    content.vb: Public Enum ServerReflectionRequest.MessageRequestOneofCase
+- uid: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.None
+  commentId: F:Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.None
+  id: None
+  parent: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+  langs:
+  - csharp
+  - vb
+  name: None
+  nameWithType: ServerReflectionRequest.MessageRequestOneofCase.None
+  fullName: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.None
+  type: Field
+  source:
+    id: None
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 296
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  syntax:
+    content: None = 0
+    return:
+      type: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+- uid: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.FileByFilename
+  commentId: F:Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.FileByFilename
+  id: FileByFilename
+  parent: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+  langs:
+  - csharp
+  - vb
+  name: FileByFilename
+  nameWithType: ServerReflectionRequest.MessageRequestOneofCase.FileByFilename
+  fullName: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.FileByFilename
+  type: Field
+  source:
+    id: FileByFilename
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 297
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  syntax:
+    content: FileByFilename = 3
+    return:
+      type: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+- uid: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.FileContainingSymbol
+  commentId: F:Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.FileContainingSymbol
+  id: FileContainingSymbol
+  parent: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+  langs:
+  - csharp
+  - vb
+  name: FileContainingSymbol
+  nameWithType: ServerReflectionRequest.MessageRequestOneofCase.FileContainingSymbol
+  fullName: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.FileContainingSymbol
+  type: Field
+  source:
+    id: FileContainingSymbol
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 298
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  syntax:
+    content: FileContainingSymbol = 4
+    return:
+      type: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+- uid: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.FileContainingExtension
+  commentId: F:Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.FileContainingExtension
+  id: FileContainingExtension
+  parent: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+  langs:
+  - csharp
+  - vb
+  name: FileContainingExtension
+  nameWithType: ServerReflectionRequest.MessageRequestOneofCase.FileContainingExtension
+  fullName: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.FileContainingExtension
+  type: Field
+  source:
+    id: FileContainingExtension
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 299
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  syntax:
+    content: FileContainingExtension = 5
+    return:
+      type: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+- uid: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.AllExtensionNumbersOfType
+  commentId: F:Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.AllExtensionNumbersOfType
+  id: AllExtensionNumbersOfType
+  parent: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+  langs:
+  - csharp
+  - vb
+  name: AllExtensionNumbersOfType
+  nameWithType: ServerReflectionRequest.MessageRequestOneofCase.AllExtensionNumbersOfType
+  fullName: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.AllExtensionNumbersOfType
+  type: Field
+  source:
+    id: AllExtensionNumbersOfType
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 300
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  syntax:
+    content: AllExtensionNumbersOfType = 6
+    return:
+      type: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+- uid: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.ListServices
+  commentId: F:Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.ListServices
+  id: ListServices
+  parent: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+  langs:
+  - csharp
+  - vb
+  name: ListServices
+  nameWithType: ServerReflectionRequest.MessageRequestOneofCase.ListServices
+  fullName: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.ListServices
+  type: Field
+  source:
+    id: ListServices
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 301
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  syntax:
+    content: ListServices = 7
+    return:
+      type: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+references:
+- uid: Grpc.Reflection.V1Alpha
+  commentId: N:Grpc.Reflection.V1Alpha
+  href: Grpc.html
+  name: Grpc.Reflection.V1Alpha
+  nameWithType: Grpc.Reflection.V1Alpha
+  fullName: Grpc.Reflection.V1Alpha
+  spec.csharp:
+  - uid: Grpc
+    name: Grpc
+    href: Grpc.html
+  - name: .
+  - uid: Grpc.Reflection
+    name: Reflection
+    href: Grpc.Reflection.html
+  - name: .
+  - uid: Grpc.Reflection.V1Alpha
+    name: V1Alpha
+    href: Grpc.Reflection.V1Alpha.html
+  spec.vb:
+  - uid: Grpc
+    name: Grpc
+    href: Grpc.html
+  - name: .
+  - uid: Grpc.Reflection
+    name: Reflection
+    href: Grpc.Reflection.html
+  - name: .
+  - uid: Grpc.Reflection.V1Alpha
+    name: V1Alpha
+    href: Grpc.Reflection.V1Alpha.html
+- uid: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+  commentId: T:Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+  parent: Grpc.Reflection.V1Alpha
+  href: Grpc.Reflection.V1Alpha.ServerReflectionRequest.html
+  name: ServerReflectionRequest.MessageRequestOneofCase
+  nameWithType: ServerReflectionRequest.MessageRequestOneofCase
+  fullName: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+  spec.csharp:
+  - uid: Grpc.Reflection.V1Alpha.ServerReflectionRequest
+    name: ServerReflectionRequest
+    href: Grpc.Reflection.V1Alpha.ServerReflectionRequest.html
+  - name: .
+  - uid: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+    name: MessageRequestOneofCase
+    href: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.html
+  spec.vb:
+  - uid: Grpc.Reflection.V1Alpha.ServerReflectionRequest
+    name: ServerReflectionRequest
+    href: Grpc.Reflection.V1Alpha.ServerReflectionRequest.html
+  - name: .
+  - uid: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+    name: MessageRequestOneofCase
+    href: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase.html

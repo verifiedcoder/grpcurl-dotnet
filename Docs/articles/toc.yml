@@ -1,0 +1,6 @@
+- name: CLI Reference
+  href: cli-reference.md
+- name: Examples
+  href: examples.md
+- name: Architecture
+  href: architecture.md

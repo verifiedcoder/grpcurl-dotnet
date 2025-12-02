@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>GrpCurl.Net | GrpCurl.Net </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="GrpCurl.Net | GrpCurl.Net ">
+      
+      
+      <link rel="icon" href="favicon.ico">
+      <link rel="stylesheet" href="public/docfx.min.css">
+      <link rel="stylesheet" href="public/main.css">
+      <meta name="docfx:navrel" content="toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="landing" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="index.html">
+            <img id="logo" class="svg" src="logo.svg" alt="GrpCurl.Net">
+            GrpCurl.Net
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+
+      <div class="content">
+        <div class="actionbar">
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="grpcurlnet">GrpCurl.Net</h1>
+
+<p>A modern .NET implementation of grpcurl - a command-line tool for interacting with gRPC servers.</p>
+<h2 id="overview">Overview</h2>
+<p>GrpCurl.Net allows you to interact with gRPC servers using JSON requests instead of binary protocol buffers. It supports server reflection, protoset files, and dynamic method invocation for all four gRPC method types.</p>
+<h2 id="key-features">Key Features</h2>
+<ul>
+<li><strong>Server Reflection</strong> - Discover services and methods at runtime</li>
+<li><strong>Protoset Support</strong> - Use pre-compiled descriptor files for offline operation</li>
+<li><strong>All Streaming Types</strong> - Unary, server-streaming, client-streaming, and bidirectional</li>
+<li><strong>Rich CLI</strong> - Verbose output, timing information, and colored terminal display</li>
+<li><strong>TLS/mTLS</strong> - Full support for secure connections and mutual authentication</li>
+<li><strong>Cross-Platform</strong> - Runs on Windows, Linux, and macOS</li>
+</ul>
+<h2 id="quick-start">Quick Start</h2>
+<pre><code class="lang-bash"># List services on a gRPC server
+grpcurl list --plaintext localhost:9090
+
+# Describe a service
+grpcurl describe --plaintext localhost:9090 my.package.Service
+
+# Invoke a method
+grpcurl invoke --plaintext -d '{&quot;name&quot;: &quot;World&quot;}' localhost:9090 my.package.Service/SayHello
+</code></pre>
+<h2 id="documentation">Documentation</h2>
+<ul>
+<li><a href="introduction.html">Introduction</a> - Learn about GrpCurl.Net and its capabilities</li>
+<li><a href="getting-started.html">Getting Started</a> - Installation and first steps</li>
+<li><a href="articles/cli-reference.html">CLI Reference</a> - Complete command reference</li>
+<li><a href="articles/examples.html">Examples</a> - Usage examples for common scenarios</li>
+<li><a href="articles/architecture.html">Architecture</a> - Internal design and extensibility</li>
+<li><a href="api/GrpCurl.Net.DescriptorSources.html">API Reference</a> - Public API documentation</li>
+</ul>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>.NET 10.0 or later</li>
+<li>Target gRPC server with reflection enabled (or protoset files)</li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

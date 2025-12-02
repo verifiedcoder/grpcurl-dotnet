@@ -1,0 +1,186 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.TestServer.Protos.PayloadType
+  commentId: T:GrpCurl.Net.TestServer.Protos.PayloadType
+  id: PayloadType
+  parent: GrpCurl.Net.TestServer.Protos
+  children:
+  - GrpCurl.Net.TestServer.Protos.PayloadType.Compressable
+  - GrpCurl.Net.TestServer.Protos.PayloadType.Random
+  - GrpCurl.Net.TestServer.Protos.PayloadType.Uncompressable
+  langs:
+  - csharp
+  - vb
+  name: PayloadType
+  nameWithType: PayloadType
+  fullName: GrpCurl.Net.TestServer.Protos.PayloadType
+  type: Enum
+  source:
+    id: PayloadType
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.Net.TestServer/obj/Release/net10.0/Protos/Test.cs
+    startLine: 84
+  assemblies:
+  - GrpCurl.Net.TestServer
+  namespace: GrpCurl.Net.TestServer.Protos
+  summary: The type of payload that should be returned.
+  example: []
+  syntax:
+    content: public enum PayloadType
+    content.vb: Public Enum PayloadType
+- uid: GrpCurl.Net.TestServer.Protos.PayloadType.Compressable
+  commentId: F:GrpCurl.Net.TestServer.Protos.PayloadType.Compressable
+  id: Compressable
+  parent: GrpCurl.Net.TestServer.Protos.PayloadType
+  langs:
+  - csharp
+  - vb
+  name: Compressable
+  nameWithType: PayloadType.Compressable
+  fullName: GrpCurl.Net.TestServer.Protos.PayloadType.Compressable
+  type: Field
+  source:
+    id: Compressable
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.Net.TestServer/obj/Release/net10.0/Protos/Test.cs
+    startLine: 88
+  assemblies:
+  - GrpCurl.Net.TestServer
+  namespace: GrpCurl.Net.TestServer.Protos
+  summary: Compressable text format.
+  example: []
+  syntax:
+    content: >-
+      [OriginalName("COMPRESSABLE")]
+
+      Compressable = 0
+    return:
+      type: GrpCurl.Net.TestServer.Protos.PayloadType
+    content.vb: >-
+      <OriginalName("COMPRESSABLE")>
+
+      Compressable = 0
+  attributes:
+  - type: Google.Protobuf.Reflection.OriginalNameAttribute
+    ctor: Google.Protobuf.Reflection.OriginalNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: COMPRESSABLE
+- uid: GrpCurl.Net.TestServer.Protos.PayloadType.Uncompressable
+  commentId: F:GrpCurl.Net.TestServer.Protos.PayloadType.Uncompressable
+  id: Uncompressable
+  parent: GrpCurl.Net.TestServer.Protos.PayloadType
+  langs:
+  - csharp
+  - vb
+  name: Uncompressable
+  nameWithType: PayloadType.Uncompressable
+  fullName: GrpCurl.Net.TestServer.Protos.PayloadType.Uncompressable
+  type: Field
+  source:
+    id: Uncompressable
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.Net.TestServer/obj/Release/net10.0/Protos/Test.cs
+    startLine: 92
+  assemblies:
+  - GrpCurl.Net.TestServer
+  namespace: GrpCurl.Net.TestServer.Protos
+  summary: Uncompressable binary format.
+  example: []
+  syntax:
+    content: >-
+      [OriginalName("UNCOMPRESSABLE")]
+
+      Uncompressable = 1
+    return:
+      type: GrpCurl.Net.TestServer.Protos.PayloadType
+    content.vb: >-
+      <OriginalName("UNCOMPRESSABLE")>
+
+      Uncompressable = 1
+  attributes:
+  - type: Google.Protobuf.Reflection.OriginalNameAttribute
+    ctor: Google.Protobuf.Reflection.OriginalNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: UNCOMPRESSABLE
+- uid: GrpCurl.Net.TestServer.Protos.PayloadType.Random
+  commentId: F:GrpCurl.Net.TestServer.Protos.PayloadType.Random
+  id: Random
+  parent: GrpCurl.Net.TestServer.Protos.PayloadType
+  langs:
+  - csharp
+  - vb
+  name: Random
+  nameWithType: PayloadType.Random
+  fullName: GrpCurl.Net.TestServer.Protos.PayloadType.Random
+  type: Field
+  source:
+    id: Random
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.Net.TestServer/obj/Release/net10.0/Protos/Test.cs
+    startLine: 96
+  assemblies:
+  - GrpCurl.Net.TestServer
+  namespace: GrpCurl.Net.TestServer.Protos
+  summary: Randomly chosen from all other formats defined in this enum.
+  example: []
+  syntax:
+    content: >-
+      [OriginalName("RANDOM")]
+
+      Random = 2
+    return:
+      type: GrpCurl.Net.TestServer.Protos.PayloadType
+    content.vb: >-
+      <OriginalName("RANDOM")>
+
+      Random = 2
+  attributes:
+  - type: Google.Protobuf.Reflection.OriginalNameAttribute
+    ctor: Google.Protobuf.Reflection.OriginalNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: RANDOM
+references:
+- uid: GrpCurl.Net.TestServer.Protos
+  commentId: N:GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.html
+  name: GrpCurl.Net.TestServer.Protos
+  nameWithType: GrpCurl.Net.TestServer.Protos
+  fullName: GrpCurl.Net.TestServer.Protos
+  spec.csharp:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.TestServer
+    name: TestServer
+    href: GrpCurl.Net.TestServer.html
+  - name: .
+  - uid: GrpCurl.Net.TestServer.Protos
+    name: Protos
+    href: GrpCurl.Net.TestServer.Protos.html
+  spec.vb:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.TestServer
+    name: TestServer
+    href: GrpCurl.Net.TestServer.html
+  - name: .
+  - uid: GrpCurl.Net.TestServer.Protos
+    name: Protos
+    href: GrpCurl.Net.TestServer.Protos.html
+- uid: GrpCurl.Net.TestServer.Protos.PayloadType
+  commentId: T:GrpCurl.Net.TestServer.Protos.PayloadType
+  parent: GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.Net.TestServer.Protos.PayloadType.html
+  name: PayloadType
+  nameWithType: PayloadType
+  fullName: GrpCurl.Net.TestServer.Protos.PayloadType

@@ -1,0 +1,2326 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class WellKnownTypeHandlerTests | GrpCurl.Net </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class WellKnownTypeHandlerTests | GrpCurl.Net ">
+      
+      <meta name="description" content="Tests for WellKnownTypeHandler which handles conversion of Google protobuf well-known types between JSON and protobuf formats.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="GrpCurl.Net">
+            GrpCurl.Net
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests">
+
+
+
+  <h1 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests" class="text-break">
+Class WellKnownTypeHandlerTests  
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="GrpCurl.html">GrpCurl</a>.<a class="xref" href="GrpCurl.Net.html">Net</a>.<a class="xref" href="GrpCurl.Net.Tests.html">Tests</a>.<a class="xref" href="GrpCurl.Net.Tests.Unit.html">Unit</a>.<a class="xref" href="GrpCurl.Net.Tests.Unit.Invocation.html">Invocation</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>GrpCurl.Net.Tests.Unit.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Tests for WellKnownTypeHandler which handles conversion of Google protobuf
+well-known types between JSON and protobuf formats.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public class WellKnownTypeHandlerTests</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">WellKnownTypeHandlerTests</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertAny_EmptyObject_ReturnsEmptyMessage_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_EmptyObject_ReturnsEmptyMessage*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertAny_EmptyObject_ReturnsEmptyMessage" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_EmptyObject_ReturnsEmptyMessage">
+  ConvertAny_EmptyObject_ReturnsEmptyMessage()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertAny_EmptyObject_ReturnsEmptyMessage()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertAny_NonObjectValue_ReturnsNull_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_NonObjectValue_ReturnsNull*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertAny_NonObjectValue_ReturnsNull" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_NonObjectValue_ReturnsNull">
+  ConvertAny_NonObjectValue_ReturnsNull()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertAny_NonObjectValue_ReturnsNull()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertAny_ValidObject_ParsesTypeUrl_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_ValidObject_ParsesTypeUrl*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertAny_ValidObject_ParsesTypeUrl" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_ValidObject_ParsesTypeUrl">
+  ConvertAny_ValidObject_ParsesTypeUrl()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertAny_ValidObject_ParsesTypeUrl()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertAny_WithEmbeddedFields_SerializesValue_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_WithEmbeddedFields_SerializesValue*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertAny_WithEmbeddedFields_SerializesValue" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertAny_WithEmbeddedFields_SerializesValue">
+  ConvertAny_WithEmbeddedFields_SerializesValue()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertAny_WithEmbeddedFields_SerializesValue()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertDuration_EmptyString_ReturnsNull_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_EmptyString_ReturnsNull*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertDuration_EmptyString_ReturnsNull" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_EmptyString_ReturnsNull">
+  ConvertDuration_EmptyString_ReturnsNull()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertDuration_EmptyString_ReturnsNull()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertDuration_ExcessivePrecision_TruncatesCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_ExcessivePrecision_TruncatesCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertDuration_ExcessivePrecision_TruncatesCorrectly_System_String_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_ExcessivePrecision_TruncatesCorrectly(System.String)">
+  ConvertDuration_ExcessivePrecision_TruncatesCorrectly(string)
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Theory]
+[InlineData(new object[] { &quot;1.123456789012s&quot; })]
+public void ConvertDuration_ExcessivePrecision_TruncatesCorrectly(string duration)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>duration</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertDuration_InvalidNumber_ReturnsNull_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_InvalidNumber_ReturnsNull*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertDuration_InvalidNumber_ReturnsNull" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_InvalidNumber_ReturnsNull">
+  ConvertDuration_InvalidNumber_ReturnsNull()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertDuration_InvalidNumber_ReturnsNull()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertDuration_MissingSuffix_ReturnsNull_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_MissingSuffix_ReturnsNull*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertDuration_MissingSuffix_ReturnsNull" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_MissingSuffix_ReturnsNull">
+  ConvertDuration_MissingSuffix_ReturnsNull()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertDuration_MissingSuffix_ReturnsNull()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertDuration_NonStringValue_ReturnsNull_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_NonStringValue_ReturnsNull*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertDuration_NonStringValue_ReturnsNull" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_NonStringValue_ReturnsNull">
+  ConvertDuration_NonStringValue_ReturnsNull()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertDuration_NonStringValue_ReturnsNull()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertDuration_ValidFormat_ParsesCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_ValidFormat_ParsesCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertDuration_ValidFormat_ParsesCorrectly_System_String_System_Int64_System_Int32_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertDuration_ValidFormat_ParsesCorrectly(System.String,System.Int64,System.Int32)">
+  ConvertDuration_ValidFormat_ParsesCorrectly(string, long, int)
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Theory]
+[InlineData(new object[] { &quot;10s&quot;, 10, 0 })]
+[InlineData(new object[] { &quot;1.5s&quot;, 1, 500000000 })]
+[InlineData(new object[] { &quot;0s&quot;, 0, 0 })]
+[InlineData(new object[] { &quot;3600s&quot;, 3600, 0 })]
+[InlineData(new object[] { &quot;1.000000001s&quot;, 1, 1 })]
+[InlineData(new object[] { &quot;0.123456789s&quot;, 0, 123456789 })]
+public void ConvertDuration_ValidFormat_ParsesCorrectly(string duration, long expectedSeconds, int expectedNanos)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>duration</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>expectedSeconds</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd></dd>
+    <dt><code>expectedNanos</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertEmpty_ReturnsEmptyMessage_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertEmpty_ReturnsEmptyMessage*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertEmpty_ReturnsEmptyMessage" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertEmpty_ReturnsEmptyMessage">
+  ConvertEmpty_ReturnsEmptyMessage()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertEmpty_ReturnsEmptyMessage()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertFieldMask_EmptyString_ReturnsEmptyMessage_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_EmptyString_ReturnsEmptyMessage*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertFieldMask_EmptyString_ReturnsEmptyMessage" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_EmptyString_ReturnsEmptyMessage">
+  ConvertFieldMask_EmptyString_ReturnsEmptyMessage()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertFieldMask_EmptyString_ReturnsEmptyMessage()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertFieldMask_NonStringValue_ReturnsNull_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_NonStringValue_ReturnsNull*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertFieldMask_NonStringValue_ReturnsNull" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_NonStringValue_ReturnsNull">
+  ConvertFieldMask_NonStringValue_ReturnsNull()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertFieldMask_NonStringValue_ReturnsNull()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertFieldMask_ValidPaths_ParsesCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_ValidPaths_ParsesCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertFieldMask_ValidPaths_ParsesCorrectly_System_String_System_String___" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_ValidPaths_ParsesCorrectly(System.String,System.String[])">
+  ConvertFieldMask_ValidPaths_ParsesCorrectly(string, string[])
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Theory]
+[InlineData(new object[] { &quot;name,email,age&quot;, new string[] { &quot;name&quot;, &quot;email&quot;, &quot;age&quot; } })]
+[InlineData(new object[] { &quot;user.name&quot;, new string[] { &quot;user.name&quot; } })]
+[InlineData(new object[] { &quot;field1&quot;, new string[] { &quot;field1&quot; } })]
+public void ConvertFieldMask_ValidPaths_ParsesCorrectly(string fieldMask, string[] expectedPaths)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>fieldMask</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>expectedPaths</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>[]</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertFieldMask_WithWhitespace_TrimsCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_WithWhitespace_TrimsCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertFieldMask_WithWhitespace_TrimsCorrectly" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertFieldMask_WithWhitespace_TrimsCorrectly">
+  ConvertFieldMask_WithWhitespace_TrimsCorrectly()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertFieldMask_WithWhitespace_TrimsCorrectly()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertListValue_EmptyArray_ReturnsEmptyList_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_EmptyArray_ReturnsEmptyList*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertListValue_EmptyArray_ReturnsEmptyList" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_EmptyArray_ReturnsEmptyList">
+  ConvertListValue_EmptyArray_ReturnsEmptyList()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertListValue_EmptyArray_ReturnsEmptyList()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertListValue_NestedArrays_ParsesCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_NestedArrays_ParsesCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertListValue_NestedArrays_ParsesCorrectly" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_NestedArrays_ParsesCorrectly">
+  ConvertListValue_NestedArrays_ParsesCorrectly()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertListValue_NestedArrays_ParsesCorrectly()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertListValue_NonArrayValue_ReturnsNull_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_NonArrayValue_ReturnsNull*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertListValue_NonArrayValue_ReturnsNull" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_NonArrayValue_ReturnsNull">
+  ConvertListValue_NonArrayValue_ReturnsNull()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertListValue_NonArrayValue_ReturnsNull()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertListValue_ValidArray_ParsesCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_ValidArray_ParsesCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertListValue_ValidArray_ParsesCorrectly" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertListValue_ValidArray_ParsesCorrectly">
+  ConvertListValue_ValidArray_ParsesCorrectly()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertListValue_ValidArray_ParsesCorrectly()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertStruct_EmptyObject_ReturnsEmptyMessage_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_EmptyObject_ReturnsEmptyMessage*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertStruct_EmptyObject_ReturnsEmptyMessage" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_EmptyObject_ReturnsEmptyMessage">
+  ConvertStruct_EmptyObject_ReturnsEmptyMessage()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertStruct_EmptyObject_ReturnsEmptyMessage()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertStruct_NestedObjects_ParsesCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_NestedObjects_ParsesCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertStruct_NestedObjects_ParsesCorrectly" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_NestedObjects_ParsesCorrectly">
+  ConvertStruct_NestedObjects_ParsesCorrectly()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertStruct_NestedObjects_ParsesCorrectly()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertStruct_NonObjectValue_ReturnsNull_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_NonObjectValue_ReturnsNull*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertStruct_NonObjectValue_ReturnsNull" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_NonObjectValue_ReturnsNull">
+  ConvertStruct_NonObjectValue_ReturnsNull()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertStruct_NonObjectValue_ReturnsNull()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertStruct_ValidObject_ParsesCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_ValidObject_ParsesCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertStruct_ValidObject_ParsesCorrectly" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertStruct_ValidObject_ParsesCorrectly">
+  ConvertStruct_ValidObject_ParsesCorrectly()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertStruct_ValidObject_ParsesCorrectly()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertTimestamp_EmptyString_ReturnsNull_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_EmptyString_ReturnsNull*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertTimestamp_EmptyString_ReturnsNull" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_EmptyString_ReturnsNull">
+  ConvertTimestamp_EmptyString_ReturnsNull()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertTimestamp_EmptyString_ReturnsNull()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertTimestamp_InvalidDateFormat_ReturnsNull_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_InvalidDateFormat_ReturnsNull*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertTimestamp_InvalidDateFormat_ReturnsNull" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_InvalidDateFormat_ReturnsNull">
+  ConvertTimestamp_InvalidDateFormat_ReturnsNull()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertTimestamp_InvalidDateFormat_ReturnsNull()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertTimestamp_LocalTime_ConvertsToUtc_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_LocalTime_ConvertsToUtc*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertTimestamp_LocalTime_ConvertsToUtc" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_LocalTime_ConvertsToUtc">
+  ConvertTimestamp_LocalTime_ConvertsToUtc()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertTimestamp_LocalTime_ConvertsToUtc()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertTimestamp_NonStringValue_ReturnsNull_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_NonStringValue_ReturnsNull*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertTimestamp_NonStringValue_ReturnsNull" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_NonStringValue_ReturnsNull">
+  ConvertTimestamp_NonStringValue_ReturnsNull()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertTimestamp_NonStringValue_ReturnsNull()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertTimestamp_ValidRfc3339_ParsesCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_ValidRfc3339_ParsesCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertTimestamp_ValidRfc3339_ParsesCorrectly_System_String_System_Int64_System_Int32_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertTimestamp_ValidRfc3339_ParsesCorrectly(System.String,System.Int64,System.Int32)">
+  ConvertTimestamp_ValidRfc3339_ParsesCorrectly(string, long, int)
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Theory]
+[InlineData(new object[] { &quot;2024-01-15T10:30:00Z&quot;, 1705314600, 0 })]
+[InlineData(new object[] { &quot;2024-01-15T10:30:00.123Z&quot;, 1705314600, 123000000 })]
+[InlineData(new object[] { &quot;2024-01-15T10:30:00.123456789Z&quot;, 1705314600, 123456789 })]
+[InlineData(new object[] { &quot;1970-01-01T00:00:00Z&quot;, 0, 0 })]
+[InlineData(new object[] { &quot;2000-01-01T00:00:00Z&quot;, 946684800, 0 })]
+public void ConvertTimestamp_ValidRfc3339_ParsesCorrectly(string timestamp, long expectedSeconds, int expectedNanos)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>timestamp</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>expectedSeconds</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd></dd>
+    <dt><code>expectedNanos</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertValue_ArrayValue_CreatesListValue_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_ArrayValue_CreatesListValue*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertValue_ArrayValue_CreatesListValue" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_ArrayValue_CreatesListValue">
+  ConvertValue_ArrayValue_CreatesListValue()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertValue_ArrayValue_CreatesListValue()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertValue_BoolValue_ParsesCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_BoolValue_ParsesCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertValue_BoolValue_ParsesCorrectly_System_String_System_Boolean_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_BoolValue_ParsesCorrectly(System.String,System.Boolean)">
+  ConvertValue_BoolValue_ParsesCorrectly(string, bool)
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Theory]
+[InlineData(new object[] { &quot;true&quot;, true })]
+[InlineData(new object[] { &quot;false&quot;, false })]
+public void ConvertValue_BoolValue_ParsesCorrectly(string jsonValue, bool expected)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>jsonValue</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>expected</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertValue_NullValue_ParsesCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_NullValue_ParsesCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertValue_NullValue_ParsesCorrectly" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_NullValue_ParsesCorrectly">
+  ConvertValue_NullValue_ParsesCorrectly()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertValue_NullValue_ParsesCorrectly()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertValue_NumberValue_ParsesCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_NumberValue_ParsesCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertValue_NumberValue_ParsesCorrectly_System_String_System_Double_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_NumberValue_ParsesCorrectly(System.String,System.Double)">
+  ConvertValue_NumberValue_ParsesCorrectly(string, double)
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Theory]
+[InlineData(new object[] { &quot;42&quot;, 42 })]
+[InlineData(new object[] { &quot;3.14&quot;, 3.14 })]
+[InlineData(new object[] { &quot;-100&quot;, -100 })]
+[InlineData(new object[] { &quot;0&quot;, 0 })]
+public void ConvertValue_NumberValue_ParsesCorrectly(string jsonValue, double expected)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>jsonValue</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>expected</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertValue_ObjectValue_CreatesStructValue_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_ObjectValue_CreatesStructValue*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertValue_ObjectValue_CreatesStructValue" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_ObjectValue_CreatesStructValue">
+  ConvertValue_ObjectValue_CreatesStructValue()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertValue_ObjectValue_CreatesStructValue()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertValue_StringValue_ParsesCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_StringValue_ParsesCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertValue_StringValue_ParsesCorrectly_System_String_System_String_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_StringValue_ParsesCorrectly(System.String,System.String)">
+  ConvertValue_StringValue_ParsesCorrectly(string, string)
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Theory]
+[InlineData(new object[] { &quot;\&quot;hello\&quot;&quot;, &quot;hello&quot; })]
+[InlineData(new object[] { &quot;\&quot;\&quot;&quot;, &quot;&quot; })]
+public void ConvertValue_StringValue_ParsesCorrectly(string jsonValue, string expected)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>jsonValue</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>expected</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertValue_TracksOneofField_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_TracksOneofField*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertValue_TracksOneofField" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertValue_TracksOneofField">
+  ConvertValue_TracksOneofField()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void ConvertValue_TracksOneofField()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_BoolValue_ParsesCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_BoolValue_ParsesCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_BoolValue_ParsesCorrectly_System_String_System_String_System_Boolean_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_BoolValue_ParsesCorrectly(System.String,System.String,System.Boolean)">
+  ConvertWrapperType_BoolValue_ParsesCorrectly(string, string, bool)
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Theory]
+[InlineData(new object[] { &quot;google.protobuf.BoolValue&quot;, &quot;true&quot;, true })]
+[InlineData(new object[] { &quot;google.protobuf.BoolValue&quot;, &quot;false&quot;, false })]
+public void ConvertWrapperType_BoolValue_ParsesCorrectly(string typeName, string jsonValue, bool expected)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>typeName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>jsonValue</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>expected</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_BytesValue_ParsesCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_BytesValue_ParsesCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_BytesValue_ParsesCorrectly_System_String_System_String_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_BytesValue_ParsesCorrectly(System.String,System.String)">
+  ConvertWrapperType_BytesValue_ParsesCorrectly(string, string)
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Theory]
+[InlineData(new object[] { &quot;google.protobuf.BytesValue&quot;, &quot;\&quot;SGVsbG8=\&quot;&quot; })]
+public void ConvertWrapperType_BytesValue_ParsesCorrectly(string typeName, string jsonValue)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>typeName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>jsonValue</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_DoubleValue_ParsesCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_DoubleValue_ParsesCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_DoubleValue_ParsesCorrectly_System_String_System_String_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_DoubleValue_ParsesCorrectly(System.String,System.String)">
+  ConvertWrapperType_DoubleValue_ParsesCorrectly(string, string)
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Theory]
+[InlineData(new object[] { &quot;google.protobuf.DoubleValue&quot;, &quot;3.141592653589793&quot; })]
+[InlineData(new object[] { &quot;google.protobuf.DoubleValue&quot;, &quot;-1e10&quot; })]
+public void ConvertWrapperType_DoubleValue_ParsesCorrectly(string typeName, string jsonValue)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>typeName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>jsonValue</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_FloatValue_ParsesCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_FloatValue_ParsesCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_FloatValue_ParsesCorrectly_System_String_System_String_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_FloatValue_ParsesCorrectly(System.String,System.String)">
+  ConvertWrapperType_FloatValue_ParsesCorrectly(string, string)
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Theory]
+[InlineData(new object[] { &quot;google.protobuf.FloatValue&quot;, &quot;3.14&quot; })]
+[InlineData(new object[] { &quot;google.protobuf.FloatValue&quot;, &quot;-0.5&quot; })]
+[InlineData(new object[] { &quot;google.protobuf.FloatValue&quot;, &quot;0&quot; })]
+public void ConvertWrapperType_FloatValue_ParsesCorrectly(string typeName, string jsonValue)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>typeName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>jsonValue</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_Int32Value_ParsesCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_Int32Value_ParsesCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_Int32Value_ParsesCorrectly_System_String_System_String_System_Int32_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_Int32Value_ParsesCorrectly(System.String,System.String,System.Int32)">
+  ConvertWrapperType_Int32Value_ParsesCorrectly(string, string, int)
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Theory]
+[InlineData(new object[] { &quot;google.protobuf.Int32Value&quot;, &quot;42&quot;, 42 })]
+[InlineData(new object[] { &quot;google.protobuf.Int32Value&quot;, &quot;-100&quot;, -100 })]
+[InlineData(new object[] { &quot;google.protobuf.Int32Value&quot;, &quot;0&quot;, 0 })]
+public void ConvertWrapperType_Int32Value_ParsesCorrectly(string typeName, string jsonValue, int expected)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>typeName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>jsonValue</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>expected</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_Int64Value_ParsesCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_Int64Value_ParsesCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_Int64Value_ParsesCorrectly_System_String_System_String_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_Int64Value_ParsesCorrectly(System.String,System.String)">
+  ConvertWrapperType_Int64Value_ParsesCorrectly(string, string)
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Theory]
+[InlineData(new object[] { &quot;google.protobuf.Int64Value&quot;, &quot;9223372036854775807&quot; })]
+[InlineData(new object[] { &quot;google.protobuf.Int64Value&quot;, &quot;-9223372036854775808&quot; })]
+public void ConvertWrapperType_Int64Value_ParsesCorrectly(string typeName, string jsonValue)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>typeName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>jsonValue</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_StringValue_ParsesCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_StringValue_ParsesCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_StringValue_ParsesCorrectly_System_String_System_String_System_String_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_StringValue_ParsesCorrectly(System.String,System.String,System.String)">
+  ConvertWrapperType_StringValue_ParsesCorrectly(string, string, string)
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Theory]
+[InlineData(new object[] { &quot;google.protobuf.StringValue&quot;, &quot;\&quot;hello world\&quot;&quot;, &quot;hello world&quot; })]
+[InlineData(new object[] { &quot;google.protobuf.StringValue&quot;, &quot;\&quot;\&quot;&quot;, &quot;&quot; })]
+[InlineData(new object[] { &quot;google.protobuf.StringValue&quot;, &quot;\&quot;unicode: \\u00e9\&quot;&quot;, &quot;unicode: &#233;&quot; })]
+public void ConvertWrapperType_StringValue_ParsesCorrectly(string typeName, string jsonValue, string expected)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>typeName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>jsonValue</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>expected</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_UInt32Value_ParsesCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_UInt32Value_ParsesCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_UInt32Value_ParsesCorrectly_System_String_System_String_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_UInt32Value_ParsesCorrectly(System.String,System.String)">
+  ConvertWrapperType_UInt32Value_ParsesCorrectly(string, string)
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Theory]
+[InlineData(new object[] { &quot;google.protobuf.UInt32Value&quot;, &quot;4294967295&quot; })]
+[InlineData(new object[] { &quot;google.protobuf.UInt32Value&quot;, &quot;0&quot; })]
+public void ConvertWrapperType_UInt32Value_ParsesCorrectly(string typeName, string jsonValue)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>typeName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>jsonValue</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_UInt64Value_ParsesCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_UInt64Value_ParsesCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_ConvertWrapperType_UInt64Value_ParsesCorrectly_System_String_System_String_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.ConvertWrapperType_UInt64Value_ParsesCorrectly(System.String,System.String)">
+  ConvertWrapperType_UInt64Value_ParsesCorrectly(string, string)
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Theory]
+[InlineData(new object[] { &quot;google.protobuf.UInt64Value&quot;, &quot;18446744073709551615&quot; })]
+public void ConvertWrapperType_UInt64Value_ParsesCorrectly(string typeName, string jsonValue)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>typeName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>jsonValue</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteAnyJson_EmptyMessage_WritesEmptyObject_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_EmptyMessage_WritesEmptyObject*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteAnyJson_EmptyMessage_WritesEmptyObject" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_EmptyMessage_WritesEmptyObject">
+  WriteAnyJson_EmptyMessage_WritesEmptyObject()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteAnyJson_EmptyMessage_WritesEmptyObject()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteAnyJson_WithTypeUrl_IncludesTypeField_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_WithTypeUrl_IncludesTypeField*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteAnyJson_WithTypeUrl_IncludesTypeField" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_WithTypeUrl_IncludesTypeField">
+  WriteAnyJson_WithTypeUrl_IncludesTypeField()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteAnyJson_WithTypeUrl_IncludesTypeField()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteAnyJson_WithValue_IncludesEmbeddedFields_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_WithValue_IncludesEmbeddedFields*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteAnyJson_WithValue_IncludesEmbeddedFields" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteAnyJson_WithValue_IncludesEmbeddedFields">
+  WriteAnyJson_WithValue_IncludesEmbeddedFields()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteAnyJson_WithValue_IncludesEmbeddedFields()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteDurationJson_PreciseNanos_FormatsCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_PreciseNanos_FormatsCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteDurationJson_PreciseNanos_FormatsCorrectly" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_PreciseNanos_FormatsCorrectly">
+  WriteDurationJson_PreciseNanos_FormatsCorrectly()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteDurationJson_PreciseNanos_FormatsCorrectly()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteDurationJson_WholeSeconds_FormatsCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_WholeSeconds_FormatsCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteDurationJson_WholeSeconds_FormatsCorrectly_System_Int64_System_Int32_System_String_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_WholeSeconds_FormatsCorrectly(System.Int64,System.Int32,System.String)">
+  WriteDurationJson_WholeSeconds_FormatsCorrectly(long, int, string)
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Theory]
+[InlineData(new object[] { 10, 0, &quot;\&quot;10s\&quot;&quot; })]
+[InlineData(new object[] { 0, 0, &quot;\&quot;0s\&quot;&quot; })]
+[InlineData(new object[] { 3600, 0, &quot;\&quot;3600s\&quot;&quot; })]
+public void WriteDurationJson_WholeSeconds_FormatsCorrectly(long seconds, int nanos, string expected)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>seconds</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd></dd>
+    <dt><code>nanos</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+    <dt><code>expected</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteDurationJson_WithNanos_IncludesFractional_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_WithNanos_IncludesFractional*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteDurationJson_WithNanos_IncludesFractional" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteDurationJson_WithNanos_IncludesFractional">
+  WriteDurationJson_WithNanos_IncludesFractional()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteDurationJson_WithNanos_IncludesFractional()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteEmptyJson_WritesEmptyObject_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteEmptyJson_WritesEmptyObject*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteEmptyJson_WritesEmptyObject" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteEmptyJson_WritesEmptyObject">
+  WriteEmptyJson_WritesEmptyObject()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteEmptyJson_WritesEmptyObject()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteFieldMaskJson_EmptyPaths_WritesEmptyString_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_EmptyPaths_WritesEmptyString*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteFieldMaskJson_EmptyPaths_WritesEmptyString" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_EmptyPaths_WritesEmptyString">
+  WriteFieldMaskJson_EmptyPaths_WritesEmptyString()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteFieldMaskJson_EmptyPaths_WritesEmptyString()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteFieldMaskJson_MultiplePaths_WritesCommaSeparated_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_MultiplePaths_WritesCommaSeparated*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteFieldMaskJson_MultiplePaths_WritesCommaSeparated" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_MultiplePaths_WritesCommaSeparated">
+  WriteFieldMaskJson_MultiplePaths_WritesCommaSeparated()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteFieldMaskJson_MultiplePaths_WritesCommaSeparated()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteFieldMaskJson_SinglePath_WritesAsString_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_SinglePath_WritesAsString*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteFieldMaskJson_SinglePath_WritesAsString" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteFieldMaskJson_SinglePath_WritesAsString">
+  WriteFieldMaskJson_SinglePath_WritesAsString()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteFieldMaskJson_SinglePath_WritesAsString()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteListValueJson_EmptyArray_WritesEmptyArray_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_EmptyArray_WritesEmptyArray*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteListValueJson_EmptyArray_WritesEmptyArray" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_EmptyArray_WritesEmptyArray">
+  WriteListValueJson_EmptyArray_WritesEmptyArray()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteListValueJson_EmptyArray_WritesEmptyArray()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteListValueJson_NoValuesField_WritesEmptyArray_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_NoValuesField_WritesEmptyArray*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteListValueJson_NoValuesField_WritesEmptyArray" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_NoValuesField_WritesEmptyArray">
+  WriteListValueJson_NoValuesField_WritesEmptyArray()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteListValueJson_NoValuesField_WritesEmptyArray()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteListValueJson_NullValues_WritesNullElements_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_NullValues_WritesNullElements*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteListValueJson_NullValues_WritesNullElements" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_NullValues_WritesNullElements">
+  WriteListValueJson_NullValues_WritesNullElements()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteListValueJson_NullValues_WritesNullElements()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteListValueJson_ValidArray_WritesJsonArray_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_ValidArray_WritesJsonArray*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteListValueJson_ValidArray_WritesJsonArray" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteListValueJson_ValidArray_WritesJsonArray">
+  WriteListValueJson_ValidArray_WritesJsonArray()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteListValueJson_ValidArray_WritesJsonArray()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteStructJson_EmptyStruct_WritesEmptyObject_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteStructJson_EmptyStruct_WritesEmptyObject*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteStructJson_EmptyStruct_WritesEmptyObject" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteStructJson_EmptyStruct_WritesEmptyObject">
+  WriteStructJson_EmptyStruct_WritesEmptyObject()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteStructJson_EmptyStruct_WritesEmptyObject()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteStructJson_ValidStruct_WritesObject_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteStructJson_ValidStruct_WritesObject*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteStructJson_ValidStruct_WritesObject" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteStructJson_ValidStruct_WritesObject">
+  WriteStructJson_ValidStruct_WritesObject()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteStructJson_ValidStruct_WritesObject()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteTimestampJson_Epoch_FormatsCorrectly_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_Epoch_FormatsCorrectly*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteTimestampJson_Epoch_FormatsCorrectly" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_Epoch_FormatsCorrectly">
+  WriteTimestampJson_Epoch_FormatsCorrectly()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteTimestampJson_Epoch_FormatsCorrectly()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteTimestampJson_ValidTimestamp_FormatsAsRfc3339_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_ValidTimestamp_FormatsAsRfc3339*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteTimestampJson_ValidTimestamp_FormatsAsRfc3339" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_ValidTimestamp_FormatsAsRfc3339">
+  WriteTimestampJson_ValidTimestamp_FormatsAsRfc3339()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteTimestampJson_ValidTimestamp_FormatsAsRfc3339()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteTimestampJson_WithNanos_IncludesFractionalSeconds_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_WithNanos_IncludesFractionalSeconds*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteTimestampJson_WithNanos_IncludesFractionalSeconds" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteTimestampJson_WithNanos_IncludesFractionalSeconds">
+  WriteTimestampJson_WithNanos_IncludesFractionalSeconds()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteTimestampJson_WithNanos_IncludesFractionalSeconds()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteValueJson_BoolFalse_WritesFalse_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_BoolFalse_WritesFalse*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteValueJson_BoolFalse_WritesFalse" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_BoolFalse_WritesFalse">
+  WriteValueJson_BoolFalse_WritesFalse()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteValueJson_BoolFalse_WritesFalse()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteValueJson_BoolTrue_WritesTrue_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_BoolTrue_WritesTrue*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteValueJson_BoolTrue_WritesTrue" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_BoolTrue_WritesTrue">
+  WriteValueJson_BoolTrue_WritesTrue()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteValueJson_BoolTrue_WritesTrue()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteValueJson_EmptyMessage_WritesNull_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_EmptyMessage_WritesNull*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteValueJson_EmptyMessage_WritesNull" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_EmptyMessage_WritesNull">
+  WriteValueJson_EmptyMessage_WritesNull()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteValueJson_EmptyMessage_WritesNull()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteValueJson_NullValue_WritesNull_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_NullValue_WritesNull*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteValueJson_NullValue_WritesNull" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_NullValue_WritesNull">
+  WriteValueJson_NullValue_WritesNull()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteValueJson_NullValue_WritesNull()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteValueJson_NumberValue_WritesNumber_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_NumberValue_WritesNumber*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteValueJson_NumberValue_WritesNumber" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_NumberValue_WritesNumber">
+  WriteValueJson_NumberValue_WritesNumber()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteValueJson_NumberValue_WritesNumber()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteValueJson_StringValue_WritesQuotedString_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_StringValue_WritesQuotedString*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteValueJson_StringValue_WritesQuotedString" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteValueJson_StringValue_WritesQuotedString">
+  WriteValueJson_StringValue_WritesQuotedString()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteValueJson_StringValue_WritesQuotedString()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteWrapperJson_BoolValue_WritesTrueOrFalse_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_BoolValue_WritesTrueOrFalse*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteWrapperJson_BoolValue_WritesTrueOrFalse" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_BoolValue_WritesTrueOrFalse">
+  WriteWrapperJson_BoolValue_WritesTrueOrFalse()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteWrapperJson_BoolValue_WritesTrueOrFalse()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteWrapperJson_Int32Value_WritesRawValue_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_Int32Value_WritesRawValue*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteWrapperJson_Int32Value_WritesRawValue" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_Int32Value_WritesRawValue">
+  WriteWrapperJson_Int32Value_WritesRawValue()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteWrapperJson_Int32Value_WritesRawValue()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteWrapperJson_MissingValue_WritesNull_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_MissingValue_WritesNull*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteWrapperJson_MissingValue_WritesNull" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_MissingValue_WritesNull">
+  WriteWrapperJson_MissingValue_WritesNull()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteWrapperJson_MissingValue_WritesNull()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteWrapperJson_StringValue_WritesQuotedString_" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_StringValue_WritesQuotedString*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Unit_Invocation_WellKnownTypeHandlerTests_WriteWrapperJson_StringValue_WritesQuotedString" data-uid="GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests.WriteWrapperJson_StringValue_WritesQuotedString">
+  WriteWrapperJson_StringValue_WritesQuotedString()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public void WriteWrapperJson_StringValue_WritesQuotedString()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

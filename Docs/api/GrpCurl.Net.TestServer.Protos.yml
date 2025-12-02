@@ -1,0 +1,213 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.TestServer.Protos
+  commentId: N:GrpCurl.Net.TestServer.Protos
+  id: GrpCurl.Net.TestServer.Protos
+  children:
+  - GrpCurl.Net.TestServer.Protos.EchoStatus
+  - GrpCurl.Net.TestServer.Protos.Empty
+  - GrpCurl.Net.TestServer.Protos.Payload
+  - GrpCurl.Net.TestServer.Protos.PayloadType
+  - GrpCurl.Net.TestServer.Protos.ResponseParameters
+  - GrpCurl.Net.TestServer.Protos.SimpleRequest
+  - GrpCurl.Net.TestServer.Protos.SimpleResponse
+  - GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest
+  - GrpCurl.Net.TestServer.Protos.StreamingInputCallResponse
+  - GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest
+  - GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse
+  - GrpCurl.Net.TestServer.Protos.TestReflection
+  - GrpCurl.Net.TestServer.Protos.TestService
+  - GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase
+  - GrpCurl.Net.TestServer.Protos.UnimplementedService
+  - GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GrpCurl.Net.TestServer.Protos
+  nameWithType: GrpCurl.Net.TestServer.Protos
+  fullName: GrpCurl.Net.TestServer.Protos
+  type: Namespace
+  assemblies:
+  - GrpCurl.Net.TestServer
+references:
+- uid: GrpCurl.Net.TestServer.Protos.TestReflection
+  commentId: T:GrpCurl.Net.TestServer.Protos.TestReflection
+  href: GrpCurl.Net.TestServer.Protos.TestReflection.html
+  name: TestReflection
+  nameWithType: TestReflection
+  fullName: GrpCurl.Net.TestServer.Protos.TestReflection
+- uid: GrpCurl.Net.TestServer.Protos.PayloadType
+  commentId: T:GrpCurl.Net.TestServer.Protos.PayloadType
+  parent: GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.Net.TestServer.Protos.PayloadType.html
+  name: PayloadType
+  nameWithType: PayloadType
+  fullName: GrpCurl.Net.TestServer.Protos.PayloadType
+- uid: GrpCurl.Net.TestServer.Protos.Empty
+  commentId: T:GrpCurl.Net.TestServer.Protos.Empty
+  parent: GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.Net.TestServer.Protos.Empty.html
+  name: Empty
+  nameWithType: Empty
+  fullName: GrpCurl.Net.TestServer.Protos.Empty
+- uid: GrpCurl.Net.TestServer.Protos.Payload
+  commentId: T:GrpCurl.Net.TestServer.Protos.Payload
+  parent: GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.Net.TestServer.Protos.Payload.html
+  name: Payload
+  nameWithType: Payload
+  fullName: GrpCurl.Net.TestServer.Protos.Payload
+- uid: GrpCurl.Net.TestServer.Protos.EchoStatus
+  commentId: T:GrpCurl.Net.TestServer.Protos.EchoStatus
+  parent: GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.Net.TestServer.Protos.EchoStatus.html
+  name: EchoStatus
+  nameWithType: EchoStatus
+  fullName: GrpCurl.Net.TestServer.Protos.EchoStatus
+- uid: GrpCurl.Net.TestServer.Protos.SimpleRequest
+  commentId: T:GrpCurl.Net.TestServer.Protos.SimpleRequest
+  parent: GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.Net.TestServer.Protos.SimpleRequest.html
+  name: SimpleRequest
+  nameWithType: SimpleRequest
+  fullName: GrpCurl.Net.TestServer.Protos.SimpleRequest
+- uid: GrpCurl.Net.TestServer.Protos.SimpleResponse
+  commentId: T:GrpCurl.Net.TestServer.Protos.SimpleResponse
+  parent: GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.Net.TestServer.Protos.SimpleResponse.html
+  name: SimpleResponse
+  nameWithType: SimpleResponse
+  fullName: GrpCurl.Net.TestServer.Protos.SimpleResponse
+- uid: GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest
+  commentId: T:GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest
+  parent: GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest.html
+  name: StreamingInputCallRequest
+  nameWithType: StreamingInputCallRequest
+  fullName: GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest
+- uid: GrpCurl.Net.TestServer.Protos.StreamingInputCallResponse
+  commentId: T:GrpCurl.Net.TestServer.Protos.StreamingInputCallResponse
+  parent: GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.Net.TestServer.Protos.StreamingInputCallResponse.html
+  name: StreamingInputCallResponse
+  nameWithType: StreamingInputCallResponse
+  fullName: GrpCurl.Net.TestServer.Protos.StreamingInputCallResponse
+- uid: GrpCurl.Net.TestServer.Protos.ResponseParameters
+  commentId: T:GrpCurl.Net.TestServer.Protos.ResponseParameters
+  parent: GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.Net.TestServer.Protos.ResponseParameters.html
+  name: ResponseParameters
+  nameWithType: ResponseParameters
+  fullName: GrpCurl.Net.TestServer.Protos.ResponseParameters
+- uid: GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest
+  commentId: T:GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest
+  parent: GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest.html
+  name: StreamingOutputCallRequest
+  nameWithType: StreamingOutputCallRequest
+  fullName: GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest
+- uid: GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse
+  commentId: T:GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse
+  parent: GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse.html
+  name: StreamingOutputCallResponse
+  nameWithType: StreamingOutputCallResponse
+  fullName: GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse
+- uid: GrpCurl.Net.TestServer.Protos.TestService
+  commentId: T:GrpCurl.Net.TestServer.Protos.TestService
+  parent: GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.Net.TestServer.Protos.TestService.html
+  name: TestService
+  nameWithType: TestService
+  fullName: GrpCurl.Net.TestServer.Protos.TestService
+- uid: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase
+  commentId: T:GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase
+  parent: GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.Net.TestServer.Protos.TestService.html
+  name: TestService.TestServiceBase
+  nameWithType: TestService.TestServiceBase
+  fullName: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase
+  spec.csharp:
+  - uid: GrpCurl.Net.TestServer.Protos.TestService
+    name: TestService
+    href: GrpCurl.Net.TestServer.Protos.TestService.html
+  - name: .
+  - uid: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase
+    name: TestServiceBase
+    href: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.html
+  spec.vb:
+  - uid: GrpCurl.Net.TestServer.Protos.TestService
+    name: TestService
+    href: GrpCurl.Net.TestServer.Protos.TestService.html
+  - name: .
+  - uid: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase
+    name: TestServiceBase
+    href: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.html
+- uid: GrpCurl.Net.TestServer.Protos.UnimplementedService
+  commentId: T:GrpCurl.Net.TestServer.Protos.UnimplementedService
+  parent: GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.Net.TestServer.Protos.UnimplementedService.html
+  name: UnimplementedService
+  nameWithType: UnimplementedService
+  fullName: GrpCurl.Net.TestServer.Protos.UnimplementedService
+- uid: GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase
+  commentId: T:GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase
+  parent: GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.Net.TestServer.Protos.UnimplementedService.html
+  name: UnimplementedService.UnimplementedServiceBase
+  nameWithType: UnimplementedService.UnimplementedServiceBase
+  fullName: GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase
+  spec.csharp:
+  - uid: GrpCurl.Net.TestServer.Protos.UnimplementedService
+    name: UnimplementedService
+    href: GrpCurl.Net.TestServer.Protos.UnimplementedService.html
+  - name: .
+  - uid: GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase
+    name: UnimplementedServiceBase
+    href: GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase.html
+  spec.vb:
+  - uid: GrpCurl.Net.TestServer.Protos.UnimplementedService
+    name: UnimplementedService
+    href: GrpCurl.Net.TestServer.Protos.UnimplementedService.html
+  - name: .
+  - uid: GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase
+    name: UnimplementedServiceBase
+    href: GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase.html
+- uid: GrpCurl.Net.TestServer.Protos
+  commentId: N:GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.html
+  name: GrpCurl.Net.TestServer.Protos
+  nameWithType: GrpCurl.Net.TestServer.Protos
+  fullName: GrpCurl.Net.TestServer.Protos
+  spec.csharp:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.TestServer
+    name: TestServer
+    href: GrpCurl.Net.TestServer.html
+  - name: .
+  - uid: GrpCurl.Net.TestServer.Protos
+    name: Protos
+    href: GrpCurl.Net.TestServer.Protos.html
+  spec.vb:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.TestServer
+    name: TestServer
+    href: GrpCurl.Net.TestServer.html
+  - name: .
+  - uid: GrpCurl.Net.TestServer.Protos
+    name: Protos
+    href: GrpCurl.Net.TestServer.Protos.html

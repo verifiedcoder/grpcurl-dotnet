@@ -1,0 +1,44 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.Tests.Unit.Commands
+  commentId: N:GrpCurl.Net.Tests.Unit.Commands
+  id: GrpCurl.Net.Tests.Unit.Commands
+  children:
+  - GrpCurl.Net.Tests.Unit.Commands.CommandConstantsTests
+  - GrpCurl.Net.Tests.Unit.Commands.DescribeCommandTests
+  - GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests
+  - GrpCurl.Net.Tests.Unit.Commands.ListCommandTests
+  langs:
+  - csharp
+  - vb
+  name: GrpCurl.Net.Tests.Unit.Commands
+  nameWithType: GrpCurl.Net.Tests.Unit.Commands
+  fullName: GrpCurl.Net.Tests.Unit.Commands
+  type: Namespace
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+references:
+- uid: GrpCurl.Net.Tests.Unit.Commands.CommandConstantsTests
+  commentId: T:GrpCurl.Net.Tests.Unit.Commands.CommandConstantsTests
+  href: GrpCurl.Net.Tests.Unit.Commands.CommandConstantsTests.html
+  name: CommandConstantsTests
+  nameWithType: CommandConstantsTests
+  fullName: GrpCurl.Net.Tests.Unit.Commands.CommandConstantsTests
+- uid: GrpCurl.Net.Tests.Unit.Commands.DescribeCommandTests
+  commentId: T:GrpCurl.Net.Tests.Unit.Commands.DescribeCommandTests
+  href: GrpCurl.Net.Tests.Unit.Commands.DescribeCommandTests.html
+  name: DescribeCommandTests
+  nameWithType: DescribeCommandTests
+  fullName: GrpCurl.Net.Tests.Unit.Commands.DescribeCommandTests
+- uid: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests
+  commentId: T:GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests
+  href: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests.html
+  name: InvokeCommandTests
+  nameWithType: InvokeCommandTests
+  fullName: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests
+- uid: GrpCurl.Net.Tests.Unit.Commands.ListCommandTests
+  commentId: T:GrpCurl.Net.Tests.Unit.Commands.ListCommandTests
+  href: GrpCurl.Net.Tests.Unit.Commands.ListCommandTests.html
+  name: ListCommandTests
+  nameWithType: ListCommandTests
+  fullName: GrpCurl.Net.Tests.Unit.Commands.ListCommandTests

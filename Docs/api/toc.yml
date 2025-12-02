@@ -1,0 +1,222 @@
+### YamlMime:TableOfContent
+items:
+- uid: GrpCurl.Net.DescriptorSources
+  name: GrpCurl.Net.DescriptorSources
+  type: Namespace
+  items:
+  - uid: GrpCurl.Net.DescriptorSources.IDescriptorSource
+    name: IDescriptorSource
+    type: Interface
+  - uid: GrpCurl.Net.DescriptorSources.ProtosetSource
+    name: ProtosetSource
+    type: Class
+  - uid: GrpCurl.Net.DescriptorSources.ReflectionSource
+    name: ReflectionSource
+    type: Class
+- uid: GrpCurl.Net.Exceptions
+  name: GrpCurl.Net.Exceptions
+  type: Namespace
+  items:
+  - uid: GrpCurl.Net.Exceptions.GrpcCommandException
+    name: GrpcCommandException
+    type: Class
+- uid: GrpCurl.Net.Invocation
+  name: GrpCurl.Net.Invocation
+  type: Namespace
+  items:
+  - uid: GrpCurl.Net.Invocation.AsyncStreamExtensions
+    name: AsyncStreamExtensions
+    type: Class
+- uid: GrpCurl.Net.TestServer.Protos
+  name: GrpCurl.Net.TestServer.Protos
+  type: Namespace
+  items:
+  - uid: GrpCurl.Net.TestServer.Protos.EchoStatus
+    name: EchoStatus
+    type: Class
+  - uid: GrpCurl.Net.TestServer.Protos.Empty
+    name: Empty
+    type: Class
+  - uid: GrpCurl.Net.TestServer.Protos.Payload
+    name: Payload
+    type: Class
+  - uid: GrpCurl.Net.TestServer.Protos.PayloadType
+    name: PayloadType
+    type: Enum
+  - uid: GrpCurl.Net.TestServer.Protos.ResponseParameters
+    name: ResponseParameters
+    type: Class
+  - uid: GrpCurl.Net.TestServer.Protos.SimpleRequest
+    name: SimpleRequest
+    type: Class
+  - uid: GrpCurl.Net.TestServer.Protos.SimpleResponse
+    name: SimpleResponse
+    type: Class
+  - uid: GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest
+    name: StreamingInputCallRequest
+    type: Class
+  - uid: GrpCurl.Net.TestServer.Protos.StreamingInputCallResponse
+    name: StreamingInputCallResponse
+    type: Class
+  - uid: GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest
+    name: StreamingOutputCallRequest
+    type: Class
+  - uid: GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse
+    name: StreamingOutputCallResponse
+    type: Class
+  - uid: GrpCurl.Net.TestServer.Protos.TestReflection
+    name: TestReflection
+    type: Class
+  - uid: GrpCurl.Net.TestServer.Protos.TestService
+    name: TestService
+    type: Class
+  - uid: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase
+    name: TestService.TestServiceBase
+    type: Class
+  - uid: GrpCurl.Net.TestServer.Protos.UnimplementedService
+    name: UnimplementedService
+    type: Class
+  - uid: GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase
+    name: UnimplementedService.UnimplementedServiceBase
+    type: Class
+- uid: GrpCurl.Net.TestServer.Services
+  name: GrpCurl.Net.TestServer.Services
+  type: Namespace
+  items:
+  - uid: GrpCurl.Net.TestServer.Services.MetadataConstants
+    name: MetadataConstants
+    type: Class
+  - uid: GrpCurl.Net.TestServer.Services.MetadataProcessor
+    name: MetadataProcessor
+    type: Class
+  - uid: GrpCurl.Net.TestServer.Services.TestServiceImpl
+    name: TestServiceImpl
+    type: Class
+- uid: GrpCurl.Net.Tests.Integration.DescriptorSources
+  name: GrpCurl.Net.Tests.Integration.DescriptorSources
+  type: Namespace
+  items:
+  - uid: GrpCurl.Net.Tests.Integration.DescriptorSources.ReflectionSourceTests
+    name: ReflectionSourceTests
+    type: Class
+- uid: GrpCurl.Net.Tests.Integration.Fixtures
+  name: GrpCurl.Net.Tests.Integration.Fixtures
+  type: Namespace
+  items:
+  - uid: GrpCurl.Net.Tests.Integration.Fixtures.GrpcServerCollection
+    name: GrpcServerCollection
+    type: Class
+  - uid: GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture
+    name: GrpcTestFixture
+    type: Class
+- uid: GrpCurl.Net.Tests.Integration.Invocation
+  name: GrpCurl.Net.Tests.Integration.Invocation
+  type: Namespace
+  items:
+  - uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+    name: DynamicInvokerTests
+    type: Class
+  - uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests
+    name: StreamingScenarioTests
+    type: Class
+- uid: GrpCurl.Net.Tests.Unit.Commands
+  name: GrpCurl.Net.Tests.Unit.Commands
+  type: Namespace
+  items:
+  - uid: GrpCurl.Net.Tests.Unit.Commands.CommandConstantsTests
+    name: CommandConstantsTests
+    type: Class
+  - uid: GrpCurl.Net.Tests.Unit.Commands.DescribeCommandTests
+    name: DescribeCommandTests
+    type: Class
+  - uid: GrpCurl.Net.Tests.Unit.Commands.InvokeCommandTests
+    name: InvokeCommandTests
+    type: Class
+  - uid: GrpCurl.Net.Tests.Unit.Commands.ListCommandTests
+    name: ListCommandTests
+    type: Class
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources
+  name: GrpCurl.Net.Tests.Unit.DescriptorSources
+  type: Namespace
+  items:
+  - uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+    name: ProtosetSourceTests
+    type: Class
+- uid: GrpCurl.Net.Tests.Unit.Exceptions
+  name: GrpCurl.Net.Tests.Unit.Exceptions
+  type: Namespace
+  items:
+  - uid: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests
+    name: GrpcCommandExceptionTests
+    type: Class
+- uid: GrpCurl.Net.Tests.Unit.Fixtures
+  name: GrpCurl.Net.Tests.Unit.Fixtures
+  type: Namespace
+  items:
+  - uid: GrpCurl.Net.Tests.Unit.Fixtures.TestDescriptorProvider
+    name: TestDescriptorProvider
+    type: Class
+- uid: GrpCurl.Net.Tests.Unit.Invocation
+  name: GrpCurl.Net.Tests.Unit.Invocation
+  type: Namespace
+  items:
+  - uid: GrpCurl.Net.Tests.Unit.Invocation.ProtobufReaderWriterTests
+    name: ProtobufReaderWriterTests
+    type: Class
+  - uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+    name: SimpleDynamicMessageTests
+    type: Class
+  - uid: GrpCurl.Net.Tests.Unit.Invocation.WellKnownTypeHandlerTests
+    name: WellKnownTypeHandlerTests
+    type: Class
+- uid: GrpCurl.Net.Tests.Unit.Utilities
+  name: GrpCurl.Net.Tests.Unit.Utilities
+  type: Namespace
+  items:
+  - uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+    name: GrpcChannelFactoryTests
+    type: Class
+- uid: Grpc.Reflection.V1Alpha
+  name: Grpc.Reflection.V1Alpha
+  type: Namespace
+  items:
+  - uid: Grpc.Reflection.V1Alpha.ErrorResponse
+    name: ErrorResponse
+    type: Class
+  - uid: Grpc.Reflection.V1Alpha.ExtensionNumberResponse
+    name: ExtensionNumberResponse
+    type: Class
+  - uid: Grpc.Reflection.V1Alpha.ExtensionRequest
+    name: ExtensionRequest
+    type: Class
+  - uid: Grpc.Reflection.V1Alpha.FileDescriptorResponse
+    name: FileDescriptorResponse
+    type: Class
+  - uid: Grpc.Reflection.V1Alpha.ListServiceResponse
+    name: ListServiceResponse
+    type: Class
+  - uid: Grpc.Reflection.V1Alpha.ReflectionReflection
+    name: ReflectionReflection
+    type: Class
+  - uid: Grpc.Reflection.V1Alpha.ServerReflection
+    name: ServerReflection
+    type: Class
+  - uid: Grpc.Reflection.V1Alpha.ServerReflection.ServerReflectionClient
+    name: ServerReflection.ServerReflectionClient
+    type: Class
+  - uid: Grpc.Reflection.V1Alpha.ServerReflectionRequest
+    name: ServerReflectionRequest
+    type: Class
+  - uid: Grpc.Reflection.V1Alpha.ServerReflectionRequest.MessageRequestOneofCase
+    name: ServerReflectionRequest.MessageRequestOneofCase
+    type: Enum
+  - uid: Grpc.Reflection.V1Alpha.ServerReflectionResponse
+    name: ServerReflectionResponse
+    type: Class
+  - uid: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+    name: ServerReflectionResponse.MessageResponseOneofCase
+    type: Enum
+  - uid: Grpc.Reflection.V1Alpha.ServiceResponse
+    name: ServiceResponse
+    type: Class
+memberLayout: SamePage

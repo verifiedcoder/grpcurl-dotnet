@@ -1,0 +1,77 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.Tests.Integration.Fixtures
+  commentId: N:GrpCurl.Net.Tests.Integration.Fixtures
+  id: GrpCurl.Net.Tests.Integration.Fixtures
+  children:
+  - GrpCurl.Net.Tests.Integration.Fixtures.GrpcServerCollection
+  - GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture
+  langs:
+  - csharp
+  - vb
+  name: GrpCurl.Net.Tests.Integration.Fixtures
+  nameWithType: GrpCurl.Net.Tests.Integration.Fixtures
+  fullName: GrpCurl.Net.Tests.Integration.Fixtures
+  type: Namespace
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+references:
+- uid: GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture
+  commentId: T:GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture
+  parent: GrpCurl.Net.Tests.Integration.Fixtures
+  href: GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture.html
+  name: GrpcTestFixture
+  nameWithType: GrpcTestFixture
+  fullName: GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture
+- uid: GrpCurl.Net.Tests.Integration.Fixtures.GrpcServerCollection
+  commentId: T:GrpCurl.Net.Tests.Integration.Fixtures.GrpcServerCollection
+  href: GrpCurl.Net.Tests.Integration.Fixtures.GrpcServerCollection.html
+  name: GrpcServerCollection
+  nameWithType: GrpcServerCollection
+  fullName: GrpCurl.Net.Tests.Integration.Fixtures.GrpcServerCollection
+- uid: GrpCurl.Net.Tests.Integration.Fixtures
+  commentId: N:GrpCurl.Net.Tests.Integration.Fixtures
+  href: GrpCurl.html
+  name: GrpCurl.Net.Tests.Integration.Fixtures
+  nameWithType: GrpCurl.Net.Tests.Integration.Fixtures
+  fullName: GrpCurl.Net.Tests.Integration.Fixtures
+  spec.csharp:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration
+    name: Integration
+    href: GrpCurl.Net.Tests.Integration.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration.Fixtures
+    name: Fixtures
+    href: GrpCurl.Net.Tests.Integration.Fixtures.html
+  spec.vb:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration
+    name: Integration
+    href: GrpCurl.Net.Tests.Integration.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration.Fixtures
+    name: Fixtures
+    href: GrpCurl.Net.Tests.Integration.Fixtures.html

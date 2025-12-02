@@ -1,0 +1,994 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase
+  commentId: T:GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase
+  id: TestService.TestServiceBase
+  parent: GrpCurl.Net.TestServer.Protos
+  children:
+  - GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.EmptyCall(GrpCurl.Net.TestServer.Protos.Empty,Grpc.Core.ServerCallContext)
+  - GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.FullDuplexCall(Grpc.Core.IAsyncStreamReader{GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest},Grpc.Core.IServerStreamWriter{GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse},Grpc.Core.ServerCallContext)
+  - GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.HalfDuplexCall(Grpc.Core.IAsyncStreamReader{GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest},Grpc.Core.IServerStreamWriter{GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse},Grpc.Core.ServerCallContext)
+  - GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.StreamingInputCall(Grpc.Core.IAsyncStreamReader{GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest},Grpc.Core.ServerCallContext)
+  - GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.StreamingOutputCall(GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest,Grpc.Core.IServerStreamWriter{GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse},Grpc.Core.ServerCallContext)
+  - GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.UnaryCall(GrpCurl.Net.TestServer.Protos.SimpleRequest,Grpc.Core.ServerCallContext)
+  langs:
+  - csharp
+  - vb
+  name: TestService.TestServiceBase
+  nameWithType: TestService.TestServiceBase
+  fullName: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase
+  type: Class
+  source:
+    id: TestServiceBase
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.Net.TestServer/obj/Release/net10.0/Protos/TestGrpc.cs
+    startLine: 138
+  assemblies:
+  - GrpCurl.Net.TestServer
+  namespace: GrpCurl.Net.TestServer.Protos
+  summary: Base class for server-side implementations of TestService
+  example: []
+  syntax:
+    content: >-
+      [BindServiceMethod(typeof(TestService), "BindService")]
+
+      public abstract class TestService.TestServiceBase
+    content.vb: >-
+      <BindServiceMethod(GetType(TestService), "BindService")>
+
+      Public MustInherit Class TestService.TestServiceBase
+  inheritance:
+  - System.Object
+  derivedClasses:
+  - GrpCurl.Net.TestServer.Services.TestServiceImpl
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Grpc.Core.BindServiceMethodAttribute
+    ctor: Grpc.Core.BindServiceMethodAttribute.#ctor(System.Type,System.String)
+    arguments:
+    - type: System.Type
+      value: GrpCurl.Net.TestServer.Protos.TestService
+    - type: System.String
+      value: BindService
+- uid: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.EmptyCall(GrpCurl.Net.TestServer.Protos.Empty,Grpc.Core.ServerCallContext)
+  commentId: M:GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.EmptyCall(GrpCurl.Net.TestServer.Protos.Empty,Grpc.Core.ServerCallContext)
+  id: EmptyCall(GrpCurl.Net.TestServer.Protos.Empty,Grpc.Core.ServerCallContext)
+  parent: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase
+  langs:
+  - csharp
+  - vb
+  name: EmptyCall(Empty, ServerCallContext)
+  nameWithType: TestService.TestServiceBase.EmptyCall(Empty, ServerCallContext)
+  fullName: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.EmptyCall(GrpCurl.Net.TestServer.Protos.Empty, Grpc.Core.ServerCallContext)
+  type: Method
+  source:
+    id: EmptyCall
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.Net.TestServer/obj/Release/net10.0/Protos/TestGrpc.cs
+    startLine: 147
+  assemblies:
+  - GrpCurl.Net.TestServer
+  namespace: GrpCurl.Net.TestServer.Protos
+  summary: One empty request followed by one empty response.
+  example: []
+  syntax:
+    content: public virtual Task<Empty> EmptyCall(Empty request, ServerCallContext context)
+    parameters:
+    - id: request
+      type: GrpCurl.Net.TestServer.Protos.Empty
+      description: The request received from the client.
+    - id: context
+      type: Grpc.Core.ServerCallContext
+      description: The context of the server-side call handler being invoked.
+    return:
+      type: System.Threading.Tasks.Task{GrpCurl.Net.TestServer.Protos.Empty}
+      description: The response to send back to the client (wrapped by a task).
+    content.vb: Public Overridable Function EmptyCall(request As Empty, context As ServerCallContext) As Task(Of Empty)
+  overload: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.EmptyCall*
+- uid: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.UnaryCall(GrpCurl.Net.TestServer.Protos.SimpleRequest,Grpc.Core.ServerCallContext)
+  commentId: M:GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.UnaryCall(GrpCurl.Net.TestServer.Protos.SimpleRequest,Grpc.Core.ServerCallContext)
+  id: UnaryCall(GrpCurl.Net.TestServer.Protos.SimpleRequest,Grpc.Core.ServerCallContext)
+  parent: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase
+  langs:
+  - csharp
+  - vb
+  name: UnaryCall(SimpleRequest, ServerCallContext)
+  nameWithType: TestService.TestServiceBase.UnaryCall(SimpleRequest, ServerCallContext)
+  fullName: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.UnaryCall(GrpCurl.Net.TestServer.Protos.SimpleRequest, Grpc.Core.ServerCallContext)
+  type: Method
+  source:
+    id: UnaryCall
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.Net.TestServer/obj/Release/net10.0/Protos/TestGrpc.cs
+    startLine: 160
+  assemblies:
+  - GrpCurl.Net.TestServer
+  namespace: GrpCurl.Net.TestServer.Protos
+  summary: >-
+    One request followed by one response.
+
+    The server returns the client payload as-is.
+  example: []
+  syntax:
+    content: public virtual Task<SimpleResponse> UnaryCall(SimpleRequest request, ServerCallContext context)
+    parameters:
+    - id: request
+      type: GrpCurl.Net.TestServer.Protos.SimpleRequest
+      description: The request received from the client.
+    - id: context
+      type: Grpc.Core.ServerCallContext
+      description: The context of the server-side call handler being invoked.
+    return:
+      type: System.Threading.Tasks.Task{GrpCurl.Net.TestServer.Protos.SimpleResponse}
+      description: The response to send back to the client (wrapped by a task).
+    content.vb: Public Overridable Function UnaryCall(request As SimpleRequest, context As ServerCallContext) As Task(Of SimpleResponse)
+  overload: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.UnaryCall*
+- uid: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.StreamingOutputCall(GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest,Grpc.Core.IServerStreamWriter{GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse},Grpc.Core.ServerCallContext)
+  commentId: M:GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.StreamingOutputCall(GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest,Grpc.Core.IServerStreamWriter{GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse},Grpc.Core.ServerCallContext)
+  id: StreamingOutputCall(GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest,Grpc.Core.IServerStreamWriter{GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse},Grpc.Core.ServerCallContext)
+  parent: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase
+  langs:
+  - csharp
+  - vb
+  name: StreamingOutputCall(StreamingOutputCallRequest, IServerStreamWriter<StreamingOutputCallResponse>, ServerCallContext)
+  nameWithType: TestService.TestServiceBase.StreamingOutputCall(StreamingOutputCallRequest, IServerStreamWriter<StreamingOutputCallResponse>, ServerCallContext)
+  fullName: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.StreamingOutputCall(GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest, Grpc.Core.IServerStreamWriter<GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse>, Grpc.Core.ServerCallContext)
+  type: Method
+  source:
+    id: StreamingOutputCall
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.Net.TestServer/obj/Release/net10.0/Protos/TestGrpc.cs
+    startLine: 174
+  assemblies:
+  - GrpCurl.Net.TestServer
+  namespace: GrpCurl.Net.TestServer.Protos
+  summary: >-
+    One request followed by a sequence of responses (streamed download).
+
+    The server returns the payload with client desired type and sizes.
+  example: []
+  syntax:
+    content: public virtual Task StreamingOutputCall(StreamingOutputCallRequest request, IServerStreamWriter<StreamingOutputCallResponse> responseStream, ServerCallContext context)
+    parameters:
+    - id: request
+      type: GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest
+      description: The request received from the client.
+    - id: responseStream
+      type: Grpc.Core.IServerStreamWriter{GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse}
+      description: Used for sending responses back to the client.
+    - id: context
+      type: Grpc.Core.ServerCallContext
+      description: The context of the server-side call handler being invoked.
+    return:
+      type: System.Threading.Tasks.Task
+      description: A task indicating completion of the handler.
+    content.vb: Public Overridable Function StreamingOutputCall(request As StreamingOutputCallRequest, responseStream As IServerStreamWriter(Of StreamingOutputCallResponse), context As ServerCallContext) As Task
+  overload: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.StreamingOutputCall*
+  nameWithType.vb: TestService.TestServiceBase.StreamingOutputCall(StreamingOutputCallRequest, IServerStreamWriter(Of StreamingOutputCallResponse), ServerCallContext)
+  fullName.vb: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.StreamingOutputCall(GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest, Grpc.Core.IServerStreamWriter(Of GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse), Grpc.Core.ServerCallContext)
+  name.vb: StreamingOutputCall(StreamingOutputCallRequest, IServerStreamWriter(Of StreamingOutputCallResponse), ServerCallContext)
+- uid: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.StreamingInputCall(Grpc.Core.IAsyncStreamReader{GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest},Grpc.Core.ServerCallContext)
+  commentId: M:GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.StreamingInputCall(Grpc.Core.IAsyncStreamReader{GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest},Grpc.Core.ServerCallContext)
+  id: StreamingInputCall(Grpc.Core.IAsyncStreamReader{GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest},Grpc.Core.ServerCallContext)
+  parent: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase
+  langs:
+  - csharp
+  - vb
+  name: StreamingInputCall(IAsyncStreamReader<StreamingInputCallRequest>, ServerCallContext)
+  nameWithType: TestService.TestServiceBase.StreamingInputCall(IAsyncStreamReader<StreamingInputCallRequest>, ServerCallContext)
+  fullName: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.StreamingInputCall(Grpc.Core.IAsyncStreamReader<GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest>, Grpc.Core.ServerCallContext)
+  type: Method
+  source:
+    id: StreamingInputCall
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.Net.TestServer/obj/Release/net10.0/Protos/TestGrpc.cs
+    startLine: 187
+  assemblies:
+  - GrpCurl.Net.TestServer
+  namespace: GrpCurl.Net.TestServer.Protos
+  summary: >-
+    A sequence of requests followed by one response (streamed upload).
+
+    The server returns the aggregated size of client payload as the result.
+  example: []
+  syntax:
+    content: public virtual Task<StreamingInputCallResponse> StreamingInputCall(IAsyncStreamReader<StreamingInputCallRequest> requestStream, ServerCallContext context)
+    parameters:
+    - id: requestStream
+      type: Grpc.Core.IAsyncStreamReader{GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest}
+      description: Used for reading requests from the client.
+    - id: context
+      type: Grpc.Core.ServerCallContext
+      description: The context of the server-side call handler being invoked.
+    return:
+      type: System.Threading.Tasks.Task{GrpCurl.Net.TestServer.Protos.StreamingInputCallResponse}
+      description: The response to send back to the client (wrapped by a task).
+    content.vb: Public Overridable Function StreamingInputCall(requestStream As IAsyncStreamReader(Of StreamingInputCallRequest), context As ServerCallContext) As Task(Of StreamingInputCallResponse)
+  overload: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.StreamingInputCall*
+  nameWithType.vb: TestService.TestServiceBase.StreamingInputCall(IAsyncStreamReader(Of StreamingInputCallRequest), ServerCallContext)
+  fullName.vb: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.StreamingInputCall(Grpc.Core.IAsyncStreamReader(Of GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest), Grpc.Core.ServerCallContext)
+  name.vb: StreamingInputCall(IAsyncStreamReader(Of StreamingInputCallRequest), ServerCallContext)
+- uid: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.FullDuplexCall(Grpc.Core.IAsyncStreamReader{GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest},Grpc.Core.IServerStreamWriter{GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse},Grpc.Core.ServerCallContext)
+  commentId: M:GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.FullDuplexCall(Grpc.Core.IAsyncStreamReader{GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest},Grpc.Core.IServerStreamWriter{GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse},Grpc.Core.ServerCallContext)
+  id: FullDuplexCall(Grpc.Core.IAsyncStreamReader{GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest},Grpc.Core.IServerStreamWriter{GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse},Grpc.Core.ServerCallContext)
+  parent: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase
+  langs:
+  - csharp
+  - vb
+  name: FullDuplexCall(IAsyncStreamReader<StreamingOutputCallRequest>, IServerStreamWriter<StreamingOutputCallResponse>, ServerCallContext)
+  nameWithType: TestService.TestServiceBase.FullDuplexCall(IAsyncStreamReader<StreamingOutputCallRequest>, IServerStreamWriter<StreamingOutputCallResponse>, ServerCallContext)
+  fullName: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.FullDuplexCall(Grpc.Core.IAsyncStreamReader<GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest>, Grpc.Core.IServerStreamWriter<GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse>, Grpc.Core.ServerCallContext)
+  type: Method
+  source:
+    id: FullDuplexCall
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.Net.TestServer/obj/Release/net10.0/Protos/TestGrpc.cs
+    startLine: 202
+  assemblies:
+  - GrpCurl.Net.TestServer
+  namespace: GrpCurl.Net.TestServer.Protos
+  summary: >-
+    A sequence of requests with each request served by the server immediately.
+
+    As one request could lead to multiple responses, this interface
+
+    demonstrates the idea of full duplexing.
+  example: []
+  syntax:
+    content: public virtual Task FullDuplexCall(IAsyncStreamReader<StreamingOutputCallRequest> requestStream, IServerStreamWriter<StreamingOutputCallResponse> responseStream, ServerCallContext context)
+    parameters:
+    - id: requestStream
+      type: Grpc.Core.IAsyncStreamReader{GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest}
+      description: Used for reading requests from the client.
+    - id: responseStream
+      type: Grpc.Core.IServerStreamWriter{GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse}
+      description: Used for sending responses back to the client.
+    - id: context
+      type: Grpc.Core.ServerCallContext
+      description: The context of the server-side call handler being invoked.
+    return:
+      type: System.Threading.Tasks.Task
+      description: A task indicating completion of the handler.
+    content.vb: Public Overridable Function FullDuplexCall(requestStream As IAsyncStreamReader(Of StreamingOutputCallRequest), responseStream As IServerStreamWriter(Of StreamingOutputCallResponse), context As ServerCallContext) As Task
+  overload: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.FullDuplexCall*
+  nameWithType.vb: TestService.TestServiceBase.FullDuplexCall(IAsyncStreamReader(Of StreamingOutputCallRequest), IServerStreamWriter(Of StreamingOutputCallResponse), ServerCallContext)
+  fullName.vb: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.FullDuplexCall(Grpc.Core.IAsyncStreamReader(Of GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest), Grpc.Core.IServerStreamWriter(Of GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse), Grpc.Core.ServerCallContext)
+  name.vb: FullDuplexCall(IAsyncStreamReader(Of StreamingOutputCallRequest), IServerStreamWriter(Of StreamingOutputCallResponse), ServerCallContext)
+- uid: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.HalfDuplexCall(Grpc.Core.IAsyncStreamReader{GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest},Grpc.Core.IServerStreamWriter{GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse},Grpc.Core.ServerCallContext)
+  commentId: M:GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.HalfDuplexCall(Grpc.Core.IAsyncStreamReader{GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest},Grpc.Core.IServerStreamWriter{GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse},Grpc.Core.ServerCallContext)
+  id: HalfDuplexCall(Grpc.Core.IAsyncStreamReader{GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest},Grpc.Core.IServerStreamWriter{GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse},Grpc.Core.ServerCallContext)
+  parent: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase
+  langs:
+  - csharp
+  - vb
+  name: HalfDuplexCall(IAsyncStreamReader<StreamingOutputCallRequest>, IServerStreamWriter<StreamingOutputCallResponse>, ServerCallContext)
+  nameWithType: TestService.TestServiceBase.HalfDuplexCall(IAsyncStreamReader<StreamingOutputCallRequest>, IServerStreamWriter<StreamingOutputCallResponse>, ServerCallContext)
+  fullName: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.HalfDuplexCall(Grpc.Core.IAsyncStreamReader<GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest>, Grpc.Core.IServerStreamWriter<GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse>, Grpc.Core.ServerCallContext)
+  type: Method
+  source:
+    id: HalfDuplexCall
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.Net.TestServer/obj/Release/net10.0/Protos/TestGrpc.cs
+    startLine: 218
+  assemblies:
+  - GrpCurl.Net.TestServer
+  namespace: GrpCurl.Net.TestServer.Protos
+  summary: >-
+    A sequence of requests followed by a sequence of responses.
+
+    The server buffers all the client requests and then serves them in order. A
+
+    stream of responses are returned to the client when the server starts with
+
+    first request.
+  example: []
+  syntax:
+    content: public virtual Task HalfDuplexCall(IAsyncStreamReader<StreamingOutputCallRequest> requestStream, IServerStreamWriter<StreamingOutputCallResponse> responseStream, ServerCallContext context)
+    parameters:
+    - id: requestStream
+      type: Grpc.Core.IAsyncStreamReader{GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest}
+      description: Used for reading requests from the client.
+    - id: responseStream
+      type: Grpc.Core.IServerStreamWriter{GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse}
+      description: Used for sending responses back to the client.
+    - id: context
+      type: Grpc.Core.ServerCallContext
+      description: The context of the server-side call handler being invoked.
+    return:
+      type: System.Threading.Tasks.Task
+      description: A task indicating completion of the handler.
+    content.vb: Public Overridable Function HalfDuplexCall(requestStream As IAsyncStreamReader(Of StreamingOutputCallRequest), responseStream As IServerStreamWriter(Of StreamingOutputCallResponse), context As ServerCallContext) As Task
+  overload: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.HalfDuplexCall*
+  nameWithType.vb: TestService.TestServiceBase.HalfDuplexCall(IAsyncStreamReader(Of StreamingOutputCallRequest), IServerStreamWriter(Of StreamingOutputCallResponse), ServerCallContext)
+  fullName.vb: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.HalfDuplexCall(Grpc.Core.IAsyncStreamReader(Of GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest), Grpc.Core.IServerStreamWriter(Of GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse), Grpc.Core.ServerCallContext)
+  name.vb: HalfDuplexCall(IAsyncStreamReader(Of StreamingOutputCallRequest), IServerStreamWriter(Of StreamingOutputCallResponse), ServerCallContext)
+references:
+- uid: GrpCurl.Net.TestServer.Protos
+  commentId: N:GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.html
+  name: GrpCurl.Net.TestServer.Protos
+  nameWithType: GrpCurl.Net.TestServer.Protos
+  fullName: GrpCurl.Net.TestServer.Protos
+  spec.csharp:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.TestServer
+    name: TestServer
+    href: GrpCurl.Net.TestServer.html
+  - name: .
+  - uid: GrpCurl.Net.TestServer.Protos
+    name: Protos
+    href: GrpCurl.Net.TestServer.Protos.html
+  spec.vb:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.TestServer
+    name: TestServer
+    href: GrpCurl.Net.TestServer.html
+  - name: .
+  - uid: GrpCurl.Net.TestServer.Protos
+    name: Protos
+    href: GrpCurl.Net.TestServer.Protos.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.EmptyCall*
+  commentId: Overload:GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.EmptyCall
+  href: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.html#GrpCurl_Net_TestServer_Protos_TestService_TestServiceBase_EmptyCall_GrpCurl_Net_TestServer_Protos_Empty_Grpc_Core_ServerCallContext_
+  name: EmptyCall
+  nameWithType: TestService.TestServiceBase.EmptyCall
+  fullName: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.EmptyCall
+- uid: GrpCurl.Net.TestServer.Protos.Empty
+  commentId: T:GrpCurl.Net.TestServer.Protos.Empty
+  parent: GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.Net.TestServer.Protos.Empty.html
+  name: Empty
+  nameWithType: Empty
+  fullName: GrpCurl.Net.TestServer.Protos.Empty
+- uid: Grpc.Core.ServerCallContext
+  commentId: T:Grpc.Core.ServerCallContext
+  parent: Grpc.Core
+  isExternal: true
+  href: https://github.com/grpc/grpc-dotnet/blob/c2555f2951c56a23d6c57bae6970cdfd30c552a7/src/Grpc.Core.Api/ServerCallContext.cs
+  name: ServerCallContext
+  nameWithType: ServerCallContext
+  fullName: Grpc.Core.ServerCallContext
+- uid: System.Threading.Tasks.Task{GrpCurl.Net.TestServer.Protos.Empty}
+  commentId: T:System.Threading.Tasks.Task{GrpCurl.Net.TestServer.Protos.Empty}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<Empty>
+  nameWithType: Task<Empty>
+  fullName: System.Threading.Tasks.Task<GrpCurl.Net.TestServer.Protos.Empty>
+  nameWithType.vb: Task(Of Empty)
+  fullName.vb: System.Threading.Tasks.Task(Of GrpCurl.Net.TestServer.Protos.Empty)
+  name.vb: Task(Of Empty)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: GrpCurl.Net.TestServer.Protos.Empty
+    name: Empty
+    href: GrpCurl.Net.TestServer.Protos.Empty.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: GrpCurl.Net.TestServer.Protos.Empty
+    name: Empty
+    href: GrpCurl.Net.TestServer.Protos.Empty.html
+  - name: )
+- uid: Grpc.Core
+  commentId: N:Grpc.Core
+  isExternal: true
+  name: Grpc.Core
+  nameWithType: Grpc.Core
+  fullName: Grpc.Core
+  spec.csharp:
+  - uid: Grpc
+    name: Grpc
+    isExternal: true
+  - name: .
+  - uid: Grpc.Core
+    name: Core
+    isExternal: true
+  spec.vb:
+  - uid: Grpc
+    name: Grpc
+    isExternal: true
+  - name: .
+  - uid: Grpc.Core
+    name: Core
+    isExternal: true
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.UnaryCall*
+  commentId: Overload:GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.UnaryCall
+  href: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.html#GrpCurl_Net_TestServer_Protos_TestService_TestServiceBase_UnaryCall_GrpCurl_Net_TestServer_Protos_SimpleRequest_Grpc_Core_ServerCallContext_
+  name: UnaryCall
+  nameWithType: TestService.TestServiceBase.UnaryCall
+  fullName: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.UnaryCall
+- uid: GrpCurl.Net.TestServer.Protos.SimpleRequest
+  commentId: T:GrpCurl.Net.TestServer.Protos.SimpleRequest
+  parent: GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.Net.TestServer.Protos.SimpleRequest.html
+  name: SimpleRequest
+  nameWithType: SimpleRequest
+  fullName: GrpCurl.Net.TestServer.Protos.SimpleRequest
+- uid: System.Threading.Tasks.Task{GrpCurl.Net.TestServer.Protos.SimpleResponse}
+  commentId: T:System.Threading.Tasks.Task{GrpCurl.Net.TestServer.Protos.SimpleResponse}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SimpleResponse>
+  nameWithType: Task<SimpleResponse>
+  fullName: System.Threading.Tasks.Task<GrpCurl.Net.TestServer.Protos.SimpleResponse>
+  nameWithType.vb: Task(Of SimpleResponse)
+  fullName.vb: System.Threading.Tasks.Task(Of GrpCurl.Net.TestServer.Protos.SimpleResponse)
+  name.vb: Task(Of SimpleResponse)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: GrpCurl.Net.TestServer.Protos.SimpleResponse
+    name: SimpleResponse
+    href: GrpCurl.Net.TestServer.Protos.SimpleResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: GrpCurl.Net.TestServer.Protos.SimpleResponse
+    name: SimpleResponse
+    href: GrpCurl.Net.TestServer.Protos.SimpleResponse.html
+  - name: )
+- uid: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.StreamingOutputCall*
+  commentId: Overload:GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.StreamingOutputCall
+  href: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.html#GrpCurl_Net_TestServer_Protos_TestService_TestServiceBase_StreamingOutputCall_GrpCurl_Net_TestServer_Protos_StreamingOutputCallRequest_Grpc_Core_IServerStreamWriter_GrpCurl_Net_TestServer_Protos_StreamingOutputCallResponse__Grpc_Core_ServerCallContext_
+  name: StreamingOutputCall
+  nameWithType: TestService.TestServiceBase.StreamingOutputCall
+  fullName: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.StreamingOutputCall
+- uid: GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest
+  commentId: T:GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest
+  parent: GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest.html
+  name: StreamingOutputCallRequest
+  nameWithType: StreamingOutputCallRequest
+  fullName: GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest
+- uid: Grpc.Core.IServerStreamWriter{GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse}
+  commentId: T:Grpc.Core.IServerStreamWriter{GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse}
+  parent: Grpc.Core
+  definition: Grpc.Core.IServerStreamWriter`1
+  href: https://github.com/grpc/grpc-dotnet/blob/c2555f2951c56a23d6c57bae6970cdfd30c552a7/src/Grpc.Core.Api/IServerStreamWriter.cs
+  name: IServerStreamWriter<StreamingOutputCallResponse>
+  nameWithType: IServerStreamWriter<StreamingOutputCallResponse>
+  fullName: Grpc.Core.IServerStreamWriter<GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse>
+  nameWithType.vb: IServerStreamWriter(Of StreamingOutputCallResponse)
+  fullName.vb: Grpc.Core.IServerStreamWriter(Of GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse)
+  name.vb: IServerStreamWriter(Of StreamingOutputCallResponse)
+  spec.csharp:
+  - uid: Grpc.Core.IServerStreamWriter`1
+    name: IServerStreamWriter
+    isExternal: true
+    href: https://github.com/grpc/grpc-dotnet/blob/c2555f2951c56a23d6c57bae6970cdfd30c552a7/src/Grpc.Core.Api/IServerStreamWriter.cs
+  - name: <
+  - uid: GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse
+    name: StreamingOutputCallResponse
+    href: GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: Grpc.Core.IServerStreamWriter`1
+    name: IServerStreamWriter
+    isExternal: true
+    href: https://github.com/grpc/grpc-dotnet/blob/c2555f2951c56a23d6c57bae6970cdfd30c552a7/src/Grpc.Core.Api/IServerStreamWriter.cs
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse
+    name: StreamingOutputCallResponse
+    href: GrpCurl.Net.TestServer.Protos.StreamingOutputCallResponse.html
+  - name: )
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Grpc.Core.IServerStreamWriter`1
+  commentId: T:Grpc.Core.IServerStreamWriter`1
+  isExternal: true
+  href: https://github.com/grpc/grpc-dotnet/blob/c2555f2951c56a23d6c57bae6970cdfd30c552a7/src/Grpc.Core.Api/IServerStreamWriter.cs
+  name: IServerStreamWriter<T>
+  nameWithType: IServerStreamWriter<T>
+  fullName: Grpc.Core.IServerStreamWriter<T>
+  nameWithType.vb: IServerStreamWriter(Of T)
+  fullName.vb: Grpc.Core.IServerStreamWriter(Of T)
+  name.vb: IServerStreamWriter(Of T)
+  spec.csharp:
+  - uid: Grpc.Core.IServerStreamWriter`1
+    name: IServerStreamWriter
+    isExternal: true
+    href: https://github.com/grpc/grpc-dotnet/blob/c2555f2951c56a23d6c57bae6970cdfd30c552a7/src/Grpc.Core.Api/IServerStreamWriter.cs
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: Grpc.Core.IServerStreamWriter`1
+    name: IServerStreamWriter
+    isExternal: true
+    href: https://github.com/grpc/grpc-dotnet/blob/c2555f2951c56a23d6c57bae6970cdfd30c552a7/src/Grpc.Core.Api/IServerStreamWriter.cs
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.StreamingInputCall*
+  commentId: Overload:GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.StreamingInputCall
+  href: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.html#GrpCurl_Net_TestServer_Protos_TestService_TestServiceBase_StreamingInputCall_Grpc_Core_IAsyncStreamReader_GrpCurl_Net_TestServer_Protos_StreamingInputCallRequest__Grpc_Core_ServerCallContext_
+  name: StreamingInputCall
+  nameWithType: TestService.TestServiceBase.StreamingInputCall
+  fullName: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.StreamingInputCall
+- uid: Grpc.Core.IAsyncStreamReader{GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest}
+  commentId: T:Grpc.Core.IAsyncStreamReader{GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest}
+  parent: Grpc.Core
+  definition: Grpc.Core.IAsyncStreamReader`1
+  href: https://github.com/grpc/grpc-dotnet/blob/c2555f2951c56a23d6c57bae6970cdfd30c552a7/src/Grpc.Core.Api/IAsyncStreamReader.cs
+  name: IAsyncStreamReader<StreamingInputCallRequest>
+  nameWithType: IAsyncStreamReader<StreamingInputCallRequest>
+  fullName: Grpc.Core.IAsyncStreamReader<GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest>
+  nameWithType.vb: IAsyncStreamReader(Of StreamingInputCallRequest)
+  fullName.vb: Grpc.Core.IAsyncStreamReader(Of GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest)
+  name.vb: IAsyncStreamReader(Of StreamingInputCallRequest)
+  spec.csharp:
+  - uid: Grpc.Core.IAsyncStreamReader`1
+    name: IAsyncStreamReader
+    isExternal: true
+    href: https://github.com/grpc/grpc-dotnet/blob/c2555f2951c56a23d6c57bae6970cdfd30c552a7/src/Grpc.Core.Api/IAsyncStreamReader.cs
+  - name: <
+  - uid: GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest
+    name: StreamingInputCallRequest
+    href: GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: Grpc.Core.IAsyncStreamReader`1
+    name: IAsyncStreamReader
+    isExternal: true
+    href: https://github.com/grpc/grpc-dotnet/blob/c2555f2951c56a23d6c57bae6970cdfd30c552a7/src/Grpc.Core.Api/IAsyncStreamReader.cs
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest
+    name: StreamingInputCallRequest
+    href: GrpCurl.Net.TestServer.Protos.StreamingInputCallRequest.html
+  - name: )
+- uid: System.Threading.Tasks.Task{GrpCurl.Net.TestServer.Protos.StreamingInputCallResponse}
+  commentId: T:System.Threading.Tasks.Task{GrpCurl.Net.TestServer.Protos.StreamingInputCallResponse}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<StreamingInputCallResponse>
+  nameWithType: Task<StreamingInputCallResponse>
+  fullName: System.Threading.Tasks.Task<GrpCurl.Net.TestServer.Protos.StreamingInputCallResponse>
+  nameWithType.vb: Task(Of StreamingInputCallResponse)
+  fullName.vb: System.Threading.Tasks.Task(Of GrpCurl.Net.TestServer.Protos.StreamingInputCallResponse)
+  name.vb: Task(Of StreamingInputCallResponse)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: GrpCurl.Net.TestServer.Protos.StreamingInputCallResponse
+    name: StreamingInputCallResponse
+    href: GrpCurl.Net.TestServer.Protos.StreamingInputCallResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: GrpCurl.Net.TestServer.Protos.StreamingInputCallResponse
+    name: StreamingInputCallResponse
+    href: GrpCurl.Net.TestServer.Protos.StreamingInputCallResponse.html
+  - name: )
+- uid: Grpc.Core.IAsyncStreamReader`1
+  commentId: T:Grpc.Core.IAsyncStreamReader`1
+  isExternal: true
+  href: https://github.com/grpc/grpc-dotnet/blob/c2555f2951c56a23d6c57bae6970cdfd30c552a7/src/Grpc.Core.Api/IAsyncStreamReader.cs
+  name: IAsyncStreamReader<T>
+  nameWithType: IAsyncStreamReader<T>
+  fullName: Grpc.Core.IAsyncStreamReader<T>
+  nameWithType.vb: IAsyncStreamReader(Of T)
+  fullName.vb: Grpc.Core.IAsyncStreamReader(Of T)
+  name.vb: IAsyncStreamReader(Of T)
+  spec.csharp:
+  - uid: Grpc.Core.IAsyncStreamReader`1
+    name: IAsyncStreamReader
+    isExternal: true
+    href: https://github.com/grpc/grpc-dotnet/blob/c2555f2951c56a23d6c57bae6970cdfd30c552a7/src/Grpc.Core.Api/IAsyncStreamReader.cs
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: Grpc.Core.IAsyncStreamReader`1
+    name: IAsyncStreamReader
+    isExternal: true
+    href: https://github.com/grpc/grpc-dotnet/blob/c2555f2951c56a23d6c57bae6970cdfd30c552a7/src/Grpc.Core.Api/IAsyncStreamReader.cs
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.FullDuplexCall*
+  commentId: Overload:GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.FullDuplexCall
+  href: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.html#GrpCurl_Net_TestServer_Protos_TestService_TestServiceBase_FullDuplexCall_Grpc_Core_IAsyncStreamReader_GrpCurl_Net_TestServer_Protos_StreamingOutputCallRequest__Grpc_Core_IServerStreamWriter_GrpCurl_Net_TestServer_Protos_StreamingOutputCallResponse__Grpc_Core_ServerCallContext_
+  name: FullDuplexCall
+  nameWithType: TestService.TestServiceBase.FullDuplexCall
+  fullName: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.FullDuplexCall
+- uid: Grpc.Core.IAsyncStreamReader{GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest}
+  commentId: T:Grpc.Core.IAsyncStreamReader{GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest}
+  parent: Grpc.Core
+  definition: Grpc.Core.IAsyncStreamReader`1
+  href: https://github.com/grpc/grpc-dotnet/blob/c2555f2951c56a23d6c57bae6970cdfd30c552a7/src/Grpc.Core.Api/IAsyncStreamReader.cs
+  name: IAsyncStreamReader<StreamingOutputCallRequest>
+  nameWithType: IAsyncStreamReader<StreamingOutputCallRequest>
+  fullName: Grpc.Core.IAsyncStreamReader<GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest>
+  nameWithType.vb: IAsyncStreamReader(Of StreamingOutputCallRequest)
+  fullName.vb: Grpc.Core.IAsyncStreamReader(Of GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest)
+  name.vb: IAsyncStreamReader(Of StreamingOutputCallRequest)
+  spec.csharp:
+  - uid: Grpc.Core.IAsyncStreamReader`1
+    name: IAsyncStreamReader
+    isExternal: true
+    href: https://github.com/grpc/grpc-dotnet/blob/c2555f2951c56a23d6c57bae6970cdfd30c552a7/src/Grpc.Core.Api/IAsyncStreamReader.cs
+  - name: <
+  - uid: GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest
+    name: StreamingOutputCallRequest
+    href: GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: Grpc.Core.IAsyncStreamReader`1
+    name: IAsyncStreamReader
+    isExternal: true
+    href: https://github.com/grpc/grpc-dotnet/blob/c2555f2951c56a23d6c57bae6970cdfd30c552a7/src/Grpc.Core.Api/IAsyncStreamReader.cs
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest
+    name: StreamingOutputCallRequest
+    href: GrpCurl.Net.TestServer.Protos.StreamingOutputCallRequest.html
+  - name: )
+- uid: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.HalfDuplexCall*
+  commentId: Overload:GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.HalfDuplexCall
+  href: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.html#GrpCurl_Net_TestServer_Protos_TestService_TestServiceBase_HalfDuplexCall_Grpc_Core_IAsyncStreamReader_GrpCurl_Net_TestServer_Protos_StreamingOutputCallRequest__Grpc_Core_IServerStreamWriter_GrpCurl_Net_TestServer_Protos_StreamingOutputCallResponse__Grpc_Core_ServerCallContext_
+  name: HalfDuplexCall
+  nameWithType: TestService.TestServiceBase.HalfDuplexCall
+  fullName: GrpCurl.Net.TestServer.Protos.TestService.TestServiceBase.HalfDuplexCall

@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.Tests.Unit.Utilities
+  commentId: N:GrpCurl.Net.Tests.Unit.Utilities
+  id: GrpCurl.Net.Tests.Unit.Utilities
+  children:
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: GrpCurl.Net.Tests.Unit.Utilities
+  nameWithType: GrpCurl.Net.Tests.Unit.Utilities
+  fullName: GrpCurl.Net.Tests.Unit.Utilities
+  type: Namespace
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+references:
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  commentId: T:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html
+  name: GrpcChannelFactoryTests
+  nameWithType: GrpcChannelFactoryTests
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests

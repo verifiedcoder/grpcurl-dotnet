@@ -1,0 +1,51 @@
+<Solution>
+  <Folder Name="/Solution Items/" />
+  <Folder Name="/Solution Items/Docs/">
+    <File Path="Docs/docfx.json" />
+    <File Path="Docs/getting-started.md" />
+    <File Path="Docs/index.md" />
+    <File Path="Docs/introduction.md" />
+    <File Path="Docs/toc.yml" />
+  </Folder>
+  <Folder Name="/Solution Items/Docs/articles/">
+    <File Path="Docs/articles/architecture.md" />
+    <File Path="Docs/articles/cli-reference.md" />
+    <File Path="Docs/articles/examples.md" />
+    <File Path="Docs/articles/toc.yml" />
+  </Folder>
+  <Folder Name="/Solution Items/Scripts/">
+    <File Path="Scripts/01-start-server.sh" />
+    <File Path="Scripts/02-list-services.sh" />
+    <File Path="Scripts/03-list-methods.sh" />
+    <File Path="Scripts/04-describe-service.sh" />
+    <File Path="Scripts/05-describe-message.sh" />
+    <File Path="Scripts/06-describe-with-template.sh" />
+    <File Path="Scripts/07-invoke-empty-call.sh" />
+    <File Path="Scripts/08-invoke-unary-call.sh" />
+    <File Path="Scripts/09-invoke-unary-with-payload.sh" />
+    <File Path="Scripts/10-invoke-server-streaming.sh" />
+    <File Path="Scripts/11-invoke-client-streaming.sh" />
+    <File Path="Scripts/12-invoke-bidirectional-full.sh" />
+    <File Path="Scripts/13-invoke-bidirectional-half.sh" />
+    <File Path="Scripts/14-verbose-output.sh" />
+    <File Path="Scripts/15-emit-defaults.sh" />
+    <File Path="Scripts/16-custom-headers.sh" />
+    <File Path="Scripts/17-reflect-vs-rpc-headers.sh" />
+    <File Path="Scripts/18-using-protoset.sh" />
+    <File Path="Scripts/19-export-protoset.sh" />
+    <File Path="Scripts/20-timeout-options.sh" />
+    <File Path="Scripts/21-message-size-limits.sh" />
+    <File Path="Scripts/22-error-handling.sh" />
+    <File Path="Scripts/23-allow-unknown-fields.sh" />
+    <File Path="Scripts/24-authority-header.sh" />
+    <File Path="Scripts/25-user-agent.sh" />
+    <File Path="Scripts/26-all-features-demo.sh" />
+    <File Path="Scripts/README.md" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/GrpCurl.DotNet.Tests.Integration/GrpCurl.Net.Tests.Integration.csproj" Id="858ad827-d773-45b8-8f9f-8ed02cf63789" />
+    <Project Path="Tests/GrpCurl.DotNet.Tests.Unit/GrpCurl.Net.Tests.Unit.csproj" Id="f56f1767-d216-4469-9214-03d916284873" />
+    <Project Path="Tests/GrpCurl.Net.TestServer/GrpCurl.Net.TestServer.csproj" Id="a1b2c3d4-e5f6-7890-abcd-ef1234567890" />
+  </Folder>
+  <Project Path="Src/GrpCurl.Net/GrpCurl.Net.csproj" />
+</Solution>

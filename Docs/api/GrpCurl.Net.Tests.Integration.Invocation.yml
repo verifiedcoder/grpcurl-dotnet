@@ -1,0 +1,30 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.Tests.Integration.Invocation
+  commentId: N:GrpCurl.Net.Tests.Integration.Invocation
+  id: GrpCurl.Net.Tests.Integration.Invocation
+  children:
+  - GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+  - GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests
+  langs:
+  - csharp
+  - vb
+  name: GrpCurl.Net.Tests.Integration.Invocation
+  nameWithType: GrpCurl.Net.Tests.Integration.Invocation
+  fullName: GrpCurl.Net.Tests.Integration.Invocation
+  type: Namespace
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+references:
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+  commentId: T:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+  href: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.html
+  name: DynamicInvokerTests
+  nameWithType: DynamicInvokerTests
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests
+  commentId: T:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests
+  href: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.html
+  name: StreamingScenarioTests
+  nameWithType: StreamingScenarioTests
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests

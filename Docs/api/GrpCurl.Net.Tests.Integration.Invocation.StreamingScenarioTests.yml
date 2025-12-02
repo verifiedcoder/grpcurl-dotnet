@@ -1,0 +1,960 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests
+  commentId: T:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests
+  id: StreamingScenarioTests
+  parent: GrpCurl.Net.Tests.Integration.Invocation
+  children:
+  - GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.#ctor(GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture)
+  - GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_LargeNumberOfRequests_HandlesCorrectly
+  - GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_PreCancelledToken_ThrowsImmediately
+  - GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_VariablePayloadSizes_AccumulatesCorrectly
+  - GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_WithMetadata_HeadersSent
+  - GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_ManyMessagesEachDirection_AllReceived
+  - GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_MultipleResponsesPerRequest_AllReceived
+  - GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_PreCancelledToken_ThrowsImmediately
+  - GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_WithMetadata_HeadersSent
+  - GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_CancellationDuringStream_StopsProcessing
+  - GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_LargePayloadSizes_HandlesCorrectly
+  - GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_PreCancelledToken_ThrowsImmediately
+  - GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_WithMetadata_HeadersSent
+  langs:
+  - csharp
+  - vb
+  name: StreamingScenarioTests
+  nameWithType: StreamingScenarioTests
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests
+  type: Class
+  source:
+    id: StreamingScenarioTests
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/StreamingScenarioTests.cs
+    startLine: 14
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  summary: Advanced streaming scenario tests for DynamicInvoker.
+  example: []
+  syntax:
+    content: >-
+      [Collection("GrpcServer")]
+
+      public class StreamingScenarioTests
+    content.vb: >-
+      <Collection("GrpcServer")>
+
+      Public Class StreamingScenarioTests
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Xunit.CollectionAttribute
+    ctor: Xunit.CollectionAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: GrpcServer
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.#ctor(GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture)
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.#ctor(GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture)
+  id: '#ctor(GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture)'
+  parent: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests
+  langs:
+  - csharp
+  - vb
+  name: StreamingScenarioTests(GrpcTestFixture)
+  nameWithType: StreamingScenarioTests.StreamingScenarioTests(GrpcTestFixture)
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.StreamingScenarioTests(GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture)
+  type: Constructor
+  source:
+    id: .ctor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/StreamingScenarioTests.cs
+    startLine: 19
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: public StreamingScenarioTests(GrpcTestFixture fixture)
+    parameters:
+    - id: fixture
+      type: GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture
+    content.vb: Public Sub New(fixture As GrpcTestFixture)
+  overload: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.#ctor*
+  nameWithType.vb: StreamingScenarioTests.New(GrpcTestFixture)
+  fullName.vb: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.New(GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture)
+  name.vb: New(GrpcTestFixture)
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_CancellationDuringStream_StopsProcessing
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_CancellationDuringStream_StopsProcessing
+  id: ServerStreaming_CancellationDuringStream_StopsProcessing
+  parent: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests
+  langs:
+  - csharp
+  - vb
+  name: ServerStreaming_CancellationDuringStream_StopsProcessing()
+  nameWithType: StreamingScenarioTests.ServerStreaming_CancellationDuringStream_StopsProcessing()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_CancellationDuringStream_StopsProcessing()
+  type: Method
+  source:
+    id: ServerStreaming_CancellationDuringStream_StopsProcessing
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/StreamingScenarioTests.cs
+    startLine: 26
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task ServerStreaming_CancellationDuringStream_StopsProcessing()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function ServerStreaming_CancellationDuringStream_StopsProcessing() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_CancellationDuringStream_StopsProcessing*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_PreCancelledToken_ThrowsImmediately
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_PreCancelledToken_ThrowsImmediately
+  id: ServerStreaming_PreCancelledToken_ThrowsImmediately
+  parent: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests
+  langs:
+  - csharp
+  - vb
+  name: ServerStreaming_PreCancelledToken_ThrowsImmediately()
+  nameWithType: StreamingScenarioTests.ServerStreaming_PreCancelledToken_ThrowsImmediately()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_PreCancelledToken_ThrowsImmediately()
+  type: Method
+  source:
+    id: ServerStreaming_PreCancelledToken_ThrowsImmediately
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/StreamingScenarioTests.cs
+    startLine: 68
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task ServerStreaming_PreCancelledToken_ThrowsImmediately()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function ServerStreaming_PreCancelledToken_ThrowsImmediately() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_PreCancelledToken_ThrowsImmediately*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_PreCancelledToken_ThrowsImmediately
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_PreCancelledToken_ThrowsImmediately
+  id: ClientStreaming_PreCancelledToken_ThrowsImmediately
+  parent: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests
+  langs:
+  - csharp
+  - vb
+  name: ClientStreaming_PreCancelledToken_ThrowsImmediately()
+  nameWithType: StreamingScenarioTests.ClientStreaming_PreCancelledToken_ThrowsImmediately()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_PreCancelledToken_ThrowsImmediately()
+  type: Method
+  source:
+    id: ClientStreaming_PreCancelledToken_ThrowsImmediately
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/StreamingScenarioTests.cs
+    startLine: 95
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task ClientStreaming_PreCancelledToken_ThrowsImmediately()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function ClientStreaming_PreCancelledToken_ThrowsImmediately() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_PreCancelledToken_ThrowsImmediately*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_LargeNumberOfRequests_HandlesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_LargeNumberOfRequests_HandlesCorrectly
+  id: ClientStreaming_LargeNumberOfRequests_HandlesCorrectly
+  parent: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests
+  langs:
+  - csharp
+  - vb
+  name: ClientStreaming_LargeNumberOfRequests_HandlesCorrectly()
+  nameWithType: StreamingScenarioTests.ClientStreaming_LargeNumberOfRequests_HandlesCorrectly()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_LargeNumberOfRequests_HandlesCorrectly()
+  type: Method
+  source:
+    id: ClientStreaming_LargeNumberOfRequests_HandlesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/StreamingScenarioTests.cs
+    startLine: 112
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task ClientStreaming_LargeNumberOfRequests_HandlesCorrectly()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function ClientStreaming_LargeNumberOfRequests_HandlesCorrectly() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_LargeNumberOfRequests_HandlesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_PreCancelledToken_ThrowsImmediately
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_PreCancelledToken_ThrowsImmediately
+  id: DuplexStreaming_PreCancelledToken_ThrowsImmediately
+  parent: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests
+  langs:
+  - csharp
+  - vb
+  name: DuplexStreaming_PreCancelledToken_ThrowsImmediately()
+  nameWithType: StreamingScenarioTests.DuplexStreaming_PreCancelledToken_ThrowsImmediately()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_PreCancelledToken_ThrowsImmediately()
+  type: Method
+  source:
+    id: DuplexStreaming_PreCancelledToken_ThrowsImmediately
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/StreamingScenarioTests.cs
+    startLine: 140
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task DuplexStreaming_PreCancelledToken_ThrowsImmediately()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function DuplexStreaming_PreCancelledToken_ThrowsImmediately() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_PreCancelledToken_ThrowsImmediately*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_ManyMessagesEachDirection_AllReceived
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_ManyMessagesEachDirection_AllReceived
+  id: DuplexStreaming_ManyMessagesEachDirection_AllReceived
+  parent: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests
+  langs:
+  - csharp
+  - vb
+  name: DuplexStreaming_ManyMessagesEachDirection_AllReceived()
+  nameWithType: StreamingScenarioTests.DuplexStreaming_ManyMessagesEachDirection_AllReceived()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_ManyMessagesEachDirection_AllReceived()
+  type: Method
+  source:
+    id: DuplexStreaming_ManyMessagesEachDirection_AllReceived
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/StreamingScenarioTests.cs
+    startLine: 166
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task DuplexStreaming_ManyMessagesEachDirection_AllReceived()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function DuplexStreaming_ManyMessagesEachDirection_AllReceived() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_ManyMessagesEachDirection_AllReceived*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_MultipleResponsesPerRequest_AllReceived
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_MultipleResponsesPerRequest_AllReceived
+  id: DuplexStreaming_MultipleResponsesPerRequest_AllReceived
+  parent: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests
+  langs:
+  - csharp
+  - vb
+  name: DuplexStreaming_MultipleResponsesPerRequest_AllReceived()
+  nameWithType: StreamingScenarioTests.DuplexStreaming_MultipleResponsesPerRequest_AllReceived()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_MultipleResponsesPerRequest_AllReceived()
+  type: Method
+  source:
+    id: DuplexStreaming_MultipleResponsesPerRequest_AllReceived
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/StreamingScenarioTests.cs
+    startLine: 189
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task DuplexStreaming_MultipleResponsesPerRequest_AllReceived()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function DuplexStreaming_MultipleResponsesPerRequest_AllReceived() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_MultipleResponsesPerRequest_AllReceived*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_WithMetadata_HeadersSent
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_WithMetadata_HeadersSent
+  id: ServerStreaming_WithMetadata_HeadersSent
+  parent: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests
+  langs:
+  - csharp
+  - vb
+  name: ServerStreaming_WithMetadata_HeadersSent()
+  nameWithType: StreamingScenarioTests.ServerStreaming_WithMetadata_HeadersSent()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_WithMetadata_HeadersSent()
+  type: Method
+  source:
+    id: ServerStreaming_WithMetadata_HeadersSent
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/StreamingScenarioTests.cs
+    startLine: 218
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task ServerStreaming_WithMetadata_HeadersSent()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function ServerStreaming_WithMetadata_HeadersSent() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_WithMetadata_HeadersSent*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_WithMetadata_HeadersSent
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_WithMetadata_HeadersSent
+  id: ClientStreaming_WithMetadata_HeadersSent
+  parent: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests
+  langs:
+  - csharp
+  - vb
+  name: ClientStreaming_WithMetadata_HeadersSent()
+  nameWithType: StreamingScenarioTests.ClientStreaming_WithMetadata_HeadersSent()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_WithMetadata_HeadersSent()
+  type: Method
+  source:
+    id: ClientStreaming_WithMetadata_HeadersSent
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/StreamingScenarioTests.cs
+    startLine: 239
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task ClientStreaming_WithMetadata_HeadersSent()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function ClientStreaming_WithMetadata_HeadersSent() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_WithMetadata_HeadersSent*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_WithMetadata_HeadersSent
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_WithMetadata_HeadersSent
+  id: DuplexStreaming_WithMetadata_HeadersSent
+  parent: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests
+  langs:
+  - csharp
+  - vb
+  name: DuplexStreaming_WithMetadata_HeadersSent()
+  nameWithType: StreamingScenarioTests.DuplexStreaming_WithMetadata_HeadersSent()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_WithMetadata_HeadersSent()
+  type: Method
+  source:
+    id: DuplexStreaming_WithMetadata_HeadersSent
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/StreamingScenarioTests.cs
+    startLine: 255
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task DuplexStreaming_WithMetadata_HeadersSent()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function DuplexStreaming_WithMetadata_HeadersSent() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_WithMetadata_HeadersSent*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_LargePayloadSizes_HandlesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_LargePayloadSizes_HandlesCorrectly
+  id: ServerStreaming_LargePayloadSizes_HandlesCorrectly
+  parent: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests
+  langs:
+  - csharp
+  - vb
+  name: ServerStreaming_LargePayloadSizes_HandlesCorrectly()
+  nameWithType: StreamingScenarioTests.ServerStreaming_LargePayloadSizes_HandlesCorrectly()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_LargePayloadSizes_HandlesCorrectly()
+  type: Method
+  source:
+    id: ServerStreaming_LargePayloadSizes_HandlesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/StreamingScenarioTests.cs
+    startLine: 283
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task ServerStreaming_LargePayloadSizes_HandlesCorrectly()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function ServerStreaming_LargePayloadSizes_HandlesCorrectly() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_LargePayloadSizes_HandlesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_VariablePayloadSizes_AccumulatesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_VariablePayloadSizes_AccumulatesCorrectly
+  id: ClientStreaming_VariablePayloadSizes_AccumulatesCorrectly
+  parent: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests
+  langs:
+  - csharp
+  - vb
+  name: ClientStreaming_VariablePayloadSizes_AccumulatesCorrectly()
+  nameWithType: StreamingScenarioTests.ClientStreaming_VariablePayloadSizes_AccumulatesCorrectly()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_VariablePayloadSizes_AccumulatesCorrectly()
+  type: Method
+  source:
+    id: ClientStreaming_VariablePayloadSizes_AccumulatesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/StreamingScenarioTests.cs
+    startLine: 315
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task ClientStreaming_VariablePayloadSizes_AccumulatesCorrectly()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function ClientStreaming_VariablePayloadSizes_AccumulatesCorrectly() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_VariablePayloadSizes_AccumulatesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+references:
+- uid: GrpCurl.Net.Tests.Integration.Invocation
+  commentId: N:GrpCurl.Net.Tests.Integration.Invocation
+  href: GrpCurl.html
+  name: GrpCurl.Net.Tests.Integration.Invocation
+  nameWithType: GrpCurl.Net.Tests.Integration.Invocation
+  fullName: GrpCurl.Net.Tests.Integration.Invocation
+  spec.csharp:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration
+    name: Integration
+    href: GrpCurl.Net.Tests.Integration.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration.Invocation
+    name: Invocation
+    href: GrpCurl.Net.Tests.Integration.Invocation.html
+  spec.vb:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration
+    name: Integration
+    href: GrpCurl.Net.Tests.Integration.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration.Invocation
+    name: Invocation
+    href: GrpCurl.Net.Tests.Integration.Invocation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.#ctor*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.#ctor
+  href: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.html#GrpCurl_Net_Tests_Integration_Invocation_StreamingScenarioTests__ctor_GrpCurl_Net_Tests_Integration_Fixtures_GrpcTestFixture_
+  name: StreamingScenarioTests
+  nameWithType: StreamingScenarioTests.StreamingScenarioTests
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.StreamingScenarioTests
+  nameWithType.vb: StreamingScenarioTests.New
+  fullName.vb: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.New
+  name.vb: New
+- uid: GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture
+  commentId: T:GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture
+  parent: GrpCurl.Net.Tests.Integration.Fixtures
+  href: GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture.html
+  name: GrpcTestFixture
+  nameWithType: GrpcTestFixture
+  fullName: GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture
+- uid: GrpCurl.Net.Tests.Integration.Fixtures
+  commentId: N:GrpCurl.Net.Tests.Integration.Fixtures
+  href: GrpCurl.html
+  name: GrpCurl.Net.Tests.Integration.Fixtures
+  nameWithType: GrpCurl.Net.Tests.Integration.Fixtures
+  fullName: GrpCurl.Net.Tests.Integration.Fixtures
+  spec.csharp:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration
+    name: Integration
+    href: GrpCurl.Net.Tests.Integration.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration.Fixtures
+    name: Fixtures
+    href: GrpCurl.Net.Tests.Integration.Fixtures.html
+  spec.vb:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration
+    name: Integration
+    href: GrpCurl.Net.Tests.Integration.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration.Fixtures
+    name: Fixtures
+    href: GrpCurl.Net.Tests.Integration.Fixtures.html
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_CancellationDuringStream_StopsProcessing*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_CancellationDuringStream_StopsProcessing
+  href: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.html#GrpCurl_Net_Tests_Integration_Invocation_StreamingScenarioTests_ServerStreaming_CancellationDuringStream_StopsProcessing
+  name: ServerStreaming_CancellationDuringStream_StopsProcessing
+  nameWithType: StreamingScenarioTests.ServerStreaming_CancellationDuringStream_StopsProcessing
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_CancellationDuringStream_StopsProcessing
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_PreCancelledToken_ThrowsImmediately*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_PreCancelledToken_ThrowsImmediately
+  href: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.html#GrpCurl_Net_Tests_Integration_Invocation_StreamingScenarioTests_ServerStreaming_PreCancelledToken_ThrowsImmediately
+  name: ServerStreaming_PreCancelledToken_ThrowsImmediately
+  nameWithType: StreamingScenarioTests.ServerStreaming_PreCancelledToken_ThrowsImmediately
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_PreCancelledToken_ThrowsImmediately
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_PreCancelledToken_ThrowsImmediately*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_PreCancelledToken_ThrowsImmediately
+  href: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.html#GrpCurl_Net_Tests_Integration_Invocation_StreamingScenarioTests_ClientStreaming_PreCancelledToken_ThrowsImmediately
+  name: ClientStreaming_PreCancelledToken_ThrowsImmediately
+  nameWithType: StreamingScenarioTests.ClientStreaming_PreCancelledToken_ThrowsImmediately
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_PreCancelledToken_ThrowsImmediately
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_LargeNumberOfRequests_HandlesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_LargeNumberOfRequests_HandlesCorrectly
+  href: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.html#GrpCurl_Net_Tests_Integration_Invocation_StreamingScenarioTests_ClientStreaming_LargeNumberOfRequests_HandlesCorrectly
+  name: ClientStreaming_LargeNumberOfRequests_HandlesCorrectly
+  nameWithType: StreamingScenarioTests.ClientStreaming_LargeNumberOfRequests_HandlesCorrectly
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_LargeNumberOfRequests_HandlesCorrectly
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_PreCancelledToken_ThrowsImmediately*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_PreCancelledToken_ThrowsImmediately
+  href: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.html#GrpCurl_Net_Tests_Integration_Invocation_StreamingScenarioTests_DuplexStreaming_PreCancelledToken_ThrowsImmediately
+  name: DuplexStreaming_PreCancelledToken_ThrowsImmediately
+  nameWithType: StreamingScenarioTests.DuplexStreaming_PreCancelledToken_ThrowsImmediately
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_PreCancelledToken_ThrowsImmediately
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_ManyMessagesEachDirection_AllReceived*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_ManyMessagesEachDirection_AllReceived
+  href: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.html#GrpCurl_Net_Tests_Integration_Invocation_StreamingScenarioTests_DuplexStreaming_ManyMessagesEachDirection_AllReceived
+  name: DuplexStreaming_ManyMessagesEachDirection_AllReceived
+  nameWithType: StreamingScenarioTests.DuplexStreaming_ManyMessagesEachDirection_AllReceived
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_ManyMessagesEachDirection_AllReceived
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_MultipleResponsesPerRequest_AllReceived*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_MultipleResponsesPerRequest_AllReceived
+  href: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.html#GrpCurl_Net_Tests_Integration_Invocation_StreamingScenarioTests_DuplexStreaming_MultipleResponsesPerRequest_AllReceived
+  name: DuplexStreaming_MultipleResponsesPerRequest_AllReceived
+  nameWithType: StreamingScenarioTests.DuplexStreaming_MultipleResponsesPerRequest_AllReceived
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_MultipleResponsesPerRequest_AllReceived
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_WithMetadata_HeadersSent*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_WithMetadata_HeadersSent
+  href: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.html#GrpCurl_Net_Tests_Integration_Invocation_StreamingScenarioTests_ServerStreaming_WithMetadata_HeadersSent
+  name: ServerStreaming_WithMetadata_HeadersSent
+  nameWithType: StreamingScenarioTests.ServerStreaming_WithMetadata_HeadersSent
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_WithMetadata_HeadersSent
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_WithMetadata_HeadersSent*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_WithMetadata_HeadersSent
+  href: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.html#GrpCurl_Net_Tests_Integration_Invocation_StreamingScenarioTests_ClientStreaming_WithMetadata_HeadersSent
+  name: ClientStreaming_WithMetadata_HeadersSent
+  nameWithType: StreamingScenarioTests.ClientStreaming_WithMetadata_HeadersSent
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_WithMetadata_HeadersSent
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_WithMetadata_HeadersSent*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_WithMetadata_HeadersSent
+  href: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.html#GrpCurl_Net_Tests_Integration_Invocation_StreamingScenarioTests_DuplexStreaming_WithMetadata_HeadersSent
+  name: DuplexStreaming_WithMetadata_HeadersSent
+  nameWithType: StreamingScenarioTests.DuplexStreaming_WithMetadata_HeadersSent
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.DuplexStreaming_WithMetadata_HeadersSent
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_LargePayloadSizes_HandlesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_LargePayloadSizes_HandlesCorrectly
+  href: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.html#GrpCurl_Net_Tests_Integration_Invocation_StreamingScenarioTests_ServerStreaming_LargePayloadSizes_HandlesCorrectly
+  name: ServerStreaming_LargePayloadSizes_HandlesCorrectly
+  nameWithType: StreamingScenarioTests.ServerStreaming_LargePayloadSizes_HandlesCorrectly
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ServerStreaming_LargePayloadSizes_HandlesCorrectly
+- uid: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_VariablePayloadSizes_AccumulatesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_VariablePayloadSizes_AccumulatesCorrectly
+  href: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.html#GrpCurl_Net_Tests_Integration_Invocation_StreamingScenarioTests_ClientStreaming_VariablePayloadSizes_AccumulatesCorrectly
+  name: ClientStreaming_VariablePayloadSizes_AccumulatesCorrectly
+  nameWithType: StreamingScenarioTests.ClientStreaming_VariablePayloadSizes_AccumulatesCorrectly
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.StreamingScenarioTests.ClientStreaming_VariablePayloadSizes_AccumulatesCorrectly

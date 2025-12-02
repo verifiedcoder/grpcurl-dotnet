@@ -1,0 +1,518 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.TestServer.Protos.UnimplementedService
+  commentId: T:GrpCurl.Net.TestServer.Protos.UnimplementedService
+  id: UnimplementedService
+  parent: GrpCurl.Net.TestServer.Protos
+  children:
+  - GrpCurl.Net.TestServer.Protos.UnimplementedService.BindService(GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase)
+  - GrpCurl.Net.TestServer.Protos.UnimplementedService.BindService(Grpc.Core.ServiceBinderBase,GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase)
+  - GrpCurl.Net.TestServer.Protos.UnimplementedService.Descriptor
+  langs:
+  - csharp
+  - vb
+  name: UnimplementedService
+  nameWithType: UnimplementedService
+  fullName: GrpCurl.Net.TestServer.Protos.UnimplementedService
+  type: Class
+  source:
+    id: UnimplementedService
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.Net.TestServer/obj/Release/net10.0/Protos/TestGrpc.cs
+    startLine: 260
+  assemblies:
+  - GrpCurl.Net.TestServer
+  namespace: GrpCurl.Net.TestServer.Protos
+  summary: >-
+    A simple service NOT implemented at servers so clients can test for
+
+    that case.
+  example: []
+  syntax:
+    content: public static class UnimplementedService
+    content.vb: Public Module UnimplementedService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: GrpCurl.Net.TestServer.Protos.UnimplementedService.Descriptor
+  commentId: P:GrpCurl.Net.TestServer.Protos.UnimplementedService.Descriptor
+  id: Descriptor
+  parent: GrpCurl.Net.TestServer.Protos.UnimplementedService
+  langs:
+  - csharp
+  - vb
+  name: Descriptor
+  nameWithType: UnimplementedService.Descriptor
+  fullName: GrpCurl.Net.TestServer.Protos.UnimplementedService.Descriptor
+  type: Property
+  source:
+    id: Descriptor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.Net.TestServer/obj/Release/net10.0/Protos/TestGrpc.cs
+    startLine: 309
+  assemblies:
+  - GrpCurl.Net.TestServer
+  namespace: GrpCurl.Net.TestServer.Protos
+  summary: Service descriptor
+  example: []
+  syntax:
+    content: public static ServiceDescriptor Descriptor { get; }
+    parameters: []
+    return:
+      type: Google.Protobuf.Reflection.ServiceDescriptor
+    content.vb: Public Shared ReadOnly Property Descriptor As ServiceDescriptor
+  overload: GrpCurl.Net.TestServer.Protos.UnimplementedService.Descriptor*
+- uid: GrpCurl.Net.TestServer.Protos.UnimplementedService.BindService(GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase)
+  commentId: M:GrpCurl.Net.TestServer.Protos.UnimplementedService.BindService(GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase)
+  id: BindService(GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase)
+  parent: GrpCurl.Net.TestServer.Protos.UnimplementedService
+  langs:
+  - csharp
+  - vb
+  name: BindService(UnimplementedServiceBase)
+  nameWithType: UnimplementedService.BindService(UnimplementedService.UnimplementedServiceBase)
+  fullName: GrpCurl.Net.TestServer.Protos.UnimplementedService.BindService(GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase)
+  type: Method
+  source:
+    id: BindService
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.Net.TestServer/obj/Release/net10.0/Protos/TestGrpc.cs
+    startLine: 334
+  assemblies:
+  - GrpCurl.Net.TestServer
+  namespace: GrpCurl.Net.TestServer.Protos
+  summary: Creates service definition that can be registered with a server
+  example: []
+  syntax:
+    content: public static ServerServiceDefinition BindService(UnimplementedService.UnimplementedServiceBase serviceImpl)
+    parameters:
+    - id: serviceImpl
+      type: GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase
+      description: An object implementing the server-side handling logic.
+    return:
+      type: Grpc.Core.ServerServiceDefinition
+    content.vb: Public Shared Function BindService(serviceImpl As UnimplementedService.UnimplementedServiceBase) As ServerServiceDefinition
+  overload: GrpCurl.Net.TestServer.Protos.UnimplementedService.BindService*
+- uid: GrpCurl.Net.TestServer.Protos.UnimplementedService.BindService(Grpc.Core.ServiceBinderBase,GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase)
+  commentId: M:GrpCurl.Net.TestServer.Protos.UnimplementedService.BindService(Grpc.Core.ServiceBinderBase,GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase)
+  id: BindService(Grpc.Core.ServiceBinderBase,GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase)
+  parent: GrpCurl.Net.TestServer.Protos.UnimplementedService
+  langs:
+  - csharp
+  - vb
+  name: BindService(ServiceBinderBase, UnimplementedServiceBase)
+  nameWithType: UnimplementedService.BindService(ServiceBinderBase, UnimplementedService.UnimplementedServiceBase)
+  fullName: GrpCurl.Net.TestServer.Protos.UnimplementedService.BindService(Grpc.Core.ServiceBinderBase, GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase)
+  type: Method
+  source:
+    id: BindService
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.Net.TestServer/obj/Release/net10.0/Protos/TestGrpc.cs
+    startLine: 345
+  assemblies:
+  - GrpCurl.Net.TestServer
+  namespace: GrpCurl.Net.TestServer.Protos
+  summary: >-
+    Register service method with a service binder with or without implementation. Useful when customizing the service binding logic.
+        Note: this method is part of an experimental API that can change or be removed without any prior notice.
+  example: []
+  syntax:
+    content: public static void BindService(ServiceBinderBase serviceBinder, UnimplementedService.UnimplementedServiceBase serviceImpl)
+    parameters:
+    - id: serviceBinder
+      type: Grpc.Core.ServiceBinderBase
+      description: Service methods will be bound by calling <code>AddMethod</code> on this object.
+    - id: serviceImpl
+      type: GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase
+      description: An object implementing the server-side handling logic.
+    content.vb: Public Shared Sub BindService(serviceBinder As ServiceBinderBase, serviceImpl As UnimplementedService.UnimplementedServiceBase)
+  overload: GrpCurl.Net.TestServer.Protos.UnimplementedService.BindService*
+references:
+- uid: GrpCurl.Net.TestServer.Protos
+  commentId: N:GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.html
+  name: GrpCurl.Net.TestServer.Protos
+  nameWithType: GrpCurl.Net.TestServer.Protos
+  fullName: GrpCurl.Net.TestServer.Protos
+  spec.csharp:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.TestServer
+    name: TestServer
+    href: GrpCurl.Net.TestServer.html
+  - name: .
+  - uid: GrpCurl.Net.TestServer.Protos
+    name: Protos
+    href: GrpCurl.Net.TestServer.Protos.html
+  spec.vb:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.TestServer
+    name: TestServer
+    href: GrpCurl.Net.TestServer.html
+  - name: .
+  - uid: GrpCurl.Net.TestServer.Protos
+    name: Protos
+    href: GrpCurl.Net.TestServer.Protos.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: GrpCurl.Net.TestServer.Protos.UnimplementedService.Descriptor*
+  commentId: Overload:GrpCurl.Net.TestServer.Protos.UnimplementedService.Descriptor
+  href: GrpCurl.Net.TestServer.Protos.UnimplementedService.html#GrpCurl_Net_TestServer_Protos_UnimplementedService_Descriptor
+  name: Descriptor
+  nameWithType: UnimplementedService.Descriptor
+  fullName: GrpCurl.Net.TestServer.Protos.UnimplementedService.Descriptor
+- uid: Google.Protobuf.Reflection.ServiceDescriptor
+  commentId: T:Google.Protobuf.Reflection.ServiceDescriptor
+  parent: Google.Protobuf.Reflection
+  isExternal: true
+  name: ServiceDescriptor
+  nameWithType: ServiceDescriptor
+  fullName: Google.Protobuf.Reflection.ServiceDescriptor
+- uid: Google.Protobuf.Reflection
+  commentId: N:Google.Protobuf.Reflection
+  isExternal: true
+  name: Google.Protobuf.Reflection
+  nameWithType: Google.Protobuf.Reflection
+  fullName: Google.Protobuf.Reflection
+  spec.csharp:
+  - uid: Google
+    name: Google
+    isExternal: true
+  - name: .
+  - uid: Google.Protobuf
+    name: Protobuf
+    isExternal: true
+  - name: .
+  - uid: Google.Protobuf.Reflection
+    name: Reflection
+    isExternal: true
+  spec.vb:
+  - uid: Google
+    name: Google
+    isExternal: true
+  - name: .
+  - uid: Google.Protobuf
+    name: Protobuf
+    isExternal: true
+  - name: .
+  - uid: Google.Protobuf.Reflection
+    name: Reflection
+    isExternal: true
+- uid: GrpCurl.Net.TestServer.Protos.UnimplementedService.BindService*
+  commentId: Overload:GrpCurl.Net.TestServer.Protos.UnimplementedService.BindService
+  href: GrpCurl.Net.TestServer.Protos.UnimplementedService.html#GrpCurl_Net_TestServer_Protos_UnimplementedService_BindService_GrpCurl_Net_TestServer_Protos_UnimplementedService_UnimplementedServiceBase_
+  name: BindService
+  nameWithType: UnimplementedService.BindService
+  fullName: GrpCurl.Net.TestServer.Protos.UnimplementedService.BindService
+- uid: GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase
+  commentId: T:GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase
+  parent: GrpCurl.Net.TestServer.Protos
+  href: GrpCurl.Net.TestServer.Protos.UnimplementedService.html
+  name: UnimplementedService.UnimplementedServiceBase
+  nameWithType: UnimplementedService.UnimplementedServiceBase
+  fullName: GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase
+  spec.csharp:
+  - uid: GrpCurl.Net.TestServer.Protos.UnimplementedService
+    name: UnimplementedService
+    href: GrpCurl.Net.TestServer.Protos.UnimplementedService.html
+  - name: .
+  - uid: GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase
+    name: UnimplementedServiceBase
+    href: GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase.html
+  spec.vb:
+  - uid: GrpCurl.Net.TestServer.Protos.UnimplementedService
+    name: UnimplementedService
+    href: GrpCurl.Net.TestServer.Protos.UnimplementedService.html
+  - name: .
+  - uid: GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase
+    name: UnimplementedServiceBase
+    href: GrpCurl.Net.TestServer.Protos.UnimplementedService.UnimplementedServiceBase.html
+- uid: Grpc.Core.ServerServiceDefinition
+  commentId: T:Grpc.Core.ServerServiceDefinition
+  parent: Grpc.Core
+  isExternal: true
+  href: https://github.com/grpc/grpc-dotnet/blob/c2555f2951c56a23d6c57bae6970cdfd30c552a7/src/Grpc.Core.Api/ServerServiceDefinition.cs
+  name: ServerServiceDefinition
+  nameWithType: ServerServiceDefinition
+  fullName: Grpc.Core.ServerServiceDefinition
+- uid: Grpc.Core
+  commentId: N:Grpc.Core
+  isExternal: true
+  name: Grpc.Core
+  nameWithType: Grpc.Core
+  fullName: Grpc.Core
+  spec.csharp:
+  - uid: Grpc
+    name: Grpc
+    isExternal: true
+  - name: .
+  - uid: Grpc.Core
+    name: Core
+    isExternal: true
+  spec.vb:
+  - uid: Grpc
+    name: Grpc
+    isExternal: true
+  - name: .
+  - uid: Grpc.Core
+    name: Core
+    isExternal: true
+- uid: Grpc.Core.ServiceBinderBase
+  commentId: T:Grpc.Core.ServiceBinderBase
+  parent: Grpc.Core
+  isExternal: true
+  href: https://github.com/grpc/grpc-dotnet/blob/c2555f2951c56a23d6c57bae6970cdfd30c552a7/src/Grpc.Core.Api/ServiceBinderBase.cs
+  name: ServiceBinderBase
+  nameWithType: ServiceBinderBase
+  fullName: Grpc.Core.ServiceBinderBase

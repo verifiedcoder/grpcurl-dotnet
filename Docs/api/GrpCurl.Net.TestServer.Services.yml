@@ -1,0 +1,37 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.TestServer.Services
+  commentId: N:GrpCurl.Net.TestServer.Services
+  id: GrpCurl.Net.TestServer.Services
+  children:
+  - GrpCurl.Net.TestServer.Services.MetadataConstants
+  - GrpCurl.Net.TestServer.Services.MetadataProcessor
+  - GrpCurl.Net.TestServer.Services.TestServiceImpl
+  langs:
+  - csharp
+  - vb
+  name: GrpCurl.Net.TestServer.Services
+  nameWithType: GrpCurl.Net.TestServer.Services
+  fullName: GrpCurl.Net.TestServer.Services
+  type: Namespace
+  assemblies:
+  - GrpCurl.Net.TestServer
+references:
+- uid: GrpCurl.Net.TestServer.Services.MetadataConstants
+  commentId: T:GrpCurl.Net.TestServer.Services.MetadataConstants
+  href: GrpCurl.Net.TestServer.Services.MetadataConstants.html
+  name: MetadataConstants
+  nameWithType: MetadataConstants
+  fullName: GrpCurl.Net.TestServer.Services.MetadataConstants
+- uid: GrpCurl.Net.TestServer.Services.MetadataProcessor
+  commentId: T:GrpCurl.Net.TestServer.Services.MetadataProcessor
+  href: GrpCurl.Net.TestServer.Services.MetadataProcessor.html
+  name: MetadataProcessor
+  nameWithType: MetadataProcessor
+  fullName: GrpCurl.Net.TestServer.Services.MetadataProcessor
+- uid: GrpCurl.Net.TestServer.Services.TestServiceImpl
+  commentId: T:GrpCurl.Net.TestServer.Services.TestServiceImpl
+  href: GrpCurl.Net.TestServer.Services.TestServiceImpl.html
+  name: TestServiceImpl
+  nameWithType: TestServiceImpl
+  fullName: GrpCurl.Net.TestServer.Services.TestServiceImpl

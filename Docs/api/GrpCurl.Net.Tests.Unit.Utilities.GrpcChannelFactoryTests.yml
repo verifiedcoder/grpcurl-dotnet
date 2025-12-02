@@ -1,0 +1,2100 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  commentId: T:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  id: GrpcChannelFactoryTests
+  parent: GrpCurl.Net.Tests.Unit.Utilities
+  children:
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ChannelOptions_AllPropertiesSettable
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ChannelOptions_DefaultValues
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_CustomUserAgent_OverridesDefault
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_EmptyEnvironmentVariable_Expands
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_EmptyHeaders_ReturnsDefaultUserAgent
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_ExpandsEnvironmentVariable
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_HeaderTrimsWhitespace
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_HeaderWithColonInValue_ParsesCorrectly
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_InvalidHeaderFormat_ThrowsException
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MissingEnvironmentVariable_ThrowsException
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MultipleEnvironmentVariables
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MultipleHeaders_ParsesCorrectly
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_NullHeaders_ReturnsDefaultUserAgent
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_SingleHeader_ParsesCorrectly
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_WhitespaceHeader_IsSkipped
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithHttpScheme_CreatesChannel
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithHttpsScheme_CreatesChannel
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithNullOptions_UsesDefaults
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithPlaintextOption_CreatesChannel
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithoutScheme_CreatesChannel
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Decimal_ParsesCorrectly(System.String,System.Int32)
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_EmptyString_ThrowsException(System.String)
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Hours_ParsesCorrectly(System.String,System.Int32)
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_InvalidFormat_ThrowsException(System.String)
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Milliseconds_ParsesCorrectly(System.String,System.Int32)
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Minutes_ParsesCorrectly(System.String,System.Int32)
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_PlainNumber_DefaultsToSeconds(System.String,System.Int32)
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Seconds_ParsesCorrectly(System.String,System.Int32)
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Decimal_ParsesCorrectly(System.String,System.Int32)
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_EmptyString_ThrowsException(System.String)
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_ExplicitBytes_ParsesCorrectly(System.String,System.Int32)
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Gigabytes_ParsesCorrectly(System.String,System.Int32)
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_InvalidFormat_ThrowsException(System.String)
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Kilobytes_ParsesCorrectly(System.String,System.Int32)
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Megabytes_ParsesCorrectly(System.String,System.Int32)
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Overflow_ThrowsException
+  - GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_PlainBytes_ParsesCorrectly(System.String,System.Int32)
+  langs:
+  - csharp
+  - vb
+  name: GrpcChannelFactoryTests
+  nameWithType: GrpcChannelFactoryTests
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  type: Class
+  source:
+    id: GrpcChannelFactoryTests
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 9
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  summary: >-
+    Tests for GrpcChannelFactory utility methods including duration parsing,
+
+    size parsing, metadata creation, and channel configuration.
+  example: []
+  syntax:
+    content: public class GrpcChannelFactoryTests
+    content.vb: Public Class GrpcChannelFactoryTests
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Seconds_ParsesCorrectly(System.String,System.Int32)
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Seconds_ParsesCorrectly(System.String,System.Int32)
+  id: ParseDuration_Seconds_ParsesCorrectly(System.String,System.Int32)
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: ParseDuration_Seconds_ParsesCorrectly(string, int)
+  nameWithType: GrpcChannelFactoryTests.ParseDuration_Seconds_ParsesCorrectly(string, int)
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Seconds_ParsesCorrectly(string, int)
+  type: Method
+  source:
+    id: ParseDuration_Seconds_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 13
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "10s", 10000 })]
+
+      [InlineData(new object[] { "1s", 1000 })]
+
+      [InlineData(new object[] { "0s", 0 })]
+
+      [InlineData(new object[] { "100s", 100000 })]
+
+      public void ParseDuration_Seconds_ParsesCorrectly(string input, int expectedMs)
+    parameters:
+    - id: input
+      type: System.String
+    - id: expectedMs
+      type: System.Int32
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "10s", 10000 })>
+
+      <InlineData(New Object() { "1s", 1000 })>
+
+      <InlineData(New Object() { "0s", 0 })>
+
+      <InlineData(New Object() { "100s", 100000 })>
+
+      Public Sub ParseDuration_Seconds_ParsesCorrectly(input As String, expectedMs As Integer)
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Seconds_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: GrpcChannelFactoryTests.ParseDuration_Seconds_ParsesCorrectly(String, Integer)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Seconds_ParsesCorrectly(String, Integer)
+  name.vb: ParseDuration_Seconds_ParsesCorrectly(String, Integer)
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Milliseconds_ParsesCorrectly(System.String,System.Int32)
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Milliseconds_ParsesCorrectly(System.String,System.Int32)
+  id: ParseDuration_Milliseconds_ParsesCorrectly(System.String,System.Int32)
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: ParseDuration_Milliseconds_ParsesCorrectly(string, int)
+  nameWithType: GrpcChannelFactoryTests.ParseDuration_Milliseconds_ParsesCorrectly(string, int)
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Milliseconds_ParsesCorrectly(string, int)
+  type: Method
+  source:
+    id: ParseDuration_Milliseconds_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 24
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "500ms", 500 })]
+
+      [InlineData(new object[] { "1ms", 1 })]
+
+      [InlineData(new object[] { "1000ms", 1000 })]
+
+      [InlineData(new object[] { "0ms", 0 })]
+
+      public void ParseDuration_Milliseconds_ParsesCorrectly(string input, int expectedMs)
+    parameters:
+    - id: input
+      type: System.String
+    - id: expectedMs
+      type: System.Int32
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "500ms", 500 })>
+
+      <InlineData(New Object() { "1ms", 1 })>
+
+      <InlineData(New Object() { "1000ms", 1000 })>
+
+      <InlineData(New Object() { "0ms", 0 })>
+
+      Public Sub ParseDuration_Milliseconds_ParsesCorrectly(input As String, expectedMs As Integer)
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Milliseconds_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: GrpcChannelFactoryTests.ParseDuration_Milliseconds_ParsesCorrectly(String, Integer)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Milliseconds_ParsesCorrectly(String, Integer)
+  name.vb: ParseDuration_Milliseconds_ParsesCorrectly(String, Integer)
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Minutes_ParsesCorrectly(System.String,System.Int32)
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Minutes_ParsesCorrectly(System.String,System.Int32)
+  id: ParseDuration_Minutes_ParsesCorrectly(System.String,System.Int32)
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: ParseDuration_Minutes_ParsesCorrectly(string, int)
+  nameWithType: GrpcChannelFactoryTests.ParseDuration_Minutes_ParsesCorrectly(string, int)
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Minutes_ParsesCorrectly(string, int)
+  type: Method
+  source:
+    id: ParseDuration_Minutes_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 35
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "1m", 60000 })]
+
+      [InlineData(new object[] { "5m", 300000 })]
+
+      [InlineData(new object[] { "0m", 0 })]
+
+      public void ParseDuration_Minutes_ParsesCorrectly(string input, int expectedMs)
+    parameters:
+    - id: input
+      type: System.String
+    - id: expectedMs
+      type: System.Int32
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "1m", 60000 })>
+
+      <InlineData(New Object() { "5m", 300000 })>
+
+      <InlineData(New Object() { "0m", 0 })>
+
+      Public Sub ParseDuration_Minutes_ParsesCorrectly(input As String, expectedMs As Integer)
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Minutes_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: GrpcChannelFactoryTests.ParseDuration_Minutes_ParsesCorrectly(String, Integer)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Minutes_ParsesCorrectly(String, Integer)
+  name.vb: ParseDuration_Minutes_ParsesCorrectly(String, Integer)
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Hours_ParsesCorrectly(System.String,System.Int32)
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Hours_ParsesCorrectly(System.String,System.Int32)
+  id: ParseDuration_Hours_ParsesCorrectly(System.String,System.Int32)
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: ParseDuration_Hours_ParsesCorrectly(string, int)
+  nameWithType: GrpcChannelFactoryTests.ParseDuration_Hours_ParsesCorrectly(string, int)
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Hours_ParsesCorrectly(string, int)
+  type: Method
+  source:
+    id: ParseDuration_Hours_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 45
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "1h", 3600000 })]
+
+      [InlineData(new object[] { "2h", 7200000 })]
+
+      public void ParseDuration_Hours_ParsesCorrectly(string input, int expectedMs)
+    parameters:
+    - id: input
+      type: System.String
+    - id: expectedMs
+      type: System.Int32
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "1h", 3600000 })>
+
+      <InlineData(New Object() { "2h", 7200000 })>
+
+      Public Sub ParseDuration_Hours_ParsesCorrectly(input As String, expectedMs As Integer)
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Hours_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: GrpcChannelFactoryTests.ParseDuration_Hours_ParsesCorrectly(String, Integer)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Hours_ParsesCorrectly(String, Integer)
+  name.vb: ParseDuration_Hours_ParsesCorrectly(String, Integer)
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Decimal_ParsesCorrectly(System.String,System.Int32)
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Decimal_ParsesCorrectly(System.String,System.Int32)
+  id: ParseDuration_Decimal_ParsesCorrectly(System.String,System.Int32)
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: ParseDuration_Decimal_ParsesCorrectly(string, int)
+  nameWithType: GrpcChannelFactoryTests.ParseDuration_Decimal_ParsesCorrectly(string, int)
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Decimal_ParsesCorrectly(string, int)
+  type: Method
+  source:
+    id: ParseDuration_Decimal_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 54
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "1.5s", 1500 })]
+
+      [InlineData(new object[] { "0.5s", 500 })]
+
+      [InlineData(new object[] { "1.5m", 90000 })]
+
+      [InlineData(new object[] { "0.5h", 1800000 })]
+
+      public void ParseDuration_Decimal_ParsesCorrectly(string input, int expectedMs)
+    parameters:
+    - id: input
+      type: System.String
+    - id: expectedMs
+      type: System.Int32
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "1.5s", 1500 })>
+
+      <InlineData(New Object() { "0.5s", 500 })>
+
+      <InlineData(New Object() { "1.5m", 90000 })>
+
+      <InlineData(New Object() { "0.5h", 1800000 })>
+
+      Public Sub ParseDuration_Decimal_ParsesCorrectly(input As String, expectedMs As Integer)
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Decimal_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: GrpcChannelFactoryTests.ParseDuration_Decimal_ParsesCorrectly(String, Integer)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Decimal_ParsesCorrectly(String, Integer)
+  name.vb: ParseDuration_Decimal_ParsesCorrectly(String, Integer)
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_PlainNumber_DefaultsToSeconds(System.String,System.Int32)
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_PlainNumber_DefaultsToSeconds(System.String,System.Int32)
+  id: ParseDuration_PlainNumber_DefaultsToSeconds(System.String,System.Int32)
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: ParseDuration_PlainNumber_DefaultsToSeconds(string, int)
+  nameWithType: GrpcChannelFactoryTests.ParseDuration_PlainNumber_DefaultsToSeconds(string, int)
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_PlainNumber_DefaultsToSeconds(string, int)
+  type: Method
+  source:
+    id: ParseDuration_PlainNumber_DefaultsToSeconds
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 65
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "10", 10000 })]
+
+      [InlineData(new object[] { "1", 1000 })]
+
+      [InlineData(new object[] { "0", 0 })]
+
+      public void ParseDuration_PlainNumber_DefaultsToSeconds(string input, int expectedMs)
+    parameters:
+    - id: input
+      type: System.String
+    - id: expectedMs
+      type: System.Int32
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "10", 10000 })>
+
+      <InlineData(New Object() { "1", 1000 })>
+
+      <InlineData(New Object() { "0", 0 })>
+
+      Public Sub ParseDuration_PlainNumber_DefaultsToSeconds(input As String, expectedMs As Integer)
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_PlainNumber_DefaultsToSeconds*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: GrpcChannelFactoryTests.ParseDuration_PlainNumber_DefaultsToSeconds(String, Integer)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_PlainNumber_DefaultsToSeconds(String, Integer)
+  name.vb: ParseDuration_PlainNumber_DefaultsToSeconds(String, Integer)
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_EmptyString_ThrowsException(System.String)
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_EmptyString_ThrowsException(System.String)
+  id: ParseDuration_EmptyString_ThrowsException(System.String)
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: ParseDuration_EmptyString_ThrowsException(string)
+  nameWithType: GrpcChannelFactoryTests.ParseDuration_EmptyString_ThrowsException(string)
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_EmptyString_ThrowsException(string)
+  type: Method
+  source:
+    id: ParseDuration_EmptyString_ThrowsException
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 75
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "" })]
+
+      [InlineData(new object[] { "   " })]
+
+      public void ParseDuration_EmptyString_ThrowsException(string input)
+    parameters:
+    - id: input
+      type: System.String
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "" })>
+
+      <InlineData(New Object() { "   " })>
+
+      Public Sub ParseDuration_EmptyString_ThrowsException(input As String)
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_EmptyString_ThrowsException*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: GrpcChannelFactoryTests.ParseDuration_EmptyString_ThrowsException(String)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_EmptyString_ThrowsException(String)
+  name.vb: ParseDuration_EmptyString_ThrowsException(String)
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_InvalidFormat_ThrowsException(System.String)
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_InvalidFormat_ThrowsException(System.String)
+  id: ParseDuration_InvalidFormat_ThrowsException(System.String)
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: ParseDuration_InvalidFormat_ThrowsException(string)
+  nameWithType: GrpcChannelFactoryTests.ParseDuration_InvalidFormat_ThrowsException(string)
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_InvalidFormat_ThrowsException(string)
+  type: Method
+  source:
+    id: ParseDuration_InvalidFormat_ThrowsException
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 84
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "abc" })]
+
+      [InlineData(new object[] { "10x" })]
+
+      [InlineData(new object[] { "s10" })]
+
+      [InlineData(new object[] { "10 seconds" })]
+
+      public void ParseDuration_InvalidFormat_ThrowsException(string input)
+    parameters:
+    - id: input
+      type: System.String
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "abc" })>
+
+      <InlineData(New Object() { "10x" })>
+
+      <InlineData(New Object() { "s10" })>
+
+      <InlineData(New Object() { "10 seconds" })>
+
+      Public Sub ParseDuration_InvalidFormat_ThrowsException(input As String)
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_InvalidFormat_ThrowsException*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: GrpcChannelFactoryTests.ParseDuration_InvalidFormat_ThrowsException(String)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_InvalidFormat_ThrowsException(String)
+  name.vb: ParseDuration_InvalidFormat_ThrowsException(String)
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_PlainBytes_ParsesCorrectly(System.String,System.Int32)
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_PlainBytes_ParsesCorrectly(System.String,System.Int32)
+  id: ParseSize_PlainBytes_ParsesCorrectly(System.String,System.Int32)
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: ParseSize_PlainBytes_ParsesCorrectly(string, int)
+  nameWithType: GrpcChannelFactoryTests.ParseSize_PlainBytes_ParsesCorrectly(string, int)
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_PlainBytes_ParsesCorrectly(string, int)
+  type: Method
+  source:
+    id: ParseSize_PlainBytes_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 99
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "1024", 1024 })]
+
+      [InlineData(new object[] { "0", 0 })]
+
+      [InlineData(new object[] { "100", 100 })]
+
+      public void ParseSize_PlainBytes_ParsesCorrectly(string input, int expectedBytes)
+    parameters:
+    - id: input
+      type: System.String
+    - id: expectedBytes
+      type: System.Int32
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "1024", 1024 })>
+
+      <InlineData(New Object() { "0", 0 })>
+
+      <InlineData(New Object() { "100", 100 })>
+
+      Public Sub ParseSize_PlainBytes_ParsesCorrectly(input As String, expectedBytes As Integer)
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_PlainBytes_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: GrpcChannelFactoryTests.ParseSize_PlainBytes_ParsesCorrectly(String, Integer)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_PlainBytes_ParsesCorrectly(String, Integer)
+  name.vb: ParseSize_PlainBytes_ParsesCorrectly(String, Integer)
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_ExplicitBytes_ParsesCorrectly(System.String,System.Int32)
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_ExplicitBytes_ParsesCorrectly(System.String,System.Int32)
+  id: ParseSize_ExplicitBytes_ParsesCorrectly(System.String,System.Int32)
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: ParseSize_ExplicitBytes_ParsesCorrectly(string, int)
+  nameWithType: GrpcChannelFactoryTests.ParseSize_ExplicitBytes_ParsesCorrectly(string, int)
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_ExplicitBytes_ParsesCorrectly(string, int)
+  type: Method
+  source:
+    id: ParseSize_ExplicitBytes_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 109
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "1B", 1 })]
+
+      [InlineData(new object[] { "100B", 100 })]
+
+      [InlineData(new object[] { "1024B", 1024 })]
+
+      public void ParseSize_ExplicitBytes_ParsesCorrectly(string input, int expectedBytes)
+    parameters:
+    - id: input
+      type: System.String
+    - id: expectedBytes
+      type: System.Int32
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "1B", 1 })>
+
+      <InlineData(New Object() { "100B", 100 })>
+
+      <InlineData(New Object() { "1024B", 1024 })>
+
+      Public Sub ParseSize_ExplicitBytes_ParsesCorrectly(input As String, expectedBytes As Integer)
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_ExplicitBytes_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: GrpcChannelFactoryTests.ParseSize_ExplicitBytes_ParsesCorrectly(String, Integer)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_ExplicitBytes_ParsesCorrectly(String, Integer)
+  name.vb: ParseSize_ExplicitBytes_ParsesCorrectly(String, Integer)
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Kilobytes_ParsesCorrectly(System.String,System.Int32)
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Kilobytes_ParsesCorrectly(System.String,System.Int32)
+  id: ParseSize_Kilobytes_ParsesCorrectly(System.String,System.Int32)
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: ParseSize_Kilobytes_ParsesCorrectly(string, int)
+  nameWithType: GrpcChannelFactoryTests.ParseSize_Kilobytes_ParsesCorrectly(string, int)
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Kilobytes_ParsesCorrectly(string, int)
+  type: Method
+  source:
+    id: ParseSize_Kilobytes_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 119
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "1KB", 1024 })]
+
+      [InlineData(new object[] { "10KB", 10240 })]
+
+      [InlineData(new object[] { "1kb", 1024 })]
+
+      public void ParseSize_Kilobytes_ParsesCorrectly(string input, int expectedBytes)
+    parameters:
+    - id: input
+      type: System.String
+    - id: expectedBytes
+      type: System.Int32
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "1KB", 1024 })>
+
+      <InlineData(New Object() { "10KB", 10240 })>
+
+      <InlineData(New Object() { "1kb", 1024 })>
+
+      Public Sub ParseSize_Kilobytes_ParsesCorrectly(input As String, expectedBytes As Integer)
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Kilobytes_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: GrpcChannelFactoryTests.ParseSize_Kilobytes_ParsesCorrectly(String, Integer)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Kilobytes_ParsesCorrectly(String, Integer)
+  name.vb: ParseSize_Kilobytes_ParsesCorrectly(String, Integer)
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Megabytes_ParsesCorrectly(System.String,System.Int32)
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Megabytes_ParsesCorrectly(System.String,System.Int32)
+  id: ParseSize_Megabytes_ParsesCorrectly(System.String,System.Int32)
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: ParseSize_Megabytes_ParsesCorrectly(string, int)
+  nameWithType: GrpcChannelFactoryTests.ParseSize_Megabytes_ParsesCorrectly(string, int)
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Megabytes_ParsesCorrectly(string, int)
+  type: Method
+  source:
+    id: ParseSize_Megabytes_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 129
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "1MB", 1048576 })]
+
+      [InlineData(new object[] { "4MB", 4194304 })]
+
+      [InlineData(new object[] { "10MB", 10485760 })]
+
+      [InlineData(new object[] { "1mb", 1048576 })]
+
+      public void ParseSize_Megabytes_ParsesCorrectly(string input, int expectedBytes)
+    parameters:
+    - id: input
+      type: System.String
+    - id: expectedBytes
+      type: System.Int32
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "1MB", 1048576 })>
+
+      <InlineData(New Object() { "4MB", 4194304 })>
+
+      <InlineData(New Object() { "10MB", 10485760 })>
+
+      <InlineData(New Object() { "1mb", 1048576 })>
+
+      Public Sub ParseSize_Megabytes_ParsesCorrectly(input As String, expectedBytes As Integer)
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Megabytes_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: GrpcChannelFactoryTests.ParseSize_Megabytes_ParsesCorrectly(String, Integer)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Megabytes_ParsesCorrectly(String, Integer)
+  name.vb: ParseSize_Megabytes_ParsesCorrectly(String, Integer)
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Gigabytes_ParsesCorrectly(System.String,System.Int32)
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Gigabytes_ParsesCorrectly(System.String,System.Int32)
+  id: ParseSize_Gigabytes_ParsesCorrectly(System.String,System.Int32)
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: ParseSize_Gigabytes_ParsesCorrectly(string, int)
+  nameWithType: GrpcChannelFactoryTests.ParseSize_Gigabytes_ParsesCorrectly(string, int)
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Gigabytes_ParsesCorrectly(string, int)
+  type: Method
+  source:
+    id: ParseSize_Gigabytes_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 140
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "1GB", 1073741824 })]
+
+      [InlineData(new object[] { "1gb", 1073741824 })]
+
+      public void ParseSize_Gigabytes_ParsesCorrectly(string input, int expectedBytes)
+    parameters:
+    - id: input
+      type: System.String
+    - id: expectedBytes
+      type: System.Int32
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "1GB", 1073741824 })>
+
+      <InlineData(New Object() { "1gb", 1073741824 })>
+
+      Public Sub ParseSize_Gigabytes_ParsesCorrectly(input As String, expectedBytes As Integer)
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Gigabytes_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: GrpcChannelFactoryTests.ParseSize_Gigabytes_ParsesCorrectly(String, Integer)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Gigabytes_ParsesCorrectly(String, Integer)
+  name.vb: ParseSize_Gigabytes_ParsesCorrectly(String, Integer)
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Decimal_ParsesCorrectly(System.String,System.Int32)
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Decimal_ParsesCorrectly(System.String,System.Int32)
+  id: ParseSize_Decimal_ParsesCorrectly(System.String,System.Int32)
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: ParseSize_Decimal_ParsesCorrectly(string, int)
+  nameWithType: GrpcChannelFactoryTests.ParseSize_Decimal_ParsesCorrectly(string, int)
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Decimal_ParsesCorrectly(string, int)
+  type: Method
+  source:
+    id: ParseSize_Decimal_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 149
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "1.5MB", 1572864 })]
+
+      [InlineData(new object[] { "0.5KB", 512 })]
+
+      public void ParseSize_Decimal_ParsesCorrectly(string input, int expectedBytes)
+    parameters:
+    - id: input
+      type: System.String
+    - id: expectedBytes
+      type: System.Int32
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "1.5MB", 1572864 })>
+
+      <InlineData(New Object() { "0.5KB", 512 })>
+
+      Public Sub ParseSize_Decimal_ParsesCorrectly(input As String, expectedBytes As Integer)
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Decimal_ParsesCorrectly*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: GrpcChannelFactoryTests.ParseSize_Decimal_ParsesCorrectly(String, Integer)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Decimal_ParsesCorrectly(String, Integer)
+  name.vb: ParseSize_Decimal_ParsesCorrectly(String, Integer)
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_EmptyString_ThrowsException(System.String)
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_EmptyString_ThrowsException(System.String)
+  id: ParseSize_EmptyString_ThrowsException(System.String)
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: ParseSize_EmptyString_ThrowsException(string)
+  nameWithType: GrpcChannelFactoryTests.ParseSize_EmptyString_ThrowsException(string)
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_EmptyString_ThrowsException(string)
+  type: Method
+  source:
+    id: ParseSize_EmptyString_ThrowsException
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 158
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "" })]
+
+      [InlineData(new object[] { "   " })]
+
+      public void ParseSize_EmptyString_ThrowsException(string input)
+    parameters:
+    - id: input
+      type: System.String
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "" })>
+
+      <InlineData(New Object() { "   " })>
+
+      Public Sub ParseSize_EmptyString_ThrowsException(input As String)
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_EmptyString_ThrowsException*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: GrpcChannelFactoryTests.ParseSize_EmptyString_ThrowsException(String)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_EmptyString_ThrowsException(String)
+  name.vb: ParseSize_EmptyString_ThrowsException(String)
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_InvalidFormat_ThrowsException(System.String)
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_InvalidFormat_ThrowsException(System.String)
+  id: ParseSize_InvalidFormat_ThrowsException(System.String)
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: ParseSize_InvalidFormat_ThrowsException(string)
+  nameWithType: GrpcChannelFactoryTests.ParseSize_InvalidFormat_ThrowsException(string)
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_InvalidFormat_ThrowsException(string)
+  type: Method
+  source:
+    id: ParseSize_InvalidFormat_ThrowsException
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 167
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Theory]
+
+      [InlineData(new object[] { "abc" })]
+
+      [InlineData(new object[] { "10TB" })]
+
+      [InlineData(new object[] { "MB10" })]
+
+      public void ParseSize_InvalidFormat_ThrowsException(string input)
+    parameters:
+    - id: input
+      type: System.String
+    content.vb: >-
+      <Theory>
+
+      <InlineData(New Object() { "abc" })>
+
+      <InlineData(New Object() { "10TB" })>
+
+      <InlineData(New Object() { "MB10" })>
+
+      Public Sub ParseSize_InvalidFormat_ThrowsException(input As String)
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_InvalidFormat_ThrowsException*
+  attributes:
+  - type: Xunit.TheoryAttribute
+    ctor: Xunit.TheoryAttribute.#ctor
+    arguments: []
+  nameWithType.vb: GrpcChannelFactoryTests.ParseSize_InvalidFormat_ThrowsException(String)
+  fullName.vb: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_InvalidFormat_ThrowsException(String)
+  name.vb: ParseSize_InvalidFormat_ThrowsException(String)
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Overflow_ThrowsException
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Overflow_ThrowsException
+  id: ParseSize_Overflow_ThrowsException
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: ParseSize_Overflow_ThrowsException()
+  nameWithType: GrpcChannelFactoryTests.ParseSize_Overflow_ThrowsException()
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Overflow_ThrowsException()
+  type: Method
+  source:
+    id: ParseSize_Overflow_ThrowsException
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 177
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ParseSize_Overflow_ThrowsException()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ParseSize_Overflow_ThrowsException()
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Overflow_ThrowsException*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_NullHeaders_ReturnsDefaultUserAgent
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_NullHeaders_ReturnsDefaultUserAgent
+  id: CreateMetadata_NullHeaders_ReturnsDefaultUserAgent
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: CreateMetadata_NullHeaders_ReturnsDefaultUserAgent()
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_NullHeaders_ReturnsDefaultUserAgent()
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_NullHeaders_ReturnsDefaultUserAgent()
+  type: Method
+  source:
+    id: CreateMetadata_NullHeaders_ReturnsDefaultUserAgent
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 188
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Fact]
+
+      public void CreateMetadata_NullHeaders_ReturnsDefaultUserAgent()
+    content.vb: >-
+      <Fact>
+
+      Public Sub CreateMetadata_NullHeaders_ReturnsDefaultUserAgent()
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_NullHeaders_ReturnsDefaultUserAgent*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_EmptyHeaders_ReturnsDefaultUserAgent
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_EmptyHeaders_ReturnsDefaultUserAgent
+  id: CreateMetadata_EmptyHeaders_ReturnsDefaultUserAgent
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: CreateMetadata_EmptyHeaders_ReturnsDefaultUserAgent()
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_EmptyHeaders_ReturnsDefaultUserAgent()
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_EmptyHeaders_ReturnsDefaultUserAgent()
+  type: Method
+  source:
+    id: CreateMetadata_EmptyHeaders_ReturnsDefaultUserAgent
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 198
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Fact]
+
+      public void CreateMetadata_EmptyHeaders_ReturnsDefaultUserAgent()
+    content.vb: >-
+      <Fact>
+
+      Public Sub CreateMetadata_EmptyHeaders_ReturnsDefaultUserAgent()
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_EmptyHeaders_ReturnsDefaultUserAgent*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_SingleHeader_ParsesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_SingleHeader_ParsesCorrectly
+  id: CreateMetadata_SingleHeader_ParsesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: CreateMetadata_SingleHeader_ParsesCorrectly()
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_SingleHeader_ParsesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_SingleHeader_ParsesCorrectly()
+  type: Method
+  source:
+    id: CreateMetadata_SingleHeader_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 207
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Fact]
+
+      public void CreateMetadata_SingleHeader_ParsesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub CreateMetadata_SingleHeader_ParsesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_SingleHeader_ParsesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MultipleHeaders_ParsesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MultipleHeaders_ParsesCorrectly
+  id: CreateMetadata_MultipleHeaders_ParsesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: CreateMetadata_MultipleHeaders_ParsesCorrectly()
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_MultipleHeaders_ParsesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MultipleHeaders_ParsesCorrectly()
+  type: Method
+  source:
+    id: CreateMetadata_MultipleHeaders_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 217
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Fact]
+
+      public void CreateMetadata_MultipleHeaders_ParsesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub CreateMetadata_MultipleHeaders_ParsesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MultipleHeaders_ParsesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_CustomUserAgent_OverridesDefault
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_CustomUserAgent_OverridesDefault
+  id: CreateMetadata_CustomUserAgent_OverridesDefault
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: CreateMetadata_CustomUserAgent_OverridesDefault()
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_CustomUserAgent_OverridesDefault()
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_CustomUserAgent_OverridesDefault()
+  type: Method
+  source:
+    id: CreateMetadata_CustomUserAgent_OverridesDefault
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 236
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Fact]
+
+      public void CreateMetadata_CustomUserAgent_OverridesDefault()
+    content.vb: >-
+      <Fact>
+
+      Public Sub CreateMetadata_CustomUserAgent_OverridesDefault()
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_CustomUserAgent_OverridesDefault*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_HeaderWithColonInValue_ParsesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_HeaderWithColonInValue_ParsesCorrectly
+  id: CreateMetadata_HeaderWithColonInValue_ParsesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: CreateMetadata_HeaderWithColonInValue_ParsesCorrectly()
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_HeaderWithColonInValue_ParsesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_HeaderWithColonInValue_ParsesCorrectly()
+  type: Method
+  source:
+    id: CreateMetadata_HeaderWithColonInValue_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 246
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Fact]
+
+      public void CreateMetadata_HeaderWithColonInValue_ParsesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub CreateMetadata_HeaderWithColonInValue_ParsesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_HeaderWithColonInValue_ParsesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_InvalidHeaderFormat_ThrowsException
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_InvalidHeaderFormat_ThrowsException
+  id: CreateMetadata_InvalidHeaderFormat_ThrowsException
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: CreateMetadata_InvalidHeaderFormat_ThrowsException()
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_InvalidHeaderFormat_ThrowsException()
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_InvalidHeaderFormat_ThrowsException()
+  type: Method
+  source:
+    id: CreateMetadata_InvalidHeaderFormat_ThrowsException
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 255
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Fact]
+
+      public void CreateMetadata_InvalidHeaderFormat_ThrowsException()
+    content.vb: >-
+      <Fact>
+
+      Public Sub CreateMetadata_InvalidHeaderFormat_ThrowsException()
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_InvalidHeaderFormat_ThrowsException*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_WhitespaceHeader_IsSkipped
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_WhitespaceHeader_IsSkipped
+  id: CreateMetadata_WhitespaceHeader_IsSkipped
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: CreateMetadata_WhitespaceHeader_IsSkipped()
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_WhitespaceHeader_IsSkipped()
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_WhitespaceHeader_IsSkipped()
+  type: Method
+  source:
+    id: CreateMetadata_WhitespaceHeader_IsSkipped
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 264
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Fact]
+
+      public void CreateMetadata_WhitespaceHeader_IsSkipped()
+    content.vb: >-
+      <Fact>
+
+      Public Sub CreateMetadata_WhitespaceHeader_IsSkipped()
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_WhitespaceHeader_IsSkipped*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_HeaderTrimsWhitespace
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_HeaderTrimsWhitespace
+  id: CreateMetadata_HeaderTrimsWhitespace
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: CreateMetadata_HeaderTrimsWhitespace()
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_HeaderTrimsWhitespace()
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_HeaderTrimsWhitespace()
+  type: Method
+  source:
+    id: CreateMetadata_HeaderTrimsWhitespace
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 274
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Fact]
+
+      public void CreateMetadata_HeaderTrimsWhitespace()
+    content.vb: >-
+      <Fact>
+
+      Public Sub CreateMetadata_HeaderTrimsWhitespace()
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_HeaderTrimsWhitespace*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_ExpandsEnvironmentVariable
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_ExpandsEnvironmentVariable
+  id: CreateMetadata_ExpandsEnvironmentVariable
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: CreateMetadata_ExpandsEnvironmentVariable()
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_ExpandsEnvironmentVariable()
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_ExpandsEnvironmentVariable()
+  type: Method
+  source:
+    id: CreateMetadata_ExpandsEnvironmentVariable
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 287
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Fact]
+
+      public void CreateMetadata_ExpandsEnvironmentVariable()
+    content.vb: >-
+      <Fact>
+
+      Public Sub CreateMetadata_ExpandsEnvironmentVariable()
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_ExpandsEnvironmentVariable*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MultipleEnvironmentVariables
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MultipleEnvironmentVariables
+  id: CreateMetadata_MultipleEnvironmentVariables
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: CreateMetadata_MultipleEnvironmentVariables()
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_MultipleEnvironmentVariables()
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MultipleEnvironmentVariables()
+  type: Method
+  source:
+    id: CreateMetadata_MultipleEnvironmentVariables
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 308
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Fact]
+
+      public void CreateMetadata_MultipleEnvironmentVariables()
+    content.vb: >-
+      <Fact>
+
+      Public Sub CreateMetadata_MultipleEnvironmentVariables()
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MultipleEnvironmentVariables*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MissingEnvironmentVariable_ThrowsException
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MissingEnvironmentVariable_ThrowsException
+  id: CreateMetadata_MissingEnvironmentVariable_ThrowsException
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: CreateMetadata_MissingEnvironmentVariable_ThrowsException()
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_MissingEnvironmentVariable_ThrowsException()
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MissingEnvironmentVariable_ThrowsException()
+  type: Method
+  source:
+    id: CreateMetadata_MissingEnvironmentVariable_ThrowsException
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 331
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Fact]
+
+      public void CreateMetadata_MissingEnvironmentVariable_ThrowsException()
+    content.vb: >-
+      <Fact>
+
+      Public Sub CreateMetadata_MissingEnvironmentVariable_ThrowsException()
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MissingEnvironmentVariable_ThrowsException*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_EmptyEnvironmentVariable_Expands
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_EmptyEnvironmentVariable_Expands
+  id: CreateMetadata_EmptyEnvironmentVariable_Expands
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: CreateMetadata_EmptyEnvironmentVariable_Expands()
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_EmptyEnvironmentVariable_Expands()
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_EmptyEnvironmentVariable_Expands()
+  type: Method
+  source:
+    id: CreateMetadata_EmptyEnvironmentVariable_Expands
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 346
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Fact]
+
+      public void CreateMetadata_EmptyEnvironmentVariable_Expands()
+    content.vb: >-
+      <Fact>
+
+      Public Sub CreateMetadata_EmptyEnvironmentVariable_Expands()
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_EmptyEnvironmentVariable_Expands*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithHttpScheme_CreatesChannel
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithHttpScheme_CreatesChannel
+  id: Create_WithHttpScheme_CreatesChannel
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: Create_WithHttpScheme_CreatesChannel()
+  nameWithType: GrpcChannelFactoryTests.Create_WithHttpScheme_CreatesChannel()
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithHttpScheme_CreatesChannel()
+  type: Method
+  source:
+    id: Create_WithHttpScheme_CreatesChannel
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 370
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Fact]
+
+      public void Create_WithHttpScheme_CreatesChannel()
+    content.vb: >-
+      <Fact>
+
+      Public Sub Create_WithHttpScheme_CreatesChannel()
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithHttpScheme_CreatesChannel*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithHttpsScheme_CreatesChannel
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithHttpsScheme_CreatesChannel
+  id: Create_WithHttpsScheme_CreatesChannel
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: Create_WithHttpsScheme_CreatesChannel()
+  nameWithType: GrpcChannelFactoryTests.Create_WithHttpsScheme_CreatesChannel()
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithHttpsScheme_CreatesChannel()
+  type: Method
+  source:
+    id: Create_WithHttpsScheme_CreatesChannel
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 379
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Fact]
+
+      public void Create_WithHttpsScheme_CreatesChannel()
+    content.vb: >-
+      <Fact>
+
+      Public Sub Create_WithHttpsScheme_CreatesChannel()
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithHttpsScheme_CreatesChannel*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithoutScheme_CreatesChannel
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithoutScheme_CreatesChannel
+  id: Create_WithoutScheme_CreatesChannel
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: Create_WithoutScheme_CreatesChannel()
+  nameWithType: GrpcChannelFactoryTests.Create_WithoutScheme_CreatesChannel()
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithoutScheme_CreatesChannel()
+  type: Method
+  source:
+    id: Create_WithoutScheme_CreatesChannel
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 387
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Fact]
+
+      public void Create_WithoutScheme_CreatesChannel()
+    content.vb: >-
+      <Fact>
+
+      Public Sub Create_WithoutScheme_CreatesChannel()
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithoutScheme_CreatesChannel*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithPlaintextOption_CreatesChannel
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithPlaintextOption_CreatesChannel
+  id: Create_WithPlaintextOption_CreatesChannel
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: Create_WithPlaintextOption_CreatesChannel()
+  nameWithType: GrpcChannelFactoryTests.Create_WithPlaintextOption_CreatesChannel()
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithPlaintextOption_CreatesChannel()
+  type: Method
+  source:
+    id: Create_WithPlaintextOption_CreatesChannel
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 395
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Fact]
+
+      public void Create_WithPlaintextOption_CreatesChannel()
+    content.vb: >-
+      <Fact>
+
+      Public Sub Create_WithPlaintextOption_CreatesChannel()
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithPlaintextOption_CreatesChannel*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithNullOptions_UsesDefaults
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithNullOptions_UsesDefaults
+  id: Create_WithNullOptions_UsesDefaults
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: Create_WithNullOptions_UsesDefaults()
+  nameWithType: GrpcChannelFactoryTests.Create_WithNullOptions_UsesDefaults()
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithNullOptions_UsesDefaults()
+  type: Method
+  source:
+    id: Create_WithNullOptions_UsesDefaults
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 404
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Fact]
+
+      public void Create_WithNullOptions_UsesDefaults()
+    content.vb: >-
+      <Fact>
+
+      Public Sub Create_WithNullOptions_UsesDefaults()
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithNullOptions_UsesDefaults*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ChannelOptions_DefaultValues
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ChannelOptions_DefaultValues
+  id: ChannelOptions_DefaultValues
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: ChannelOptions_DefaultValues()
+  nameWithType: GrpcChannelFactoryTests.ChannelOptions_DefaultValues()
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ChannelOptions_DefaultValues()
+  type: Method
+  source:
+    id: ChannelOptions_DefaultValues
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 415
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ChannelOptions_DefaultValues()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ChannelOptions_DefaultValues()
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ChannelOptions_DefaultValues*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ChannelOptions_AllPropertiesSettable
+  commentId: M:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ChannelOptions_AllPropertiesSettable
+  id: ChannelOptions_AllPropertiesSettable
+  parent: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests
+  langs:
+  - csharp
+  - vb
+  name: ChannelOptions_AllPropertiesSettable()
+  nameWithType: GrpcChannelFactoryTests.ChannelOptions_AllPropertiesSettable()
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ChannelOptions_AllPropertiesSettable()
+  type: Method
+  source:
+    id: ChannelOptions_AllPropertiesSettable
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.cs
+    startLine: 433
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Utilities
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ChannelOptions_AllPropertiesSettable()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ChannelOptions_AllPropertiesSettable()
+  overload: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ChannelOptions_AllPropertiesSettable*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+references:
+- uid: GrpCurl.Net.Tests.Unit.Utilities
+  commentId: N:GrpCurl.Net.Tests.Unit.Utilities
+  href: GrpCurl.html
+  name: GrpCurl.Net.Tests.Unit.Utilities
+  nameWithType: GrpCurl.Net.Tests.Unit.Utilities
+  fullName: GrpCurl.Net.Tests.Unit.Utilities
+  spec.csharp:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit
+    name: Unit
+    href: GrpCurl.Net.Tests.Unit.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit.Utilities
+    name: Utilities
+    href: GrpCurl.Net.Tests.Unit.Utilities.html
+  spec.vb:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit
+    name: Unit
+    href: GrpCurl.Net.Tests.Unit.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit.Utilities
+    name: Utilities
+    href: GrpCurl.Net.Tests.Unit.Utilities.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Seconds_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Seconds_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_ParseDuration_Seconds_ParsesCorrectly_System_String_System_Int32_
+  name: ParseDuration_Seconds_ParsesCorrectly
+  nameWithType: GrpcChannelFactoryTests.ParseDuration_Seconds_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Seconds_ParsesCorrectly
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Milliseconds_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Milliseconds_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_ParseDuration_Milliseconds_ParsesCorrectly_System_String_System_Int32_
+  name: ParseDuration_Milliseconds_ParsesCorrectly
+  nameWithType: GrpcChannelFactoryTests.ParseDuration_Milliseconds_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Milliseconds_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Minutes_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Minutes_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_ParseDuration_Minutes_ParsesCorrectly_System_String_System_Int32_
+  name: ParseDuration_Minutes_ParsesCorrectly
+  nameWithType: GrpcChannelFactoryTests.ParseDuration_Minutes_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Minutes_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Hours_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Hours_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_ParseDuration_Hours_ParsesCorrectly_System_String_System_Int32_
+  name: ParseDuration_Hours_ParsesCorrectly
+  nameWithType: GrpcChannelFactoryTests.ParseDuration_Hours_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Hours_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Decimal_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Decimal_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_ParseDuration_Decimal_ParsesCorrectly_System_String_System_Int32_
+  name: ParseDuration_Decimal_ParsesCorrectly
+  nameWithType: GrpcChannelFactoryTests.ParseDuration_Decimal_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_Decimal_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_PlainNumber_DefaultsToSeconds*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_PlainNumber_DefaultsToSeconds
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_ParseDuration_PlainNumber_DefaultsToSeconds_System_String_System_Int32_
+  name: ParseDuration_PlainNumber_DefaultsToSeconds
+  nameWithType: GrpcChannelFactoryTests.ParseDuration_PlainNumber_DefaultsToSeconds
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_PlainNumber_DefaultsToSeconds
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_EmptyString_ThrowsException*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_EmptyString_ThrowsException
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_ParseDuration_EmptyString_ThrowsException_System_String_
+  name: ParseDuration_EmptyString_ThrowsException
+  nameWithType: GrpcChannelFactoryTests.ParseDuration_EmptyString_ThrowsException
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_EmptyString_ThrowsException
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_InvalidFormat_ThrowsException*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_InvalidFormat_ThrowsException
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_ParseDuration_InvalidFormat_ThrowsException_System_String_
+  name: ParseDuration_InvalidFormat_ThrowsException
+  nameWithType: GrpcChannelFactoryTests.ParseDuration_InvalidFormat_ThrowsException
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseDuration_InvalidFormat_ThrowsException
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_PlainBytes_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_PlainBytes_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_ParseSize_PlainBytes_ParsesCorrectly_System_String_System_Int32_
+  name: ParseSize_PlainBytes_ParsesCorrectly
+  nameWithType: GrpcChannelFactoryTests.ParseSize_PlainBytes_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_PlainBytes_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_ExplicitBytes_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_ExplicitBytes_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_ParseSize_ExplicitBytes_ParsesCorrectly_System_String_System_Int32_
+  name: ParseSize_ExplicitBytes_ParsesCorrectly
+  nameWithType: GrpcChannelFactoryTests.ParseSize_ExplicitBytes_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_ExplicitBytes_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Kilobytes_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Kilobytes_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_ParseSize_Kilobytes_ParsesCorrectly_System_String_System_Int32_
+  name: ParseSize_Kilobytes_ParsesCorrectly
+  nameWithType: GrpcChannelFactoryTests.ParseSize_Kilobytes_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Kilobytes_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Megabytes_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Megabytes_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_ParseSize_Megabytes_ParsesCorrectly_System_String_System_Int32_
+  name: ParseSize_Megabytes_ParsesCorrectly
+  nameWithType: GrpcChannelFactoryTests.ParseSize_Megabytes_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Megabytes_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Gigabytes_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Gigabytes_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_ParseSize_Gigabytes_ParsesCorrectly_System_String_System_Int32_
+  name: ParseSize_Gigabytes_ParsesCorrectly
+  nameWithType: GrpcChannelFactoryTests.ParseSize_Gigabytes_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Gigabytes_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Decimal_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Decimal_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_ParseSize_Decimal_ParsesCorrectly_System_String_System_Int32_
+  name: ParseSize_Decimal_ParsesCorrectly
+  nameWithType: GrpcChannelFactoryTests.ParseSize_Decimal_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Decimal_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_EmptyString_ThrowsException*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_EmptyString_ThrowsException
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_ParseSize_EmptyString_ThrowsException_System_String_
+  name: ParseSize_EmptyString_ThrowsException
+  nameWithType: GrpcChannelFactoryTests.ParseSize_EmptyString_ThrowsException
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_EmptyString_ThrowsException
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_InvalidFormat_ThrowsException*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_InvalidFormat_ThrowsException
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_ParseSize_InvalidFormat_ThrowsException_System_String_
+  name: ParseSize_InvalidFormat_ThrowsException
+  nameWithType: GrpcChannelFactoryTests.ParseSize_InvalidFormat_ThrowsException
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_InvalidFormat_ThrowsException
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Overflow_ThrowsException*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Overflow_ThrowsException
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_ParseSize_Overflow_ThrowsException
+  name: ParseSize_Overflow_ThrowsException
+  nameWithType: GrpcChannelFactoryTests.ParseSize_Overflow_ThrowsException
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ParseSize_Overflow_ThrowsException
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_NullHeaders_ReturnsDefaultUserAgent*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_NullHeaders_ReturnsDefaultUserAgent
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_CreateMetadata_NullHeaders_ReturnsDefaultUserAgent
+  name: CreateMetadata_NullHeaders_ReturnsDefaultUserAgent
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_NullHeaders_ReturnsDefaultUserAgent
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_NullHeaders_ReturnsDefaultUserAgent
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_EmptyHeaders_ReturnsDefaultUserAgent*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_EmptyHeaders_ReturnsDefaultUserAgent
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_CreateMetadata_EmptyHeaders_ReturnsDefaultUserAgent
+  name: CreateMetadata_EmptyHeaders_ReturnsDefaultUserAgent
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_EmptyHeaders_ReturnsDefaultUserAgent
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_EmptyHeaders_ReturnsDefaultUserAgent
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_SingleHeader_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_SingleHeader_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_CreateMetadata_SingleHeader_ParsesCorrectly
+  name: CreateMetadata_SingleHeader_ParsesCorrectly
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_SingleHeader_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_SingleHeader_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MultipleHeaders_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MultipleHeaders_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_CreateMetadata_MultipleHeaders_ParsesCorrectly
+  name: CreateMetadata_MultipleHeaders_ParsesCorrectly
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_MultipleHeaders_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MultipleHeaders_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_CustomUserAgent_OverridesDefault*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_CustomUserAgent_OverridesDefault
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_CreateMetadata_CustomUserAgent_OverridesDefault
+  name: CreateMetadata_CustomUserAgent_OverridesDefault
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_CustomUserAgent_OverridesDefault
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_CustomUserAgent_OverridesDefault
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_HeaderWithColonInValue_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_HeaderWithColonInValue_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_CreateMetadata_HeaderWithColonInValue_ParsesCorrectly
+  name: CreateMetadata_HeaderWithColonInValue_ParsesCorrectly
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_HeaderWithColonInValue_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_HeaderWithColonInValue_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_InvalidHeaderFormat_ThrowsException*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_InvalidHeaderFormat_ThrowsException
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_CreateMetadata_InvalidHeaderFormat_ThrowsException
+  name: CreateMetadata_InvalidHeaderFormat_ThrowsException
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_InvalidHeaderFormat_ThrowsException
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_InvalidHeaderFormat_ThrowsException
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_WhitespaceHeader_IsSkipped*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_WhitespaceHeader_IsSkipped
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_CreateMetadata_WhitespaceHeader_IsSkipped
+  name: CreateMetadata_WhitespaceHeader_IsSkipped
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_WhitespaceHeader_IsSkipped
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_WhitespaceHeader_IsSkipped
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_HeaderTrimsWhitespace*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_HeaderTrimsWhitespace
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_CreateMetadata_HeaderTrimsWhitespace
+  name: CreateMetadata_HeaderTrimsWhitespace
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_HeaderTrimsWhitespace
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_HeaderTrimsWhitespace
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_ExpandsEnvironmentVariable*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_ExpandsEnvironmentVariable
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_CreateMetadata_ExpandsEnvironmentVariable
+  name: CreateMetadata_ExpandsEnvironmentVariable
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_ExpandsEnvironmentVariable
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_ExpandsEnvironmentVariable
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MultipleEnvironmentVariables*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MultipleEnvironmentVariables
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_CreateMetadata_MultipleEnvironmentVariables
+  name: CreateMetadata_MultipleEnvironmentVariables
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_MultipleEnvironmentVariables
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MultipleEnvironmentVariables
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MissingEnvironmentVariable_ThrowsException*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MissingEnvironmentVariable_ThrowsException
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_CreateMetadata_MissingEnvironmentVariable_ThrowsException
+  name: CreateMetadata_MissingEnvironmentVariable_ThrowsException
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_MissingEnvironmentVariable_ThrowsException
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_MissingEnvironmentVariable_ThrowsException
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_EmptyEnvironmentVariable_Expands*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_EmptyEnvironmentVariable_Expands
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_CreateMetadata_EmptyEnvironmentVariable_Expands
+  name: CreateMetadata_EmptyEnvironmentVariable_Expands
+  nameWithType: GrpcChannelFactoryTests.CreateMetadata_EmptyEnvironmentVariable_Expands
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.CreateMetadata_EmptyEnvironmentVariable_Expands
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithHttpScheme_CreatesChannel*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithHttpScheme_CreatesChannel
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_Create_WithHttpScheme_CreatesChannel
+  name: Create_WithHttpScheme_CreatesChannel
+  nameWithType: GrpcChannelFactoryTests.Create_WithHttpScheme_CreatesChannel
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithHttpScheme_CreatesChannel
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithHttpsScheme_CreatesChannel*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithHttpsScheme_CreatesChannel
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_Create_WithHttpsScheme_CreatesChannel
+  name: Create_WithHttpsScheme_CreatesChannel
+  nameWithType: GrpcChannelFactoryTests.Create_WithHttpsScheme_CreatesChannel
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithHttpsScheme_CreatesChannel
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithoutScheme_CreatesChannel*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithoutScheme_CreatesChannel
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_Create_WithoutScheme_CreatesChannel
+  name: Create_WithoutScheme_CreatesChannel
+  nameWithType: GrpcChannelFactoryTests.Create_WithoutScheme_CreatesChannel
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithoutScheme_CreatesChannel
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithPlaintextOption_CreatesChannel*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithPlaintextOption_CreatesChannel
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_Create_WithPlaintextOption_CreatesChannel
+  name: Create_WithPlaintextOption_CreatesChannel
+  nameWithType: GrpcChannelFactoryTests.Create_WithPlaintextOption_CreatesChannel
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithPlaintextOption_CreatesChannel
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithNullOptions_UsesDefaults*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithNullOptions_UsesDefaults
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_Create_WithNullOptions_UsesDefaults
+  name: Create_WithNullOptions_UsesDefaults
+  nameWithType: GrpcChannelFactoryTests.Create_WithNullOptions_UsesDefaults
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.Create_WithNullOptions_UsesDefaults
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ChannelOptions_DefaultValues*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ChannelOptions_DefaultValues
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_ChannelOptions_DefaultValues
+  name: ChannelOptions_DefaultValues
+  nameWithType: GrpcChannelFactoryTests.ChannelOptions_DefaultValues
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ChannelOptions_DefaultValues
+- uid: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ChannelOptions_AllPropertiesSettable*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ChannelOptions_AllPropertiesSettable
+  href: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.html#GrpCurl_Net_Tests_Unit_Utilities_GrpcChannelFactoryTests_ChannelOptions_AllPropertiesSettable
+  name: ChannelOptions_AllPropertiesSettable
+  nameWithType: GrpcChannelFactoryTests.ChannelOptions_AllPropertiesSettable
+  fullName: GrpCurl.Net.Tests.Unit.Utilities.GrpcChannelFactoryTests.ChannelOptions_AllPropertiesSettable

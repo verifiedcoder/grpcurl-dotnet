@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class DynamicInvokerTests | GrpCurl.Net </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class DynamicInvokerTests | GrpCurl.Net ">
+      
+      <meta name="description" content="Integration tests for DynamicInvoker against a real gRPC server.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="GrpCurl.Net">
+            GrpCurl.Net
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests">
+
+
+
+  <h1 id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests" class="text-break">
+Class DynamicInvokerTests  
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="GrpCurl.html">GrpCurl</a>.<a class="xref" href="GrpCurl.Net.html">Net</a>.<a class="xref" href="GrpCurl.Net.Tests.html">Tests</a>.<a class="xref" href="GrpCurl.Net.Tests.Integration.html">Integration</a>.<a class="xref" href="GrpCurl.Net.Tests.Integration.Invocation.html">Invocation</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>GrpCurl.Net.Tests.Integration.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Integration tests for DynamicInvoker against a real gRPC server.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Collection(&quot;GrpcServer&quot;)]
+public class DynamicInvokerTests</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">DynamicInvokerTests</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests__ctor_" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.#ctor*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests__ctor_GrpCurl_Net_Tests_Integration_Fixtures_GrpcTestFixture_" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.#ctor(GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture)">
+  DynamicInvokerTests(GrpcTestFixture)
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DynamicInvokerTests(GrpcTestFixture fixture)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>fixture</code> <a class="xref" href="GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture.html">GrpcTestFixture</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_HalfDuplexCall_BuffersAllRequests_ThenResponds_" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.HalfDuplexCall_BuffersAllRequests_ThenResponds*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_HalfDuplexCall_BuffersAllRequests_ThenResponds" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.HalfDuplexCall_BuffersAllRequests_ThenResponds">
+  HalfDuplexCall_BuffersAllRequests_ThenResponds()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task HalfDuplexCall_BuffersAllRequests_ThenResponds()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeClientStreamingAsync_EmptyRequests_ReturnsZeroSize_" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_EmptyRequests_ReturnsZeroSize*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeClientStreamingAsync_EmptyRequests_ReturnsZeroSize" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_EmptyRequests_ReturnsZeroSize">
+  InvokeClientStreamingAsync_EmptyRequests_ReturnsZeroSize()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task InvokeClientStreamingAsync_EmptyRequests_ReturnsZeroSize()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeClientStreamingAsync_MultipleRequests_ReturnsCorrectTotal_" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_MultipleRequests_ReturnsCorrectTotal*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeClientStreamingAsync_MultipleRequests_ReturnsCorrectTotal" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_MultipleRequests_ReturnsCorrectTotal">
+  InvokeClientStreamingAsync_MultipleRequests_ReturnsCorrectTotal()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task InvokeClientStreamingAsync_MultipleRequests_ReturnsCorrectTotal()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeClientStreamingAsync_SingleRequest_ReturnsAggregatedSize_" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_SingleRequest_ReturnsAggregatedSize*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeClientStreamingAsync_SingleRequest_ReturnsAggregatedSize" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_SingleRequest_ReturnsAggregatedSize">
+  InvokeClientStreamingAsync_SingleRequest_ReturnsAggregatedSize()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task InvokeClientStreamingAsync_SingleRequest_ReturnsAggregatedSize()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeDuplexStreamingAsync_EmptyRequests_ReturnsNoResponses_" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_EmptyRequests_ReturnsNoResponses*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeDuplexStreamingAsync_EmptyRequests_ReturnsNoResponses" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_EmptyRequests_ReturnsNoResponses">
+  InvokeDuplexStreamingAsync_EmptyRequests_ReturnsNoResponses()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task InvokeDuplexStreamingAsync_EmptyRequests_ReturnsNoResponses()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeDuplexStreamingAsync_MultipleRequests_ReturnsMultipleResponses_" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_MultipleRequests_ReturnsMultipleResponses*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeDuplexStreamingAsync_MultipleRequests_ReturnsMultipleResponses" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_MultipleRequests_ReturnsMultipleResponses">
+  InvokeDuplexStreamingAsync_MultipleRequests_ReturnsMultipleResponses()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task InvokeDuplexStreamingAsync_MultipleRequests_ReturnsMultipleResponses()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeDuplexStreamingAsync_SingleRequest_ReturnsSingleResponse_" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_SingleRequest_ReturnsSingleResponse*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeDuplexStreamingAsync_SingleRequest_ReturnsSingleResponse" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_SingleRequest_ReturnsSingleResponse">
+  InvokeDuplexStreamingAsync_SingleRequest_ReturnsSingleResponse()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task InvokeDuplexStreamingAsync_SingleRequest_ReturnsSingleResponse()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeServerStreamingAsync_EmptyResponseParameters_ReturnsNoMessages_" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_EmptyResponseParameters_ReturnsNoMessages*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeServerStreamingAsync_EmptyResponseParameters_ReturnsNoMessages" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_EmptyResponseParameters_ReturnsNoMessages">
+  InvokeServerStreamingAsync_EmptyResponseParameters_ReturnsNoMessages()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task InvokeServerStreamingAsync_EmptyResponseParameters_ReturnsNoMessages()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeServerStreamingAsync_MultipleResponses_ReturnsAllMessages_" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_MultipleResponses_ReturnsAllMessages*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeServerStreamingAsync_MultipleResponses_ReturnsAllMessages" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_MultipleResponses_ReturnsAllMessages">
+  InvokeServerStreamingAsync_MultipleResponses_ReturnsAllMessages()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task InvokeServerStreamingAsync_MultipleResponses_ReturnsAllMessages()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeServerStreamingAsync_ResponsesHavePayloads_" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_ResponsesHavePayloads*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeServerStreamingAsync_ResponsesHavePayloads" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_ResponsesHavePayloads">
+  InvokeServerStreamingAsync_ResponsesHavePayloads()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task InvokeServerStreamingAsync_ResponsesHavePayloads()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeServerStreamingAsync_SingleResponse_ReturnsOneMessage_" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_SingleResponse_ReturnsOneMessage*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeServerStreamingAsync_SingleResponse_ReturnsOneMessage" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_SingleResponse_ReturnsOneMessage">
+  InvokeServerStreamingAsync_SingleResponse_ReturnsOneMessage()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task InvokeServerStreamingAsync_SingleResponse_ReturnsOneMessage()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeUnaryAsync_EmptyCall_ReturnsEmptyResponse_" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_EmptyCall_ReturnsEmptyResponse*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeUnaryAsync_EmptyCall_ReturnsEmptyResponse" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_EmptyCall_ReturnsEmptyResponse">
+  InvokeUnaryAsync_EmptyCall_ReturnsEmptyResponse()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task InvokeUnaryAsync_EmptyCall_ReturnsEmptyResponse()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeUnaryAsync_UnaryCall_ReturnsResponse_" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_UnaryCall_ReturnsResponse*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeUnaryAsync_UnaryCall_ReturnsResponse" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_UnaryCall_ReturnsResponse">
+  InvokeUnaryAsync_UnaryCall_ReturnsResponse()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task InvokeUnaryAsync_UnaryCall_ReturnsResponse()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeUnaryAsync_WithCancellation_ThrowsCanceledException_" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithCancellation_ThrowsCanceledException*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeUnaryAsync_WithCancellation_ThrowsCanceledException" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithCancellation_ThrowsCanceledException">
+  InvokeUnaryAsync_WithCancellation_ThrowsCanceledException()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task InvokeUnaryAsync_WithCancellation_ThrowsCanceledException()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeUnaryAsync_WithMetadata_SendsHeaders_" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithMetadata_SendsHeaders*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeUnaryAsync_WithMetadata_SendsHeaders" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithMetadata_SendsHeaders">
+  InvokeUnaryAsync_WithMetadata_SendsHeaders()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task InvokeUnaryAsync_WithMetadata_SendsHeaders()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeUnaryAsync_WithPayload_ReturnsPayloadInResponse_" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithPayload_ReturnsPayloadInResponse*"></a>
+
+  <h3 id="GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeUnaryAsync_WithPayload_ReturnsPayloadInResponse" data-uid="GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithPayload_ReturnsPayloadInResponse">
+  InvokeUnaryAsync_WithPayload_ReturnsPayloadInResponse()
+  
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Fact]
+public Task InvokeUnaryAsync_WithPayload_ReturnsPayloadInResponse()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

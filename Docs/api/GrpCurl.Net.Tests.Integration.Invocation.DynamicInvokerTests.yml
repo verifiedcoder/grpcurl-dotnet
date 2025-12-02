@@ -1,0 +1,1124 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+  commentId: T:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+  id: DynamicInvokerTests
+  parent: GrpCurl.Net.Tests.Integration.Invocation
+  children:
+  - GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.#ctor(GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture)
+  - GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.HalfDuplexCall_BuffersAllRequests_ThenResponds
+  - GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_EmptyRequests_ReturnsZeroSize
+  - GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_MultipleRequests_ReturnsCorrectTotal
+  - GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_SingleRequest_ReturnsAggregatedSize
+  - GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_EmptyRequests_ReturnsNoResponses
+  - GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_MultipleRequests_ReturnsMultipleResponses
+  - GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_SingleRequest_ReturnsSingleResponse
+  - GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_EmptyResponseParameters_ReturnsNoMessages
+  - GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_MultipleResponses_ReturnsAllMessages
+  - GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_ResponsesHavePayloads
+  - GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_SingleResponse_ReturnsOneMessage
+  - GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_EmptyCall_ReturnsEmptyResponse
+  - GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_UnaryCall_ReturnsResponse
+  - GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithCancellation_ThrowsCanceledException
+  - GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithMetadata_SendsHeaders
+  - GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithPayload_ReturnsPayloadInResponse
+  langs:
+  - csharp
+  - vb
+  name: DynamicInvokerTests
+  nameWithType: DynamicInvokerTests
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+  type: Class
+  source:
+    id: DynamicInvokerTests
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/DynamicInvokerTests.cs
+    startLine: 14
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  summary: Integration tests for DynamicInvoker against a real gRPC server.
+  example: []
+  syntax:
+    content: >-
+      [Collection("GrpcServer")]
+
+      public class DynamicInvokerTests
+    content.vb: >-
+      <Collection("GrpcServer")>
+
+      Public Class DynamicInvokerTests
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Xunit.CollectionAttribute
+    ctor: Xunit.CollectionAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: GrpcServer
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.#ctor(GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture)
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.#ctor(GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture)
+  id: '#ctor(GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture)'
+  parent: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+  langs:
+  - csharp
+  - vb
+  name: DynamicInvokerTests(GrpcTestFixture)
+  nameWithType: DynamicInvokerTests.DynamicInvokerTests(GrpcTestFixture)
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.DynamicInvokerTests(GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture)
+  type: Constructor
+  source:
+    id: .ctor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/DynamicInvokerTests.cs
+    startLine: 19
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: public DynamicInvokerTests(GrpcTestFixture fixture)
+    parameters:
+    - id: fixture
+      type: GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture
+    content.vb: Public Sub New(fixture As GrpcTestFixture)
+  overload: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.#ctor*
+  nameWithType.vb: DynamicInvokerTests.New(GrpcTestFixture)
+  fullName.vb: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.New(GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture)
+  name.vb: New(GrpcTestFixture)
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_EmptyCall_ReturnsEmptyResponse
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_EmptyCall_ReturnsEmptyResponse
+  id: InvokeUnaryAsync_EmptyCall_ReturnsEmptyResponse
+  parent: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+  langs:
+  - csharp
+  - vb
+  name: InvokeUnaryAsync_EmptyCall_ReturnsEmptyResponse()
+  nameWithType: DynamicInvokerTests.InvokeUnaryAsync_EmptyCall_ReturnsEmptyResponse()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_EmptyCall_ReturnsEmptyResponse()
+  type: Method
+  source:
+    id: InvokeUnaryAsync_EmptyCall_ReturnsEmptyResponse
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/DynamicInvokerTests.cs
+    startLine: 26
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task InvokeUnaryAsync_EmptyCall_ReturnsEmptyResponse()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function InvokeUnaryAsync_EmptyCall_ReturnsEmptyResponse() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_EmptyCall_ReturnsEmptyResponse*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_UnaryCall_ReturnsResponse
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_UnaryCall_ReturnsResponse
+  id: InvokeUnaryAsync_UnaryCall_ReturnsResponse
+  parent: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+  langs:
+  - csharp
+  - vb
+  name: InvokeUnaryAsync_UnaryCall_ReturnsResponse()
+  nameWithType: DynamicInvokerTests.InvokeUnaryAsync_UnaryCall_ReturnsResponse()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_UnaryCall_ReturnsResponse()
+  type: Method
+  source:
+    id: InvokeUnaryAsync_UnaryCall_ReturnsResponse
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/DynamicInvokerTests.cs
+    startLine: 41
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task InvokeUnaryAsync_UnaryCall_ReturnsResponse()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function InvokeUnaryAsync_UnaryCall_ReturnsResponse() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_UnaryCall_ReturnsResponse*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithPayload_ReturnsPayloadInResponse
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithPayload_ReturnsPayloadInResponse
+  id: InvokeUnaryAsync_WithPayload_ReturnsPayloadInResponse
+  parent: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+  langs:
+  - csharp
+  - vb
+  name: InvokeUnaryAsync_WithPayload_ReturnsPayloadInResponse()
+  nameWithType: DynamicInvokerTests.InvokeUnaryAsync_WithPayload_ReturnsPayloadInResponse()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithPayload_ReturnsPayloadInResponse()
+  type: Method
+  source:
+    id: InvokeUnaryAsync_WithPayload_ReturnsPayloadInResponse
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/DynamicInvokerTests.cs
+    startLine: 57
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task InvokeUnaryAsync_WithPayload_ReturnsPayloadInResponse()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function InvokeUnaryAsync_WithPayload_ReturnsPayloadInResponse() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithPayload_ReturnsPayloadInResponse*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithMetadata_SendsHeaders
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithMetadata_SendsHeaders
+  id: InvokeUnaryAsync_WithMetadata_SendsHeaders
+  parent: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+  langs:
+  - csharp
+  - vb
+  name: InvokeUnaryAsync_WithMetadata_SendsHeaders()
+  nameWithType: DynamicInvokerTests.InvokeUnaryAsync_WithMetadata_SendsHeaders()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithMetadata_SendsHeaders()
+  type: Method
+  source:
+    id: InvokeUnaryAsync_WithMetadata_SendsHeaders
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/DynamicInvokerTests.cs
+    startLine: 78
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task InvokeUnaryAsync_WithMetadata_SendsHeaders()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function InvokeUnaryAsync_WithMetadata_SendsHeaders() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithMetadata_SendsHeaders*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithCancellation_ThrowsCanceledException
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithCancellation_ThrowsCanceledException
+  id: InvokeUnaryAsync_WithCancellation_ThrowsCanceledException
+  parent: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+  langs:
+  - csharp
+  - vb
+  name: InvokeUnaryAsync_WithCancellation_ThrowsCanceledException()
+  nameWithType: DynamicInvokerTests.InvokeUnaryAsync_WithCancellation_ThrowsCanceledException()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithCancellation_ThrowsCanceledException()
+  type: Method
+  source:
+    id: InvokeUnaryAsync_WithCancellation_ThrowsCanceledException
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/DynamicInvokerTests.cs
+    startLine: 94
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task InvokeUnaryAsync_WithCancellation_ThrowsCanceledException()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function InvokeUnaryAsync_WithCancellation_ThrowsCanceledException() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithCancellation_ThrowsCanceledException*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_SingleResponse_ReturnsOneMessage
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_SingleResponse_ReturnsOneMessage
+  id: InvokeServerStreamingAsync_SingleResponse_ReturnsOneMessage
+  parent: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+  langs:
+  - csharp
+  - vb
+  name: InvokeServerStreamingAsync_SingleResponse_ReturnsOneMessage()
+  nameWithType: DynamicInvokerTests.InvokeServerStreamingAsync_SingleResponse_ReturnsOneMessage()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_SingleResponse_ReturnsOneMessage()
+  type: Method
+  source:
+    id: InvokeServerStreamingAsync_SingleResponse_ReturnsOneMessage
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/DynamicInvokerTests.cs
+    startLine: 116
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task InvokeServerStreamingAsync_SingleResponse_ReturnsOneMessage()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function InvokeServerStreamingAsync_SingleResponse_ReturnsOneMessage() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_SingleResponse_ReturnsOneMessage*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_MultipleResponses_ReturnsAllMessages
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_MultipleResponses_ReturnsAllMessages
+  id: InvokeServerStreamingAsync_MultipleResponses_ReturnsAllMessages
+  parent: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+  langs:
+  - csharp
+  - vb
+  name: InvokeServerStreamingAsync_MultipleResponses_ReturnsAllMessages()
+  nameWithType: DynamicInvokerTests.InvokeServerStreamingAsync_MultipleResponses_ReturnsAllMessages()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_MultipleResponses_ReturnsAllMessages()
+  type: Method
+  source:
+    id: InvokeServerStreamingAsync_MultipleResponses_ReturnsAllMessages
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/DynamicInvokerTests.cs
+    startLine: 136
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task InvokeServerStreamingAsync_MultipleResponses_ReturnsAllMessages()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function InvokeServerStreamingAsync_MultipleResponses_ReturnsAllMessages() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_MultipleResponses_ReturnsAllMessages*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_EmptyResponseParameters_ReturnsNoMessages
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_EmptyResponseParameters_ReturnsNoMessages
+  id: InvokeServerStreamingAsync_EmptyResponseParameters_ReturnsNoMessages
+  parent: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+  langs:
+  - csharp
+  - vb
+  name: InvokeServerStreamingAsync_EmptyResponseParameters_ReturnsNoMessages()
+  nameWithType: DynamicInvokerTests.InvokeServerStreamingAsync_EmptyResponseParameters_ReturnsNoMessages()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_EmptyResponseParameters_ReturnsNoMessages()
+  type: Method
+  source:
+    id: InvokeServerStreamingAsync_EmptyResponseParameters_ReturnsNoMessages
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/DynamicInvokerTests.cs
+    startLine: 156
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task InvokeServerStreamingAsync_EmptyResponseParameters_ReturnsNoMessages()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function InvokeServerStreamingAsync_EmptyResponseParameters_ReturnsNoMessages() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_EmptyResponseParameters_ReturnsNoMessages*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_ResponsesHavePayloads
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_ResponsesHavePayloads
+  id: InvokeServerStreamingAsync_ResponsesHavePayloads
+  parent: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+  langs:
+  - csharp
+  - vb
+  name: InvokeServerStreamingAsync_ResponsesHavePayloads()
+  nameWithType: DynamicInvokerTests.InvokeServerStreamingAsync_ResponsesHavePayloads()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_ResponsesHavePayloads()
+  type: Method
+  source:
+    id: InvokeServerStreamingAsync_ResponsesHavePayloads
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/DynamicInvokerTests.cs
+    startLine: 176
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task InvokeServerStreamingAsync_ResponsesHavePayloads()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function InvokeServerStreamingAsync_ResponsesHavePayloads() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_ResponsesHavePayloads*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_SingleRequest_ReturnsAggregatedSize
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_SingleRequest_ReturnsAggregatedSize
+  id: InvokeClientStreamingAsync_SingleRequest_ReturnsAggregatedSize
+  parent: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+  langs:
+  - csharp
+  - vb
+  name: InvokeClientStreamingAsync_SingleRequest_ReturnsAggregatedSize()
+  nameWithType: DynamicInvokerTests.InvokeClientStreamingAsync_SingleRequest_ReturnsAggregatedSize()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_SingleRequest_ReturnsAggregatedSize()
+  type: Method
+  source:
+    id: InvokeClientStreamingAsync_SingleRequest_ReturnsAggregatedSize
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/DynamicInvokerTests.cs
+    startLine: 199
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task InvokeClientStreamingAsync_SingleRequest_ReturnsAggregatedSize()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function InvokeClientStreamingAsync_SingleRequest_ReturnsAggregatedSize() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_SingleRequest_ReturnsAggregatedSize*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_MultipleRequests_ReturnsCorrectTotal
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_MultipleRequests_ReturnsCorrectTotal
+  id: InvokeClientStreamingAsync_MultipleRequests_ReturnsCorrectTotal
+  parent: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+  langs:
+  - csharp
+  - vb
+  name: InvokeClientStreamingAsync_MultipleRequests_ReturnsCorrectTotal()
+  nameWithType: DynamicInvokerTests.InvokeClientStreamingAsync_MultipleRequests_ReturnsCorrectTotal()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_MultipleRequests_ReturnsCorrectTotal()
+  type: Method
+  source:
+    id: InvokeClientStreamingAsync_MultipleRequests_ReturnsCorrectTotal
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/DynamicInvokerTests.cs
+    startLine: 223
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task InvokeClientStreamingAsync_MultipleRequests_ReturnsCorrectTotal()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function InvokeClientStreamingAsync_MultipleRequests_ReturnsCorrectTotal() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_MultipleRequests_ReturnsCorrectTotal*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_EmptyRequests_ReturnsZeroSize
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_EmptyRequests_ReturnsZeroSize
+  id: InvokeClientStreamingAsync_EmptyRequests_ReturnsZeroSize
+  parent: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+  langs:
+  - csharp
+  - vb
+  name: InvokeClientStreamingAsync_EmptyRequests_ReturnsZeroSize()
+  nameWithType: DynamicInvokerTests.InvokeClientStreamingAsync_EmptyRequests_ReturnsZeroSize()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_EmptyRequests_ReturnsZeroSize()
+  type: Method
+  source:
+    id: InvokeClientStreamingAsync_EmptyRequests_ReturnsZeroSize
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/DynamicInvokerTests.cs
+    startLine: 250
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task InvokeClientStreamingAsync_EmptyRequests_ReturnsZeroSize()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function InvokeClientStreamingAsync_EmptyRequests_ReturnsZeroSize() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_EmptyRequests_ReturnsZeroSize*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_SingleRequest_ReturnsSingleResponse
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_SingleRequest_ReturnsSingleResponse
+  id: InvokeDuplexStreamingAsync_SingleRequest_ReturnsSingleResponse
+  parent: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+  langs:
+  - csharp
+  - vb
+  name: InvokeDuplexStreamingAsync_SingleRequest_ReturnsSingleResponse()
+  nameWithType: DynamicInvokerTests.InvokeDuplexStreamingAsync_SingleRequest_ReturnsSingleResponse()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_SingleRequest_ReturnsSingleResponse()
+  type: Method
+  source:
+    id: InvokeDuplexStreamingAsync_SingleRequest_ReturnsSingleResponse
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/DynamicInvokerTests.cs
+    startLine: 276
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task InvokeDuplexStreamingAsync_SingleRequest_ReturnsSingleResponse()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function InvokeDuplexStreamingAsync_SingleRequest_ReturnsSingleResponse() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_SingleRequest_ReturnsSingleResponse*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_MultipleRequests_ReturnsMultipleResponses
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_MultipleRequests_ReturnsMultipleResponses
+  id: InvokeDuplexStreamingAsync_MultipleRequests_ReturnsMultipleResponses
+  parent: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+  langs:
+  - csharp
+  - vb
+  name: InvokeDuplexStreamingAsync_MultipleRequests_ReturnsMultipleResponses()
+  nameWithType: DynamicInvokerTests.InvokeDuplexStreamingAsync_MultipleRequests_ReturnsMultipleResponses()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_MultipleRequests_ReturnsMultipleResponses()
+  type: Method
+  source:
+    id: InvokeDuplexStreamingAsync_MultipleRequests_ReturnsMultipleResponses
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/DynamicInvokerTests.cs
+    startLine: 299
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task InvokeDuplexStreamingAsync_MultipleRequests_ReturnsMultipleResponses()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function InvokeDuplexStreamingAsync_MultipleRequests_ReturnsMultipleResponses() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_MultipleRequests_ReturnsMultipleResponses*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_EmptyRequests_ReturnsNoResponses
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_EmptyRequests_ReturnsNoResponses
+  id: InvokeDuplexStreamingAsync_EmptyRequests_ReturnsNoResponses
+  parent: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+  langs:
+  - csharp
+  - vb
+  name: InvokeDuplexStreamingAsync_EmptyRequests_ReturnsNoResponses()
+  nameWithType: DynamicInvokerTests.InvokeDuplexStreamingAsync_EmptyRequests_ReturnsNoResponses()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_EmptyRequests_ReturnsNoResponses()
+  type: Method
+  source:
+    id: InvokeDuplexStreamingAsync_EmptyRequests_ReturnsNoResponses
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/DynamicInvokerTests.cs
+    startLine: 324
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task InvokeDuplexStreamingAsync_EmptyRequests_ReturnsNoResponses()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function InvokeDuplexStreamingAsync_EmptyRequests_ReturnsNoResponses() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_EmptyRequests_ReturnsNoResponses*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.HalfDuplexCall_BuffersAllRequests_ThenResponds
+  commentId: M:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.HalfDuplexCall_BuffersAllRequests_ThenResponds
+  id: HalfDuplexCall_BuffersAllRequests_ThenResponds
+  parent: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests
+  langs:
+  - csharp
+  - vb
+  name: HalfDuplexCall_BuffersAllRequests_ThenResponds()
+  nameWithType: DynamicInvokerTests.HalfDuplexCall_BuffersAllRequests_ThenResponds()
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.HalfDuplexCall_BuffersAllRequests_ThenResponds()
+  type: Method
+  source:
+    id: HalfDuplexCall_BuffersAllRequests_ThenResponds
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Integration/Invocation/DynamicInvokerTests.cs
+    startLine: 348
+  assemblies:
+  - GrpCurl.Net.Tests.Integration
+  namespace: GrpCurl.Net.Tests.Integration.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task HalfDuplexCall_BuffersAllRequests_ThenResponds()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function HalfDuplexCall_BuffersAllRequests_ThenResponds() As Task
+  overload: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.HalfDuplexCall_BuffersAllRequests_ThenResponds*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+references:
+- uid: GrpCurl.Net.Tests.Integration.Invocation
+  commentId: N:GrpCurl.Net.Tests.Integration.Invocation
+  href: GrpCurl.html
+  name: GrpCurl.Net.Tests.Integration.Invocation
+  nameWithType: GrpCurl.Net.Tests.Integration.Invocation
+  fullName: GrpCurl.Net.Tests.Integration.Invocation
+  spec.csharp:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration
+    name: Integration
+    href: GrpCurl.Net.Tests.Integration.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration.Invocation
+    name: Invocation
+    href: GrpCurl.Net.Tests.Integration.Invocation.html
+  spec.vb:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration
+    name: Integration
+    href: GrpCurl.Net.Tests.Integration.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration.Invocation
+    name: Invocation
+    href: GrpCurl.Net.Tests.Integration.Invocation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.#ctor*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.#ctor
+  href: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.html#GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests__ctor_GrpCurl_Net_Tests_Integration_Fixtures_GrpcTestFixture_
+  name: DynamicInvokerTests
+  nameWithType: DynamicInvokerTests.DynamicInvokerTests
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.DynamicInvokerTests
+  nameWithType.vb: DynamicInvokerTests.New
+  fullName.vb: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.New
+  name.vb: New
+- uid: GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture
+  commentId: T:GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture
+  parent: GrpCurl.Net.Tests.Integration.Fixtures
+  href: GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture.html
+  name: GrpcTestFixture
+  nameWithType: GrpcTestFixture
+  fullName: GrpCurl.Net.Tests.Integration.Fixtures.GrpcTestFixture
+- uid: GrpCurl.Net.Tests.Integration.Fixtures
+  commentId: N:GrpCurl.Net.Tests.Integration.Fixtures
+  href: GrpCurl.html
+  name: GrpCurl.Net.Tests.Integration.Fixtures
+  nameWithType: GrpCurl.Net.Tests.Integration.Fixtures
+  fullName: GrpCurl.Net.Tests.Integration.Fixtures
+  spec.csharp:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration
+    name: Integration
+    href: GrpCurl.Net.Tests.Integration.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration.Fixtures
+    name: Fixtures
+    href: GrpCurl.Net.Tests.Integration.Fixtures.html
+  spec.vb:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration
+    name: Integration
+    href: GrpCurl.Net.Tests.Integration.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Integration.Fixtures
+    name: Fixtures
+    href: GrpCurl.Net.Tests.Integration.Fixtures.html
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_EmptyCall_ReturnsEmptyResponse*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_EmptyCall_ReturnsEmptyResponse
+  href: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.html#GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeUnaryAsync_EmptyCall_ReturnsEmptyResponse
+  name: InvokeUnaryAsync_EmptyCall_ReturnsEmptyResponse
+  nameWithType: DynamicInvokerTests.InvokeUnaryAsync_EmptyCall_ReturnsEmptyResponse
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_EmptyCall_ReturnsEmptyResponse
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_UnaryCall_ReturnsResponse*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_UnaryCall_ReturnsResponse
+  href: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.html#GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeUnaryAsync_UnaryCall_ReturnsResponse
+  name: InvokeUnaryAsync_UnaryCall_ReturnsResponse
+  nameWithType: DynamicInvokerTests.InvokeUnaryAsync_UnaryCall_ReturnsResponse
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_UnaryCall_ReturnsResponse
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithPayload_ReturnsPayloadInResponse*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithPayload_ReturnsPayloadInResponse
+  href: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.html#GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeUnaryAsync_WithPayload_ReturnsPayloadInResponse
+  name: InvokeUnaryAsync_WithPayload_ReturnsPayloadInResponse
+  nameWithType: DynamicInvokerTests.InvokeUnaryAsync_WithPayload_ReturnsPayloadInResponse
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithPayload_ReturnsPayloadInResponse
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithMetadata_SendsHeaders*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithMetadata_SendsHeaders
+  href: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.html#GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeUnaryAsync_WithMetadata_SendsHeaders
+  name: InvokeUnaryAsync_WithMetadata_SendsHeaders
+  nameWithType: DynamicInvokerTests.InvokeUnaryAsync_WithMetadata_SendsHeaders
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithMetadata_SendsHeaders
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithCancellation_ThrowsCanceledException*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithCancellation_ThrowsCanceledException
+  href: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.html#GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeUnaryAsync_WithCancellation_ThrowsCanceledException
+  name: InvokeUnaryAsync_WithCancellation_ThrowsCanceledException
+  nameWithType: DynamicInvokerTests.InvokeUnaryAsync_WithCancellation_ThrowsCanceledException
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeUnaryAsync_WithCancellation_ThrowsCanceledException
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_SingleResponse_ReturnsOneMessage*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_SingleResponse_ReturnsOneMessage
+  href: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.html#GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeServerStreamingAsync_SingleResponse_ReturnsOneMessage
+  name: InvokeServerStreamingAsync_SingleResponse_ReturnsOneMessage
+  nameWithType: DynamicInvokerTests.InvokeServerStreamingAsync_SingleResponse_ReturnsOneMessage
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_SingleResponse_ReturnsOneMessage
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_MultipleResponses_ReturnsAllMessages*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_MultipleResponses_ReturnsAllMessages
+  href: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.html#GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeServerStreamingAsync_MultipleResponses_ReturnsAllMessages
+  name: InvokeServerStreamingAsync_MultipleResponses_ReturnsAllMessages
+  nameWithType: DynamicInvokerTests.InvokeServerStreamingAsync_MultipleResponses_ReturnsAllMessages
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_MultipleResponses_ReturnsAllMessages
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_EmptyResponseParameters_ReturnsNoMessages*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_EmptyResponseParameters_ReturnsNoMessages
+  href: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.html#GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeServerStreamingAsync_EmptyResponseParameters_ReturnsNoMessages
+  name: InvokeServerStreamingAsync_EmptyResponseParameters_ReturnsNoMessages
+  nameWithType: DynamicInvokerTests.InvokeServerStreamingAsync_EmptyResponseParameters_ReturnsNoMessages
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_EmptyResponseParameters_ReturnsNoMessages
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_ResponsesHavePayloads*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_ResponsesHavePayloads
+  href: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.html#GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeServerStreamingAsync_ResponsesHavePayloads
+  name: InvokeServerStreamingAsync_ResponsesHavePayloads
+  nameWithType: DynamicInvokerTests.InvokeServerStreamingAsync_ResponsesHavePayloads
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeServerStreamingAsync_ResponsesHavePayloads
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_SingleRequest_ReturnsAggregatedSize*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_SingleRequest_ReturnsAggregatedSize
+  href: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.html#GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeClientStreamingAsync_SingleRequest_ReturnsAggregatedSize
+  name: InvokeClientStreamingAsync_SingleRequest_ReturnsAggregatedSize
+  nameWithType: DynamicInvokerTests.InvokeClientStreamingAsync_SingleRequest_ReturnsAggregatedSize
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_SingleRequest_ReturnsAggregatedSize
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_MultipleRequests_ReturnsCorrectTotal*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_MultipleRequests_ReturnsCorrectTotal
+  href: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.html#GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeClientStreamingAsync_MultipleRequests_ReturnsCorrectTotal
+  name: InvokeClientStreamingAsync_MultipleRequests_ReturnsCorrectTotal
+  nameWithType: DynamicInvokerTests.InvokeClientStreamingAsync_MultipleRequests_ReturnsCorrectTotal
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_MultipleRequests_ReturnsCorrectTotal
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_EmptyRequests_ReturnsZeroSize*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_EmptyRequests_ReturnsZeroSize
+  href: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.html#GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeClientStreamingAsync_EmptyRequests_ReturnsZeroSize
+  name: InvokeClientStreamingAsync_EmptyRequests_ReturnsZeroSize
+  nameWithType: DynamicInvokerTests.InvokeClientStreamingAsync_EmptyRequests_ReturnsZeroSize
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeClientStreamingAsync_EmptyRequests_ReturnsZeroSize
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_SingleRequest_ReturnsSingleResponse*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_SingleRequest_ReturnsSingleResponse
+  href: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.html#GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeDuplexStreamingAsync_SingleRequest_ReturnsSingleResponse
+  name: InvokeDuplexStreamingAsync_SingleRequest_ReturnsSingleResponse
+  nameWithType: DynamicInvokerTests.InvokeDuplexStreamingAsync_SingleRequest_ReturnsSingleResponse
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_SingleRequest_ReturnsSingleResponse
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_MultipleRequests_ReturnsMultipleResponses*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_MultipleRequests_ReturnsMultipleResponses
+  href: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.html#GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeDuplexStreamingAsync_MultipleRequests_ReturnsMultipleResponses
+  name: InvokeDuplexStreamingAsync_MultipleRequests_ReturnsMultipleResponses
+  nameWithType: DynamicInvokerTests.InvokeDuplexStreamingAsync_MultipleRequests_ReturnsMultipleResponses
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_MultipleRequests_ReturnsMultipleResponses
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_EmptyRequests_ReturnsNoResponses*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_EmptyRequests_ReturnsNoResponses
+  href: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.html#GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_InvokeDuplexStreamingAsync_EmptyRequests_ReturnsNoResponses
+  name: InvokeDuplexStreamingAsync_EmptyRequests_ReturnsNoResponses
+  nameWithType: DynamicInvokerTests.InvokeDuplexStreamingAsync_EmptyRequests_ReturnsNoResponses
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.InvokeDuplexStreamingAsync_EmptyRequests_ReturnsNoResponses
+- uid: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.HalfDuplexCall_BuffersAllRequests_ThenResponds*
+  commentId: Overload:GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.HalfDuplexCall_BuffersAllRequests_ThenResponds
+  href: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.html#GrpCurl_Net_Tests_Integration_Invocation_DynamicInvokerTests_HalfDuplexCall_BuffersAllRequests_ThenResponds
+  name: HalfDuplexCall_BuffersAllRequests_ThenResponds
+  nameWithType: DynamicInvokerTests.HalfDuplexCall_BuffersAllRequests_ThenResponds
+  fullName: GrpCurl.Net.Tests.Integration.Invocation.DynamicInvokerTests.HalfDuplexCall_BuffersAllRequests_ThenResponds

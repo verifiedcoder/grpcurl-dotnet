@@ -1,0 +1,1917 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  commentId: T:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  id: ProtosetSourceTests
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources
+  children:
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.#ctor
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FileDescriptorSet_AfterLoading_IsPopulated
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FileDescriptorSet_ContainsAllProtoFiles
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_CaseSensitive_ReturnsNull
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ConcurrentCalls_AllSucceed
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_EmptyName_ReturnsNull
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_EnumValue_ReturnsEnumValueDescriptor
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingField_ReturnsFieldDescriptor
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingService_ReturnsServiceDescriptor
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_NestedMessageField_ReturnsFieldDescriptor
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_NonExistentService_ReturnsNull
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_PartialName_ReturnsNull
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_RepeatedField_ReturnsFieldDescriptor
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_WellKnownDuration_ReturnsDescriptor
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_WellKnownTimestamp_ReturnsDescriptor
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ConcurrentCalls_AllSucceed
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_EmptyProtoset_ReturnsEmptyList
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_MultipleCallsReturnSameResults
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ServicesAreSorted
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ValidProtoset_ReturnsServices
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_InvalidProtoset_ThrowsException
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_NonExistentFile_ThrowsFileNotFoundException
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_ValidProtoset_LoadsSuccessfully
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_WithCancellationToken_RespectsCancellation
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_EmptyCollection_ReturnsEmptySource
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_MultipleProtosets_LoadsAll
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_SingleFile_LoadsSuccessfully
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_BidirectionalStreaming_HasCorrectProperties
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_ClientStreaming_HasCorrectProperties
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_ServerStreaming_HasCorrectProperties
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_UnaryCall_HasCorrectProperties
+  langs:
+  - csharp
+  - vb
+  name: ProtosetSourceTests
+  nameWithType: ProtosetSourceTests
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  type: Class
+  source:
+    id: ProtosetSourceTests
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 8
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  summary: Tests for ProtosetSource which loads descriptors from compiled FileDescriptorSet files.
+  example: []
+  syntax:
+    content: public class ProtosetSourceTests
+    content.vb: Public Class ProtosetSourceTests
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.#ctor
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.#ctor
+  id: '#ctor'
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: ProtosetSourceTests()
+  nameWithType: ProtosetSourceTests.ProtosetSourceTests()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ProtosetSourceTests()
+  type: Constructor
+  source:
+    id: .ctor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 15
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: public ProtosetSourceTests()
+    content.vb: Public Sub New()
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.#ctor*
+  nameWithType.vb: ProtosetSourceTests.New()
+  fullName.vb: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.New()
+  name.vb: New()
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_ValidProtoset_LoadsSuccessfully
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_ValidProtoset_LoadsSuccessfully
+  id: LoadFromFileAsync_ValidProtoset_LoadsSuccessfully
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: LoadFromFileAsync_ValidProtoset_LoadsSuccessfully()
+  nameWithType: ProtosetSourceTests.LoadFromFileAsync_ValidProtoset_LoadsSuccessfully()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_ValidProtoset_LoadsSuccessfully()
+  type: Method
+  source:
+    id: LoadFromFileAsync_ValidProtoset_LoadsSuccessfully
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 26
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task LoadFromFileAsync_ValidProtoset_LoadsSuccessfully()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function LoadFromFileAsync_ValidProtoset_LoadsSuccessfully() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_ValidProtoset_LoadsSuccessfully*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_NonExistentFile_ThrowsFileNotFoundException
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_NonExistentFile_ThrowsFileNotFoundException
+  id: LoadFromFileAsync_NonExistentFile_ThrowsFileNotFoundException
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: LoadFromFileAsync_NonExistentFile_ThrowsFileNotFoundException()
+  nameWithType: ProtosetSourceTests.LoadFromFileAsync_NonExistentFile_ThrowsFileNotFoundException()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_NonExistentFile_ThrowsFileNotFoundException()
+  type: Method
+  source:
+    id: LoadFromFileAsync_NonExistentFile_ThrowsFileNotFoundException
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 35
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task LoadFromFileAsync_NonExistentFile_ThrowsFileNotFoundException()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function LoadFromFileAsync_NonExistentFile_ThrowsFileNotFoundException() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_NonExistentFile_ThrowsFileNotFoundException*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_InvalidProtoset_ThrowsException
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_InvalidProtoset_ThrowsException
+  id: LoadFromFileAsync_InvalidProtoset_ThrowsException
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: LoadFromFileAsync_InvalidProtoset_ThrowsException()
+  nameWithType: ProtosetSourceTests.LoadFromFileAsync_InvalidProtoset_ThrowsException()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_InvalidProtoset_ThrowsException()
+  type: Method
+  source:
+    id: LoadFromFileAsync_InvalidProtoset_ThrowsException
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 44
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task LoadFromFileAsync_InvalidProtoset_ThrowsException()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function LoadFromFileAsync_InvalidProtoset_ThrowsException() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_InvalidProtoset_ThrowsException*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully
+  id: LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully()
+  nameWithType: ProtosetSourceTests.LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully()
+  type: Method
+  source:
+    id: LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 57
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_WithCancellationToken_RespectsCancellation
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_WithCancellationToken_RespectsCancellation
+  id: LoadFromFileAsync_WithCancellationToken_RespectsCancellation
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: LoadFromFileAsync_WithCancellationToken_RespectsCancellation()
+  nameWithType: ProtosetSourceTests.LoadFromFileAsync_WithCancellationToken_RespectsCancellation()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_WithCancellationToken_RespectsCancellation()
+  type: Method
+  source:
+    id: LoadFromFileAsync_WithCancellationToken_RespectsCancellation
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 65
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task LoadFromFileAsync_WithCancellationToken_RespectsCancellation()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function LoadFromFileAsync_WithCancellationToken_RespectsCancellation() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_WithCancellationToken_RespectsCancellation*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_MultipleProtosets_LoadsAll
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_MultipleProtosets_LoadsAll
+  id: LoadFromFilesAsync_MultipleProtosets_LoadsAll
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: LoadFromFilesAsync_MultipleProtosets_LoadsAll()
+  nameWithType: ProtosetSourceTests.LoadFromFilesAsync_MultipleProtosets_LoadsAll()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_MultipleProtosets_LoadsAll()
+  type: Method
+  source:
+    id: LoadFromFilesAsync_MultipleProtosets_LoadsAll
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 79
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task LoadFromFilesAsync_MultipleProtosets_LoadsAll()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function LoadFromFilesAsync_MultipleProtosets_LoadsAll() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_MultipleProtosets_LoadsAll*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_EmptyCollection_ReturnsEmptySource
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_EmptyCollection_ReturnsEmptySource
+  id: LoadFromFilesAsync_EmptyCollection_ReturnsEmptySource
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: LoadFromFilesAsync_EmptyCollection_ReturnsEmptySource()
+  nameWithType: ProtosetSourceTests.LoadFromFilesAsync_EmptyCollection_ReturnsEmptySource()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_EmptyCollection_ReturnsEmptySource()
+  type: Method
+  source:
+    id: LoadFromFilesAsync_EmptyCollection_ReturnsEmptySource
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 92
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task LoadFromFilesAsync_EmptyCollection_ReturnsEmptySource()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function LoadFromFilesAsync_EmptyCollection_ReturnsEmptySource() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_EmptyCollection_ReturnsEmptySource*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_SingleFile_LoadsSuccessfully
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_SingleFile_LoadsSuccessfully
+  id: LoadFromFilesAsync_SingleFile_LoadsSuccessfully
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: LoadFromFilesAsync_SingleFile_LoadsSuccessfully()
+  nameWithType: ProtosetSourceTests.LoadFromFilesAsync_SingleFile_LoadsSuccessfully()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_SingleFile_LoadsSuccessfully()
+  type: Method
+  source:
+    id: LoadFromFilesAsync_SingleFile_LoadsSuccessfully
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 102
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task LoadFromFilesAsync_SingleFile_LoadsSuccessfully()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function LoadFromFilesAsync_SingleFile_LoadsSuccessfully() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_SingleFile_LoadsSuccessfully*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ValidProtoset_ReturnsServices
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ValidProtoset_ReturnsServices
+  id: ListServicesAsync_ValidProtoset_ReturnsServices
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: ListServicesAsync_ValidProtoset_ReturnsServices()
+  nameWithType: ProtosetSourceTests.ListServicesAsync_ValidProtoset_ReturnsServices()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ValidProtoset_ReturnsServices()
+  type: Method
+  source:
+    id: ListServicesAsync_ValidProtoset_ReturnsServices
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 116
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task ListServicesAsync_ValidProtoset_ReturnsServices()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function ListServicesAsync_ValidProtoset_ReturnsServices() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ValidProtoset_ReturnsServices*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ServicesAreSorted
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ServicesAreSorted
+  id: ListServicesAsync_ServicesAreSorted
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: ListServicesAsync_ServicesAreSorted()
+  nameWithType: ProtosetSourceTests.ListServicesAsync_ServicesAreSorted()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ServicesAreSorted()
+  type: Method
+  source:
+    id: ListServicesAsync_ServicesAreSorted
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 128
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task ListServicesAsync_ServicesAreSorted()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function ListServicesAsync_ServicesAreSorted() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ServicesAreSorted*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_EmptyProtoset_ReturnsEmptyList
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_EmptyProtoset_ReturnsEmptyList
+  id: ListServicesAsync_EmptyProtoset_ReturnsEmptyList
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: ListServicesAsync_EmptyProtoset_ReturnsEmptyList()
+  nameWithType: ProtosetSourceTests.ListServicesAsync_EmptyProtoset_ReturnsEmptyList()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_EmptyProtoset_ReturnsEmptyList()
+  type: Method
+  source:
+    id: ListServicesAsync_EmptyProtoset_ReturnsEmptyList
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 139
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task ListServicesAsync_EmptyProtoset_ReturnsEmptyList()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function ListServicesAsync_EmptyProtoset_ReturnsEmptyList() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_EmptyProtoset_ReturnsEmptyList*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_MultipleCallsReturnSameResults
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_MultipleCallsReturnSameResults
+  id: ListServicesAsync_MultipleCallsReturnSameResults
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: ListServicesAsync_MultipleCallsReturnSameResults()
+  nameWithType: ProtosetSourceTests.ListServicesAsync_MultipleCallsReturnSameResults()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_MultipleCallsReturnSameResults()
+  type: Method
+  source:
+    id: ListServicesAsync_MultipleCallsReturnSameResults
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 149
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task ListServicesAsync_MultipleCallsReturnSameResults()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function ListServicesAsync_MultipleCallsReturnSameResults() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_MultipleCallsReturnSameResults*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingService_ReturnsServiceDescriptor
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingService_ReturnsServiceDescriptor
+  id: FindSymbolAsync_ExistingService_ReturnsServiceDescriptor
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_ExistingService_ReturnsServiceDescriptor()
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_ExistingService_ReturnsServiceDescriptor()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingService_ReturnsServiceDescriptor()
+  type: Method
+  source:
+    id: FindSymbolAsync_ExistingService_ReturnsServiceDescriptor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 164
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_ExistingService_ReturnsServiceDescriptor()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_ExistingService_ReturnsServiceDescriptor() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingService_ReturnsServiceDescriptor*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_NonExistentService_ReturnsNull
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_NonExistentService_ReturnsNull
+  id: FindSymbolAsync_NonExistentService_ReturnsNull
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_NonExistentService_ReturnsNull()
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_NonExistentService_ReturnsNull()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_NonExistentService_ReturnsNull()
+  type: Method
+  source:
+    id: FindSymbolAsync_NonExistentService_ReturnsNull
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 176
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_NonExistentService_ReturnsNull()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_NonExistentService_ReturnsNull() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_NonExistentService_ReturnsNull*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor
+  id: FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor()
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor()
+  type: Method
+  source:
+    id: FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 190
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors
+  id: FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors()
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors()
+  type: Method
+  source:
+    id: FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 202
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor
+  id: FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor()
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor()
+  type: Method
+  source:
+    id: FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 232
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors
+  id: FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors()
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors()
+  type: Method
+  source:
+    id: FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 244
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor
+  id: FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor()
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor()
+  type: Method
+  source:
+    id: FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 276
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_EnumValue_ReturnsEnumValueDescriptor
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_EnumValue_ReturnsEnumValueDescriptor
+  id: FindSymbolAsync_EnumValue_ReturnsEnumValueDescriptor
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_EnumValue_ReturnsEnumValueDescriptor()
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_EnumValue_ReturnsEnumValueDescriptor()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_EnumValue_ReturnsEnumValueDescriptor()
+  type: Method
+  source:
+    id: FindSymbolAsync_EnumValue_ReturnsEnumValueDescriptor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 288
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_EnumValue_ReturnsEnumValueDescriptor()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_EnumValue_ReturnsEnumValueDescriptor() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_EnumValue_ReturnsEnumValueDescriptor*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingField_ReturnsFieldDescriptor
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingField_ReturnsFieldDescriptor
+  id: FindSymbolAsync_ExistingField_ReturnsFieldDescriptor
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_ExistingField_ReturnsFieldDescriptor()
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_ExistingField_ReturnsFieldDescriptor()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingField_ReturnsFieldDescriptor()
+  type: Method
+  source:
+    id: FindSymbolAsync_ExistingField_ReturnsFieldDescriptor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 303
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_ExistingField_ReturnsFieldDescriptor()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_ExistingField_ReturnsFieldDescriptor() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingField_ReturnsFieldDescriptor*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_NestedMessageField_ReturnsFieldDescriptor
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_NestedMessageField_ReturnsFieldDescriptor
+  id: FindSymbolAsync_NestedMessageField_ReturnsFieldDescriptor
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_NestedMessageField_ReturnsFieldDescriptor()
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_NestedMessageField_ReturnsFieldDescriptor()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_NestedMessageField_ReturnsFieldDescriptor()
+  type: Method
+  source:
+    id: FindSymbolAsync_NestedMessageField_ReturnsFieldDescriptor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 314
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_NestedMessageField_ReturnsFieldDescriptor()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_NestedMessageField_ReturnsFieldDescriptor() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_NestedMessageField_ReturnsFieldDescriptor*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_RepeatedField_ReturnsFieldDescriptor
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_RepeatedField_ReturnsFieldDescriptor
+  id: FindSymbolAsync_RepeatedField_ReturnsFieldDescriptor
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_RepeatedField_ReturnsFieldDescriptor()
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_RepeatedField_ReturnsFieldDescriptor()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_RepeatedField_ReturnsFieldDescriptor()
+  type: Method
+  source:
+    id: FindSymbolAsync_RepeatedField_ReturnsFieldDescriptor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 327
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_RepeatedField_ReturnsFieldDescriptor()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_RepeatedField_ReturnsFieldDescriptor() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_RepeatedField_ReturnsFieldDescriptor*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_EmptyName_ReturnsNull
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_EmptyName_ReturnsNull
+  id: FindSymbolAsync_EmptyName_ReturnsNull
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_EmptyName_ReturnsNull()
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_EmptyName_ReturnsNull()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_EmptyName_ReturnsNull()
+  type: Method
+  source:
+    id: FindSymbolAsync_EmptyName_ReturnsNull
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 344
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_EmptyName_ReturnsNull()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_EmptyName_ReturnsNull() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_EmptyName_ReturnsNull*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_PartialName_ReturnsNull
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_PartialName_ReturnsNull
+  id: FindSymbolAsync_PartialName_ReturnsNull
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_PartialName_ReturnsNull()
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_PartialName_ReturnsNull()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_PartialName_ReturnsNull()
+  type: Method
+  source:
+    id: FindSymbolAsync_PartialName_ReturnsNull
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 354
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_PartialName_ReturnsNull()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_PartialName_ReturnsNull() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_PartialName_ReturnsNull*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_CaseSensitive_ReturnsNull
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_CaseSensitive_ReturnsNull
+  id: FindSymbolAsync_CaseSensitive_ReturnsNull
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_CaseSensitive_ReturnsNull()
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_CaseSensitive_ReturnsNull()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_CaseSensitive_ReturnsNull()
+  type: Method
+  source:
+    id: FindSymbolAsync_CaseSensitive_ReturnsNull
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 364
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_CaseSensitive_ReturnsNull()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_CaseSensitive_ReturnsNull() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_CaseSensitive_ReturnsNull*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FileDescriptorSet_AfterLoading_IsPopulated
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FileDescriptorSet_AfterLoading_IsPopulated
+  id: FileDescriptorSet_AfterLoading_IsPopulated
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FileDescriptorSet_AfterLoading_IsPopulated()
+  nameWithType: ProtosetSourceTests.FileDescriptorSet_AfterLoading_IsPopulated()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FileDescriptorSet_AfterLoading_IsPopulated()
+  type: Method
+  source:
+    id: FileDescriptorSet_AfterLoading_IsPopulated
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 378
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FileDescriptorSet_AfterLoading_IsPopulated()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FileDescriptorSet_AfterLoading_IsPopulated() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FileDescriptorSet_AfterLoading_IsPopulated*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FileDescriptorSet_ContainsAllProtoFiles
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FileDescriptorSet_ContainsAllProtoFiles
+  id: FileDescriptorSet_ContainsAllProtoFiles
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FileDescriptorSet_ContainsAllProtoFiles()
+  nameWithType: ProtosetSourceTests.FileDescriptorSet_ContainsAllProtoFiles()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FileDescriptorSet_ContainsAllProtoFiles()
+  type: Method
+  source:
+    id: FileDescriptorSet_ContainsAllProtoFiles
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 387
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FileDescriptorSet_ContainsAllProtoFiles()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FileDescriptorSet_ContainsAllProtoFiles() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FileDescriptorSet_ContainsAllProtoFiles*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully
+  id: LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully()
+  nameWithType: ProtosetSourceTests.LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully()
+  type: Method
+  source:
+    id: LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 400
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_WellKnownTimestamp_ReturnsDescriptor
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_WellKnownTimestamp_ReturnsDescriptor
+  id: FindSymbolAsync_WellKnownTimestamp_ReturnsDescriptor
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_WellKnownTimestamp_ReturnsDescriptor()
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_WellKnownTimestamp_ReturnsDescriptor()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_WellKnownTimestamp_ReturnsDescriptor()
+  type: Method
+  source:
+    id: FindSymbolAsync_WellKnownTimestamp_ReturnsDescriptor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 408
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_WellKnownTimestamp_ReturnsDescriptor()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_WellKnownTimestamp_ReturnsDescriptor() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_WellKnownTimestamp_ReturnsDescriptor*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_WellKnownDuration_ReturnsDescriptor
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_WellKnownDuration_ReturnsDescriptor
+  id: FindSymbolAsync_WellKnownDuration_ReturnsDescriptor
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_WellKnownDuration_ReturnsDescriptor()
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_WellKnownDuration_ReturnsDescriptor()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_WellKnownDuration_ReturnsDescriptor()
+  type: Method
+  source:
+    id: FindSymbolAsync_WellKnownDuration_ReturnsDescriptor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 419
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_WellKnownDuration_ReturnsDescriptor()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_WellKnownDuration_ReturnsDescriptor() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_WellKnownDuration_ReturnsDescriptor*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_UnaryCall_HasCorrectProperties
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_UnaryCall_HasCorrectProperties
+  id: MethodDescriptor_UnaryCall_HasCorrectProperties
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: MethodDescriptor_UnaryCall_HasCorrectProperties()
+  nameWithType: ProtosetSourceTests.MethodDescriptor_UnaryCall_HasCorrectProperties()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_UnaryCall_HasCorrectProperties()
+  type: Method
+  source:
+    id: MethodDescriptor_UnaryCall_HasCorrectProperties
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 434
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task MethodDescriptor_UnaryCall_HasCorrectProperties()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function MethodDescriptor_UnaryCall_HasCorrectProperties() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_UnaryCall_HasCorrectProperties*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_ServerStreaming_HasCorrectProperties
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_ServerStreaming_HasCorrectProperties
+  id: MethodDescriptor_ServerStreaming_HasCorrectProperties
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: MethodDescriptor_ServerStreaming_HasCorrectProperties()
+  nameWithType: ProtosetSourceTests.MethodDescriptor_ServerStreaming_HasCorrectProperties()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_ServerStreaming_HasCorrectProperties()
+  type: Method
+  source:
+    id: MethodDescriptor_ServerStreaming_HasCorrectProperties
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 448
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task MethodDescriptor_ServerStreaming_HasCorrectProperties()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function MethodDescriptor_ServerStreaming_HasCorrectProperties() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_ServerStreaming_HasCorrectProperties*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_ClientStreaming_HasCorrectProperties
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_ClientStreaming_HasCorrectProperties
+  id: MethodDescriptor_ClientStreaming_HasCorrectProperties
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: MethodDescriptor_ClientStreaming_HasCorrectProperties()
+  nameWithType: ProtosetSourceTests.MethodDescriptor_ClientStreaming_HasCorrectProperties()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_ClientStreaming_HasCorrectProperties()
+  type: Method
+  source:
+    id: MethodDescriptor_ClientStreaming_HasCorrectProperties
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 460
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task MethodDescriptor_ClientStreaming_HasCorrectProperties()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function MethodDescriptor_ClientStreaming_HasCorrectProperties() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_ClientStreaming_HasCorrectProperties*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_BidirectionalStreaming_HasCorrectProperties
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_BidirectionalStreaming_HasCorrectProperties
+  id: MethodDescriptor_BidirectionalStreaming_HasCorrectProperties
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: MethodDescriptor_BidirectionalStreaming_HasCorrectProperties()
+  nameWithType: ProtosetSourceTests.MethodDescriptor_BidirectionalStreaming_HasCorrectProperties()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_BidirectionalStreaming_HasCorrectProperties()
+  type: Method
+  source:
+    id: MethodDescriptor_BidirectionalStreaming_HasCorrectProperties
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 472
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task MethodDescriptor_BidirectionalStreaming_HasCorrectProperties()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function MethodDescriptor_BidirectionalStreaming_HasCorrectProperties() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_BidirectionalStreaming_HasCorrectProperties*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ConcurrentCalls_AllSucceed
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ConcurrentCalls_AllSucceed
+  id: ListServicesAsync_ConcurrentCalls_AllSucceed
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: ListServicesAsync_ConcurrentCalls_AllSucceed()
+  nameWithType: ProtosetSourceTests.ListServicesAsync_ConcurrentCalls_AllSucceed()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ConcurrentCalls_AllSucceed()
+  type: Method
+  source:
+    id: ListServicesAsync_ConcurrentCalls_AllSucceed
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 488
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task ListServicesAsync_ConcurrentCalls_AllSucceed()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function ListServicesAsync_ConcurrentCalls_AllSucceed() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ConcurrentCalls_AllSucceed*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ConcurrentCalls_AllSucceed
+  commentId: M:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ConcurrentCalls_AllSucceed
+  id: FindSymbolAsync_ConcurrentCalls_AllSucceed
+  parent: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: FindSymbolAsync_ConcurrentCalls_AllSucceed()
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_ConcurrentCalls_AllSucceed()
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ConcurrentCalls_AllSucceed()
+  type: Method
+  source:
+    id: FindSymbolAsync_ConcurrentCalls_AllSucceed
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/DescriptorSources/ProtosetSourceTests.cs
+    startLine: 503
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.DescriptorSources
+  syntax:
+    content: >-
+      [Fact]
+
+      public Task FindSymbolAsync_ConcurrentCalls_AllSucceed()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: >-
+      <Fact>
+
+      Public Function FindSymbolAsync_ConcurrentCalls_AllSucceed() As Task
+  overload: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ConcurrentCalls_AllSucceed*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+references:
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources
+  commentId: N:GrpCurl.Net.Tests.Unit.DescriptorSources
+  href: GrpCurl.html
+  name: GrpCurl.Net.Tests.Unit.DescriptorSources
+  nameWithType: GrpCurl.Net.Tests.Unit.DescriptorSources
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources
+  spec.csharp:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit
+    name: Unit
+    href: GrpCurl.Net.Tests.Unit.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit.DescriptorSources
+    name: DescriptorSources
+    href: GrpCurl.Net.Tests.Unit.DescriptorSources.html
+  spec.vb:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit
+    name: Unit
+    href: GrpCurl.Net.Tests.Unit.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit.DescriptorSources
+    name: DescriptorSources
+    href: GrpCurl.Net.Tests.Unit.DescriptorSources.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.#ctor*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.#ctor
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests__ctor
+  name: ProtosetSourceTests
+  nameWithType: ProtosetSourceTests.ProtosetSourceTests
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ProtosetSourceTests
+  nameWithType.vb: ProtosetSourceTests.New
+  fullName.vb: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.New
+  name.vb: New
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_ValidProtoset_LoadsSuccessfully*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_ValidProtoset_LoadsSuccessfully
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFileAsync_ValidProtoset_LoadsSuccessfully
+  name: LoadFromFileAsync_ValidProtoset_LoadsSuccessfully
+  nameWithType: ProtosetSourceTests.LoadFromFileAsync_ValidProtoset_LoadsSuccessfully
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_ValidProtoset_LoadsSuccessfully
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_NonExistentFile_ThrowsFileNotFoundException*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_NonExistentFile_ThrowsFileNotFoundException
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFileAsync_NonExistentFile_ThrowsFileNotFoundException
+  name: LoadFromFileAsync_NonExistentFile_ThrowsFileNotFoundException
+  nameWithType: ProtosetSourceTests.LoadFromFileAsync_NonExistentFile_ThrowsFileNotFoundException
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_NonExistentFile_ThrowsFileNotFoundException
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_InvalidProtoset_ThrowsException*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_InvalidProtoset_ThrowsException
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFileAsync_InvalidProtoset_ThrowsException
+  name: LoadFromFileAsync_InvalidProtoset_ThrowsException
+  nameWithType: ProtosetSourceTests.LoadFromFileAsync_InvalidProtoset_ThrowsException
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_InvalidProtoset_ThrowsException
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully
+  name: LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully
+  nameWithType: ProtosetSourceTests.LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_WithCancellationToken_RespectsCancellation*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_WithCancellationToken_RespectsCancellation
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFileAsync_WithCancellationToken_RespectsCancellation
+  name: LoadFromFileAsync_WithCancellationToken_RespectsCancellation
+  nameWithType: ProtosetSourceTests.LoadFromFileAsync_WithCancellationToken_RespectsCancellation
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_WithCancellationToken_RespectsCancellation
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_MultipleProtosets_LoadsAll*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_MultipleProtosets_LoadsAll
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFilesAsync_MultipleProtosets_LoadsAll
+  name: LoadFromFilesAsync_MultipleProtosets_LoadsAll
+  nameWithType: ProtosetSourceTests.LoadFromFilesAsync_MultipleProtosets_LoadsAll
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_MultipleProtosets_LoadsAll
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_EmptyCollection_ReturnsEmptySource*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_EmptyCollection_ReturnsEmptySource
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFilesAsync_EmptyCollection_ReturnsEmptySource
+  name: LoadFromFilesAsync_EmptyCollection_ReturnsEmptySource
+  nameWithType: ProtosetSourceTests.LoadFromFilesAsync_EmptyCollection_ReturnsEmptySource
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_EmptyCollection_ReturnsEmptySource
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_SingleFile_LoadsSuccessfully*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_SingleFile_LoadsSuccessfully
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFilesAsync_SingleFile_LoadsSuccessfully
+  name: LoadFromFilesAsync_SingleFile_LoadsSuccessfully
+  nameWithType: ProtosetSourceTests.LoadFromFilesAsync_SingleFile_LoadsSuccessfully
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFilesAsync_SingleFile_LoadsSuccessfully
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ValidProtoset_ReturnsServices*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ValidProtoset_ReturnsServices
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_ListServicesAsync_ValidProtoset_ReturnsServices
+  name: ListServicesAsync_ValidProtoset_ReturnsServices
+  nameWithType: ProtosetSourceTests.ListServicesAsync_ValidProtoset_ReturnsServices
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ValidProtoset_ReturnsServices
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ServicesAreSorted*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ServicesAreSorted
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_ListServicesAsync_ServicesAreSorted
+  name: ListServicesAsync_ServicesAreSorted
+  nameWithType: ProtosetSourceTests.ListServicesAsync_ServicesAreSorted
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ServicesAreSorted
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_EmptyProtoset_ReturnsEmptyList*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_EmptyProtoset_ReturnsEmptyList
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_ListServicesAsync_EmptyProtoset_ReturnsEmptyList
+  name: ListServicesAsync_EmptyProtoset_ReturnsEmptyList
+  nameWithType: ProtosetSourceTests.ListServicesAsync_EmptyProtoset_ReturnsEmptyList
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_EmptyProtoset_ReturnsEmptyList
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_MultipleCallsReturnSameResults*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_MultipleCallsReturnSameResults
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_ListServicesAsync_MultipleCallsReturnSameResults
+  name: ListServicesAsync_MultipleCallsReturnSameResults
+  nameWithType: ProtosetSourceTests.ListServicesAsync_MultipleCallsReturnSameResults
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_MultipleCallsReturnSameResults
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingService_ReturnsServiceDescriptor*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingService_ReturnsServiceDescriptor
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_ExistingService_ReturnsServiceDescriptor
+  name: FindSymbolAsync_ExistingService_ReturnsServiceDescriptor
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_ExistingService_ReturnsServiceDescriptor
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingService_ReturnsServiceDescriptor
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_NonExistentService_ReturnsNull*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_NonExistentService_ReturnsNull
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_NonExistentService_ReturnsNull
+  name: FindSymbolAsync_NonExistentService_ReturnsNull
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_NonExistentService_ReturnsNull
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_NonExistentService_ReturnsNull
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor
+  name: FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingMethod_ReturnsMethodDescriptor
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors
+  name: FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_AllMethodTypes_ReturnsCorrectDescriptors
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor
+  name: FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingMessage_ReturnsMessageDescriptor
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors
+  name: FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_AllMessages_ReturnsCorrectDescriptors
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor
+  name: FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingEnum_ReturnsEnumDescriptor
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_EnumValue_ReturnsEnumValueDescriptor*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_EnumValue_ReturnsEnumValueDescriptor
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_EnumValue_ReturnsEnumValueDescriptor
+  name: FindSymbolAsync_EnumValue_ReturnsEnumValueDescriptor
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_EnumValue_ReturnsEnumValueDescriptor
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_EnumValue_ReturnsEnumValueDescriptor
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingField_ReturnsFieldDescriptor*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingField_ReturnsFieldDescriptor
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_ExistingField_ReturnsFieldDescriptor
+  name: FindSymbolAsync_ExistingField_ReturnsFieldDescriptor
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_ExistingField_ReturnsFieldDescriptor
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ExistingField_ReturnsFieldDescriptor
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_NestedMessageField_ReturnsFieldDescriptor*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_NestedMessageField_ReturnsFieldDescriptor
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_NestedMessageField_ReturnsFieldDescriptor
+  name: FindSymbolAsync_NestedMessageField_ReturnsFieldDescriptor
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_NestedMessageField_ReturnsFieldDescriptor
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_NestedMessageField_ReturnsFieldDescriptor
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_RepeatedField_ReturnsFieldDescriptor*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_RepeatedField_ReturnsFieldDescriptor
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_RepeatedField_ReturnsFieldDescriptor
+  name: FindSymbolAsync_RepeatedField_ReturnsFieldDescriptor
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_RepeatedField_ReturnsFieldDescriptor
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_RepeatedField_ReturnsFieldDescriptor
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_EmptyName_ReturnsNull*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_EmptyName_ReturnsNull
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_EmptyName_ReturnsNull
+  name: FindSymbolAsync_EmptyName_ReturnsNull
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_EmptyName_ReturnsNull
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_EmptyName_ReturnsNull
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_PartialName_ReturnsNull*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_PartialName_ReturnsNull
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_PartialName_ReturnsNull
+  name: FindSymbolAsync_PartialName_ReturnsNull
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_PartialName_ReturnsNull
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_PartialName_ReturnsNull
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_CaseSensitive_ReturnsNull*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_CaseSensitive_ReturnsNull
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_CaseSensitive_ReturnsNull
+  name: FindSymbolAsync_CaseSensitive_ReturnsNull
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_CaseSensitive_ReturnsNull
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_CaseSensitive_ReturnsNull
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FileDescriptorSet_AfterLoading_IsPopulated*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FileDescriptorSet_AfterLoading_IsPopulated
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FileDescriptorSet_AfterLoading_IsPopulated
+  name: FileDescriptorSet_AfterLoading_IsPopulated
+  nameWithType: ProtosetSourceTests.FileDescriptorSet_AfterLoading_IsPopulated
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FileDescriptorSet_AfterLoading_IsPopulated
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FileDescriptorSet_ContainsAllProtoFiles*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FileDescriptorSet_ContainsAllProtoFiles
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FileDescriptorSet_ContainsAllProtoFiles
+  name: FileDescriptorSet_ContainsAllProtoFiles
+  nameWithType: ProtosetSourceTests.FileDescriptorSet_ContainsAllProtoFiles
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FileDescriptorSet_ContainsAllProtoFiles
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully
+  name: LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully
+  nameWithType: ProtosetSourceTests.LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_WellKnownTimestamp_ReturnsDescriptor*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_WellKnownTimestamp_ReturnsDescriptor
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_WellKnownTimestamp_ReturnsDescriptor
+  name: FindSymbolAsync_WellKnownTimestamp_ReturnsDescriptor
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_WellKnownTimestamp_ReturnsDescriptor
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_WellKnownTimestamp_ReturnsDescriptor
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_WellKnownDuration_ReturnsDescriptor*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_WellKnownDuration_ReturnsDescriptor
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_WellKnownDuration_ReturnsDescriptor
+  name: FindSymbolAsync_WellKnownDuration_ReturnsDescriptor
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_WellKnownDuration_ReturnsDescriptor
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_WellKnownDuration_ReturnsDescriptor
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_UnaryCall_HasCorrectProperties*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_UnaryCall_HasCorrectProperties
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_MethodDescriptor_UnaryCall_HasCorrectProperties
+  name: MethodDescriptor_UnaryCall_HasCorrectProperties
+  nameWithType: ProtosetSourceTests.MethodDescriptor_UnaryCall_HasCorrectProperties
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_UnaryCall_HasCorrectProperties
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_ServerStreaming_HasCorrectProperties*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_ServerStreaming_HasCorrectProperties
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_MethodDescriptor_ServerStreaming_HasCorrectProperties
+  name: MethodDescriptor_ServerStreaming_HasCorrectProperties
+  nameWithType: ProtosetSourceTests.MethodDescriptor_ServerStreaming_HasCorrectProperties
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_ServerStreaming_HasCorrectProperties
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_ClientStreaming_HasCorrectProperties*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_ClientStreaming_HasCorrectProperties
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_MethodDescriptor_ClientStreaming_HasCorrectProperties
+  name: MethodDescriptor_ClientStreaming_HasCorrectProperties
+  nameWithType: ProtosetSourceTests.MethodDescriptor_ClientStreaming_HasCorrectProperties
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_ClientStreaming_HasCorrectProperties
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_BidirectionalStreaming_HasCorrectProperties*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_BidirectionalStreaming_HasCorrectProperties
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_MethodDescriptor_BidirectionalStreaming_HasCorrectProperties
+  name: MethodDescriptor_BidirectionalStreaming_HasCorrectProperties
+  nameWithType: ProtosetSourceTests.MethodDescriptor_BidirectionalStreaming_HasCorrectProperties
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.MethodDescriptor_BidirectionalStreaming_HasCorrectProperties
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ConcurrentCalls_AllSucceed*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ConcurrentCalls_AllSucceed
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_ListServicesAsync_ConcurrentCalls_AllSucceed
+  name: ListServicesAsync_ConcurrentCalls_AllSucceed
+  nameWithType: ProtosetSourceTests.ListServicesAsync_ConcurrentCalls_AllSucceed
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.ListServicesAsync_ConcurrentCalls_AllSucceed
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ConcurrentCalls_AllSucceed*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ConcurrentCalls_AllSucceed
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html#GrpCurl_Net_Tests_Unit_DescriptorSources_ProtosetSourceTests_FindSymbolAsync_ConcurrentCalls_AllSucceed
+  name: FindSymbolAsync_ConcurrentCalls_AllSucceed
+  nameWithType: ProtosetSourceTests.FindSymbolAsync_ConcurrentCalls_AllSucceed
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.FindSymbolAsync_ConcurrentCalls_AllSucceed

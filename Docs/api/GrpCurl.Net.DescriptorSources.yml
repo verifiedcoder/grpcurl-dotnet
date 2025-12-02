@@ -1,0 +1,69 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.DescriptorSources
+  commentId: N:GrpCurl.Net.DescriptorSources
+  id: GrpCurl.Net.DescriptorSources
+  children:
+  - GrpCurl.Net.DescriptorSources.IDescriptorSource
+  - GrpCurl.Net.DescriptorSources.ProtosetSource
+  - GrpCurl.Net.DescriptorSources.ReflectionSource
+  langs:
+  - csharp
+  - vb
+  name: GrpCurl.Net.DescriptorSources
+  nameWithType: GrpCurl.Net.DescriptorSources
+  fullName: GrpCurl.Net.DescriptorSources
+  type: Namespace
+  assemblies:
+  - GrpCurl.Net
+references:
+- uid: GrpCurl.Net.DescriptorSources.IDescriptorSource
+  commentId: T:GrpCurl.Net.DescriptorSources.IDescriptorSource
+  parent: GrpCurl.Net.DescriptorSources
+  href: GrpCurl.Net.DescriptorSources.IDescriptorSource.html
+  name: IDescriptorSource
+  nameWithType: IDescriptorSource
+  fullName: GrpCurl.Net.DescriptorSources.IDescriptorSource
+- uid: GrpCurl.Net.DescriptorSources.ProtosetSource
+  commentId: T:GrpCurl.Net.DescriptorSources.ProtosetSource
+  href: GrpCurl.Net.DescriptorSources.ProtosetSource.html
+  name: ProtosetSource
+  nameWithType: ProtosetSource
+  fullName: GrpCurl.Net.DescriptorSources.ProtosetSource
+- uid: GrpCurl.Net.DescriptorSources.ReflectionSource
+  commentId: T:GrpCurl.Net.DescriptorSources.ReflectionSource
+  parent: GrpCurl.Net.DescriptorSources
+  href: GrpCurl.Net.DescriptorSources.ReflectionSource.html
+  name: ReflectionSource
+  nameWithType: ReflectionSource
+  fullName: GrpCurl.Net.DescriptorSources.ReflectionSource
+- uid: GrpCurl.Net.DescriptorSources
+  commentId: N:GrpCurl.Net.DescriptorSources
+  href: GrpCurl.html
+  name: GrpCurl.Net.DescriptorSources
+  nameWithType: GrpCurl.Net.DescriptorSources
+  fullName: GrpCurl.Net.DescriptorSources
+  spec.csharp:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.DescriptorSources
+    name: DescriptorSources
+    href: GrpCurl.Net.DescriptorSources.html
+  spec.vb:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.DescriptorSources
+    name: DescriptorSources
+    href: GrpCurl.Net.DescriptorSources.html

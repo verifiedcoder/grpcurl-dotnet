@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.Tests.Unit.Exceptions
+  commentId: N:GrpCurl.Net.Tests.Unit.Exceptions
+  id: GrpCurl.Net.Tests.Unit.Exceptions
+  children:
+  - GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests
+  langs:
+  - csharp
+  - vb
+  name: GrpCurl.Net.Tests.Unit.Exceptions
+  nameWithType: GrpCurl.Net.Tests.Unit.Exceptions
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions
+  type: Namespace
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+references:
+- uid: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests
+  commentId: T:GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests
+  href: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests.html
+  name: GrpcCommandExceptionTests
+  nameWithType: GrpcCommandExceptionTests
+  fullName: GrpCurl.Net.Tests.Unit.Exceptions.GrpcCommandExceptionTests

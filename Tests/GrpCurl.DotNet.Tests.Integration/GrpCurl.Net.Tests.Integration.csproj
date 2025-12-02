@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="coverlet.collector" Version="6.0.4" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+        <PackageReference Include="Shouldly" Version="4.3.0" />
+        <PackageReference Include="xunit" Version="2.9.3" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
+        <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.71.0" />
+        <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="10.0.0-preview.1.25120.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Src\GrpCurl.Net\GrpCurl.Net.csproj" />
+        <ProjectReference Include="..\GrpCurl.Net.TestServer\GrpCurl.Net.TestServer.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="..\TestProtosets\**\*.protoset" CopyToOutputDirectory="PreserveNewest" LinkBase="TestProtosets" />
+        <Content Include="..\TestCertificates\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="TestCertificates" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Shouldly" />
+        <Using Include="Xunit" />
+    </ItemGroup>
+
+</Project>

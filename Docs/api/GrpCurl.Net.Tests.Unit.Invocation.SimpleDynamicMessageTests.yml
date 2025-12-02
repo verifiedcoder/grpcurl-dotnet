@@ -1,0 +1,1844 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  commentId: T:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  id: SimpleDynamicMessageTests
+  parent: GrpCurl.Net.Tests.Unit.Invocation
+  children:
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_EmptyMessage_ReturnsZero
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_MatchesActualWrittenSize
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_WithFields_ReturnsCorrectSize
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithDescriptor_CreatesEmptyMessage
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithEmptyJson_CreatesEmptyMessage
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithNullJson_CreatesEmptyMessage
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Descriptor_ReturnsCorrectDescriptor
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BoolField_ParsesFalse
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BoolField_ParsesTrue
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BytesField_Base64_ParsesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BytesField_EmptyString_ParsesAsEmpty
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_CaseInsensitive_ParsesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_NumericValue_ParsesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_StringName_ParsesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_UnknownName_ThrowsException
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_Int32Field_ParsesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_InvalidJsonSyntax_ThrowsException
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_JsonName_ParsesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NestedMessage_ParsesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NotAnObject_ThrowsException
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NullNestedMessage_ParsesAsNull
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_ProtoName_ParsesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_EmptyArray_ParsesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_MultipleElements_ParsesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_NullElement_ThrowsException
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_SingleElement_ParsesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_UnknownField_AllowUnknownFalse_ThrowsException
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_UnknownField_AllowUnknownTrue_SkipsField
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_NestedMessage_PreservesData
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_RepeatedField_PreservesData
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_SimpleMessage_PreservesData
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_BoolField_SerializesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_BytesField_SerializesAsBase64
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_EmptyMessage_ReturnsEmptyObject
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_EnumField_SerializesAsString
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_Int32Field_SerializesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_NestedMessage_SerializesCorrectly
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_RepeatedField_SerializesAsArray
+  - GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.UnknownFields_Property_ReturnsCollectedUnknownFields
+  langs:
+  - csharp
+  - vb
+  name: SimpleDynamicMessageTests
+  nameWithType: SimpleDynamicMessageTests
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  type: Class
+  source:
+    id: SimpleDynamicMessageTests
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 12
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  summary: >-
+    Comprehensive tests for SimpleDynamicMessage covering all field types,
+
+    JSON parsing, serialization, and edge cases.
+  example: []
+  syntax:
+    content: public class SimpleDynamicMessageTests
+    content.vb: Public Class SimpleDynamicMessageTests
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithDescriptor_CreatesEmptyMessage
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithDescriptor_CreatesEmptyMessage
+  id: Constructor_WithDescriptor_CreatesEmptyMessage
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: Constructor_WithDescriptor_CreatesEmptyMessage()
+  nameWithType: SimpleDynamicMessageTests.Constructor_WithDescriptor_CreatesEmptyMessage()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithDescriptor_CreatesEmptyMessage()
+  type: Method
+  source:
+    id: Constructor_WithDescriptor_CreatesEmptyMessage
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 16
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void Constructor_WithDescriptor_CreatesEmptyMessage()
+    content.vb: >-
+      <Fact>
+
+      Public Sub Constructor_WithDescriptor_CreatesEmptyMessage()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithDescriptor_CreatesEmptyMessage*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithNullJson_CreatesEmptyMessage
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithNullJson_CreatesEmptyMessage
+  id: Constructor_WithNullJson_CreatesEmptyMessage
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: Constructor_WithNullJson_CreatesEmptyMessage()
+  nameWithType: SimpleDynamicMessageTests.Constructor_WithNullJson_CreatesEmptyMessage()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithNullJson_CreatesEmptyMessage()
+  type: Method
+  source:
+    id: Constructor_WithNullJson_CreatesEmptyMessage
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 29
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void Constructor_WithNullJson_CreatesEmptyMessage()
+    content.vb: >-
+      <Fact>
+
+      Public Sub Constructor_WithNullJson_CreatesEmptyMessage()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithNullJson_CreatesEmptyMessage*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithEmptyJson_CreatesEmptyMessage
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithEmptyJson_CreatesEmptyMessage
+  id: Constructor_WithEmptyJson_CreatesEmptyMessage
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: Constructor_WithEmptyJson_CreatesEmptyMessage()
+  nameWithType: SimpleDynamicMessageTests.Constructor_WithEmptyJson_CreatesEmptyMessage()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithEmptyJson_CreatesEmptyMessage()
+  type: Method
+  source:
+    id: Constructor_WithEmptyJson_CreatesEmptyMessage
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 39
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void Constructor_WithEmptyJson_CreatesEmptyMessage()
+    content.vb: >-
+      <Fact>
+
+      Public Sub Constructor_WithEmptyJson_CreatesEmptyMessage()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithEmptyJson_CreatesEmptyMessage*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_Int32Field_ParsesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_Int32Field_ParsesCorrectly
+  id: ParseJson_Int32Field_ParsesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ParseJson_Int32Field_ParsesCorrectly()
+  nameWithType: SimpleDynamicMessageTests.ParseJson_Int32Field_ParsesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_Int32Field_ParsesCorrectly()
+  type: Method
+  source:
+    id: ParseJson_Int32Field_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 53
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ParseJson_Int32Field_ParsesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ParseJson_Int32Field_ParsesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_Int32Field_ParsesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BoolField_ParsesTrue
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BoolField_ParsesTrue
+  id: ParseJson_BoolField_ParsesTrue
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ParseJson_BoolField_ParsesTrue()
+  nameWithType: SimpleDynamicMessageTests.ParseJson_BoolField_ParsesTrue()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BoolField_ParsesTrue()
+  type: Method
+  source:
+    id: ParseJson_BoolField_ParsesTrue
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 67
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ParseJson_BoolField_ParsesTrue()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ParseJson_BoolField_ParsesTrue()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BoolField_ParsesTrue*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BoolField_ParsesFalse
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BoolField_ParsesFalse
+  id: ParseJson_BoolField_ParsesFalse
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ParseJson_BoolField_ParsesFalse()
+  nameWithType: SimpleDynamicMessageTests.ParseJson_BoolField_ParsesFalse()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BoolField_ParsesFalse()
+  type: Method
+  source:
+    id: ParseJson_BoolField_ParsesFalse
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 81
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ParseJson_BoolField_ParsesFalse()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ParseJson_BoolField_ParsesFalse()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BoolField_ParsesFalse*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_StringName_ParsesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_StringName_ParsesCorrectly
+  id: ParseJson_EnumField_StringName_ParsesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ParseJson_EnumField_StringName_ParsesCorrectly()
+  nameWithType: SimpleDynamicMessageTests.ParseJson_EnumField_StringName_ParsesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_StringName_ParsesCorrectly()
+  type: Method
+  source:
+    id: ParseJson_EnumField_StringName_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 99
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ParseJson_EnumField_StringName_ParsesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ParseJson_EnumField_StringName_ParsesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_StringName_ParsesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_NumericValue_ParsesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_NumericValue_ParsesCorrectly
+  id: ParseJson_EnumField_NumericValue_ParsesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ParseJson_EnumField_NumericValue_ParsesCorrectly()
+  nameWithType: SimpleDynamicMessageTests.ParseJson_EnumField_NumericValue_ParsesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_NumericValue_ParsesCorrectly()
+  type: Method
+  source:
+    id: ParseJson_EnumField_NumericValue_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 113
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ParseJson_EnumField_NumericValue_ParsesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ParseJson_EnumField_NumericValue_ParsesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_NumericValue_ParsesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_UnknownName_ThrowsException
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_UnknownName_ThrowsException
+  id: ParseJson_EnumField_UnknownName_ThrowsException
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ParseJson_EnumField_UnknownName_ThrowsException()
+  nameWithType: SimpleDynamicMessageTests.ParseJson_EnumField_UnknownName_ThrowsException()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_UnknownName_ThrowsException()
+  type: Method
+  source:
+    id: ParseJson_EnumField_UnknownName_ThrowsException
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 127
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ParseJson_EnumField_UnknownName_ThrowsException()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ParseJson_EnumField_UnknownName_ThrowsException()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_UnknownName_ThrowsException*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NestedMessage_ParsesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NestedMessage_ParsesCorrectly
+  id: ParseJson_NestedMessage_ParsesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ParseJson_NestedMessage_ParsesCorrectly()
+  nameWithType: SimpleDynamicMessageTests.ParseJson_NestedMessage_ParsesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NestedMessage_ParsesCorrectly()
+  type: Method
+  source:
+    id: ParseJson_NestedMessage_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 141
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ParseJson_NestedMessage_ParsesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ParseJson_NestedMessage_ParsesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NestedMessage_ParsesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NullNestedMessage_ParsesAsNull
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NullNestedMessage_ParsesAsNull
+  id: ParseJson_NullNestedMessage_ParsesAsNull
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ParseJson_NullNestedMessage_ParsesAsNull()
+  nameWithType: SimpleDynamicMessageTests.ParseJson_NullNestedMessage_ParsesAsNull()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NullNestedMessage_ParsesAsNull()
+  type: Method
+  source:
+    id: ParseJson_NullNestedMessage_ParsesAsNull
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 161
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ParseJson_NullNestedMessage_ParsesAsNull()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ParseJson_NullNestedMessage_ParsesAsNull()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NullNestedMessage_ParsesAsNull*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_EmptyArray_ParsesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_EmptyArray_ParsesCorrectly
+  id: ParseJson_RepeatedField_EmptyArray_ParsesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ParseJson_RepeatedField_EmptyArray_ParsesCorrectly()
+  nameWithType: SimpleDynamicMessageTests.ParseJson_RepeatedField_EmptyArray_ParsesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_EmptyArray_ParsesCorrectly()
+  type: Method
+  source:
+    id: ParseJson_RepeatedField_EmptyArray_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 179
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ParseJson_RepeatedField_EmptyArray_ParsesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ParseJson_RepeatedField_EmptyArray_ParsesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_EmptyArray_ParsesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_SingleElement_ParsesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_SingleElement_ParsesCorrectly
+  id: ParseJson_RepeatedField_SingleElement_ParsesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ParseJson_RepeatedField_SingleElement_ParsesCorrectly()
+  nameWithType: SimpleDynamicMessageTests.ParseJson_RepeatedField_SingleElement_ParsesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_SingleElement_ParsesCorrectly()
+  type: Method
+  source:
+    id: ParseJson_RepeatedField_SingleElement_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 193
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ParseJson_RepeatedField_SingleElement_ParsesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ParseJson_RepeatedField_SingleElement_ParsesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_SingleElement_ParsesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_MultipleElements_ParsesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_MultipleElements_ParsesCorrectly
+  id: ParseJson_RepeatedField_MultipleElements_ParsesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ParseJson_RepeatedField_MultipleElements_ParsesCorrectly()
+  nameWithType: SimpleDynamicMessageTests.ParseJson_RepeatedField_MultipleElements_ParsesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_MultipleElements_ParsesCorrectly()
+  type: Method
+  source:
+    id: ParseJson_RepeatedField_MultipleElements_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 210
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ParseJson_RepeatedField_MultipleElements_ParsesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ParseJson_RepeatedField_MultipleElements_ParsesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_MultipleElements_ParsesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_NullElement_ThrowsException
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_NullElement_ThrowsException
+  id: ParseJson_RepeatedField_NullElement_ThrowsException
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ParseJson_RepeatedField_NullElement_ThrowsException()
+  nameWithType: SimpleDynamicMessageTests.ParseJson_RepeatedField_NullElement_ThrowsException()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_NullElement_ThrowsException()
+  type: Method
+  source:
+    id: ParseJson_RepeatedField_NullElement_ThrowsException
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 224
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ParseJson_RepeatedField_NullElement_ThrowsException()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ParseJson_RepeatedField_NullElement_ThrowsException()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_NullElement_ThrowsException*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_UnknownField_AllowUnknownTrue_SkipsField
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_UnknownField_AllowUnknownTrue_SkipsField
+  id: ParseJson_UnknownField_AllowUnknownTrue_SkipsField
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ParseJson_UnknownField_AllowUnknownTrue_SkipsField()
+  nameWithType: SimpleDynamicMessageTests.ParseJson_UnknownField_AllowUnknownTrue_SkipsField()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_UnknownField_AllowUnknownTrue_SkipsField()
+  type: Method
+  source:
+    id: ParseJson_UnknownField_AllowUnknownTrue_SkipsField
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 238
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ParseJson_UnknownField_AllowUnknownTrue_SkipsField()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ParseJson_UnknownField_AllowUnknownTrue_SkipsField()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_UnknownField_AllowUnknownTrue_SkipsField*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_UnknownField_AllowUnknownFalse_ThrowsException
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_UnknownField_AllowUnknownFalse_ThrowsException
+  id: ParseJson_UnknownField_AllowUnknownFalse_ThrowsException
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ParseJson_UnknownField_AllowUnknownFalse_ThrowsException()
+  nameWithType: SimpleDynamicMessageTests.ParseJson_UnknownField_AllowUnknownFalse_ThrowsException()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_UnknownField_AllowUnknownFalse_ThrowsException()
+  type: Method
+  source:
+    id: ParseJson_UnknownField_AllowUnknownFalse_ThrowsException
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 250
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ParseJson_UnknownField_AllowUnknownFalse_ThrowsException()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ParseJson_UnknownField_AllowUnknownFalse_ThrowsException()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_UnknownField_AllowUnknownFalse_ThrowsException*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.UnknownFields_Property_ReturnsCollectedUnknownFields
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.UnknownFields_Property_ReturnsCollectedUnknownFields
+  id: UnknownFields_Property_ReturnsCollectedUnknownFields
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: UnknownFields_Property_ReturnsCollectedUnknownFields()
+  nameWithType: SimpleDynamicMessageTests.UnknownFields_Property_ReturnsCollectedUnknownFields()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.UnknownFields_Property_ReturnsCollectedUnknownFields()
+  type: Method
+  source:
+    id: UnknownFields_Property_ReturnsCollectedUnknownFields
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 263
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void UnknownFields_Property_ReturnsCollectedUnknownFields()
+    content.vb: >-
+      <Fact>
+
+      Public Sub UnknownFields_Property_ReturnsCollectedUnknownFields()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.UnknownFields_Property_ReturnsCollectedUnknownFields*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_EmptyMessage_ReturnsEmptyObject
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_EmptyMessage_ReturnsEmptyObject
+  id: ToJson_EmptyMessage_ReturnsEmptyObject
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ToJson_EmptyMessage_ReturnsEmptyObject()
+  nameWithType: SimpleDynamicMessageTests.ToJson_EmptyMessage_ReturnsEmptyObject()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_EmptyMessage_ReturnsEmptyObject()
+  type: Method
+  source:
+    id: ToJson_EmptyMessage_ReturnsEmptyObject
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 280
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ToJson_EmptyMessage_ReturnsEmptyObject()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ToJson_EmptyMessage_ReturnsEmptyObject()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_EmptyMessage_ReturnsEmptyObject*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_Int32Field_SerializesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_Int32Field_SerializesCorrectly
+  id: ToJson_Int32Field_SerializesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ToJson_Int32Field_SerializesCorrectly()
+  nameWithType: SimpleDynamicMessageTests.ToJson_Int32Field_SerializesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_Int32Field_SerializesCorrectly()
+  type: Method
+  source:
+    id: ToJson_Int32Field_SerializesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 291
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ToJson_Int32Field_SerializesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ToJson_Int32Field_SerializesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_Int32Field_SerializesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_BoolField_SerializesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_BoolField_SerializesCorrectly
+  id: ToJson_BoolField_SerializesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ToJson_BoolField_SerializesCorrectly()
+  nameWithType: SimpleDynamicMessageTests.ToJson_BoolField_SerializesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_BoolField_SerializesCorrectly()
+  type: Method
+  source:
+    id: ToJson_BoolField_SerializesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 304
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ToJson_BoolField_SerializesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ToJson_BoolField_SerializesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_BoolField_SerializesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_EnumField_SerializesAsString
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_EnumField_SerializesAsString
+  id: ToJson_EnumField_SerializesAsString
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ToJson_EnumField_SerializesAsString()
+  nameWithType: SimpleDynamicMessageTests.ToJson_EnumField_SerializesAsString()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_EnumField_SerializesAsString()
+  type: Method
+  source:
+    id: ToJson_EnumField_SerializesAsString
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 316
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ToJson_EnumField_SerializesAsString()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ToJson_EnumField_SerializesAsString()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_EnumField_SerializesAsString*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_NestedMessage_SerializesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_NestedMessage_SerializesCorrectly
+  id: ToJson_NestedMessage_SerializesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ToJson_NestedMessage_SerializesCorrectly()
+  nameWithType: SimpleDynamicMessageTests.ToJson_NestedMessage_SerializesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_NestedMessage_SerializesCorrectly()
+  type: Method
+  source:
+    id: ToJson_NestedMessage_SerializesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 328
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ToJson_NestedMessage_SerializesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ToJson_NestedMessage_SerializesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_NestedMessage_SerializesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_RepeatedField_SerializesAsArray
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_RepeatedField_SerializesAsArray
+  id: ToJson_RepeatedField_SerializesAsArray
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ToJson_RepeatedField_SerializesAsArray()
+  nameWithType: SimpleDynamicMessageTests.ToJson_RepeatedField_SerializesAsArray()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_RepeatedField_SerializesAsArray()
+  type: Method
+  source:
+    id: ToJson_RepeatedField_SerializesAsArray
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 341
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ToJson_RepeatedField_SerializesAsArray()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ToJson_RepeatedField_SerializesAsArray()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_RepeatedField_SerializesAsArray*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_SimpleMessage_PreservesData
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_SimpleMessage_PreservesData
+  id: RoundTrip_SimpleMessage_PreservesData
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: RoundTrip_SimpleMessage_PreservesData()
+  nameWithType: SimpleDynamicMessageTests.RoundTrip_SimpleMessage_PreservesData()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_SimpleMessage_PreservesData()
+  type: Method
+  source:
+    id: RoundTrip_SimpleMessage_PreservesData
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 357
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void RoundTrip_SimpleMessage_PreservesData()
+    content.vb: >-
+      <Fact>
+
+      Public Sub RoundTrip_SimpleMessage_PreservesData()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_SimpleMessage_PreservesData*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_NestedMessage_PreservesData
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_NestedMessage_PreservesData
+  id: RoundTrip_NestedMessage_PreservesData
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: RoundTrip_NestedMessage_PreservesData()
+  nameWithType: SimpleDynamicMessageTests.RoundTrip_NestedMessage_PreservesData()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_NestedMessage_PreservesData()
+  type: Method
+  source:
+    id: RoundTrip_NestedMessage_PreservesData
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 387
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void RoundTrip_NestedMessage_PreservesData()
+    content.vb: >-
+      <Fact>
+
+      Public Sub RoundTrip_NestedMessage_PreservesData()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_NestedMessage_PreservesData*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_RepeatedField_PreservesData
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_RepeatedField_PreservesData
+  id: RoundTrip_RepeatedField_PreservesData
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: RoundTrip_RepeatedField_PreservesData()
+  nameWithType: SimpleDynamicMessageTests.RoundTrip_RepeatedField_PreservesData()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_RepeatedField_PreservesData()
+  type: Method
+  source:
+    id: RoundTrip_RepeatedField_PreservesData
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 423
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void RoundTrip_RepeatedField_PreservesData()
+    content.vb: >-
+      <Fact>
+
+      Public Sub RoundTrip_RepeatedField_PreservesData()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_RepeatedField_PreservesData*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BytesField_Base64_ParsesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BytesField_Base64_ParsesCorrectly
+  id: ParseJson_BytesField_Base64_ParsesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ParseJson_BytesField_Base64_ParsesCorrectly()
+  nameWithType: SimpleDynamicMessageTests.ParseJson_BytesField_Base64_ParsesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BytesField_Base64_ParsesCorrectly()
+  type: Method
+  source:
+    id: ParseJson_BytesField_Base64_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 457
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ParseJson_BytesField_Base64_ParsesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ParseJson_BytesField_Base64_ParsesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BytesField_Base64_ParsesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BytesField_EmptyString_ParsesAsEmpty
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BytesField_EmptyString_ParsesAsEmpty
+  id: ParseJson_BytesField_EmptyString_ParsesAsEmpty
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ParseJson_BytesField_EmptyString_ParsesAsEmpty()
+  nameWithType: SimpleDynamicMessageTests.ParseJson_BytesField_EmptyString_ParsesAsEmpty()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BytesField_EmptyString_ParsesAsEmpty()
+  type: Method
+  source:
+    id: ParseJson_BytesField_EmptyString_ParsesAsEmpty
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 474
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ParseJson_BytesField_EmptyString_ParsesAsEmpty()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ParseJson_BytesField_EmptyString_ParsesAsEmpty()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BytesField_EmptyString_ParsesAsEmpty*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_BytesField_SerializesAsBase64
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_BytesField_SerializesAsBase64
+  id: ToJson_BytesField_SerializesAsBase64
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ToJson_BytesField_SerializesAsBase64()
+  nameWithType: SimpleDynamicMessageTests.ToJson_BytesField_SerializesAsBase64()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_BytesField_SerializesAsBase64()
+  type: Method
+  source:
+    id: ToJson_BytesField_SerializesAsBase64
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 491
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ToJson_BytesField_SerializesAsBase64()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ToJson_BytesField_SerializesAsBase64()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_BytesField_SerializesAsBase64*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_EmptyMessage_ReturnsZero
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_EmptyMessage_ReturnsZero
+  id: CalculateSize_EmptyMessage_ReturnsZero
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: CalculateSize_EmptyMessage_ReturnsZero()
+  nameWithType: SimpleDynamicMessageTests.CalculateSize_EmptyMessage_ReturnsZero()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_EmptyMessage_ReturnsZero()
+  type: Method
+  source:
+    id: CalculateSize_EmptyMessage_ReturnsZero
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 507
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void CalculateSize_EmptyMessage_ReturnsZero()
+    content.vb: >-
+      <Fact>
+
+      Public Sub CalculateSize_EmptyMessage_ReturnsZero()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_EmptyMessage_ReturnsZero*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_WithFields_ReturnsCorrectSize
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_WithFields_ReturnsCorrectSize
+  id: CalculateSize_WithFields_ReturnsCorrectSize
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: CalculateSize_WithFields_ReturnsCorrectSize()
+  nameWithType: SimpleDynamicMessageTests.CalculateSize_WithFields_ReturnsCorrectSize()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_WithFields_ReturnsCorrectSize()
+  type: Method
+  source:
+    id: CalculateSize_WithFields_ReturnsCorrectSize
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 516
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void CalculateSize_WithFields_ReturnsCorrectSize()
+    content.vb: >-
+      <Fact>
+
+      Public Sub CalculateSize_WithFields_ReturnsCorrectSize()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_WithFields_ReturnsCorrectSize*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_MatchesActualWrittenSize
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_MatchesActualWrittenSize
+  id: CalculateSize_MatchesActualWrittenSize
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: CalculateSize_MatchesActualWrittenSize()
+  nameWithType: SimpleDynamicMessageTests.CalculateSize_MatchesActualWrittenSize()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_MatchesActualWrittenSize()
+  type: Method
+  source:
+    id: CalculateSize_MatchesActualWrittenSize
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 528
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void CalculateSize_MatchesActualWrittenSize()
+    content.vb: >-
+      <Fact>
+
+      Public Sub CalculateSize_MatchesActualWrittenSize()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_MatchesActualWrittenSize*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_JsonName_ParsesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_JsonName_ParsesCorrectly
+  id: ParseJson_JsonName_ParsesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ParseJson_JsonName_ParsesCorrectly()
+  nameWithType: SimpleDynamicMessageTests.ParseJson_JsonName_ParsesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_JsonName_ParsesCorrectly()
+  type: Method
+  source:
+    id: ParseJson_JsonName_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 552
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ParseJson_JsonName_ParsesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ParseJson_JsonName_ParsesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_JsonName_ParsesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_ProtoName_ParsesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_ProtoName_ParsesCorrectly
+  id: ParseJson_ProtoName_ParsesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ParseJson_ProtoName_ParsesCorrectly()
+  nameWithType: SimpleDynamicMessageTests.ParseJson_ProtoName_ParsesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_ProtoName_ParsesCorrectly()
+  type: Method
+  source:
+    id: ParseJson_ProtoName_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 566
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ParseJson_ProtoName_ParsesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ParseJson_ProtoName_ParsesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_ProtoName_ParsesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_CaseInsensitive_ParsesCorrectly
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_CaseInsensitive_ParsesCorrectly
+  id: ParseJson_CaseInsensitive_ParsesCorrectly
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ParseJson_CaseInsensitive_ParsesCorrectly()
+  nameWithType: SimpleDynamicMessageTests.ParseJson_CaseInsensitive_ParsesCorrectly()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_CaseInsensitive_ParsesCorrectly()
+  type: Method
+  source:
+    id: ParseJson_CaseInsensitive_ParsesCorrectly
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 580
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ParseJson_CaseInsensitive_ParsesCorrectly()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ParseJson_CaseInsensitive_ParsesCorrectly()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_CaseInsensitive_ParsesCorrectly*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_InvalidJsonSyntax_ThrowsException
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_InvalidJsonSyntax_ThrowsException
+  id: ParseJson_InvalidJsonSyntax_ThrowsException
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ParseJson_InvalidJsonSyntax_ThrowsException()
+  nameWithType: SimpleDynamicMessageTests.ParseJson_InvalidJsonSyntax_ThrowsException()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_InvalidJsonSyntax_ThrowsException()
+  type: Method
+  source:
+    id: ParseJson_InvalidJsonSyntax_ThrowsException
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 598
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ParseJson_InvalidJsonSyntax_ThrowsException()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ParseJson_InvalidJsonSyntax_ThrowsException()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_InvalidJsonSyntax_ThrowsException*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NotAnObject_ThrowsException
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NotAnObject_ThrowsException
+  id: ParseJson_NotAnObject_ThrowsException
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: ParseJson_NotAnObject_ThrowsException()
+  nameWithType: SimpleDynamicMessageTests.ParseJson_NotAnObject_ThrowsException()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NotAnObject_ThrowsException()
+  type: Method
+  source:
+    id: ParseJson_NotAnObject_ThrowsException
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 609
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void ParseJson_NotAnObject_ThrowsException()
+    content.vb: >-
+      <Fact>
+
+      Public Sub ParseJson_NotAnObject_ThrowsException()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NotAnObject_ThrowsException*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Descriptor_ReturnsCorrectDescriptor
+  commentId: M:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Descriptor_ReturnsCorrectDescriptor
+  id: Descriptor_ReturnsCorrectDescriptor
+  parent: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests
+  langs:
+  - csharp
+  - vb
+  name: Descriptor_ReturnsCorrectDescriptor()
+  nameWithType: SimpleDynamicMessageTests.Descriptor_ReturnsCorrectDescriptor()
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Descriptor_ReturnsCorrectDescriptor()
+  type: Method
+  source:
+    id: Descriptor_ReturnsCorrectDescriptor
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Tests/GrpCurl.DotNet.Tests.Unit/Invocation/SimpleDynamicMessageTests.cs
+    startLine: 623
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+  namespace: GrpCurl.Net.Tests.Unit.Invocation
+  syntax:
+    content: >-
+      [Fact]
+
+      public void Descriptor_ReturnsCorrectDescriptor()
+    content.vb: >-
+      <Fact>
+
+      Public Sub Descriptor_ReturnsCorrectDescriptor()
+  overload: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Descriptor_ReturnsCorrectDescriptor*
+  attributes:
+  - type: Xunit.FactAttribute
+    ctor: Xunit.FactAttribute.#ctor
+    arguments: []
+references:
+- uid: GrpCurl.Net.Tests.Unit.Invocation
+  commentId: N:GrpCurl.Net.Tests.Unit.Invocation
+  href: GrpCurl.html
+  name: GrpCurl.Net.Tests.Unit.Invocation
+  nameWithType: GrpCurl.Net.Tests.Unit.Invocation
+  fullName: GrpCurl.Net.Tests.Unit.Invocation
+  spec.csharp:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit
+    name: Unit
+    href: GrpCurl.Net.Tests.Unit.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit.Invocation
+    name: Invocation
+    href: GrpCurl.Net.Tests.Unit.Invocation.html
+  spec.vb:
+  - uid: GrpCurl
+    name: GrpCurl
+    href: GrpCurl.html
+  - name: .
+  - uid: GrpCurl.Net
+    name: Net
+    href: GrpCurl.Net.html
+  - name: .
+  - uid: GrpCurl.Net.Tests
+    name: Tests
+    href: GrpCurl.Net.Tests.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit
+    name: Unit
+    href: GrpCurl.Net.Tests.Unit.html
+  - name: .
+  - uid: GrpCurl.Net.Tests.Unit.Invocation
+    name: Invocation
+    href: GrpCurl.Net.Tests.Unit.Invocation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithDescriptor_CreatesEmptyMessage*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithDescriptor_CreatesEmptyMessage
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_Constructor_WithDescriptor_CreatesEmptyMessage
+  name: Constructor_WithDescriptor_CreatesEmptyMessage
+  nameWithType: SimpleDynamicMessageTests.Constructor_WithDescriptor_CreatesEmptyMessage
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithDescriptor_CreatesEmptyMessage
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithNullJson_CreatesEmptyMessage*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithNullJson_CreatesEmptyMessage
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_Constructor_WithNullJson_CreatesEmptyMessage
+  name: Constructor_WithNullJson_CreatesEmptyMessage
+  nameWithType: SimpleDynamicMessageTests.Constructor_WithNullJson_CreatesEmptyMessage
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithNullJson_CreatesEmptyMessage
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithEmptyJson_CreatesEmptyMessage*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithEmptyJson_CreatesEmptyMessage
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_Constructor_WithEmptyJson_CreatesEmptyMessage
+  name: Constructor_WithEmptyJson_CreatesEmptyMessage
+  nameWithType: SimpleDynamicMessageTests.Constructor_WithEmptyJson_CreatesEmptyMessage
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Constructor_WithEmptyJson_CreatesEmptyMessage
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_Int32Field_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_Int32Field_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ParseJson_Int32Field_ParsesCorrectly
+  name: ParseJson_Int32Field_ParsesCorrectly
+  nameWithType: SimpleDynamicMessageTests.ParseJson_Int32Field_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_Int32Field_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BoolField_ParsesTrue*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BoolField_ParsesTrue
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ParseJson_BoolField_ParsesTrue
+  name: ParseJson_BoolField_ParsesTrue
+  nameWithType: SimpleDynamicMessageTests.ParseJson_BoolField_ParsesTrue
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BoolField_ParsesTrue
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BoolField_ParsesFalse*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BoolField_ParsesFalse
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ParseJson_BoolField_ParsesFalse
+  name: ParseJson_BoolField_ParsesFalse
+  nameWithType: SimpleDynamicMessageTests.ParseJson_BoolField_ParsesFalse
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BoolField_ParsesFalse
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_StringName_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_StringName_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ParseJson_EnumField_StringName_ParsesCorrectly
+  name: ParseJson_EnumField_StringName_ParsesCorrectly
+  nameWithType: SimpleDynamicMessageTests.ParseJson_EnumField_StringName_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_StringName_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_NumericValue_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_NumericValue_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ParseJson_EnumField_NumericValue_ParsesCorrectly
+  name: ParseJson_EnumField_NumericValue_ParsesCorrectly
+  nameWithType: SimpleDynamicMessageTests.ParseJson_EnumField_NumericValue_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_NumericValue_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_UnknownName_ThrowsException*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_UnknownName_ThrowsException
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ParseJson_EnumField_UnknownName_ThrowsException
+  name: ParseJson_EnumField_UnknownName_ThrowsException
+  nameWithType: SimpleDynamicMessageTests.ParseJson_EnumField_UnknownName_ThrowsException
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_EnumField_UnknownName_ThrowsException
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NestedMessage_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NestedMessage_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ParseJson_NestedMessage_ParsesCorrectly
+  name: ParseJson_NestedMessage_ParsesCorrectly
+  nameWithType: SimpleDynamicMessageTests.ParseJson_NestedMessage_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NestedMessage_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NullNestedMessage_ParsesAsNull*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NullNestedMessage_ParsesAsNull
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ParseJson_NullNestedMessage_ParsesAsNull
+  name: ParseJson_NullNestedMessage_ParsesAsNull
+  nameWithType: SimpleDynamicMessageTests.ParseJson_NullNestedMessage_ParsesAsNull
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NullNestedMessage_ParsesAsNull
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_EmptyArray_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_EmptyArray_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ParseJson_RepeatedField_EmptyArray_ParsesCorrectly
+  name: ParseJson_RepeatedField_EmptyArray_ParsesCorrectly
+  nameWithType: SimpleDynamicMessageTests.ParseJson_RepeatedField_EmptyArray_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_EmptyArray_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_SingleElement_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_SingleElement_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ParseJson_RepeatedField_SingleElement_ParsesCorrectly
+  name: ParseJson_RepeatedField_SingleElement_ParsesCorrectly
+  nameWithType: SimpleDynamicMessageTests.ParseJson_RepeatedField_SingleElement_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_SingleElement_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_MultipleElements_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_MultipleElements_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ParseJson_RepeatedField_MultipleElements_ParsesCorrectly
+  name: ParseJson_RepeatedField_MultipleElements_ParsesCorrectly
+  nameWithType: SimpleDynamicMessageTests.ParseJson_RepeatedField_MultipleElements_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_MultipleElements_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_NullElement_ThrowsException*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_NullElement_ThrowsException
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ParseJson_RepeatedField_NullElement_ThrowsException
+  name: ParseJson_RepeatedField_NullElement_ThrowsException
+  nameWithType: SimpleDynamicMessageTests.ParseJson_RepeatedField_NullElement_ThrowsException
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_RepeatedField_NullElement_ThrowsException
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_UnknownField_AllowUnknownTrue_SkipsField*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_UnknownField_AllowUnknownTrue_SkipsField
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ParseJson_UnknownField_AllowUnknownTrue_SkipsField
+  name: ParseJson_UnknownField_AllowUnknownTrue_SkipsField
+  nameWithType: SimpleDynamicMessageTests.ParseJson_UnknownField_AllowUnknownTrue_SkipsField
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_UnknownField_AllowUnknownTrue_SkipsField
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_UnknownField_AllowUnknownFalse_ThrowsException*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_UnknownField_AllowUnknownFalse_ThrowsException
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ParseJson_UnknownField_AllowUnknownFalse_ThrowsException
+  name: ParseJson_UnknownField_AllowUnknownFalse_ThrowsException
+  nameWithType: SimpleDynamicMessageTests.ParseJson_UnknownField_AllowUnknownFalse_ThrowsException
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_UnknownField_AllowUnknownFalse_ThrowsException
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.UnknownFields_Property_ReturnsCollectedUnknownFields*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.UnknownFields_Property_ReturnsCollectedUnknownFields
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_UnknownFields_Property_ReturnsCollectedUnknownFields
+  name: UnknownFields_Property_ReturnsCollectedUnknownFields
+  nameWithType: SimpleDynamicMessageTests.UnknownFields_Property_ReturnsCollectedUnknownFields
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.UnknownFields_Property_ReturnsCollectedUnknownFields
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_EmptyMessage_ReturnsEmptyObject*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_EmptyMessage_ReturnsEmptyObject
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ToJson_EmptyMessage_ReturnsEmptyObject
+  name: ToJson_EmptyMessage_ReturnsEmptyObject
+  nameWithType: SimpleDynamicMessageTests.ToJson_EmptyMessage_ReturnsEmptyObject
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_EmptyMessage_ReturnsEmptyObject
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_Int32Field_SerializesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_Int32Field_SerializesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ToJson_Int32Field_SerializesCorrectly
+  name: ToJson_Int32Field_SerializesCorrectly
+  nameWithType: SimpleDynamicMessageTests.ToJson_Int32Field_SerializesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_Int32Field_SerializesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_BoolField_SerializesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_BoolField_SerializesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ToJson_BoolField_SerializesCorrectly
+  name: ToJson_BoolField_SerializesCorrectly
+  nameWithType: SimpleDynamicMessageTests.ToJson_BoolField_SerializesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_BoolField_SerializesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_EnumField_SerializesAsString*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_EnumField_SerializesAsString
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ToJson_EnumField_SerializesAsString
+  name: ToJson_EnumField_SerializesAsString
+  nameWithType: SimpleDynamicMessageTests.ToJson_EnumField_SerializesAsString
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_EnumField_SerializesAsString
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_NestedMessage_SerializesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_NestedMessage_SerializesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ToJson_NestedMessage_SerializesCorrectly
+  name: ToJson_NestedMessage_SerializesCorrectly
+  nameWithType: SimpleDynamicMessageTests.ToJson_NestedMessage_SerializesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_NestedMessage_SerializesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_RepeatedField_SerializesAsArray*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_RepeatedField_SerializesAsArray
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ToJson_RepeatedField_SerializesAsArray
+  name: ToJson_RepeatedField_SerializesAsArray
+  nameWithType: SimpleDynamicMessageTests.ToJson_RepeatedField_SerializesAsArray
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_RepeatedField_SerializesAsArray
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_SimpleMessage_PreservesData*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_SimpleMessage_PreservesData
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_RoundTrip_SimpleMessage_PreservesData
+  name: RoundTrip_SimpleMessage_PreservesData
+  nameWithType: SimpleDynamicMessageTests.RoundTrip_SimpleMessage_PreservesData
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_SimpleMessage_PreservesData
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_NestedMessage_PreservesData*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_NestedMessage_PreservesData
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_RoundTrip_NestedMessage_PreservesData
+  name: RoundTrip_NestedMessage_PreservesData
+  nameWithType: SimpleDynamicMessageTests.RoundTrip_NestedMessage_PreservesData
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_NestedMessage_PreservesData
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_RepeatedField_PreservesData*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_RepeatedField_PreservesData
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_RoundTrip_RepeatedField_PreservesData
+  name: RoundTrip_RepeatedField_PreservesData
+  nameWithType: SimpleDynamicMessageTests.RoundTrip_RepeatedField_PreservesData
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.RoundTrip_RepeatedField_PreservesData
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BytesField_Base64_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BytesField_Base64_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ParseJson_BytesField_Base64_ParsesCorrectly
+  name: ParseJson_BytesField_Base64_ParsesCorrectly
+  nameWithType: SimpleDynamicMessageTests.ParseJson_BytesField_Base64_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BytesField_Base64_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BytesField_EmptyString_ParsesAsEmpty*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BytesField_EmptyString_ParsesAsEmpty
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ParseJson_BytesField_EmptyString_ParsesAsEmpty
+  name: ParseJson_BytesField_EmptyString_ParsesAsEmpty
+  nameWithType: SimpleDynamicMessageTests.ParseJson_BytesField_EmptyString_ParsesAsEmpty
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_BytesField_EmptyString_ParsesAsEmpty
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_BytesField_SerializesAsBase64*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_BytesField_SerializesAsBase64
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ToJson_BytesField_SerializesAsBase64
+  name: ToJson_BytesField_SerializesAsBase64
+  nameWithType: SimpleDynamicMessageTests.ToJson_BytesField_SerializesAsBase64
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ToJson_BytesField_SerializesAsBase64
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_EmptyMessage_ReturnsZero*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_EmptyMessage_ReturnsZero
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_CalculateSize_EmptyMessage_ReturnsZero
+  name: CalculateSize_EmptyMessage_ReturnsZero
+  nameWithType: SimpleDynamicMessageTests.CalculateSize_EmptyMessage_ReturnsZero
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_EmptyMessage_ReturnsZero
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_WithFields_ReturnsCorrectSize*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_WithFields_ReturnsCorrectSize
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_CalculateSize_WithFields_ReturnsCorrectSize
+  name: CalculateSize_WithFields_ReturnsCorrectSize
+  nameWithType: SimpleDynamicMessageTests.CalculateSize_WithFields_ReturnsCorrectSize
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_WithFields_ReturnsCorrectSize
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_MatchesActualWrittenSize*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_MatchesActualWrittenSize
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_CalculateSize_MatchesActualWrittenSize
+  name: CalculateSize_MatchesActualWrittenSize
+  nameWithType: SimpleDynamicMessageTests.CalculateSize_MatchesActualWrittenSize
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.CalculateSize_MatchesActualWrittenSize
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_JsonName_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_JsonName_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ParseJson_JsonName_ParsesCorrectly
+  name: ParseJson_JsonName_ParsesCorrectly
+  nameWithType: SimpleDynamicMessageTests.ParseJson_JsonName_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_JsonName_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_ProtoName_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_ProtoName_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ParseJson_ProtoName_ParsesCorrectly
+  name: ParseJson_ProtoName_ParsesCorrectly
+  nameWithType: SimpleDynamicMessageTests.ParseJson_ProtoName_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_ProtoName_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_CaseInsensitive_ParsesCorrectly*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_CaseInsensitive_ParsesCorrectly
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ParseJson_CaseInsensitive_ParsesCorrectly
+  name: ParseJson_CaseInsensitive_ParsesCorrectly
+  nameWithType: SimpleDynamicMessageTests.ParseJson_CaseInsensitive_ParsesCorrectly
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_CaseInsensitive_ParsesCorrectly
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_InvalidJsonSyntax_ThrowsException*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_InvalidJsonSyntax_ThrowsException
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ParseJson_InvalidJsonSyntax_ThrowsException
+  name: ParseJson_InvalidJsonSyntax_ThrowsException
+  nameWithType: SimpleDynamicMessageTests.ParseJson_InvalidJsonSyntax_ThrowsException
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_InvalidJsonSyntax_ThrowsException
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NotAnObject_ThrowsException*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NotAnObject_ThrowsException
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_ParseJson_NotAnObject_ThrowsException
+  name: ParseJson_NotAnObject_ThrowsException
+  nameWithType: SimpleDynamicMessageTests.ParseJson_NotAnObject_ThrowsException
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.ParseJson_NotAnObject_ThrowsException
+- uid: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Descriptor_ReturnsCorrectDescriptor*
+  commentId: Overload:GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Descriptor_ReturnsCorrectDescriptor
+  href: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.html#GrpCurl_Net_Tests_Unit_Invocation_SimpleDynamicMessageTests_Descriptor_ReturnsCorrectDescriptor
+  name: Descriptor_ReturnsCorrectDescriptor
+  nameWithType: SimpleDynamicMessageTests.Descriptor_ReturnsCorrectDescriptor
+  fullName: GrpCurl.Net.Tests.Unit.Invocation.SimpleDynamicMessageTests.Descriptor_ReturnsCorrectDescriptor

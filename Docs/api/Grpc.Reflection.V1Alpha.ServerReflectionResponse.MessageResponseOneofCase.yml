@@ -1,0 +1,195 @@
+### YamlMime:ManagedReference
+items:
+- uid: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+  commentId: T:Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+  id: ServerReflectionResponse.MessageResponseOneofCase
+  parent: Grpc.Reflection.V1Alpha
+  children:
+  - Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.AllExtensionNumbersResponse
+  - Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.ErrorResponse
+  - Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.FileDescriptorResponse
+  - Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.ListServicesResponse
+  - Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.None
+  langs:
+  - csharp
+  - vb
+  name: ServerReflectionResponse.MessageResponseOneofCase
+  nameWithType: ServerReflectionResponse.MessageResponseOneofCase
+  fullName: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+  type: Enum
+  source:
+    id: MessageResponseOneofCase
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 993
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  summary: Enum of possible cases for the "message_response" oneof.
+  example: []
+  syntax:
+    content: public enum ServerReflectionResponse.MessageResponseOneofCase
+    content.vb: Public Enum ServerReflectionResponse.MessageResponseOneofCase
+- uid: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.None
+  commentId: F:Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.None
+  id: None
+  parent: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+  langs:
+  - csharp
+  - vb
+  name: None
+  nameWithType: ServerReflectionResponse.MessageResponseOneofCase.None
+  fullName: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.None
+  type: Field
+  source:
+    id: None
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 994
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  syntax:
+    content: None = 0
+    return:
+      type: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+- uid: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.FileDescriptorResponse
+  commentId: F:Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.FileDescriptorResponse
+  id: FileDescriptorResponse
+  parent: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+  langs:
+  - csharp
+  - vb
+  name: FileDescriptorResponse
+  nameWithType: ServerReflectionResponse.MessageResponseOneofCase.FileDescriptorResponse
+  fullName: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.FileDescriptorResponse
+  type: Field
+  source:
+    id: FileDescriptorResponse
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 995
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  syntax:
+    content: FileDescriptorResponse = 4
+    return:
+      type: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+- uid: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.AllExtensionNumbersResponse
+  commentId: F:Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.AllExtensionNumbersResponse
+  id: AllExtensionNumbersResponse
+  parent: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+  langs:
+  - csharp
+  - vb
+  name: AllExtensionNumbersResponse
+  nameWithType: ServerReflectionResponse.MessageResponseOneofCase.AllExtensionNumbersResponse
+  fullName: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.AllExtensionNumbersResponse
+  type: Field
+  source:
+    id: AllExtensionNumbersResponse
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 996
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  syntax:
+    content: AllExtensionNumbersResponse = 5
+    return:
+      type: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+- uid: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.ListServicesResponse
+  commentId: F:Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.ListServicesResponse
+  id: ListServicesResponse
+  parent: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+  langs:
+  - csharp
+  - vb
+  name: ListServicesResponse
+  nameWithType: ServerReflectionResponse.MessageResponseOneofCase.ListServicesResponse
+  fullName: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.ListServicesResponse
+  type: Field
+  source:
+    id: ListServicesResponse
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 997
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  syntax:
+    content: ListServicesResponse = 6
+    return:
+      type: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+- uid: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.ErrorResponse
+  commentId: F:Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.ErrorResponse
+  id: ErrorResponse
+  parent: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+  langs:
+  - csharp
+  - vb
+  name: ErrorResponse
+  nameWithType: ServerReflectionResponse.MessageResponseOneofCase.ErrorResponse
+  fullName: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.ErrorResponse
+  type: Field
+  source:
+    id: ErrorResponse
+    path: /home/rweeks/DEV/GRPCURL/GrpCurl.Net/Src/GrpCurl.Net/obj/Release/net10.0/Protos/Reflection.cs
+    startLine: 998
+  assemblies:
+  - GrpCurl.Net
+  namespace: Grpc.Reflection.V1Alpha
+  syntax:
+    content: ErrorResponse = 7
+    return:
+      type: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+references:
+- uid: Grpc.Reflection.V1Alpha
+  commentId: N:Grpc.Reflection.V1Alpha
+  href: Grpc.html
+  name: Grpc.Reflection.V1Alpha
+  nameWithType: Grpc.Reflection.V1Alpha
+  fullName: Grpc.Reflection.V1Alpha
+  spec.csharp:
+  - uid: Grpc
+    name: Grpc
+    href: Grpc.html
+  - name: .
+  - uid: Grpc.Reflection
+    name: Reflection
+    href: Grpc.Reflection.html
+  - name: .
+  - uid: Grpc.Reflection.V1Alpha
+    name: V1Alpha
+    href: Grpc.Reflection.V1Alpha.html
+  spec.vb:
+  - uid: Grpc
+    name: Grpc
+    href: Grpc.html
+  - name: .
+  - uid: Grpc.Reflection
+    name: Reflection
+    href: Grpc.Reflection.html
+  - name: .
+  - uid: Grpc.Reflection.V1Alpha
+    name: V1Alpha
+    href: Grpc.Reflection.V1Alpha.html
+- uid: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+  commentId: T:Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+  parent: Grpc.Reflection.V1Alpha
+  href: Grpc.Reflection.V1Alpha.ServerReflectionResponse.html
+  name: ServerReflectionResponse.MessageResponseOneofCase
+  nameWithType: ServerReflectionResponse.MessageResponseOneofCase
+  fullName: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+  spec.csharp:
+  - uid: Grpc.Reflection.V1Alpha.ServerReflectionResponse
+    name: ServerReflectionResponse
+    href: Grpc.Reflection.V1Alpha.ServerReflectionResponse.html
+  - name: .
+  - uid: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+    name: MessageResponseOneofCase
+    href: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.html
+  spec.vb:
+  - uid: Grpc.Reflection.V1Alpha.ServerReflectionResponse
+    name: ServerReflectionResponse
+    href: Grpc.Reflection.V1Alpha.ServerReflectionResponse.html
+  - name: .
+  - uid: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase
+    name: MessageResponseOneofCase
+    href: Grpc.Reflection.V1Alpha.ServerReflectionResponse.MessageResponseOneofCase.html

@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources
+  commentId: N:GrpCurl.Net.Tests.Unit.DescriptorSources
+  id: GrpCurl.Net.Tests.Unit.DescriptorSources
+  children:
+  - GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  langs:
+  - csharp
+  - vb
+  name: GrpCurl.Net.Tests.Unit.DescriptorSources
+  nameWithType: GrpCurl.Net.Tests.Unit.DescriptorSources
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources
+  type: Namespace
+  assemblies:
+  - GrpCurl.Net.Tests.Unit
+references:
+- uid: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  commentId: T:GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests
+  href: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests.html
+  name: ProtosetSourceTests
+  nameWithType: ProtosetSourceTests
+  fullName: GrpCurl.Net.Tests.Unit.DescriptorSources.ProtosetSourceTests

@@ -130,6 +130,11 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
             null,
             callOptions);
 
+        // Create a linked token source for the write task so we can cancel it independently
+        using var writeCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        var writeToken = writeCts.Token;
+        Exception? readException = null;
+
         // Start writing requests in background
         var writeTask = Task.Run(async () =>
         {
@@ -137,13 +142,26 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
 
             try
             {
-                await foreach (var request in requests.WithCancellation(cancellationToken))
+                await foreach (var request in requests.WithCancellation(writeToken))
                 {
-                    await call.RequestStream.WriteAsync(request, cancellationToken);
+                    await call.RequestStream.WriteAsync(request, writeToken);
                     sentCount++;
                 }
 
                 await call.RequestStream.CompleteAsync();
+            }
+            catch (OperationCanceledException) when (writeToken.IsCancellationRequested)
+            {
+                // Write was cancelled - this is expected if response stream ended early or user cancelled
+                // Complete the stream if we can, ignore errors
+                try
+                {
+                    await call.RequestStream.CompleteAsync();
+                }
+                catch
+                {
+                    // Ignore - stream may already be closed
+                }
             }
             catch (RpcException ex)
             {
@@ -155,30 +173,57 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
                 // Connection drop during write
                 throw new IOException($"Connection lost after sending {sentCount} message(s)", ex);
             }
-        }, cancellationToken);
+        }, writeToken);
 
         // Read responses
-        // Note: Cannot wrap yield return in try-catch due to C# limitation
-        // Read errors will propagate naturally with server-side error details
-        await foreach (var response in call.ResponseStream.ReadAllAsync(cancellationToken))
-        {
-            yield return response;
-        }
-
-        // Wait for write task to complete and propagate any write errors with context
-        // Add timeout to prevent indefinite hang
-        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-
-        cts.CancelAfter(TimeSpan.FromSeconds(30));
+        // Track any read exception to propagate after cleanup
+        IMessage? currentResponse = null;
 
         try
         {
-            await writeTask.WaitAsync(cts.Token);
+            await foreach (var response in call.ResponseStream.ReadAllAsync(cancellationToken))
+            {
+                currentResponse = response;
+
+                yield return response;
+            }
         }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        finally
         {
-            // Timeout occurred, not user cancellation
-            throw new TimeoutException("Write task did not complete within 30 seconds after response stream ended");
+            // Cancel the write task if it's still running
+            await writeCts.CancelAsync();
+
+            // Wait for write task with timeout - don't throw on cancellation
+            try
+            {
+                await writeTask.WaitAsync(TimeSpan.FromSeconds(5), CancellationToken.None);
+            }
+            catch (TimeoutException)
+            {
+                // Write task didn't complete in time - log but don't throw
+                Console.Error.WriteLine("Warning: Write task did not complete within 5 seconds after response stream ended");
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected - write was cancelled
+            }
+            catch (Exception ex)
+            {
+                // Write task failed - propagate if no read exception occurred
+                if (readException is null)
+                {
+                    readException = ex;
+                }
+            }
+
+            // Dispose the call to release resources
+            call.Dispose();
+        }
+
+        // Propagate any write exception that occurred
+        if (readException is not null)
+        {
+            throw readException;
         }
     }
 
@@ -411,7 +456,8 @@ internal class SimpleDynamicMessage : IMessage
     {
         if (element.ValueKind == JsonValueKind.Null)
         {
-            return null;
+            // Only message types can be null in protobuf; scalars use defaults
+            return field.FieldType == FieldType.Message ? null : GetDefaultValue(field);
         }
 
         return field.FieldType switch
@@ -595,8 +641,44 @@ internal class SimpleDynamicMessage : IMessage
     }
 
     /// <summary>
+    ///     Returns the default value for a scalar field type.
+    ///     Protobuf scalars don't have null semantics - they default to zero/empty values.
+    /// </summary>
+    private static object GetDefaultValue(FieldDescriptor field)
+        => field.FieldType switch
+        {
+            FieldType.String => "",
+            FieldType.Int32 or FieldType.SInt32 or FieldType.SFixed32 => 0,
+            FieldType.Int64 or FieldType.SInt64 or FieldType.SFixed64 => 0L,
+            FieldType.UInt32 or FieldType.Fixed32 => 0u,
+            FieldType.UInt64 or FieldType.Fixed64 => 0UL,
+            FieldType.Bool => false,
+            FieldType.Float => 0f,
+            FieldType.Double => 0d,
+            FieldType.Bytes => ByteString.Empty,
+            FieldType.Enum => 0,
+            _ => throw new ArgumentException($"No default value for field type: {field.FieldType}")
+        };
+
+    /// <summary>
     ///     Converts this dynamic message to JSON string.
     /// </summary>
+    /// <param name="includeDefaults">
+    ///     When true, includes fields with default/null values in output.
+    ///     When false (default), omits fields with null or default values.
+    /// </param>
+    /// <returns>JSON representation of the message.</returns>
+    /// <remarks>
+    ///     <para>
+    ///         Proto3 semantics: In proto3, there is no distinction between a field that was never
+    ///         set and a field explicitly set to its default value. Both null message fields and
+    ///         unset fields are omitted from the JSON output when includeDefaults is false.
+    ///     </para>
+    ///     <para>
+    ///         This matches the canonical proto3 JSON encoding behavior where default values are
+    ///         not emitted. Use includeDefaults=true (--emit-defaults CLI flag) to see all fields.
+    ///     </para>
+    /// </remarks>
     public string ToJson(bool includeDefaults = false)
     {
         var sb = new StringBuilder().Append('{');
@@ -607,6 +689,7 @@ internal class SimpleDynamicMessage : IMessage
         foreach (var (field, value) in Fields)
         {
             // Skip null values unless includeDefaults is true
+            // Note: Proto3 does not distinguish between "unset" and "default value" for scalars
             if (value is null && !includeDefaults)
             {
                 continue;

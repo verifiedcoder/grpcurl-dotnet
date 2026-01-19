@@ -70,7 +70,7 @@ internal static class ProtobufReader
             }
             else
             {
-                var value = ReadFieldValue(input, field);
+                var value = ReadSingleFieldValue(input, field);
 
                 // If this field is part of oneof, clear other fields in the same oneof
                 if (field.ContainingOneof is { IsSynthetic: false })
@@ -91,10 +91,6 @@ internal static class ProtobufReader
             }
         }
     }
-
-    // This method is for non-repeated fields
-    private static object? ReadFieldValue(CodedInputStream input, FieldDescriptor field)
-        => ReadSingleFieldValue(input, field);
 
     // Handle different field types
     private static object? ReadSingleFieldValue(CodedInputStream input, FieldDescriptor field)

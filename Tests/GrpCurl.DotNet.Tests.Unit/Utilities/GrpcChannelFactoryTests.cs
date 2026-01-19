@@ -303,10 +303,11 @@ public sealed class GrpcChannelFactoryTests
         Environment.SetEnvironmentVariable(varName, null);
 
         // Act & Assert
-        var ex = Should.Throw<InvalidOperationException>(() =>
+        var ex = Should.Throw<ArgumentException>(() =>
             GrpcChannelFactory.CreateMetadata([$"Header: ${{{varName}}}"]));
         ex.Message.ShouldContain(varName);
         ex.Message.ShouldContain("not found");
+        ex.Message.ShouldContain("Header:"); // Verify header context is included
     }
 
     [Fact]

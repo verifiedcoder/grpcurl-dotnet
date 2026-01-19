@@ -73,7 +73,28 @@ public sealed class ProtosetSource : IDescriptorSource
         var bytes = await File.ReadAllBytesAsync(filePath, cancellationToken);
         var fileDescriptorSet = FileDescriptorSet.Parser.ParseFrom(bytes);
 
-        FileDescriptorSet = fileDescriptorSet;
+        // Merge into existing FileDescriptorSet instead of replacing
+        if (FileDescriptorSet is null)
+        {
+            FileDescriptorSet = fileDescriptorSet;
+        }
+        else
+        {
+            // Merge file entries, detecting conflicts
+            var existingFiles = FileDescriptorSet.File.Select(f => f.Name).ToHashSet();
+
+            foreach (var file in fileDescriptorSet.File)
+            {
+                if (existingFiles.Contains(file.Name))
+                {
+                    Console.Error.WriteLine($"Warning: Proto file '{file.Name}' already loaded, skipping duplicate from '{filePath}'");
+                }
+                else
+                {
+                    FileDescriptorSet.File.Add(file);
+                }
+            }
+        }
 
         // Build file descriptors from the set
         var unresolved = fileDescriptorSet.File.ToDictionary(f => f.Name, f => f);
@@ -84,14 +105,19 @@ public sealed class ProtosetSource : IDescriptorSource
             ResolveFileDescriptor(fileProto.Name, unresolved, resolved, []);
         }
 
-        // Cache all file descriptors
+        // Cache file descriptors, detecting conflicts
         foreach (var (name, descriptor) in resolved)
         {
+            if (_fileDescriptors.ContainsKey(name))
+            {
+                Console.Error.WriteLine($"Warning: File descriptor '{name}' already cached, overwriting from '{filePath}'");
+            }
+
             _fileDescriptors[name] = descriptor;
         }
 
-        // Build symbol cache
-        BuildSymbolCache();
+        // Build symbol cache (will warn about conflicts)
+        BuildSymbolCache(filePath);
     }
 
     private static FileDescriptor ResolveFileDescriptor(
@@ -114,6 +140,14 @@ public sealed class ProtosetSource : IDescriptorSource
 
         if (!unresolved.TryGetValue(fileName, out var fileProto))
         {
+            // Try well-known types as fallback - protosets may not include these
+            if (WellKnownTypeRegistry.TryGetDescriptor(fileName, out var wellKnownDescriptor) && wellKnownDescriptor is not null)
+            {
+                resolved[fileName] = wellKnownDescriptor;
+
+                return wellKnownDescriptor;
+            }
+
             throw new InvalidOperationException($"File {fileName} not found in protoset");
         }
 
@@ -127,12 +161,35 @@ public sealed class ProtosetSource : IDescriptorSource
                 .Select(dependency => ResolveFileDescriptor(dependency, unresolved, resolved, visitedInCurrentPath))
                 .ToList();
 
-            // Build FileDescriptor using BuildFromByteStrings
-            // Collect all dependency ByteStrings in order, then add current file
-            var byteStrings = dependencies
-                .Select(dep => dep.SerializedData)
-                .ToList();
+            // Collect ALL transitive dependency ByteStrings in dependency order
+            // BuildFromByteStrings needs all dependencies present, not just direct ones
+            var byteStrings = new List<ByteString>();
+            var included = new HashSet<string>();
 
+            void AddDependencyBytes(FileDescriptor dep)
+            {
+                if (included.Contains(dep.Name))
+                {
+                    return;
+                }
+
+                // Add transitive dependencies first (depth-first)
+                foreach (var transitiveDep in dep.Dependencies)
+                {
+                    AddDependencyBytes(transitiveDep);
+                }
+
+                // Then add this dependency
+                byteStrings.Add(dep.SerializedData);
+                included.Add(dep.Name);
+            }
+
+            foreach (var dep in dependencies)
+            {
+                AddDependencyBytes(dep);
+            }
+
+            // Add current file bytes
             using (var stream = new MemoryStream())
             {
                 using (var output = new CodedOutputStream(stream, true))
@@ -158,72 +215,86 @@ public sealed class ProtosetSource : IDescriptorSource
         }
     }
 
-    private void BuildSymbolCache()
+    private void BuildSymbolCache(string sourceFile)
     {
         foreach (var fileDescriptor in _fileDescriptors.Values)
         {
             // Cache services
             foreach (var service in fileDescriptor.Services)
             {
-                _symbolCache[service.FullName] = service;
+                CacheSymbolWithConflictCheck(service.FullName, service, sourceFile);
 
                 // Cache methods
                 foreach (var method in service.Methods)
                 {
-                    _symbolCache[method.FullName] = method;
+                    CacheSymbolWithConflictCheck(method.FullName, method, sourceFile);
                 }
             }
 
             // Cache message types
             foreach (var messageType in fileDescriptor.MessageTypes)
             {
-                CacheMessageTypeRecursive(messageType);
+                CacheMessageTypeRecursive(messageType, sourceFile);
             }
 
             // Cache enums
             foreach (var enumType in fileDescriptor.EnumTypes)
             {
-                _symbolCache[enumType.FullName] = enumType;
+                CacheSymbolWithConflictCheck(enumType.FullName, enumType, sourceFile);
 
                 foreach (var value in enumType.Values)
                 {
-                    _symbolCache[value.FullName] = value;
+                    CacheSymbolWithConflictCheck(value.FullName, value, sourceFile);
                 }
             }
         }
     }
 
-    private void CacheMessageTypeRecursive(MessageDescriptor messageType)
+    private void CacheSymbolWithConflictCheck(string fullName, IDescriptor descriptor, string sourceFile)
     {
-        _symbolCache[messageType.FullName] = messageType;
+        if (_symbolCache.TryGetValue(fullName, out var existing))
+        {
+            // Only warn for service-level conflicts, not for common types like well-known types
+            if (descriptor is ServiceDescriptor or MethodDescriptor)
+            {
+                Console.Error.WriteLine($"Warning: Symbol '{fullName}' already defined, overwriting from '{sourceFile}'");
+            }
+        }
+
+        _symbolCache[fullName] = descriptor;
+    }
+
+    private void CacheMessageTypeRecursive(MessageDescriptor messageType, string sourceFile)
+    {
+        CacheSymbolWithConflictCheck(messageType.FullName, messageType, sourceFile);
 
         // Cache nested types
         foreach (var nested in messageType.NestedTypes)
         {
-            CacheMessageTypeRecursive(nested);
+            CacheMessageTypeRecursive(nested, sourceFile);
         }
 
         // Cache nested enums
         foreach (var enumType in messageType.EnumTypes)
         {
-            _symbolCache[enumType.FullName] = enumType;
+            CacheSymbolWithConflictCheck(enumType.FullName, enumType, sourceFile);
 
             foreach (var value in enumType.Values)
             {
-                _symbolCache[value.FullName] = value;
+                CacheSymbolWithConflictCheck(value.FullName, value, sourceFile);
             }
         }
 
         // Cache fields
         foreach (var field in messageType.Fields.InDeclarationOrder())
         {
-            _symbolCache[field.FullName] = field;
+            CacheSymbolWithConflictCheck(field.FullName, field, sourceFile);
         }
 
         // Cache oneofs
         foreach (var oneof in messageType.Oneofs)
         {
-            _symbolCache[oneof.FullName] = oneof;
+            CacheSymbolWithConflictCheck(oneof.FullName, oneof, sourceFile);
         }
     }
 }

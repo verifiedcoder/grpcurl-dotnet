@@ -152,7 +152,7 @@ internal static partial class GrpcChannelFactory
             var value = parts[1].Trim();
 
             // Expand environment variables if in ${VAR} format
-            value = ExpandEnvironmentVariables(value);
+            value = ExpandEnvironmentVariables(value, header);
 
             metadata.Add(name, value);
         }
@@ -163,7 +163,9 @@ internal static partial class GrpcChannelFactory
     /// <summary>
     ///     Expands environment variables in the format ${VAR_NAME}.
     /// </summary>
-    private static string ExpandEnvironmentVariables(string value)
+    /// <param name="value">The value containing environment variable references.</param>
+    /// <param name="headerContext">The full header string for error context.</param>
+    private static string ExpandEnvironmentVariables(string value, string headerContext)
     {
         var result = value;
         var startIndex = 0;
@@ -185,7 +187,13 @@ internal static partial class GrpcChannelFactory
             }
 
             var varName = result.Substring(start + 2, end - start - 2);
-            var varValue = Environment.GetEnvironmentVariable(varName) ?? throw new InvalidOperationException($"Environment variable '{varName}' not found");
+            var varValue = Environment.GetEnvironmentVariable(varName);
+
+            if (varValue is null)
+            {
+                throw new ArgumentException(
+                    $"Environment variable '${{{varName}}}' not found. Header: '{headerContext}'");
+            }
 
             result = result[..start] + varValue + result[(end + 1)..];
 

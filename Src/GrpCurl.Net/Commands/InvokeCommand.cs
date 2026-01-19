@@ -537,28 +537,27 @@ internal static class InvokeCommandHandler
         {
             if (formatError)
             {
-                // Output error as JSON
+                // Output error as JSON and exit directly
+                // Using Environment.Exit avoids System.CommandLine's exception printing
                 var errorJson = FormatErrorAsJson(ex, emitDefaults);
-
                 Console.WriteLine(errorJson);
+                Environment.Exit(64 + (int)ex.Status.StatusCode);
+            }
+
+            // Handle deadline exceeded specifically
+            if (ex.StatusCode == StatusCode.DeadlineExceeded)
+            {
+                AnsiConsole.MarkupLine($"[red]Deadline Exceeded:[/] {ex.Status.Detail}");
+
+                if (maxTime is not null)
+                {
+                    AnsiConsole.MarkupLine($"[dim]Maximum time was set to: {maxTime}[/]");
+                }
             }
             else
             {
-                // Handle deadline exceeded specifically
-                if (ex.StatusCode == StatusCode.DeadlineExceeded)
-                {
-                    AnsiConsole.MarkupLine($"[red]Deadline Exceeded:[/] {ex.Status.Detail}");
-
-                    if (maxTime is not null)
-                    {
-                        AnsiConsole.MarkupLine($"[dim]Maximum time was set to: {maxTime}[/]");
-                    }
-                }
-                else
-                {
-                    AnsiConsole.MarkupLine($"[red]RPC Error:[/] {ex.Status.Detail}");
-                    AnsiConsole.MarkupLine($"[red]Status Code:[/] {ex.Status.StatusCode}");
-                }
+                AnsiConsole.MarkupLine($"[red]RPC Error:[/] {ex.Status.Detail}");
+                AnsiConsole.MarkupLine($"[red]Status Code:[/] {ex.Status.StatusCode}");
             }
 
             throw new GrpcCommandException($"RPC error: {ex.Status.Detail}", 64 + (int)ex.Status.StatusCode);

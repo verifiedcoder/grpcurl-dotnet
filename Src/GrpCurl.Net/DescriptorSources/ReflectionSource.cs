@@ -160,15 +160,28 @@ public sealed class ReflectionSource(GrpcChannel channel, Metadata? metadata = n
         }
 
         // Load file descriptors for each service
+        var failedServices = new List<string>();
+
         foreach (var service in response.ListServicesResponse.Service)
         {
             try
             {
                 await LoadSymbolAsync(service.Name, cancellationToken);
             }
-            catch
+            catch (Exception ex)
             {
-                // Continue even if we can't load a particular service
+                // Log warning and continue - some services may not be fully resolvable
+                failedServices.Add($"{service.Name}: {ex.Message}");
+            }
+        }
+
+        if (failedServices.Count > 0)
+        {
+            Console.Error.WriteLine($"Warning: Failed to load {failedServices.Count} service(s):");
+
+            foreach (var failure in failedServices)
+            {
+                Console.Error.WriteLine($"  - {failure}");
             }
         }
 
@@ -277,16 +290,49 @@ public sealed class ReflectionSource(GrpcChannel channel, Metadata? metadata = n
 
         if (!unresolved.TryGetValue(fileName, out var fileProto))
         {
+            // Try well-known types as fallback - server reflection often doesn't include these
+            if (WellKnownTypeRegistry.TryGetDescriptor(fileName, out var wellKnownDescriptor) && wellKnownDescriptor is not null)
+            {
+                resolved[fileName] = wellKnownDescriptor;
+
+                return wellKnownDescriptor;
+            }
+
             throw new InvalidOperationException($"File {fileName} not found");
         }
 
         // Resolve dependencies first
         var dependencies = fileProto.Dependency.Select(dependency => ResolveFileDescriptor(dependency, unresolved, resolved)).ToList();
 
-        // Build FileDescriptor using BuildFromByteStrings
-        // Collect all dependency ByteStrings in order, then add current file
-        var byteStrings = dependencies.Select(dep => dep.SerializedData).ToList();
+        // Collect ALL transitive dependency ByteStrings in dependency order
+        // BuildFromByteStrings needs all dependencies present, not just direct ones
+        var byteStrings = new List<ByteString>();
+        var included = new HashSet<string>();
 
+        void AddDependencyBytes(FileDescriptor dep)
+        {
+            if (included.Contains(dep.Name))
+            {
+                return;
+            }
+
+            // Add transitive dependencies first (depth-first)
+            foreach (var transitiveDep in dep.Dependencies)
+            {
+                AddDependencyBytes(transitiveDep);
+            }
+
+            // Then add this dependency
+            byteStrings.Add(dep.SerializedData);
+            included.Add(dep.Name);
+        }
+
+        foreach (var dep in dependencies)
+        {
+            AddDependencyBytes(dep);
+        }
+
+        // Add current file bytes
         using (var stream = new MemoryStream())
         {
             using (var output = new CodedOutputStream(stream, true))

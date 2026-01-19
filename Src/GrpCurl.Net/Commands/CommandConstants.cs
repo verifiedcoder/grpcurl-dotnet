@@ -6,7 +6,7 @@ internal static class CommandConstants
 
     public const string Suggestions = "[dim]Suggestions:\n";
 
-    public const string RequestSerialisation = "Request Serialisatio";
+    public const string RequestSerialisation = "Request Serialisation";
 
     public const string NetworkRoundTrip = "Network Round-Trip";
 

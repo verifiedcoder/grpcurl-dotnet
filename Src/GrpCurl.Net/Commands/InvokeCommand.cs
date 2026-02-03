@@ -68,6 +68,11 @@ internal static class InvokeCommandHandler
             Description = "Client private key file path for mutual TLS"
         };
 
+        var certPasswordOpt = new Option<string?>("--cert-password")
+        {
+            Description = "Password for PKCS12 (.p12/.pfx) client certificate"
+        };
+
         var headerOpt = new Option<string[]>("--header", "-H")
         {
             Description = "Headers (name: value)",
@@ -157,6 +162,7 @@ internal static class InvokeCommandHandler
             cacertOpt,
             certOpt,
             keyOpt,
+            certPasswordOpt,
             headerOpt,
             verboseOpt,
             veryVerboseOpt,
@@ -186,6 +192,7 @@ internal static class InvokeCommandHandler
             var cacert = parseResult.GetValue(cacertOpt);
             var cert = parseResult.GetValue(certOpt);
             var key = parseResult.GetValue(keyOpt);
+            var certPassword = parseResult.GetValue(certPasswordOpt);
             var headerStrings = parseResult.GetValue(headerOpt);
             var verbose = parseResult.GetValue(verboseOpt);
             var veryVerbose = parseResult.GetValue(veryVerboseOpt);
@@ -212,6 +219,7 @@ internal static class InvokeCommandHandler
                 cacert,
                 cert,
                 key,
+                certPassword,
                 headerStrings,
                 verbose,
                 veryVerbose,
@@ -270,6 +278,7 @@ internal static class InvokeCommandHandler
         string? cacert,
         string? cert,
         string? key,
+        string? certPassword,
         string[]? headerStrings,
         bool verbose,
         bool veryVerbose,
@@ -332,6 +341,7 @@ internal static class InvokeCommandHandler
                     CaCertPath = cacert,
                     ClientCertPath = cert,
                     ClientKeyPath = key,
+                    ClientCertPassword = certPassword,
                     ConnectTimeout = connectTimeout is not null ? GrpcChannelFactory.ParseDuration(connectTimeout) : null,
                     Authority = authority,
                     ServerName = serverName
@@ -479,7 +489,7 @@ internal static class InvokeCommandHandler
         }
         catch (FileNotFoundException ex)
         {
-            AnsiConsole.MarkupLine($"[red]Error:[/] Protoset file not found: {ex.FileName}");
+            AnsiConsole.MarkupLine($"[red]Error:[/] Protoset file not found: {Markup.Escape(ex.FileName ?? "")}");
             AnsiConsole.MarkupLine(CommandConstants.Suggestions);
             AnsiConsole.MarkupLine("[dim]  - Check the file path is correct[/]");
             AnsiConsole.MarkupLine("[dim]  - Ensure the file has a .protoset or .pb extension[/]");
@@ -490,7 +500,7 @@ internal static class InvokeCommandHandler
         catch (JsonException ex)
         {
             AnsiConsole.MarkupLine("[red]JSON Error:[/] Invalid JSON in request data");
-            AnsiConsole.MarkupLine($"[dim]{ex.Message}[/]");
+            AnsiConsole.MarkupLine($"[dim]{Markup.Escape(ex.Message)}[/]");
             AnsiConsole.MarkupLine(CommandConstants.Suggestions);
             AnsiConsole.MarkupLine("[dim]  - Check JSON syntax (missing quotes, commas, brackets)[/]");
             AnsiConsole.MarkupLine("[dim]  - Ensure field names match protobuf definition[/]");
@@ -516,11 +526,11 @@ internal static class InvokeCommandHandler
             else if (maxTime is not null && deadlineCts?.IsCancellationRequested == true)
             {
                 // Timeout due to max-time deadline
-                AnsiConsole.MarkupLine($"[red]Timeout Error:[/] Operation exceeded maximum time limit of {maxTime}");
+                AnsiConsole.MarkupLine($"[red]Timeout Error:[/] Operation exceeded maximum time limit of {Markup.Escape(maxTime)}");
 
                 if (verbose)
                 {
-                    AnsiConsole.MarkupLine($"[dim]{ex.Message}[/]");
+                    AnsiConsole.MarkupLine($"[dim]{Markup.Escape(ex.Message)}[/]");
                 }
 
                 throw new GrpcCommandException(CommandConstants.CommandFailed);
@@ -528,7 +538,7 @@ internal static class InvokeCommandHandler
             else
             {
                 // Unknown cancellation source
-                AnsiConsole.MarkupLine($"[red]Operation cancelled:[/] {ex.Message}");
+                AnsiConsole.MarkupLine($"[red]Operation cancelled:[/] {Markup.Escape(ex.Message)}");
 
                 throw new GrpcCommandException(CommandConstants.CommandFailed);
             }
@@ -544,10 +554,13 @@ internal static class InvokeCommandHandler
                 Environment.Exit(64 + (int)ex.Status.StatusCode);
             }
 
+            // Escape the error detail to prevent Spectre.Console markup parsing errors
+            var escapedDetail = Markup.Escape(ex.Status.Detail ?? "");
+
             // Handle deadline exceeded specifically
             if (ex.StatusCode == StatusCode.DeadlineExceeded)
             {
-                AnsiConsole.MarkupLine($"[red]Deadline Exceeded:[/] {ex.Status.Detail}");
+                AnsiConsole.MarkupLine($"[red]Deadline Exceeded:[/] {escapedDetail}");
 
                 if (maxTime is not null)
                 {
@@ -556,7 +569,7 @@ internal static class InvokeCommandHandler
             }
             else
             {
-                AnsiConsole.MarkupLine($"[red]RPC Error:[/] {ex.Status.Detail}");
+                AnsiConsole.MarkupLine($"[red]RPC Error:[/] {escapedDetail}");
                 AnsiConsole.MarkupLine($"[red]Status Code:[/] {ex.Status.StatusCode}");
             }
 
@@ -564,8 +577,8 @@ internal static class InvokeCommandHandler
         }
         catch (HttpRequestException ex)
         {
-            AnsiConsole.MarkupLine($"[red]Connection Error:[/] Failed to connect to {address}");
-            AnsiConsole.MarkupLine($"[dim]{ex.Message}[/]");
+            AnsiConsole.MarkupLine($"[red]Connection Error:[/] Failed to connect to {Markup.Escape(address)}");
+            AnsiConsole.MarkupLine($"[dim]{Markup.Escape(ex.Message)}[/]");
             AnsiConsole.MarkupLine(CommandConstants.Suggestions);
             AnsiConsole.MarkupLine("[dim]  - Ensure the server is running and accessible[/]");
             AnsiConsole.MarkupLine("[dim]  - Try adding --plaintext if server uses HTTP/2 without TLS[/]");
@@ -580,11 +593,11 @@ internal static class InvokeCommandHandler
         }
         catch (TimeoutException ex)
         {
-            AnsiConsole.MarkupLine($"[red]Timeout Error:[/] Connection to {address} timed out");
+            AnsiConsole.MarkupLine($"[red]Timeout Error:[/] Connection to {Markup.Escape(address)} timed out");
 
             if (connectTimeout is not null)
             {
-                AnsiConsole.MarkupLine($"[dim]Connection timeout was set to: {connectTimeout}[/]");
+                AnsiConsole.MarkupLine($"[dim]Connection timeout was set to: {Markup.Escape(connectTimeout)}[/]");
             }
 
             AnsiConsole.MarkupLine(CommandConstants.Suggestions);
@@ -597,7 +610,7 @@ internal static class InvokeCommandHandler
                 throw new GrpcCommandException(CommandConstants.CommandFailed);
             }
 
-            AnsiConsole.MarkupLine($"[dim]{ex.Message}[/]");
+            AnsiConsole.MarkupLine($"[dim]{Markup.Escape(ex.Message)}[/]");
             Console.WriteLine(ex.StackTrace);
 
             throw new GrpcCommandException(CommandConstants.CommandFailed);
@@ -605,7 +618,7 @@ internal static class InvokeCommandHandler
         catch (InvalidDataException ex)
         {
             AnsiConsole.MarkupLine("[red]Error:[/] Invalid protoset file format");
-            AnsiConsole.MarkupLine($"[dim]{ex.Message}[/]");
+            AnsiConsole.MarkupLine($"[dim]{Markup.Escape(ex.Message)}[/]");
             AnsiConsole.MarkupLine(CommandConstants.Suggestions);
             AnsiConsole.MarkupLine("[dim]  - Ensure the file is a valid FileDescriptorSet[/]");
             AnsiConsole.MarkupLine("[dim]  - Regenerate using: protoc --descriptor_set_out=file.protoset --include_imports file.proto[/]");
@@ -619,7 +632,7 @@ internal static class InvokeCommandHandler
         }
         catch (Exception ex)
         {
-            AnsiConsole.MarkupLine($"[red]Error:[/] {ex.Message}");
+            AnsiConsole.MarkupLine($"[red]Error:[/] {Markup.Escape(ex.Message)}");
 
             if (verbose)
             {
@@ -697,7 +710,7 @@ internal static class InvokeCommandHandler
         // Log unknown fields if verbose mode is enabled
         if (verbose && request is SimpleDynamicMessage { UnknownFields.Count: > 0 } dynamicRequest)
         {
-            AnsiConsole.MarkupLine($"[yellow]Warning:[/] Request contains {dynamicRequest.UnknownFields.Count} unknown field(s): {string.Join(", ", dynamicRequest.UnknownFields)}");
+            AnsiConsole.MarkupLine($"[yellow]Warning:[/] Request contains {dynamicRequest.UnknownFields.Count} unknown field(s): {Markup.Escape(string.Join(", ", dynamicRequest.UnknownFields))}");
         }
 
         timing?.StartPhase(CommandConstants.NetworkRoundTrip);
@@ -737,7 +750,7 @@ internal static class InvokeCommandHandler
         // Log unknown fields if verbose mode is enabled
         if (verbose && request is SimpleDynamicMessage { UnknownFields.Count: > 0 } dynamicRequest)
         {
-            AnsiConsole.MarkupLine($"[yellow]Warning:[/] Request contains {dynamicRequest.UnknownFields.Count} unknown field(s): {string.Join(", ", dynamicRequest.UnknownFields)}");
+            AnsiConsole.MarkupLine($"[yellow]Warning:[/] Request contains {dynamicRequest.UnknownFields.Count} unknown field(s): {Markup.Escape(string.Join(", ", dynamicRequest.UnknownFields))}");
         }
 
         if (verbose)
@@ -934,12 +947,12 @@ internal static class InvokeCommandHandler
                 // Log unknown fields if verbose mode is enabled
                 if (verbose && request is SimpleDynamicMessage { UnknownFields.Count: > 0 } dynamicRequest)
                 {
-                    AnsiConsole.MarkupLine($"[yellow]Warning:[/] Request contains {dynamicRequest.UnknownFields.Count} unknown field(s): {string.Join(", ", dynamicRequest.UnknownFields)}");
+                    AnsiConsole.MarkupLine($"[yellow]Warning:[/] Request contains {dynamicRequest.UnknownFields.Count} unknown field(s): {Markup.Escape(string.Join(", ", dynamicRequest.UnknownFields))}");
                 }
 
                 if (verbose)
                 {
-                    AnsiConsole.MarkupLine($"[dim]Sending: {line}[/]");
+                    AnsiConsole.MarkupLine($"[dim]Sending: {Markup.Escape(line)}[/]");
                 }
 
                 yield return request;
@@ -968,12 +981,12 @@ internal static class InvokeCommandHandler
                     // Log unknown fields if verbose mode is enabled
                     if (verbose && request is SimpleDynamicMessage { UnknownFields.Count: > 0 } dynamicRequest)
                     {
-                        AnsiConsole.MarkupLine($"[yellow]Warning:[/] Request contains {dynamicRequest.UnknownFields.Count} unknown field(s): {string.Join(", ", dynamicRequest.UnknownFields)}");
+                        AnsiConsole.MarkupLine($"[yellow]Warning:[/] Request contains {dynamicRequest.UnknownFields.Count} unknown field(s): {Markup.Escape(string.Join(", ", dynamicRequest.UnknownFields))}");
                     }
 
                     if (verbose)
                     {
-                        AnsiConsole.MarkupLine($"[dim]Sending: {elementJson}[/]");
+                        AnsiConsole.MarkupLine($"[dim]Sending: {Markup.Escape(elementJson)}[/]");
                     }
 
                     yield return request;
@@ -987,12 +1000,12 @@ internal static class InvokeCommandHandler
                 // Log unknown fields if verbose mode is enabled
                 if (verbose && request is SimpleDynamicMessage { UnknownFields.Count: > 0 } dynamicRequest)
                 {
-                    AnsiConsole.MarkupLine($"[yellow]Warning:[/] Request contains {dynamicRequest.UnknownFields.Count} unknown field(s): {string.Join(", ", dynamicRequest.UnknownFields)}");
+                    AnsiConsole.MarkupLine($"[yellow]Warning:[/] Request contains {dynamicRequest.UnknownFields.Count} unknown field(s): {Markup.Escape(string.Join(", ", dynamicRequest.UnknownFields))}");
                 }
 
                 if (verbose)
                 {
-                    AnsiConsole.MarkupLine($"[dim]Sending: {requestJson}[/]");
+                    AnsiConsole.MarkupLine($"[dim]Sending: {Markup.Escape(requestJson)}[/]");
                 }
 
                 yield return request;

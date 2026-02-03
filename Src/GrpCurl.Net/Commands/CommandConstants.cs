@@ -4,7 +4,7 @@ internal static class CommandConstants
 {
     public const string CommandFailed = "Command failed";
 
-    public const string Suggestions = "[dim]Suggestions:\n";
+    public const string Suggestions = "[dim]Suggestions:[/]";
 
     public const string RequestSerialisation = "Request Serialisation";
 

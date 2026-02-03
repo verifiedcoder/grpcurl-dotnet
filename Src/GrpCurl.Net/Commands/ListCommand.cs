@@ -55,6 +55,11 @@ internal static class ListCommandHandler
             Description = "Client private key file path for mutual TLS"
         };
 
+        var certPasswordOpt = new Option<string?>("--cert-password")
+        {
+            Description = "Password for PKCS12 (.p12/.pfx) client certificate"
+        };
+
         var connectTimeoutOpt = new Option<string?>("--connect-timeout")
         {
             Description = "Connection timeout (e.g., '10s', '1m', '500ms'). Default: 10s"
@@ -112,6 +117,7 @@ internal static class ListCommandHandler
             cacertOpt,
             certOpt,
             keyOpt,
+            certPasswordOpt,
             connectTimeoutOpt,
             authorityOpt,
             serverNameOpt,
@@ -134,6 +140,7 @@ internal static class ListCommandHandler
             var cacert = parseResult.GetValue(cacertOpt);
             var cert = parseResult.GetValue(certOpt);
             var key = parseResult.GetValue(keyOpt);
+            var certPassword = parseResult.GetValue(certPasswordOpt);
             var connectTimeout = parseResult.GetValue(connectTimeoutOpt);
             var authority = parseResult.GetValue(authorityOpt);
             var serverName = parseResult.GetValue(serverNameOpt);
@@ -153,6 +160,7 @@ internal static class ListCommandHandler
                 cacert,
                 cert,
                 key,
+                certPassword,
                 connectTimeout,
                 authority,
                 serverName,
@@ -214,6 +222,7 @@ internal static class ListCommandHandler
         string? cacert,
         string? cert,
         string? key,
+        string? certPassword,
         string? connectTimeout,
         string? authority,
         string? serverName,
@@ -283,6 +292,7 @@ internal static class ListCommandHandler
                     CaCertPath = cacert,
                     ClientCertPath = cert,
                     ClientKeyPath = key,
+                    ClientCertPassword = certPassword,
                     ConnectTimeout = connectTimeout is not null ? GrpcChannelFactory.ParseDuration(connectTimeout) : null,
                     Authority = authority,
                     ServerName = serverName
@@ -355,7 +365,7 @@ internal static class ListCommandHandler
         }
         catch (FileNotFoundException ex)
         {
-            AnsiConsole.MarkupLine($"[red]Error:[/] Protoset file not found: {ex.FileName}");
+            AnsiConsole.MarkupLine($"[red]Error:[/] Protoset file not found: {Markup.Escape(ex.FileName ?? "")}");
             AnsiConsole.MarkupLine(CommandConstants.Suggestions);
             AnsiConsole.MarkupLine("[dim]  - Check the file path is correct[/]");
             AnsiConsole.MarkupLine("[dim]  - Ensure the file has a .protoset or .pb extension[/]");
@@ -365,14 +375,15 @@ internal static class ListCommandHandler
         }
         catch (RpcException ex)
         {
-            AnsiConsole.MarkupLine($"[red]gRPC Error:[/] {ex.Status.Detail}");
+            var escapedDetail = Markup.Escape(ex.Status.Detail ?? "");
+            AnsiConsole.MarkupLine($"[red]gRPC Error:[/] {escapedDetail}");
             AnsiConsole.MarkupLine($"[red]Status Code:[/] {ex.Status.StatusCode}");
 
             switch (ex.StatusCode)
             {
                 case StatusCode.Unavailable:
 
-                    AnsiConsole.MarkupLine($"[yellow]Connection failed to {address}[/]");
+                    AnsiConsole.MarkupLine($"[yellow]Connection failed to {Markup.Escape(address ?? "")}[/]");
                     AnsiConsole.MarkupLine(CommandConstants.Suggestions);
                     AnsiConsole.MarkupLine("[dim]  - Ensure the server is running[/]");
                     AnsiConsole.MarkupLine("[dim]  - Try adding --plaintext if server doesn't use TLS[/]");
@@ -422,8 +433,8 @@ internal static class ListCommandHandler
         }
         catch (HttpRequestException ex)
         {
-            AnsiConsole.MarkupLine($"[red]Connection Error:[/] Failed to connect to {address}");
-            AnsiConsole.MarkupLine($"[dim]{ex.Message}[/]");
+            AnsiConsole.MarkupLine($"[red]Connection Error:[/] Failed to connect to {Markup.Escape(address ?? "")}");
+            AnsiConsole.MarkupLine($"[dim]{Markup.Escape(ex.Message)}[/]");
             AnsiConsole.MarkupLine(CommandConstants.Suggestions);
             AnsiConsole.MarkupLine("[dim]  - Ensure the server is running and accessible[/]");
             AnsiConsole.MarkupLine("[dim]  - Try adding --plaintext if server uses HTTP/2 without TLS[/]");
@@ -438,11 +449,11 @@ internal static class ListCommandHandler
         }
         catch (TimeoutException ex)
         {
-            AnsiConsole.MarkupLine($"[red]Timeout Error:[/] Connection to {address} timed out");
+            AnsiConsole.MarkupLine($"[red]Timeout Error:[/] Connection to {Markup.Escape(address ?? "")} timed out");
 
             if (connectTimeout is not null)
             {
-                AnsiConsole.MarkupLine($"[dim]Connection timeout was set to: {connectTimeout}[/]");
+                AnsiConsole.MarkupLine($"[dim]Connection timeout was set to: {Markup.Escape(connectTimeout)}[/]");
             }
 
             AnsiConsole.MarkupLine(CommandConstants.Suggestions);
@@ -455,7 +466,7 @@ internal static class ListCommandHandler
                 throw new GrpcCommandException(CommandConstants.CommandFailed);
             }
 
-            AnsiConsole.MarkupLine($"[dim]{ex.Message}[/]");
+            AnsiConsole.MarkupLine($"[dim]{Markup.Escape(ex.Message)}[/]");
 
             Console.WriteLine(ex.StackTrace);
 
@@ -464,7 +475,7 @@ internal static class ListCommandHandler
         catch (InvalidDataException ex)
         {
             AnsiConsole.MarkupLine("[red]Error:[/] Invalid protoset file format");
-            AnsiConsole.MarkupLine($"[dim]{ex.Message}[/]");
+            AnsiConsole.MarkupLine($"[dim]{Markup.Escape(ex.Message)}[/]");
             AnsiConsole.MarkupLine(CommandConstants.Suggestions);
             AnsiConsole.MarkupLine("[dim]  - Ensure the file is a valid FileDescriptorSet[/]");
             AnsiConsole.MarkupLine("[dim]  - Regenerate using: protoc --descriptor_set_out=file.protoset --include_imports file.proto[/]");
@@ -478,7 +489,7 @@ internal static class ListCommandHandler
         }
         catch (Exception ex)
         {
-            AnsiConsole.MarkupLine($"[red]Error:[/] {ex.Message}");
+            AnsiConsole.MarkupLine($"[red]Error:[/] {Markup.Escape(ex.Message)}");
 
             if (!verbose && ex.InnerException is null)
             {
@@ -487,7 +498,7 @@ internal static class ListCommandHandler
 
             if (ex.InnerException is not null)
             {
-                AnsiConsole.MarkupLine($"[dim]{ex.InnerException.Message}[/]");
+                AnsiConsole.MarkupLine($"[dim]{Markup.Escape(ex.InnerException.Message)}[/]");
             }
 
             if (verbose)

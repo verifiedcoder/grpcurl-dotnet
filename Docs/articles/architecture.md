@@ -28,21 +28,10 @@ GrpCurl.Net
 
 The descriptor source abstraction allows GrpCurl.Net to discover protobuf schemas from different sources.
 
-### IDescriptorSource Interface
-
-```csharp
-public interface IDescriptorSource
-{
-    FileDescriptorSet? FileDescriptorSet { get; }
-    Task<IReadOnlyList<string>> ListServicesAsync(CancellationToken cancellationToken = default);
-    Task<IDescriptor?> FindSymbolAsync(string fullyQualifiedName, CancellationToken cancellationToken = default);
-}
-```
-
-This interface provides:
-- **FileDescriptorSet** - Access to the underlying protobuf descriptors for export
-- **ListServicesAsync** - Enumerate all available services
-- **FindSymbolAsync** - Look up a specific symbol (service, method, message, etc.)
+This `IDescriptorSource` interface provides:
+- Access to the underlying protobuf descriptors for export
+- Enumeration all available services
+- Look up of a specific symbol (service, method, message, etc.)
 
 ### ReflectionSource
 
@@ -128,24 +117,6 @@ An internal class that implements `IMessage` for dynamic protobuf messages. It:
 ## Channel Configuration
 
 `GrpcChannelFactory` handles the complexity of creating properly configured gRPC channels.
-
-### Configuration Options
-
-```csharp
-public class ChannelOptions
-{
-    public bool Plaintext { get; set; }
-    public bool InsecureSkipVerify { get; set; }
-    public string? CaCertPath { get; set; }
-    public string? ClientCertPath { get; set; }
-    public string? ClientKeyPath { get; set; }
-    public TimeSpan? ConnectTimeout { get; set; }
-    public int? MaxReceiveMessageSize { get; set; }
-    public int? MaxSendMessageSize { get; set; }
-    public string? Authority { get; set; }
-    public string? ServerName { get; set; }
-}
-```
 
 ### TLS Configuration
 

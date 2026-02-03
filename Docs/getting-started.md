@@ -49,7 +49,7 @@ The executable will be in `Src/GrpCurl.Net/bin/Release/net10.0/<runtime>/publish
 List all services available on a gRPC server:
 
 ```bash
-grpcurl list --plaintext localhost:9090
+grpcurl.net list --plaintext localhost:9090
 ```
 
 Output:
@@ -69,7 +69,7 @@ Total: 2 service(s)
 List methods for a specific service:
 
 ```bash
-grpcurl list --plaintext localhost:9090 testing.TestService
+grpcurl.net list --plaintext localhost:9090 testing.TestService
 ```
 
 Output:
@@ -91,7 +91,7 @@ Output:
 Get a JSON template for a message type:
 
 ```bash
-grpcurl describe --plaintext --msg-template localhost:9090 testing.SimpleRequest
+grpcurl.net describe --plaintext --msg-template localhost:9090 testing.SimpleRequest
 ```
 
 Output:
@@ -117,7 +117,7 @@ Output:
 Call a unary RPC method with JSON data:
 
 ```bash
-grpcurl invoke --plaintext \
+grpcurl.net invoke --plaintext \
   -d '{"response_size": 10, "fill_username": true}' \
   localhost:9090 testing.TestService/UnaryCall
 ```

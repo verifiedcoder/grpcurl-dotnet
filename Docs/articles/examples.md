@@ -7,13 +7,13 @@ This page provides practical examples for common GrpCurl.Net use cases.
 ### List All Services
 
 ```bash
-grpcurl list --plaintext localhost:9090
+grpcurl.net list --plaintext localhost:9090
 ```
 
 ### List Services with Verbose Output
 
 ```bash
-grpcurl list --plaintext -v localhost:9090
+grpcurl.net list --plaintext -v localhost:9090
 ```
 
 Output includes connection details and timing:
@@ -45,13 +45,13 @@ grpcurl list --plaintext localhost:9090 testing.TestService
 ### Describe a Service
 
 ```bash
-grpcurl describe --plaintext localhost:9090 testing.TestService
+grpcurl.net describe --plaintext localhost:9090 testing.TestService
 ```
 
 ### Describe a Message Type
 
 ```bash
-grpcurl describe --plaintext localhost:9090 testing.SimpleRequest
+grpcurl.net describe --plaintext localhost:9090 testing.SimpleRequest
 ```
 
 ### Get JSON Template for a Message
@@ -59,7 +59,7 @@ grpcurl describe --plaintext localhost:9090 testing.SimpleRequest
 Very useful for understanding the expected request format:
 
 ```bash
-grpcurl describe --plaintext --msg-template localhost:9090 testing.SimpleRequest
+grpcurl.net describe --plaintext --msg-template localhost:9090 testing.SimpleRequest
 ```
 
 Output:
@@ -87,13 +87,13 @@ Output:
 ### Simple Unary Call
 
 ```bash
-grpcurl invoke --plaintext localhost:9090 testing.TestService/EmptyCall
+grpcurl.net invoke --plaintext localhost:9090 testing.TestService/EmptyCall
 ```
 
 ### Unary Call with Request Data
 
 ```bash
-grpcurl invoke --plaintext \
+grpcurl.net invoke --plaintext \
   -d '{"response_size": 20, "fill_username": true}' \
   localhost:9090 testing.TestService/UnaryCall
 ```
@@ -103,7 +103,7 @@ grpcurl invoke --plaintext \
 Request one message, receive multiple responses:
 
 ```bash
-grpcurl invoke --plaintext \
+grpcurl.net invoke --plaintext \
   -d '{"response_parameters": [{"size": 10}, {"size": 20}, {"size": 30}]}' \
   localhost:9090 testing.TestService/StreamingOutputCall
 ```
@@ -123,7 +123,7 @@ Send multiple messages, receive one response:
 echo '{"payload": {"body": "AAAA"}}
 {"payload": {"body": "BBBB"}}
 {"payload": {"body": "CCCC"}}' | \
-grpcurl invoke --plaintext -d @ localhost:9090 testing.TestService/StreamingInputCall
+grpcurl.net invoke --plaintext -d @ localhost:9090 testing.TestService/StreamingInputCall
 ```
 
 ### Bidirectional Streaming
@@ -133,7 +133,7 @@ Send and receive multiple messages:
 ```bash
 echo '{"response_parameters": [{"size": 10}]}
 {"response_parameters": [{"size": 20}]}' | \
-grpcurl invoke --plaintext -d @ localhost:9090 testing.TestService/FullDuplexCall
+grpcurl.net invoke --plaintext -d @ localhost:9090 testing.TestService/FullDuplexCall
 ```
 
 ---
@@ -143,7 +143,7 @@ grpcurl invoke --plaintext -d @ localhost:9090 testing.TestService/FullDuplexCal
 ### Add Custom Headers
 
 ```bash
-grpcurl invoke --plaintext \
+grpcurl.net invoke --plaintext \
   -H "Authorization: Bearer my-token" \
   -H "X-Request-Id: req-12345" \
   -d '{}' \
@@ -155,7 +155,7 @@ grpcurl invoke --plaintext \
 Use `--reflect-header` for reflection-only headers and `--rpc-header` for RPC-only headers:
 
 ```bash
-grpcurl invoke --plaintext \
+grpcurl.net invoke --plaintext \
   --reflect-header "X-Reflect-Auth: reflect-token" \
   --rpc-header "X-RPC-Auth: rpc-token" \
   -H "X-Common: shared-value" \
@@ -167,7 +167,7 @@ grpcurl invoke --plaintext \
 
 ```bash
 export AUTH_TOKEN="my-secret-token"
-grpcurl invoke --plaintext \
+grpcurl.net invoke --plaintext \
   -H "Authorization: Bearer ${AUTH_TOKEN}" \
   -d '{}' \
   localhost:9090 testing.TestService/EmptyCall
@@ -188,19 +188,19 @@ protoc --descriptor_set_out=service.protoset \
 
 Or export from a running server:
 ```bash
-grpcurl list --plaintext --protoset-out service.protoset localhost:9090
+grpcurl.net list --plaintext --protoset-out service.protoset localhost:9090
 ```
 
 ### List Services from Protoset (Offline)
 
 ```bash
-grpcurl list --protoset service.protoset
+grpcurl.net list --protoset service.protoset
 ```
 
 ### Invoke Method Using Protoset
 
 ```bash
-grpcurl invoke --plaintext \
+grpcurl.net invoke --plaintext \
   --protoset service.protoset \
   -d '{"name": "World"}' \
   localhost:9090 my.package.Service/SayHello
@@ -213,7 +213,7 @@ grpcurl invoke --plaintext \
 ### Verbose Mode
 
 ```bash
-grpcurl invoke --plaintext -v \
+grpcurl.net invoke --plaintext -v \
   -d '{"response_size": 10}' \
   localhost:9090 testing.TestService/UnaryCall
 ```
@@ -221,7 +221,7 @@ grpcurl invoke --plaintext -v \
 ### Very Verbose Mode with Timing
 
 ```bash
-grpcurl invoke --plaintext --vv \
+grpcurl.net invoke --plaintext --vv \
   -d '{"response_size": 10}' \
   localhost:9090 testing.TestService/UnaryCall
 ```
@@ -254,7 +254,7 @@ Messages: 1
 ### Connection Timeout
 
 ```bash
-grpcurl invoke --plaintext \
+grpcurl.net invoke --plaintext \
   --connect-timeout 5s \
   -d '{}' \
   localhost:9090 testing.TestService/EmptyCall
@@ -263,7 +263,7 @@ grpcurl invoke --plaintext \
 ### Operation Timeout (gRPC Deadline)
 
 ```bash
-grpcurl invoke --plaintext \
+grpcurl.net invoke --plaintext \
   --max-time 30s \
   -d '{}' \
   localhost:9090 testing.TestService/LongRunningOperation
@@ -272,7 +272,7 @@ grpcurl invoke --plaintext \
 ### Message Size Limits
 
 ```bash
-grpcurl invoke --plaintext \
+grpcurl.net invoke --plaintext \
   --max-msg-sz 10MB \
   -d '{"large_payload": "..."}' \
   localhost:9090 testing.TestService/ProcessLargeData
@@ -285,7 +285,7 @@ grpcurl invoke --plaintext \
 ### View Error as JSON
 
 ```bash
-grpcurl invoke --plaintext \
+grpcurl.net invoke --plaintext \
   --format-error \
   -d '{"response_status": {"code": 3, "message": "Custom error"}}' \
   localhost:9090 testing.TestService/UnaryCall
@@ -307,7 +307,7 @@ Output:
 If your JSON contains fields not in the proto definition:
 
 ```bash
-grpcurl invoke --plaintext \
+grpcurl.net invoke --plaintext \
   --allow-unknown-fields \
   -d '{"known_field": "value", "unknown_field": "ignored"}' \
   localhost:9090 testing.TestService/UnaryCall
@@ -320,7 +320,7 @@ grpcurl invoke --plaintext \
 ### TLS with Default CA
 
 ```bash
-grpcurl invoke \
+grpcurl.net invoke \
   -d '{}' \
   secure-server.example.com:443 my.package.Service/Method
 ```
@@ -328,7 +328,7 @@ grpcurl invoke \
 ### TLS with Custom CA Certificate
 
 ```bash
-grpcurl invoke \
+grpcurl.net invoke \
   --cacert /path/to/ca.crt \
   -d '{}' \
   secure-server.example.com:443 my.package.Service/Method
@@ -337,7 +337,7 @@ grpcurl invoke \
 ### Mutual TLS (mTLS)
 
 ```bash
-grpcurl invoke \
+grpcurl.net invoke \
   --cacert /path/to/ca.crt \
   --cert /path/to/client.crt \
   --key /path/to/client.key \
@@ -348,7 +348,7 @@ grpcurl invoke \
 ### Skip Certificate Verification (Testing Only)
 
 ```bash
-grpcurl invoke --insecure \
+grpcurl.net invoke --insecure \
   -d '{}' \
   secure-server.example.com:443 my.package.Service/Method
 ```
@@ -358,7 +358,7 @@ grpcurl invoke --insecure \
 Useful for virtual hosting or when the server expects a specific host:
 
 ```bash
-grpcurl invoke \
+grpcurl.net invoke \
   --authority api.example.com \
   -d '{}' \
   10.0.0.1:443 my.package.Service/Method

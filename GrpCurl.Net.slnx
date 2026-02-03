@@ -1,5 +1,8 @@
 <Solution>
-  <Folder Name="/Solution Items/" />
+  <Folder Name="/Solution Items/">
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+  </Folder>
   <Folder Name="/Solution Items/Docs/">
     <File Path="Docs/docfx.json" />
     <File Path="Docs/getting-started.md" />
@@ -48,4 +51,5 @@
     <Project Path="Tests/GrpCurl.Net.TestServer/GrpCurl.Net.TestServer.csproj" Id="a1b2c3d4-e5f6-7890-abcd-ef1234567890" />
   </Folder>
   <Project Path="Src/GrpCurl.Net/GrpCurl.Net.csproj" />
+  <Project Path="Src/Gql2Grpc/Gql2Grpc.csproj" />
 </Solution>

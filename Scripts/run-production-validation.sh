@@ -1,7 +1,7 @@
 #!/bin/bash
 # =============================================================================
 # Script: run-production-validation.sh
-# Purpose: Comprehensive production validation for GrpCurl.Net
+# Purpose: Production validation for GrpCurl.Net
 # Prerequisites:
 #   - .NET 10 SDK installed
 #   - Go 1.22+ installed (optional, for grpcurl comparison)
@@ -410,8 +410,7 @@ phase8_error_tests() {
     log_section "Error Formatting"
 
     log_test "--format-error option"
-    OUTPUT=$($GRPCURL_NET invoke localhost:9090 testing.TestService/EmptyCall --plaintext -H "fail-early: 3" -d '{}' --format-error 2>&1)
-    EXIT_CODE=$?
+    OUTPUT=$($GRPCURL_NET invoke localhost:9090 testing.TestService/EmptyCall --plaintext -H "fail-early: 3" -d '{}' --format-error 2>&1) && EXIT_CODE=0 || EXIT_CODE=$?
 
     if echo "$OUTPUT" | grep -q '"code": 3' && echo "$OUTPUT" | grep -q '"status": "InvalidArgument"'; then
         # Check that no stack trace was printed

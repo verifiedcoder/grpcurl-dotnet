@@ -41,7 +41,7 @@ List available services or methods for a specific service.
 ### Syntax
 
 ```bash
-grpcurl list [options] [address] [service]
+grpcurl.net list [options] [address] [service]
 ```
 
 ### Arguments
@@ -55,16 +55,16 @@ grpcurl list [options] [address] [service]
 
 ```bash
 # List all services
-grpcurl list --plaintext localhost:9090
+grpcurl.net list --plaintext localhost:9090
 
 # List methods for a service
-grpcurl list --plaintext localhost:9090 my.package.Service
+grpcurl.net list --plaintext localhost:9090 my.package.Service
 
 # List services using protoset (offline)
-grpcurl list --protoset service.protoset
+grpcurl.net list --protoset service.protoset
 
 # List and export protoset
-grpcurl list --plaintext --protoset-out export.protoset localhost:9090
+grpcurl.net list --plaintext --protoset-out export.protoset localhost:9090
 ```
 
 ---
@@ -76,7 +76,7 @@ Describe a service, method, or message type.
 ### Syntax
 
 ```bash
-grpcurl describe [options] [address] [symbol]
+grpcurl.net describe [options] [address] [symbol]
 ```
 
 ### Arguments
@@ -96,16 +96,16 @@ grpcurl describe [options] [address] [symbol]
 
 ```bash
 # Describe all services
-grpcurl describe --plaintext localhost:9090
+grpcurl.net describe --plaintext localhost:9090
 
 # Describe a specific service
-grpcurl describe --plaintext localhost:9090 my.package.Service
+grpcurl.net describe --plaintext localhost:9090 my.package.Service
 
 # Describe a message type
-grpcurl describe --plaintext localhost:9090 my.package.MyMessage
+grpcurl.net describe --plaintext localhost:9090 my.package.MyMessage
 
 # Get JSON template for a message
-grpcurl describe --plaintext --msg-template localhost:9090 my.package.MyRequest
+grpcurl.net describe --plaintext --msg-template localhost:9090 my.package.MyRequest
 ```
 
 ---
@@ -117,7 +117,7 @@ Invoke a gRPC method.
 ### Syntax
 
 ```bash
-grpcurl invoke [options] <address> <method>
+grpcurl.net invoke [options] <address> <method>
 ```
 
 ### Arguments
@@ -143,43 +143,43 @@ grpcurl invoke [options] <address> <method>
 
 ```bash
 # Invoke unary method with inline JSON
-grpcurl invoke --plaintext \
+grpcurl.net invoke --plaintext \
   -d '{"name": "World"}' \
   localhost:9090 my.package.Service/SayHello
 
 # Invoke with data from stdin
-echo '{"name": "World"}' | grpcurl invoke --plaintext \
+echo '{"name": "World"}' | grpcurl.net invoke --plaintext \
   -d @ \
   localhost:9090 my.package.Service/SayHello
 
 # Invoke with custom headers
-grpcurl invoke --plaintext \
+grpcurl.net invoke --plaintext \
   -H "Authorization: Bearer token123" \
   -H "X-Request-Id: abc123" \
   -d '{}' \
   localhost:9090 my.package.Service/GetData
 
 # Invoke with timeout
-grpcurl invoke --plaintext \
+grpcurl.net invoke --plaintext \
   --max-time 30s \
   -d '{}' \
   localhost:9090 my.package.Service/LongRunningOperation
 
 # Invoke server streaming
-grpcurl invoke --plaintext \
+grpcurl.net invoke --plaintext \
   -d '{"count": 5}' \
   localhost:9090 my.package.Service/StreamData
 
 # Invoke client streaming (multiple messages from stdin)
 echo '{"value": 1}
 {"value": 2}
-{"value": 3}' | grpcurl invoke --plaintext \
+{"value": 3}' | grpcurl.net invoke --plaintext \
   -d @ \
   localhost:9090 my.package.Service/AccumulateValues
 
 # Invoke bidirectional streaming
 echo '{"message": "hello"}
-{"message": "world"}' | grpcurl invoke --plaintext \
+{"message": "world"}' | grpcurl.net invoke --plaintext \
   -d @ \
   localhost:9090 my.package.Service/Chat
 ```
@@ -224,7 +224,7 @@ Size values accept the following formats:
 Headers can reference environment variables using `${VAR_NAME}` syntax:
 
 ```bash
-grpcurl invoke --plaintext \
+grpcurl.net invoke --plaintext \
   -H "Authorization: Bearer ${AUTH_TOKEN}" \
   -d '{}' \
   localhost:9090 my.package.Service/SecureMethod

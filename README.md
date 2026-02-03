@@ -1,6 +1,6 @@
 # GrpCurl.Net
 
-A .NET implementation of grpcurl - a command-line tool for interacting with gRPC servers.
+A command-line tool for interacting with gRPC servers. Inspired by grpcurl.
 
 ## Overview
 
@@ -19,13 +19,13 @@ GrpCurl.Net allows you to interact with gRPC servers using JSON requests instead
 
 ```bash
 # List services on a gRPC server
-grpcurl list --plaintext localhost:9090
+grpcurl.net list --plaintext localhost:9090
 
 # Describe a service
-grpcurl describe --plaintext localhost:9090 my.package.Service
+grpcurl.net describe --plaintext localhost:9090 my.package.Service
 
 # Invoke a method
-grpcurl invoke --plaintext -d '{"name": "World"}' localhost:9090 my.package.Service/SayHello
+grpcurl.net invoke --plaintext -d '{"name": "World"}' localhost:9090 my.package.Service/SayHello
 ```
 
 ## Documentation

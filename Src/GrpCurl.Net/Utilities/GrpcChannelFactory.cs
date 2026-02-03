@@ -103,9 +103,30 @@ internal static partial class GrpcChannelFactory
         }
 
         // Configure client certificates (mutual TLS)
-        if (options is { ClientCertPath: not null, ClientKeyPath: not null })
+        if (options.ClientCertPath is not null)
         {
-            var clientCert = X509Certificate2.CreateFromPemFile(options.ClientCertPath, options.ClientKeyPath);
+            X509Certificate2 clientCert;
+
+            // Check if it's a PKCS12 file (.p12 or .pfx)
+            if (options.ClientCertPath.EndsWith(".p12", StringComparison.OrdinalIgnoreCase) ||
+                options.ClientCertPath.EndsWith(".pfx", StringComparison.OrdinalIgnoreCase))
+            {
+                // Load PKCS12 with optional password
+                clientCert = X509CertificateLoader.LoadPkcs12FromFile(
+                    options.ClientCertPath,
+                    options.ClientCertPassword,
+                    X509KeyStorageFlags.Exportable);
+            }
+            else if (options.ClientKeyPath is not null)
+            {
+                // PEM format with separate key file
+                clientCert = X509Certificate2.CreateFromPemFile(options.ClientCertPath, options.ClientKeyPath);
+            }
+            else
+            {
+                throw new ArgumentException(
+                    "Client certificate requires either a PKCS12 file (.p12/.pfx) or both --cert and --key for PEM files");
+            }
 
             httpHandler.SslOptions.ClientCertificates = [clientCert];
         }
@@ -311,6 +332,8 @@ internal static partial class GrpcChannelFactory
         public string? ClientCertPath { get; init; }
 
         public string? ClientKeyPath { get; init; }
+
+        public string? ClientCertPassword { get; init; }
 
         public TimeSpan? ConnectTimeout { get; init; }
 

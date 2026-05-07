@@ -1,0 +1,21 @@
+- name: CLI Reference
+  href: cli-reference.md
+- name: Examples
+  href: examples.md
+- name: Troubleshooting
+  href: troubleshooting.md
+- name: Authentication recipes
+  href: authentication.md
+- name: CI/CD integration
+  href: ci-cd.md
+- name: Architecture
+  href: architecture.md
+- name: Gql2Grpc mapping file
+  href: gql2grpc-mapping.md
+- name: Gql2Grpc cookbook
+  href: gql2grpc-cookbook.md
+- name: Gql2Grpc future work
+  href: gql2grpc-future-work.md
+- name: Learn Protobuf
+  href: learn-protobuf/
+  homepage: learn-protobuf/index.md

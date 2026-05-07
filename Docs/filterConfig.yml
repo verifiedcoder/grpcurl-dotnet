@@ -1,0 +1,54 @@
+apiRules:
+  # Keep the user-facing descriptor source abstraction and its implementations.
+  - include:
+      uidRegex: ^GrpCurl\.Net\.DescriptorSources(\..+)?$
+      type: Namespace
+  # Keep the public scalar mapping config and GraphQL types that consumers
+  # supply / receive (records referenced from mapping files and the CLI shape).
+  - include:
+      uidRegex: ^Gql2Grpc\.Configuration(\..+)?$
+      type: Namespace
+  - include:
+      uidRegex: ^Gql2Grpc\.GraphQL(\..+)?$
+      type: Namespace
+  - include:
+      uidRegex: ^Gql2Grpc\.Introspection(\..+)?$
+      type: Namespace
+  - include:
+      uidRegex: ^Gql2Grpc\.Response\.RootFieldResult$
+      type: Type
+  # Hide the remaining Gql2Grpc namespaces — they are implementation details
+  # not intended for external consumers. Keep their code public for test
+  # InternalsVisibleTo coverage but suppress from API reference.
+  - exclude:
+      uidRegex: ^Gql2Grpc\.Commands(\..+)?$
+      type: Namespace
+  - exclude:
+      uidRegex: ^Gql2Grpc\.Diagnostics(\..+)?$
+      type: Namespace
+  - exclude:
+      uidRegex: ^Gql2Grpc\.Execution(\..+)?$
+      type: Namespace
+  - exclude:
+      uidRegex: ^Gql2Grpc\.Translation(\..+)?$
+      type: Namespace
+  - exclude:
+      uidRegex: ^Gql2Grpc\.Response\.(SelectionProjector|GraphQLResponseBuilder|StreamingResponseWriter)$
+      type: Type
+  # Hide auto-generated gRPC reflection protocol types (from Protos/reflection.proto).
+  - exclude:
+      uidRegex: ^Grpc\.Reflection(\..+)?$
+      type: Namespace
+  # Hide the AsyncStreamExtensions helper — it's an internal adapter, not a user API.
+  - exclude:
+      uidRegex: ^GrpCurl\.Net\.Invocation(\..+)?$
+      type: Namespace
+  # Hide compiler-generated and test-only markers.
+  - exclude:
+      hasAttribute:
+        uid: System.Runtime.CompilerServices.CompilerGeneratedAttribute
+        type: Type
+  - exclude:
+      hasAttribute:
+        uid: Microsoft.CodeAnalysis.EmbeddedAttribute
+        type: Type

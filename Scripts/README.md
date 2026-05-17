@@ -1,38 +1,53 @@
-# GrpCurl.Net Demo Scripts
+# GrpCurl.Net Scripts
 
-This directory contains numbered bash scripts demonstrating all GrpCurl.Net features.
+Two things live here:
 
-## Prerequisites
+1. **`ValidationRunner/`** — the **canonical** cross-platform validation runner. A .NET
+   console project that publishes the GrpCurl.Net CLI + TestServer to a temp directory
+   and exercises every feature scenario against those *published* binaries. Runs
+   identically on Windows, Linux, and macOS. This is what CI runs.
 
-### 1. Build GrpCurl.Net
+2. **`01-*.sh` … `32-*.sh`** — feature **demonstration** scripts. Bash-only. Useful for
+   manual exploration on Unix / WSL / Git Bash; **not** the supported validation flow.
+   They `dotnet run` against debug builds and assume a TestServer is listening on
+   localhost:9090.
 
-```bash
-cd /path/to/GrpCurl.Net
-dotnet build
-```
+3. **`dev-bootstrap/install-go.sh`** — optional developer bootstrap that installs Go,
+   upstream `grpcurl`, and the `grpc-go` interop server into the current user's HOME
+   (no `sudo`, no `/usr/local` edits). Versions and checksums are pinned. Use it only
+   if you want to compare GrpCurl.Net against upstream behaviour locally.
 
-The scripts expect the executable at:
-`../Src/GrpCurl.Net/bin/Debug/net10.0/GrpCurl.Net`
-
-### 2. Start the TestServer
-
-In a separate terminal:
-
-```bash
-cd /path/to/GrpCurl.Net
-dotnet run --project Tests/GrpCurl.Net.TestServer
-```
-
-The server runs on `localhost:9090` by default.
-
-### 3. Run Scripts
+## Canonical: cross-platform validation runner
 
 ```bash
-cd Scripts
-./02-list-services.sh
+cd repo
+dotnet run --project Scripts/ValidationRunner --configuration Release
 ```
 
-## Script Overview
+The runner publishes the CLI + test server, picks a free localhost port, runs every
+scenario, asserts on exit code + stdout/stderr, and tears down the test server. It
+exits non-zero if any scenario fails. CI invokes it on every OS in the matrix.
+
+Scenarios cover: `list` services and methods, `describe`, unary/server-streaming/JSON-
+envelope `invoke`, binary `-bin` metadata, and the drop-in upstream-grpcurl flag
+shape. Each scenario maps 1-to-1 to one of the numbered Bash demos below.
+
+## Unix-only feature demos
+
+These scripts are convenient for manual exploration but are **Unix/WSL/Git-Bash only**.
+They assume a debug build under `Src/GrpCurl.Net/bin/Debug/net10.0/GrpCurl.Net` and a
+TestServer on `localhost:9090`. To run them on Windows, use WSL or Git Bash, or run
+the ValidationRunner instead.
+
+```bash
+# Terminal 1
+bash Scripts/01-start-server.sh
+
+# Terminal 2
+bash Scripts/02-list-services.sh
+bash Scripts/04-describe-service.sh
+bash Scripts/08-invoke-unary-call.sh
+```
 
 | Script | Purpose |
 |--------|---------|
@@ -63,7 +78,7 @@ cd Scripts
 | 21-message-size-limits.sh | Control max message sizes |
 | 22-error-handling.sh | Handle gRPC errors gracefully |
 | 23-allow-unknown-fields.sh | Handle unknown fields in JSON |
-| 24-authority-header.sh | Override :authority header |
+| 24-authority-header.sh | Override `:authority` header |
 | 25-user-agent.sh | Set custom User-Agent header |
 | **Comprehensive** | |
 | 26-all-features-demo.sh | Combined demo of multiple features |
@@ -74,25 +89,42 @@ cd Scripts
 | 30-gql-subscription.sh | GraphQL subscription → server-streaming (NDJSON) |
 | 31-gql-error-envelope.sh | Force a gRPC error and show the GraphQL error envelope |
 | 32-gql-introspection.sh | `__schema` introspection over the synthesised schema |
-| **Validation & Utilities** | |
-| run-production-validation.sh | Comprehensive production validation suite |
-| install-go.sh | Install Go grpcurl for comparison testing |
+| **Validation entry points** | |
+| run-production-validation.sh | Thin wrapper that delegates to `ValidationRunner` (Unix only). |
+| dev-bootstrap/install-go.sh | Developer-only bootstrap for upstream `grpcurl`/`grpc-go`. Pinned versions + SHA-256 checks. |
 
 ## TestServer Services
 
 The TestServer provides `testing.TestService` with:
 
 - `EmptyCall` - Unary RPC (empty request/response)
-- `UnaryCall` - Unary RPC with payload
+- `UnaryCall` - Unary RPC with payload (honours `response_size`, `fill_username`, `fill_oauth_scope`, `response_status`)
 - `StreamingOutputCall` - Server streaming
 - `StreamingInputCall` - Client streaming
 - `FullDuplexCall` - Bidirectional streaming (immediate)
 - `HalfDuplexCall` - Bidirectional streaming (buffered)
 
+It can also start with TLS or mTLS:
+
+```bash
+# Plaintext
+dotnet run --project Tests/GrpCurl.Net.TestServer -- --port 9090
+
+# TLS (uses Tests/TestCertificates/server.crt + server.key)
+dotnet run --project Tests/GrpCurl.Net.TestServer -- --port 9443 --tls
+
+# mTLS (requires --cert/--key in the client)
+dotnet run --project Tests/GrpCurl.Net.TestServer -- --port 9443 --require-client-cert
+```
+
 ## Troubleshooting
 
-**"Connection refused"**: Ensure TestServer is running on port 9090
+**"Connection refused"** — Ensure TestServer is running on port 9090.
 
-**"File not found"**: Run `dotnet build` from the GrpCurl.Net directory
+**"File not found"** — Run `dotnet build` from `repo/`.
 
-**Permission denied**: Run `chmod +x *.sh` to make scripts executable
+**Permission denied** — Run `chmod +x *.sh`. On Windows, run via Git Bash / WSL, or
+prefer the cross-platform ValidationRunner.
+
+**protoc not found** — Some demos use `--proto` which needs `protoc` on PATH. Install
+via `apt install protobuf-compiler`, `brew install protobuf`, or `choco install protoc`.

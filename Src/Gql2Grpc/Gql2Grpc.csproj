@@ -3,26 +3,29 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net10.0</TargetFramework>
-        <LangVersion>latest</LangVersion>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
         <RootNamespace>Gql2Grpc</RootNamespace>
         <AssemblyName>Gql2Grpc</AssemblyName>
         <Version>1.0.0</Version>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
         <InformationalVersion>1.0.0</InformationalVersion>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>gql2grpc</ToolCommandName>
+        <IsPackable>true</IsPackable>
+        <PackageId>Gql2Grpc</PackageId>
+        <Description>GraphQL-to-gRPC proxy CLI. Translates GraphQL queries into gRPC calls using a YAML mapping. Built on GrpCurl.Net.Core.</Description>
+        <PackageTags>grpc;graphql;cli;dotnet-tool</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\GrpCurl.Net\GrpCurl.Net.csproj" />
+        <ProjectReference Include="..\GrpCurl.Net.Core\GrpCurl.Net.Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="GraphQL-Parser" Version="9.5.1" />
-        <PackageReference Include="Spectre.Console" Version="0.55.2" />
-        <PackageReference Include="System.CommandLine" Version="2.0.6" />
-        <PackageReference Include="YamlDotNet" Version="16.*" />
+        <PackageReference Include="GraphQL-Parser" />
+        <PackageReference Include="Spectre.Console" />
+        <PackageReference Include="System.CommandLine" />
+        <PackageReference Include="YamlDotNet" />
     </ItemGroup>
 
     <ItemGroup>

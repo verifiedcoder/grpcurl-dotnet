@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>GrpCurl.Net.ValidationRunner</RootNamespace>
+    <AssemblyName>ValidationRunner</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Src\GrpCurl.Net.Core\GrpCurl.Net.Core.csproj" />
+    <ProjectReference Include="..\..\Src\GrpCurl.Net\GrpCurl.Net.csproj" />
+    <ProjectReference Include="..\..\Tests\GrpCurl.Net.TestServer\GrpCurl.Net.TestServer.csproj" />
+  </ItemGroup>
+
+</Project>

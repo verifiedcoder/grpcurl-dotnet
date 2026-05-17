@@ -147,6 +147,67 @@ internal static class InvokeCommandHandler
             Description = "Overwrite existing files (e.g., target of --protoset-out) without confirmation"
         };
 
+        var unsafeShowSecretsOpt = new Option<bool>("--unsafe-show-secrets")
+        {
+            Description = "Opt out of secret redaction in verbose output. Sensitive headers " +
+                          "(authorization, cookie, *-token, *-secret, *-bin, etc.) are " +
+                          "redacted by default to keep CI logs and terminal captures safe."
+        };
+
+        var revocationModeOpt = new Option<string?>("--revocation-mode")
+        {
+            Description = "Certificate revocation policy when --cacert is used: " +
+                          "online (default, fetches CRL/OCSP), offline (uses cached CRL only), " +
+                          "nocheck (disables revocation — only safe for self-signed test fixtures)."
+        };
+
+        var exportableKeyOpt = new Option<bool>("--exportable-key")
+        {
+            Description = "Load client private keys with X509KeyStorageFlags.Exportable. " +
+                          "Default is EphemeralKeySet (keys never persist to the key store)."
+        };
+
+        var keepaliveTimeOpt = new Option<string?>("--keepalive-time")
+        {
+            Description = "HTTP/2 keepalive ping interval (e.g., '30s'). Default: 60s. " +
+                          "Use 'infinite' to disable keepalive pings."
+        };
+
+        var keepaliveTimeoutOpt = new Option<string?>("--keepalive-timeout")
+        {
+            Description = "HTTP/2 keepalive ping timeout (e.g., '10s'). Default: 30s."
+        };
+
+        var protoOpt = new Option<string[]>("--proto")
+        {
+            Description = "Path to a .proto source file to compile via protoc. Repeatable. " +
+                          "Requires protoc on PATH (alternative: --protoset).",
+            Arity = ArgumentArity.ZeroOrMore
+        };
+
+        var importPathOpt = new Option<string[]>("--import-path", "-I")
+        {
+            Description = "Directory passed to protoc as an import root. Repeatable.",
+            Arity = ArgumentArity.ZeroOrMore
+        };
+
+        var requestFormatOpt = new Option<string?>("--format")
+        {
+            Description = "Request data format: 'json' (default) or 'text' (protobuf text format)."
+        };
+
+        var protoOutDirOpt = new Option<string?>("--proto-out-dir")
+        {
+            Description = "Reconstruct .proto source files from the active schema and write them to this directory. " +
+                          "Refuses to overwrite without --force."
+        };
+
+        var maxStdinBytesOpt = new Option<long?>("--max-stdin-bytes")
+        {
+            Description = "Maximum bytes accepted from stdin (with --data @). Default: 16 MiB. " +
+                          "Rejects oversized inputs before parsing."
+        };
+
         var command = new Command("invoke", CommandDescriptions.Invoke)
         {
             addressArg,
@@ -174,7 +235,17 @@ internal static class InvokeCommandHandler
             rpcHeaderOpt,
             protosetOutOpt,
             outputOpt,
-            forceOpt
+            forceOpt,
+            unsafeShowSecretsOpt,
+            revocationModeOpt,
+            exportableKeyOpt,
+            keepaliveTimeOpt,
+            keepaliveTimeoutOpt,
+            protoOpt,
+            importPathOpt,
+            requestFormatOpt,
+            protoOutDirOpt,
+            maxStdinBytesOpt
         };
 
         // Use ParseResult to handle parameters
@@ -206,6 +277,15 @@ internal static class InvokeCommandHandler
             var protosetOut = parseResult.GetValue(protosetOutOpt);
             var output = parseResult.GetValue(outputOpt);
             var force = parseResult.GetValue(forceOpt);
+            var unsafeShowSecrets = parseResult.GetValue(unsafeShowSecretsOpt);
+            var revocationMode = parseResult.GetValue(revocationModeOpt);
+            var exportableKey = parseResult.GetValue(exportableKeyOpt);
+            var keepaliveTime = parseResult.GetValue(keepaliveTimeOpt);
+            var keepaliveTimeout = parseResult.GetValue(keepaliveTimeoutOpt);
+            var protoFiles = parseResult.GetValue(protoOpt);
+            var importPaths = parseResult.GetValue(importPathOpt);
+            var requestFormat = parseResult.GetValue(requestFormatOpt);
+            var protoOutDir = parseResult.GetValue(protoOutDirOpt);
 
             try
             {
@@ -235,7 +315,16 @@ internal static class InvokeCommandHandler
                     rpcHeaders,
                     protosetOut,
                     output,
-                    force);
+                    force,
+                    unsafeShowSecrets,
+                    revocationMode,
+                    exportableKey,
+                    keepaliveTime,
+                    keepaliveTimeout,
+                    protoFiles,
+                    importPaths,
+                    requestFormat,
+                    protoOutDir);
 
                 return 0;
             }
@@ -246,6 +335,43 @@ internal static class InvokeCommandHandler
         });
 
         return command;
+    }
+
+    internal static IMessage ParseRequestPayload(
+        Google.Protobuf.Reflection.MessageDescriptor inputType,
+        string? requestText,
+        bool allowUnknownFields,
+        bool textFormat)
+    {
+        if (textFormat)
+        {
+            if (string.IsNullOrEmpty(requestText))
+            {
+                return new SimpleDynamicMessage(inputType);
+            }
+
+            return DynamicTextFormat.Parse(inputType, requestText);
+        }
+
+        return DynamicInvoker.CreateMessageFromJson(inputType, requestText, allowUnknownFields);
+    }
+
+    internal static System.Security.Cryptography.X509Certificates.X509RevocationMode? ParseRevocationMode(string? mode)
+    {
+        if (string.IsNullOrEmpty(mode))
+        {
+            return null;
+        }
+
+        return mode.ToLowerInvariant() switch
+        {
+            "online" => System.Security.Cryptography.X509Certificates.X509RevocationMode.Online,
+            "offline" => System.Security.Cryptography.X509Certificates.X509RevocationMode.Offline,
+            "nocheck" or "no-check" or "none" => System.Security.Cryptography.X509Certificates.X509RevocationMode.NoCheck,
+            _ => throw new ArgumentException(
+                $"Unknown --revocation-mode '{mode}'. Expected: online, offline, nocheck.",
+                nameof(mode))
+        };
     }
 
     internal static void ValidateOptions(bool plaintext, bool insecure, string? serverName, string? maxMsgSz, bool verbose)
@@ -302,18 +428,58 @@ internal static class InvokeCommandHandler
         string[]? rpcHeaders,
         string? protosetOut,
         OutputFormat output = OutputFormat.Text,
-        bool force = false)
+        bool force = false,
+        bool unsafeShowSecrets = false,
+        string? revocationMode = null,
+        bool exportableKey = false,
+        string? keepaliveTime = null,
+        string? keepaliveTimeout = null,
+        string[]? protoFiles = null,
+        string[]? importPaths = null,
+        string? requestFormat = null,
+        string? protoOutDir = null)
     {
         // Validate options before proceeding
         ValidateOptions(plaintext, insecure, serverName, maxMsgSz, verbose);
 
+        var parsedRevocationMode = ParseRevocationMode(revocationMode);
+        var parsedKeepaliveTime = keepaliveTime is null ? (TimeSpan?)null : GrpcChannelFactory.ParseDuration(keepaliveTime);
+        var parsedKeepaliveTimeout = keepaliveTimeout is null ? (TimeSpan?)null : GrpcChannelFactory.ParseDuration(keepaliveTimeout);
+        var useTextFormat = !string.IsNullOrEmpty(requestFormat)
+            && string.Equals(requestFormat, "text", StringComparison.OrdinalIgnoreCase);
+
+        if (!string.IsNullOrEmpty(requestFormat)
+            && !string.Equals(requestFormat, "json", StringComparison.OrdinalIgnoreCase)
+            && !useTextFormat)
+        {
+            ErrorRenderer.RenderAndThrow(new ErrorEnvelope
+            {
+                Category = ErrorCategory.Usage,
+                ExitCode = 2,
+                Message = $"Unknown --format '{requestFormat}'. Expected: json, text."
+            }, output);
+        }
+
         // Create timing context if very verbose mode is enabled
         var timing = veryVerbose ? new TimingContext() : null;
 
-        // Create cancellation token sources for Ctrl+C handling and deadline
-        using var ctrlCCts = new CancellationTokenSource();
+        // --max-time bounds the *entire* operation, not just the RPC. The deadline starts
+        // here so it covers protoset loading, reflection schema lookup, stdin reads,
+        // mapping/variables file reads, and the actual RPC. Previously this was only
+        // wired in around line 476 (i.e. after schema and stdin), which let slow probes
+        // outlive the budget. See CODE-REVIEW.md P1 "--max-time is not a total operation
+        // deadline".
+        var maxTimeSpan = maxTime is not null ? GrpcChannelFactory.ParseDuration(maxTime) : (TimeSpan?)null;
 
-        CancellationTokenSource? deadlineCts = null;
+        using var ctrlCCts = new CancellationTokenSource();
+        using var deadlineCts = maxTimeSpan is not null
+            ? new CancellationTokenSource(maxTimeSpan.Value)
+            : new CancellationTokenSource();
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(deadlineCts.Token, ctrlCCts.Token);
+
+        var operationToken = linkedCts.Token;
+        DateTime? rpcDeadline = maxTimeSpan is not null ? DateTime.UtcNow.Add(maxTimeSpan.Value) : null;
+
         var cancelHandler = CancelHandler();
 
         Console.CancelKeyPress += cancelHandler;
@@ -347,45 +513,53 @@ internal static class InvokeCommandHandler
                 maxSendSize = parsedSize;
             }
 
-            IDescriptorSource descriptorSource;
-
-            if (protosets is { Length: > 0 })
+            // Build ONE connection options bundle that applies to both reflection and the RPC.
+            // The earlier version built a second, half-populated options object for the RPC
+            // channel that silently dropped CaCertPath/ClientCertPath/ClientKeyPath/
+            // ClientCertPassword. That defeated mTLS for the actual business call even when
+            // the reflection probe succeeded. See CODE-REVIEW.md P0 "invoke drops TLS/mTLS".
+            var connectionOptions = new GrpcChannelFactory.ChannelOptions
             {
-                timing?.StartPhase("Protoset Loading");
-                descriptorSource = await ProtosetSource.LoadFromFilesAsync(protosets, deadlineCts?.Token ?? CancellationToken.None);
-            }
-            else
-            {
-                timing?.StartPhase("Connection Establishment");
+                Plaintext = plaintext,
+                InsecureSkipVerify = insecure,
+                CaCertPath = cacert,
+                ClientCertPath = cert,
+                ClientKeyPath = key,
+                ClientCertPassword = certPassword,
+                ConnectTimeout = connectTimeout is not null ? GrpcChannelFactory.ParseDuration(connectTimeout) : null,
+                MaxReceiveMessageSize = maxReceiveSize,
+                MaxSendMessageSize = maxSendSize,
+                Authority = authority,
+                ServerName = serverName,
+                RevocationMode = parsedRevocationMode,
+                ExportableClientKey = exportableKey,
+                KeepaliveTime = parsedKeepaliveTime,
+                KeepaliveTimeout = parsedKeepaliveTimeout
+            };
 
-                var channelOptions = new GrpcChannelFactory.ChannelOptions
-                {
-                    Plaintext = plaintext,
-                    InsecureSkipVerify = insecure,
-                    CaCertPath = cacert,
-                    ClientCertPath = cert,
-                    ClientKeyPath = key,
-                    ClientCertPassword = certPassword,
-                    ConnectTimeout = connectTimeout is not null ? GrpcChannelFactory.ParseDuration(connectTimeout) : null,
-                    MaxReceiveMessageSize = maxReceiveSize,
-                    MaxSendMessageSize = maxSendSize,
-                    Authority = authority,
-                    ServerName = serverName
-                };
+            // Reflection metadata is merged from -H plus --reflect-header so callers can target
+            // proxy vs origin separately if needed. Compute it up-front because DescriptorSourceFactory
+            // owns the only channel from this point on.
+            var reflectionMetadata = GrpcChannelFactory.CreateMetadata(
+                (headerStrings ?? []).Concat(reflectHeaders ?? []),
+                userAgent);
 
-                var channel = GrpcChannelFactory.Create(address, channelOptions);
+            timing?.StartPhase(protosets is { Length: > 0 } ? "Protoset Loading" : "Connection Establishment");
 
-                // Create reflection metadata by merging -H headers with --reflect-header
-                var reflectionMetadata = GrpcChannelFactory.CreateMetadata(
-                    (headerStrings ?? []).Concat(reflectHeaders ?? []),
-                    userAgent);
+            await using var session = await DescriptorSourceFactory.CreateAsync(
+                address,
+                protosets ?? [],
+                protoFiles ?? [],
+                importPaths ?? [],
+                connectionOptions,
+                reflectionMetadata,
+                operationToken);
 
-                descriptorSource = new ReflectionSource(channel, reflectionMetadata, true);
-            }
+            var descriptorSource = session.Source;
 
             timing?.StartPhase("Schema Discovery");
 
-            var serviceDescriptor = await descriptorSource.FindSymbolAsync(serviceName, deadlineCts?.Token ?? CancellationToken.None);
+            var serviceDescriptor = await descriptorSource.FindSymbolAsync(serviceName, operationToken);
 
             if (serviceDescriptor is not ServiceDescriptor svc)
             {
@@ -441,7 +615,7 @@ internal static class InvokeCommandHandler
             {
                 using var reader = new StreamReader(Console.OpenStandardInput());
 
-                requestJson = await reader.ReadToEndAsync(deadlineCts?.Token ?? CancellationToken.None);
+                requestJson = await reader.ReadToEndAsync(operationToken);
             }
             else
             {
@@ -450,35 +624,32 @@ internal static class InvokeCommandHandler
 
             timing?.StartPhase("RPC Channel Setup");
 
-            var channelOptions2 = new GrpcChannelFactory.ChannelOptions
-            {
-                Plaintext = plaintext,
-                InsecureSkipVerify = insecure,
-                ConnectTimeout = connectTimeout is not null ? GrpcChannelFactory.ParseDuration(connectTimeout) : null,
-                MaxReceiveMessageSize = maxReceiveSize,
-                MaxSendMessageSize = maxSendSize,
-                Authority = authority,
-                ServerName = serverName
-            };
+            // The RPC reuses the same channel that backs reflection. This is mandatory for
+            // mTLS to work end-to-end and removes a class of "reflection works but the RPC
+            // gets WhoAmI=anonymous" failures. The old code created channelOptions2 here
+            // that omitted the TLS material — that block is deliberately removed.
+            //
+            // session.Channel is only null when the descriptor source was loaded purely
+            // from protoset files with no address. Invoke always supplies an address
+            // (it has to — it's calling a method), so the assertion is upheld in practice.
+            // If a future path ever lets this be null, the message tells the operator
+            // exactly which option combination produced it.
+            var rpcChannel = session.Channel ?? throw new InvalidOperationException(
+                "Invoke requires a network channel; supply a host:port address.");
 
-            using var channel2 = GrpcChannelFactory.Create(address, channelOptions2);
-
-            var invoker = new DynamicInvoker(channel2);
+            var invoker = new DynamicInvoker(rpcChannel);
 
             // Create RPC metadata by merging -H headers with --rpc-header
             var metadata = GrpcChannelFactory.CreateMetadata(
                 (headerStrings ?? []).Concat(rpcHeaders ?? []),
                 userAgent);
 
-            // Create linked cancellation token for both deadline (max-time) and Ctrl+C
-            deadlineCts = maxTime is not null ? new CancellationTokenSource(GrpcChannelFactory.ParseDuration(maxTime)) : new CancellationTokenSource();
-
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(deadlineCts.Token, ctrlCCts.Token);
-
-            var cancellationToken = linkedCts.Token;
-
-            // Calculate deadline for gRPC CallOptions
-            DateTime? deadline = maxTime is not null ? DateTime.UtcNow.Add(GrpcChannelFactory.ParseDuration(maxTime)) : null;
+            // operationToken / rpcDeadline are computed at the top of ExecuteAsync so the
+            // budget covers protoset loading, reflection, stdin reads, and the RPC. The
+            // remaining deadline for the gRPC call is derived from "wall-clock now" so a
+            // slow descriptor probe shrinks the budget the RPC sees.
+            var cancellationToken = operationToken;
+            var deadline = rpcDeadline;
 
             timing?.StartPhase("RPC Invocation");
 
@@ -486,26 +657,26 @@ internal static class InvokeCommandHandler
             {
                 case false when !methodDescriptor.IsServerStreaming:
 
-                    await InvokeUnaryAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, deadline, timing, output, cancellationToken);
+                    await InvokeUnaryAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, deadline, timing, output, unsafeShowSecrets, useTextFormat, cancellationToken);
 
                     break;
 
                 case false when methodDescriptor.IsServerStreaming:
 
-                    await InvokeServerStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, deadline, timing, output, cancellationToken);
+                    await InvokeServerStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, deadline, timing, output, unsafeShowSecrets, useTextFormat, cancellationToken);
 
                     break;
 
                 case true when !methodDescriptor.IsServerStreaming:
 
-                    await InvokeClientStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, deadline, timing, output, cancellationToken);
+                    await InvokeClientStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, deadline, timing, output, unsafeShowSecrets, useTextFormat, cancellationToken);
 
                     break;
 
                 default:
 
                     // Bidirectional streaming
-                    await InvokeBidirectionalStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, deadline, timing, output, cancellationToken);
+                    await InvokeBidirectionalStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, deadline, timing, output, unsafeShowSecrets, useTextFormat, cancellationToken);
 
                     break;
             }
@@ -518,6 +689,17 @@ internal static class InvokeCommandHandler
                 if (verbose)
                 {
                     Diagnostics.Markup($"[dim]Wrote protoset to {protosetOut}[/]");
+                }
+            }
+
+            // Export reconstructed .proto sources if --proto-out-dir specified.
+            if (!string.IsNullOrEmpty(protoOutDir))
+            {
+                await GrpCurl.Net.Output.ProtoFileEmitter.WriteAsync(descriptorSource, protoOutDir, force, operationToken);
+
+                if (verbose)
+                {
+                    Diagnostics.Markup($"[dim]Wrote .proto files to {protoOutDir}[/]");
                 }
             }
 
@@ -570,7 +752,7 @@ internal static class InvokeCommandHandler
                     Message = "Operation cancelled by user"
                 }, output);
             }
-            else if (maxTime is not null && deadlineCts?.IsCancellationRequested == true)
+            else if (maxTime is not null && deadlineCts.IsCancellationRequested)
             {
                 ErrorRenderer.RenderAndThrow(new ErrorEnvelope
                 {
@@ -592,6 +774,38 @@ internal static class InvokeCommandHandler
         }
         catch (RpcException ex)
         {
+            // Decode grpc-status-details-bin (a base64-encoded google.rpc.Status with
+            // typed Any payloads). Surfaces structured details in the JSON envelope and
+            // human-readable hints in text mode. See CODE-REVIEW.md P2 "Metadata and
+            // Error Parity Is Incomplete".
+            var decodedDetails = RichStatusDecoder.TryDecode(ex);
+
+            RpcStatusDetailsInfo? statusDetailsInfo = null;
+
+            if (decodedDetails is not null)
+            {
+                var entries = new List<RpcStatusDetailEntry>(decodedDetails.Details.Count);
+
+                foreach (var detail in decodedDetails.Details)
+                {
+                    entries.Add(new RpcStatusDetailEntry
+                    {
+                        TypeUrl = detail.TypeUrl,
+                        RawBase64 = detail.ParsedMessage is null ? Convert.ToBase64String(detail.RawValue) : null,
+                        Json = detail.ParsedMessage is { } parsed
+                            ? Google.Protobuf.JsonFormatter.Default.Format(parsed)
+                            : null
+                    });
+                }
+
+                statusDetailsInfo = new RpcStatusDetailsInfo
+                {
+                    Code = decodedDetails.Code,
+                    Message = decodedDetails.Message,
+                    Details = entries
+                };
+            }
+
             ErrorRenderer.RenderAndThrow(new ErrorEnvelope
             {
                 Category = ErrorCategory.Rpc,
@@ -606,7 +820,8 @@ internal static class InvokeCommandHandler
                 {
                     Code = (int)ex.Status.StatusCode,
                     Status = ex.StatusCode.ToString(),
-                    Detail = ex.Status.Detail
+                    Detail = ex.Status.Detail,
+                    StatusDetails = statusDetailsInfo
                 }
             }, output);
         }
@@ -718,11 +933,13 @@ internal static class InvokeCommandHandler
         DateTime? deadline,
         TimingContext? timing,
         OutputFormat output,
+        bool unsafeShowSecrets,
+        bool useTextFormat,
         CancellationToken cancellationToken)
     {
         timing?.StartPhase(CommandConstants.RequestSerialisation);
 
-        var request = DynamicInvoker.CreateMessageFromJson(methodDescriptor.InputType, requestJson, allowUnknownFields);
+        var request = ParseRequestPayload(methodDescriptor.InputType, requestJson, allowUnknownFields, useTextFormat);
 
         // Log unknown fields if verbose mode is enabled
         if (verbose && request is SimpleDynamicMessage { UnknownFields.Count: > 0 } dynamicRequest)
@@ -732,7 +949,7 @@ internal static class InvokeCommandHandler
 
         if (verbose)
         {
-            WriteVerboseMethodInfo(methodDescriptor, metadata);
+            WriteVerboseMethodInfo(methodDescriptor, metadata, unsafeShowSecrets);
         }
 
         timing?.StartPhase(CommandConstants.NetworkRoundTrip);
@@ -754,7 +971,7 @@ internal static class InvokeCommandHandler
             await Console.Error.WriteLineAsync("Response contents:");
         }
 
-        OutputRenderer.WriteInvokeMessage(result.Response, index: 0, emitDefaults, output);
+        OutputRenderer.WriteInvokeMessage(result.Response, index: 0, emitDefaults, output, textFormat: useTextFormat);
 
         if (verbose)
         {
@@ -775,11 +992,13 @@ internal static class InvokeCommandHandler
         DateTime? deadline,
         TimingContext? timing,
         OutputFormat output,
+        bool unsafeShowSecrets,
+        bool useTextFormat,
         CancellationToken cancellationToken)
     {
         timing?.StartPhase(CommandConstants.RequestSerialisation);
 
-        var request = DynamicInvoker.CreateMessageFromJson(methodDescriptor.InputType, requestJson, allowUnknownFields);
+        var request = ParseRequestPayload(methodDescriptor.InputType, requestJson, allowUnknownFields, useTextFormat);
 
         // Log unknown fields if verbose mode is enabled
         if (verbose && request is SimpleDynamicMessage { UnknownFields.Count: > 0 } dynamicRequest)
@@ -797,14 +1016,27 @@ internal static class InvokeCommandHandler
         var responseCount = 0;
         long totalResponseSize = 0;
 
-        await foreach (var response in invoker.InvokeServerStreamingAsync(methodDescriptor, request, metadata, deadline, cancellationToken))
+        using var streamingResult = invoker.InvokeServerStreamingWithMetadataAsync(methodDescriptor, request, metadata, deadline, cancellationToken);
+
+        if (verbose)
+        {
+            // Headers may not be available until the first response arrives, but we have
+            // a Task and can await it without forcing a yield. WhenAny lets us print
+            // headers as soon as the server flushes them.
+            var headers = await streamingResult.ResponseHeadersAsync;
+
+            WriteVerboseResponseHeaders(headers);
+            await Console.Error.WriteLineAsync("Response stream:");
+        }
+
+        await foreach (var response in streamingResult.ResponseStream)
         {
             if (responseCount == 0)
             {
                 timing?.StartPhase(CommandConstants.ResponseDeserialization);
             }
 
-            OutputRenderer.WriteInvokeMessage(response, responseCount, emitDefaults, output);
+            OutputRenderer.WriteInvokeMessage(response, responseCount, emitDefaults, output, textFormat: useTextFormat);
 
             responseCount++;
 
@@ -820,6 +1052,7 @@ internal static class InvokeCommandHandler
 
         if (verbose)
         {
+            WriteVerboseResponseTrailers(streamingResult.GetTrailers());
             Diagnostics.Markup($"[dim]Server streaming completed, received {responseCount} response(s)[/]");
         }
     }
@@ -835,6 +1068,8 @@ internal static class InvokeCommandHandler
         DateTime? deadline,
         TimingContext? timing,
         OutputFormat output,
+        bool unsafeShowSecrets,
+        bool useTextFormat,
         CancellationToken cancellationToken)
     {
         if (verbose)
@@ -847,21 +1082,28 @@ internal static class InvokeCommandHandler
         var sentCount = 0;
         long totalRequestSize = 0;
 
-        var response = await invoker.InvokeClientStreamingAsync(methodDescriptor, TrackRequests(), metadata, deadline, cancellationToken);
+        using var clientResult = await invoker.InvokeClientStreamingWithMetadataAsync(methodDescriptor, TrackRequests(), metadata, deadline, cancellationToken);
 
         timing?.StartPhase(CommandConstants.ResponseDeserialization);
 
         if (timing is not null)
         {
             timing.RequestSizeBytes = totalRequestSize;
-            timing.ResponseSizeBytes = response.CalculateSize();
+            timing.ResponseSizeBytes = clientResult.Response.CalculateSize();
             timing.MessageCount = sentCount;
         }
 
-        OutputRenderer.WriteInvokeMessage(response, index: 0, emitDefaults, output);
+        if (verbose)
+        {
+            WriteVerboseResponseHeaders(await clientResult.ResponseHeadersAsync);
+            await Console.Error.WriteLineAsync("Response contents:");
+        }
+
+        OutputRenderer.WriteInvokeMessage(clientResult.Response, index: 0, emitDefaults, output, textFormat: useTextFormat);
 
         if (verbose)
         {
+            WriteVerboseResponseTrailers(clientResult.GetTrailers());
             Diagnostics.Markup($"[dim]Client streaming completed, sent {sentCount} message(s)[/]");
         }
 
@@ -895,6 +1137,8 @@ internal static class InvokeCommandHandler
         DateTime? deadline,
         TimingContext? timing,
         OutputFormat output,
+        bool unsafeShowSecrets,
+        bool useTextFormat,
         CancellationToken cancellationToken)
     {
         if (verbose)
@@ -909,17 +1153,30 @@ internal static class InvokeCommandHandler
         long totalRequestSize = 0;
         long totalResponseSize = 0;
 
-        await foreach (var response in invoker.InvokeDuplexStreamingAsync(methodDescriptor, TrackRequests(), metadata, deadline, cancellationToken))
+        using var duplexResult = invoker.InvokeDuplexStreamingWithMetadataAsync(methodDescriptor, TrackRequests(), metadata, deadline, cancellationToken);
+
+        if (verbose)
+        {
+            WriteVerboseResponseHeaders(await duplexResult.ResponseHeadersAsync);
+            await Console.Error.WriteLineAsync("Response stream:");
+        }
+
+        await foreach (var response in duplexResult.ResponseStream)
         {
             if (responseCount == 0)
             {
                 timing?.StartPhase(CommandConstants.ResponseDeserialization);
             }
 
-            OutputRenderer.WriteInvokeMessage(response, responseCount, emitDefaults, output);
+            OutputRenderer.WriteInvokeMessage(response, responseCount, emitDefaults, output, textFormat: useTextFormat);
 
             responseCount++;
             totalResponseSize += response.CalculateSize();
+        }
+
+        if (verbose)
+        {
+            WriteVerboseResponseTrailers(duplexResult.GetTrailers());
         }
 
         if (timing is not null)
@@ -953,7 +1210,7 @@ internal static class InvokeCommandHandler
         }
     }
 
-    internal static void WriteVerboseMethodInfo(MethodDescriptor methodDescriptor, Metadata metadata)
+    internal static void WriteVerboseMethodInfo(MethodDescriptor methodDescriptor, Metadata metadata, bool unsafeShowSecrets = false)
     {
         var inputStream = methodDescriptor.IsClientStreaming ? "stream " : "";
         var outputStream = methodDescriptor.IsServerStreaming ? "stream " : "";
@@ -969,9 +1226,12 @@ internal static class InvokeCommandHandler
         }
         else
         {
-            foreach (var entry in metadata)
+            // Sensitive values (authorization, cookie, *-token, *-secret, *-bin, etc.)
+            // are redacted by default so CI logs and terminal captures stay safe.
+            // Use --unsafe-show-secrets to see raw values.
+            foreach (var line in SecretRedactor.FormatLines(metadata, unsafeShowSecrets))
             {
-                Console.Error.WriteLine($"{entry.Key}: {entry.Value}");
+                Console.Error.WriteLine(line);
             }
         }
 
@@ -1021,93 +1281,118 @@ internal static class InvokeCommandHandler
     }
 
     /// <summary>
-    ///     Generates request messages from JSON input (supports single object, array, or stdin)
+    ///     Generates request messages from JSON input (supports single object, array,
+    ///     concatenated objects, or stdin in any of those forms). When stdin is used,
+    ///     the body is read fully up to <paramref name="maxStdinBytes"/> bytes (default
+    ///     16 MiB) so we can accept pretty-printed JSON arrays and concatenated objects
+    ///     across multiple lines — parity with upstream grpcurl. The earlier line-based
+    ///     stdin parser broke on blank lines (CODE-REVIEW.md P2 "Streaming stdin
+    ///     less capable than inline JSON").
     /// </summary>
-    private static async IAsyncEnumerable<IMessage> GenerateRequests(string? requestJson, MessageDescriptor inputType, bool verbose, bool allowUnknownFields)
+    private static async IAsyncEnumerable<IMessage> GenerateRequests(
+        string? requestJson,
+        MessageDescriptor inputType,
+        bool verbose,
+        bool allowUnknownFields,
+        long maxStdinBytes = 16L * 1024 * 1024)
     {
-        // If data is from stdin (@), read JSON lines
+        if (requestJson is null)
+        {
+            yield break;
+        }
+
+        string body;
+
         if (requestJson == "@")
         {
             if (verbose)
             {
-                Diagnostics.Markup("[dim]Reading request messages from stdin (one JSON object per line, blank line or EOF to finish)...[/]");
+                Diagnostics.Markup("[dim]Reading request messages from stdin (JSON array, concatenated objects, or pretty-printed JSON until EOF)...[/]");
             }
 
-            using var reader = new StreamReader(Console.OpenStandardInput());
-
-            while (await reader.ReadLineAsync() is { } line)
-            {
-                if (string.IsNullOrWhiteSpace(line))
-                {
-                    break;
-                }
-
-                var request = DynamicInvoker.CreateMessageFromJson(inputType, line, allowUnknownFields);
-
-                // Log unknown fields if verbose mode is enabled
-                if (verbose && request is SimpleDynamicMessage { UnknownFields.Count: > 0 } dynamicRequest)
-                {
-                    Diagnostics.Markup($"[yellow]Warning:[/] Request contains {dynamicRequest.UnknownFields.Count} unknown field(s): {Markup.Escape(string.Join(", ", dynamicRequest.UnknownFields))}");
-                }
-
-                if (verbose)
-                {
-                    Diagnostics.Markup($"[dim]Sending: {Markup.Escape(line)}[/]");
-                }
-
-                yield return request;
-            }
+            body = await ReadStdinBoundedAsync(maxStdinBytes);
         }
         else
         {
-            // Single message mode - parse as JSON array, single object, or concatenated objects
-            if (requestJson is null)
+            body = requestJson;
+        }
+
+        if (string.IsNullOrWhiteSpace(body))
+        {
+            yield break;
+        }
+
+        // Single-message mode: parse as JSON array, single object, or concatenated objects.
+        List<string>? messages;
+
+        try
+        {
+            var jsonDoc = JsonDocument.Parse(body);
+            var isArray = jsonDoc.RootElement.ValueKind == JsonValueKind.Array;
+
+            if (isArray)
             {
-                yield break;
+                messages = [];
+                messages.AddRange(jsonDoc.RootElement.EnumerateArray().Select(element => element.GetRawText()));
             }
-
-            // Try standard JSON parse first; fall back to concatenated objects if it fails
-            List<string>? messages;
-
-            try
+            else
             {
-                var jsonDoc = JsonDocument.Parse(requestJson);
-                var isArray = jsonDoc.RootElement.ValueKind == JsonValueKind.Array;
-
-                if (isArray)
-                {
-                    messages = [];
-                    messages.AddRange(jsonDoc.RootElement.EnumerateArray().Select(element => element.GetRawText()));
-                }
-                else
-                {
-                    messages = [requestJson];
-                }
-            }
-            catch (JsonException)
-            {
-                // Standard parse failed -- try concatenated JSON objects (Go grpcurl format: {...} {...})
-                messages = ParseConcatenatedJsonObjects(requestJson);
-            }
-
-            foreach (var msgJson in messages)
-            {
-                var request = DynamicInvoker.CreateMessageFromJson(inputType, msgJson, allowUnknownFields);
-
-                // Log unknown fields if verbose mode is enabled
-                if (verbose && request is SimpleDynamicMessage { UnknownFields.Count: > 0 } dynamicRequest)
-                {
-                    Diagnostics.Markup($"[yellow]Warning:[/] Request contains {dynamicRequest.UnknownFields.Count} unknown field(s): {Markup.Escape(string.Join(", ", dynamicRequest.UnknownFields))}");
-                }
-
-                if (verbose)
-                {
-                    Diagnostics.Markup($"[dim]Sending: {Markup.Escape(msgJson)}[/]");
-                }
-
-                yield return request;
+                messages = [body];
             }
         }
+        catch (JsonException)
+        {
+            // Standard parse failed -- try concatenated JSON objects (Go grpcurl format: {...} {...})
+            messages = ParseConcatenatedJsonObjects(body);
+        }
+
+        foreach (var msgJson in messages)
+        {
+            var request = DynamicInvoker.CreateMessageFromJson(inputType, msgJson, allowUnknownFields);
+
+            if (verbose && request is SimpleDynamicMessage { UnknownFields.Count: > 0 } dynamicRequest)
+            {
+                Diagnostics.Markup($"[yellow]Warning:[/] Request contains {dynamicRequest.UnknownFields.Count} unknown field(s): {Markup.Escape(string.Join(", ", dynamicRequest.UnknownFields))}");
+            }
+
+            if (verbose)
+            {
+                Diagnostics.Markup($"[dim]Sending: {Markup.Escape(msgJson)}[/]");
+            }
+
+            yield return request;
+        }
+    }
+
+    /// <summary>
+    ///     Reads stdin into a string, refusing inputs larger than
+    ///     <paramref name="maxBytes"/> so a wedged or hostile producer can't drive the
+    ///     CLI into memory pressure. Returns immediately on EOF.
+    /// </summary>
+    private static async Task<string> ReadStdinBoundedAsync(long maxBytes)
+    {
+        await using var stdin = Console.OpenStandardInput();
+        await using var buffer = new MemoryStream();
+
+        var read = new byte[8192];
+        long total = 0;
+        int n;
+
+        while ((n = await stdin.ReadAsync(read.AsMemory(0, read.Length))) > 0)
+        {
+            total += n;
+
+            if (total > maxBytes)
+            {
+                throw new InvalidOperationException(
+                    $"Stdin exceeded the maximum allowed size of {maxBytes:N0} bytes. " +
+                    "Increase --max-stdin-bytes or split the payload.");
+            }
+
+            await buffer.WriteAsync(read.AsMemory(0, n));
+        }
+
+        return System.Text.Encoding.UTF8.GetString(buffer.GetBuffer(), 0, (int)buffer.Length);
     }
 
     /// <summary>

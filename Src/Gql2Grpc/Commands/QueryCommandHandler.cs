@@ -8,6 +8,7 @@ using Gql2Grpc.Introspection;
 using Gql2Grpc.Response;
 using Gql2Grpc.Translation;
 using Grpc.Core;
+using GrpCurl.Net.DescriptorSources;
 using GrpCurl.Net.Exceptions;
 using GrpCurl.Net.Utilities;
 
@@ -201,13 +202,26 @@ internal static class QueryCommandHandler
         var verbosity = cli.VeryVerbose ? VerbosityLevel.VeryVerbose : cli.Verbose ? VerbosityLevel.Verbose : VerbosityLevel.Quiet;
         var logger = new VerboseLogger(verbosity);
 
-        var queryText = await ResolveQueryAsync(cli, cancellationToken).ConfigureAwait(false);
+        // --max-time bounds the *entire* GraphQL-to-gRPC operation, including query/variables
+        // file reads, mapping load, descriptor source resolution, and the actual gRPC call.
+        // The earlier implementation only enforced it on the gRPC deadline, so slow file
+        // reads or descriptor probes could outlive the budget.
+        var maxTimeSpan = cli.MaxTime is null ? (TimeSpan?)null : GrpcChannelFactory.ParseDuration(cli.MaxTime);
+
+        using var deadlineCts = maxTimeSpan is not null
+            ? new CancellationTokenSource(maxTimeSpan.Value)
+            : new CancellationTokenSource();
+
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(deadlineCts.Token, cancellationToken);
+        var operationToken = linkedCts.Token;
+
+        var queryText = await ResolveQueryAsync(cli, operationToken).ConfigureAwait(false);
         var document = GraphQLDocumentParser.Parse(queryText);
         var operation = document.SelectOperation(cli.OperationName);
 
         var variablesFile = cli.VariablesFile is null
             ? null
-            : VariableCoercer.ParseVariablesFile(await File.ReadAllTextAsync(cli.VariablesFile, cancellationToken).ConfigureAwait(false));
+            : VariableCoercer.ParseVariablesFile(await File.ReadAllTextAsync(cli.VariablesFile, operationToken).ConfigureAwait(false));
 
         var cliVars = ParseCliVariables(cli.Variables);
         var coercedVariables = VariableCoercer.Coerce(operation.VariableDefinitions, cliVars, variablesFile);
@@ -215,7 +229,7 @@ internal static class QueryCommandHandler
         var resolver = new SelectionResolver(document.Fragments, coercedVariables);
         var rootSelections = resolver.Resolve(operation.SelectionSet);
 
-        var mappingConfig = await MappingConfigLoader.LoadAsync(cli.MappingPath, cancellationToken).ConfigureAwait(false);
+        var mappingConfig = await MappingConfigLoader.LoadAsync(cli.MappingPath, operationToken).ConfigureAwait(false);
         var mappingResolver = new MappingResolver(mappingConfig, cli.DefaultService);
 
         var channelOptions = BuildChannelOptions(cli);
@@ -226,17 +240,24 @@ internal static class QueryCommandHandler
         var rpcMetadata = GrpcChannelFactory.CreateMetadata(rpcHeaders, cli.UserAgent);
 
         await using var descriptorBundle = await DescriptorSourceFactory.CreateAsync(
-            cli.Address, cli.Protosets, channelOptions, reflectionMetadata, cancellationToken).ConfigureAwait(false);
+            cli.Address, cli.Protosets, channelOptions, reflectionMetadata, operationToken).ConfigureAwait(false);
 
-        var transport = new GrpcTransport(descriptorBundle.Channel);
+        // Gql2Grpc always invokes RPCs against a live server even when --protoset is used
+        // for offline schema: the GraphQL query still has to be forwarded. Reject the
+        // protoset-only-no-address combination here with a clear message.
+        var transportChannel = descriptorBundle.Channel ?? throw new GrpcCommandException(
+            "Gql2Grpc requires a target gRPC address; supply <address> or use --address.",
+            exitCode: 2);
+
+        var transport = new GrpcTransport(transportChannel);
         var translator = new JsonRequestTranslator();
         var projector = new SelectionProjector(cli.StrictSelection);
         var schemaBuilder = new GraphQLSchemaBuilder(descriptorBundle.Source, mappingConfig);
         var introspection = new IntrospectionExecutor(schemaBuilder, projector);
 
-        var deadline = cli.MaxTime is null
+        var deadline = maxTimeSpan is null
             ? (DateTime?)null
-            : DateTime.UtcNow + GrpcChannelFactory.ParseDuration(cli.MaxTime);
+            : DateTime.UtcNow + maxTimeSpan.Value;
 
         var executorOptions = new ExecutorOptions
         {
@@ -257,12 +278,12 @@ internal static class QueryCommandHandler
         if (operation.OperationType == GraphQLOperationType.Subscription || AnyFieldIsStreaming(rootSelections, operation.OperationType, mappingResolver))
         {
             var writer = new StreamingResponseWriter(Console.Out);
-            await executor.StreamAsync(operation.OperationType, rootSelections, writer, cancellationToken).ConfigureAwait(false);
+            await executor.StreamAsync(operation.OperationType, rootSelections, writer, operationToken).ConfigureAwait(false);
             exitCode = 0;
         }
         else
         {
-            var envelope = await executor.ExecuteUnaryAsync(operation.OperationType, rootSelections, cancellationToken).ConfigureAwait(false);
+            var envelope = await executor.ExecuteUnaryAsync(operation.OperationType, rootSelections, operationToken).ConfigureAwait(false);
             Console.WriteLine(GraphQLResponseBuilder.Serialize(envelope));
             exitCode = ExitCodeFromEnvelope(envelope);
         }

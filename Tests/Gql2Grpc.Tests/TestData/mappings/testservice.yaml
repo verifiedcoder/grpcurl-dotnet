@@ -1,0 +1,29 @@
+version: 1
+defaults:
+  service: testing.TestService
+  convention:
+    pascalCaseFieldNames: true
+
+operations:
+  - graphqlField: emptyCall
+    operationType: query
+    method: EmptyCall
+
+  - graphqlField: unaryCall
+    operationType: query
+    method: UnaryCall
+    arguments:
+      input: { path: . }
+
+  - graphqlField: createPayload
+    operationType: mutation
+    method: UnaryCall
+    arguments:
+      input: { path: . }
+
+  - graphqlField: streamingOutput
+    operationType: subscription
+    method: StreamingOutputCall
+    kind: serverStreaming
+    arguments:
+      input: { path: . }

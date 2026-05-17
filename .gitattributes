@@ -1,0 +1,50 @@
+# Default behavior: normalize line endings on commit, native on checkout.
+* text=auto
+
+# Shell scripts must remain LF even on Windows checkouts so WSL/Linux can
+# execute them. PowerShell scripts use CRLF for Windows-native execution.
+*.sh        text eol=lf
+*.bash      text eol=lf
+*.ps1       text eol=crlf
+*.cmd       text eol=crlf
+*.bat       text eol=crlf
+
+# Source code: explicit LF for portability across all .NET 10 build hosts.
+*.cs        text eol=lf
+*.csproj    text eol=lf
+*.props     text eol=lf
+*.targets   text eol=lf
+*.slnx      text eol=lf
+*.json      text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.md        text eol=lf
+*.proto     text eol=lf
+*.editorconfig text eol=lf
+
+# Lock files are tracked but should not be touched by editors.
+packages.lock.json text eol=lf
+
+# Binary assets — never normalise.
+*.pfx       binary
+*.p12       binary
+*.crt       binary
+*.cer       binary
+*.der       binary
+*.key       binary
+*.pem       binary
+*.protoset  binary
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.ico       binary
+*.gz        binary
+*.tar       binary
+*.zip       binary
+*.7z        binary
+*.dll       binary
+*.exe       binary
+*.pdb       binary
+*.nupkg     binary
+*.snupkg    binary

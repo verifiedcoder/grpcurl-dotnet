@@ -6,6 +6,10 @@
   href: troubleshooting.md
 - name: Authentication recipes
   href: authentication.md
+- name: grpcurl parity matrix
+  href: parity.md
+- name: grpcurl drop-in flag map
+  href: grpcurl-compat.md
 - name: CI/CD integration
   href: ci-cd.md
 - name: Architecture

@@ -154,12 +154,15 @@ internal static class OutputRenderer
     }
 
     /// <summary>Emits a single response message during invoke.</summary>
-    public static void WriteInvokeMessage(IMessage message, int index, bool emitDefaults, OutputFormat format, TextWriter? writer = null)
+    public static void WriteInvokeMessage(IMessage message, int index, bool emitDefaults, OutputFormat format, TextWriter? writer = null, bool textFormat = false)
     {
         var w = writer ?? Console.Out;
 
         if (format == OutputFormat.Json)
         {
+            // JSON envelope mode wraps responses regardless of --format. Even when the
+            // request was parsed from text format, the envelope still emits JSON so the
+            // NDJSON contract is preserved for callers piping to jq.
             var rawMessage = DynamicInvoker.MessageToJson(message, emitDefaults, indent: false);
             var inner = JsonNode.Parse(rawMessage);
 
@@ -172,6 +175,15 @@ internal static class OutputRenderer
 
             w.WriteLine(JsonSerializer.Serialize(envelope, CompactJsonOptions));
 
+            return;
+        }
+
+        if (textFormat && message is SimpleDynamicMessage dyn)
+        {
+            // Pretty protobuf text-format output for parity with upstream grpcurl's
+            // -format text. Falls back to JSON when the message isn't a dynamic message
+            // (the well-known-type pipeline returns concrete types for some shapes).
+            w.WriteLine(DynamicTextFormat.Print(dyn));
             return;
         }
 

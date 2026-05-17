@@ -295,82 +295,64 @@ internal static class DescribeCommandHandler
         // Create timing context if very verbose mode is enabled
         var timing = veryVerbose ? new TimingContext() : null;
 
+        var channelOptions = new GrpcChannelFactory.ChannelOptions
+        {
+            Plaintext = plaintext,
+            InsecureSkipVerify = insecure,
+            CaCertPath = cacert,
+            ClientCertPath = cert,
+            ClientKeyPath = key,
+            ClientCertPassword = certPassword,
+            ConnectTimeout = connectTimeout is not null ? GrpcChannelFactory.ParseDuration(connectTimeout) : null,
+            Authority = authority,
+            ServerName = serverName
+        };
+
+        var reflectionMetadata = GrpcChannelFactory.CreateMetadata(
+            headers.Concat(reflectHeaders),
+            userAgent);
+
+        if (verbose && !string.IsNullOrEmpty(address) && protosets.Length == 0)
+        {
+            Diagnostics.Markup($"[dim]Connecting to {address}...[/]");
+            Diagnostics.Markup($"[dim]Protocol: {(plaintext ? "HTTP/2 (plaintext)" : "HTTP/2 (TLS)")}[/]");
+
+            if (insecure)
+            {
+                Diagnostics.Markup("[dim]TLS verification: Disabled (--insecure)[/]");
+            }
+
+            if (connectTimeout is not null)
+            {
+                Diagnostics.Markup($"[dim]Connection timeout: {connectTimeout}[/]");
+            }
+
+            if (authority is not null)
+            {
+                Diagnostics.Markup($"[dim]Authority: {authority}[/]");
+            }
+        }
+
         try
         {
-            IDescriptorSource descriptorSource;
+            timing?.StartPhase(protosets.Length > 0 ? "Protoset Loading" : "Connection Establishment");
 
-            if (protosets.Length > 0)
+            await using var session = await DescriptorSourceFactory.CreateAsync(
+                address,
+                protosets,
+                channelOptions,
+                reflectionMetadata,
+                CancellationToken.None);
+
+            var descriptorSource = session.Source;
+
+            if (verbose && protosets.Length > 0)
             {
-                if (verbose)
-                {
-                    Diagnostics.Markup($"[dim]Loading {protosets.Length} protoset file(s)...[/]");
-                }
-
-                timing?.StartPhase("Protoset Loading");
-
-                descriptorSource = await ProtosetSource.LoadFromFilesAsync(protosets);
-
-                if (verbose)
-                {
-                    Diagnostics.Markup("[dim]Protoset files loaded successfully[/]");
-                }
+                Diagnostics.Markup("[dim]Protoset files loaded successfully[/]");
             }
-            else if (!string.IsNullOrEmpty(address))
+            else if (verbose)
             {
-                if (verbose)
-                {
-                    Diagnostics.Markup($"[dim]Connecting to {address}...[/]");
-                    Diagnostics.Markup($"[dim]Protocol: {(plaintext ? "HTTP/2 (plaintext)" : "HTTP/2 (TLS)")}[/]");
-
-                    if (insecure)
-                    {
-                        Diagnostics.Markup("[dim]TLS verification: Disabled (--insecure)[/]");
-                    }
-
-                    if (connectTimeout is not null)
-                    {
-                        Diagnostics.Markup($"[dim]Connection timeout: {connectTimeout}[/]");
-                    }
-
-                    if (authority is not null)
-                    {
-                        Diagnostics.Markup($"[dim]Authority: {authority}[/]");
-                    }
-                }
-
-                timing?.StartPhase("Connection Establishment");
-
-                var channelOptions = new GrpcChannelFactory.ChannelOptions
-                {
-                    Plaintext = plaintext,
-                    InsecureSkipVerify = insecure,
-                    CaCertPath = cacert,
-                    ClientCertPath = cert,
-                    ClientKeyPath = key,
-                    ClientCertPassword = certPassword,
-                    ConnectTimeout = connectTimeout is not null ? GrpcChannelFactory.ParseDuration(connectTimeout) : null,
-                    Authority = authority,
-                    ServerName = serverName
-                };
-
-                var channel = GrpcChannelFactory.Create(address, channelOptions);
-
-                // Merge -H headers with --reflect-header
-                var metadata = GrpcChannelFactory.CreateMetadata(
-                    headers.Concat(reflectHeaders),
-                    userAgent);
-
-                descriptorSource = new ReflectionSource(channel, metadata, true);
-
-                if (verbose)
-                {
-                    Diagnostics.Markup("[dim]Connected successfully, querying server reflection...[/]");
-                }
-            }
-            else
-            {
-                // This should never happen due to ValidateOptions, but keep as fallback
-                throw new InvalidOperationException("Must specify either --protoset or address");
+                Diagnostics.Markup("[dim]Connected successfully, querying server reflection...[/]");
             }
 
             timing?.StartPhase("Schema Discovery");

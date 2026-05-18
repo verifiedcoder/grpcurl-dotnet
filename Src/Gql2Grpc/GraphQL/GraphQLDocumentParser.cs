@@ -34,7 +34,7 @@ public static class GraphQLDocumentParser
                     operations.Add(new GraphQLOperation(
                         op.Name?.StringValue,
                         MapOperationType(op.Operation),
-                        op.Variables?.Items ?? (IReadOnlyList<GraphQLVariableDefinition>)Array.Empty<GraphQLVariableDefinition>(),
+                        op.Variables?.Items ?? (IReadOnlyList<GraphQLVariableDefinition>)[],
                         op.SelectionSet));
                     break;
 

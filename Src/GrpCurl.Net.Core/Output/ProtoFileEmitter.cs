@@ -80,9 +80,9 @@ internal static class ProtoFileEmitter
         // Edition / syntax pragma: stick with the legacy 'syntax' keyword that grpcurl
         // and most consumers expect. FileDescriptor.Syntax is marked obsolete in newer
         // Google.Protobuf but it's still the most reliable signal of proto2 vs proto3.
-        #pragma warning disable CS0618
+#pragma warning disable CS0618
         sb.Append("syntax = \"").Append(file.Syntax.ToString().ToLowerInvariant()).AppendLine("\";");
-        #pragma warning restore CS0618
+#pragma warning restore CS0618
         sb.AppendLine();
 
         if (!string.IsNullOrEmpty(file.Package))
@@ -216,7 +216,7 @@ internal static class ProtoFileEmitter
             var responseStream = method.IsServerStreaming ? "stream " : "";
 
             sb.Append("  rpc ").Append(method.Name)
-              .Append(" (").Append(requestStream).Append('.').Append(method.InputType.FullName).Append(")")
+              .Append(" (").Append(requestStream).Append('.').Append(method.InputType.FullName).Append(')')
               .Append(" returns ")
               .Append('(').Append(responseStream).Append('.').Append(method.OutputType.FullName).AppendLine(");");
         }

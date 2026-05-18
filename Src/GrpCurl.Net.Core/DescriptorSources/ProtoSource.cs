@@ -42,15 +42,10 @@ internal static class ProtoSource
                 "--include_imports *.proto' and pass --protoset instead.");
 
         // Collect import paths: explicit -I roots + each proto file's directory + cwd.
-        var allImportPaths = new List<string>();
-
-        foreach (var dir in importPaths)
-        {
-            if (Directory.Exists(dir))
-            {
-                allImportPaths.Add(Path.GetFullPath(dir));
-            }
-        }
+        var allImportPaths = importPaths
+            .Where(Directory.Exists)
+            .Select(Path.GetFullPath)
+            .ToList();
 
         foreach (var proto in protoFiles)
         {
@@ -64,7 +59,7 @@ internal static class ProtoSource
 
         allImportPaths.Add(Environment.CurrentDirectory);
 
-        var tempProtoset = Path.GetTempFileName();
+        var tempProtoset = CreateTempProtosetPath();
 
         try
         {
@@ -153,5 +148,12 @@ internal static class ProtoSource
         }
 
         return null;
+    }
+
+    private static string CreateTempProtosetPath()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"grpcurl-{Guid.NewGuid():N}.protoset");
+        using var _ = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+        return path;
     }
 }

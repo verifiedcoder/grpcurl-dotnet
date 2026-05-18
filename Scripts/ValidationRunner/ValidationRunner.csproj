@@ -7,12 +7,7 @@
     <AssemblyName>ValidationRunner</AssemblyName>
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);CA1416</NoWarn>
+    <DefaultItemExcludes>$(DefaultItemExcludes);bin\**;obj\**;artifacts\**;manual-write-test\**</DefaultItemExcludes>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\Src\GrpCurl.Net.Core\GrpCurl.Net.Core.csproj" />
-    <ProjectReference Include="..\..\Src\GrpCurl.Net\GrpCurl.Net.csproj" />
-    <ProjectReference Include="..\..\Tests\GrpCurl.Net.TestServer\GrpCurl.Net.TestServer.csproj" />
-  </ItemGroup>
 
 </Project>

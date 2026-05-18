@@ -17,7 +17,7 @@ public sealed class DescribeCommandHandlerTests(GrpcTestFixture fixture)
         // Arrange
         var writer = new StringWriter();
         var originalOut = Console.Out;
-        
+
         Console.SetOut(writer);
 
         try
@@ -46,7 +46,7 @@ public sealed class DescribeCommandHandlerTests(GrpcTestFixture fixture)
 
             // Assert
             var output = writer.ToString();
-            
+
             output.ShouldContain("testing.TestService is a service");
             output.ShouldContain("EmptyCall");
             output.ShouldContain("UnaryCall");
@@ -67,7 +67,7 @@ public sealed class DescribeCommandHandlerTests(GrpcTestFixture fixture)
         // Arrange
         var writer = new StringWriter();
         var originalOut = Console.Out;
-        
+
         Console.SetOut(writer);
 
         try
@@ -114,7 +114,7 @@ public sealed class DescribeCommandHandlerTests(GrpcTestFixture fixture)
         // Arrange
         var writer = new StringWriter();
         var originalOut = Console.Out;
-        
+
         Console.SetOut(writer);
 
         try
@@ -143,7 +143,7 @@ public sealed class DescribeCommandHandlerTests(GrpcTestFixture fixture)
 
             // Assert
             var output = writer.ToString();
-            
+
             output.ShouldContain("testing.PayloadType is an enum");
             output.ShouldContain("enum PayloadType");
             output.ShouldContain("COMPRESSABLE");
@@ -160,7 +160,7 @@ public sealed class DescribeCommandHandlerTests(GrpcTestFixture fixture)
         // Arrange
         var writer = new StringWriter();
         var originalOut = Console.Out;
-        
+
         Console.SetOut(writer);
 
         try
@@ -189,7 +189,7 @@ public sealed class DescribeCommandHandlerTests(GrpcTestFixture fixture)
 
             // Assert
             var output = writer.ToString();
-            
+
             output.ShouldContain("testing.TestService is a service");
             output.ShouldContain("testing.UnimplementedService is a service");
         }
@@ -258,7 +258,7 @@ public sealed class DescribeCommandHandlerTests(GrpcTestFixture fixture)
         // Arrange
         var writer = new StringWriter();
         var originalOut = Console.Out;
-        
+
         Console.SetOut(writer);
 
         try
@@ -288,7 +288,7 @@ public sealed class DescribeCommandHandlerTests(GrpcTestFixture fixture)
 
             // Assert
             var output = writer.ToString();
-            
+
             output.ShouldContain("testing.TestService is a service");
         }
         finally
@@ -304,7 +304,7 @@ public sealed class DescribeCommandHandlerTests(GrpcTestFixture fixture)
         var tempFile = Path.Combine(Path.GetTempPath(), $"describe-test-{Guid.NewGuid()}.protoset");
         var writer = new StringWriter();
         var originalOut = Console.Out;
-        
+
         Console.SetOut(writer);
 
         try
@@ -333,9 +333,9 @@ public sealed class DescribeCommandHandlerTests(GrpcTestFixture fixture)
 
             // Assert
             File.Exists(tempFile).ShouldBeTrue();
-            
+
             var fileBytes = await File.ReadAllBytesAsync(tempFile, TestContext.Current.CancellationToken);
-            
+
             fileBytes.Length.ShouldBeGreaterThan(0);
         }
         finally
@@ -359,7 +359,7 @@ public sealed class DescribeCommandHandlerTests(GrpcTestFixture fixture)
         // Arrange
         var writer = new StringWriter();
         var originalOut = Console.Out;
-        
+
         Console.SetOut(writer);
 
         try

@@ -73,7 +73,7 @@ public sealed class ProtosetSourceTests
     {
         // Arrange
         using var cts = new CancellationTokenSource();
-        
+
         await cts.CancelAsync();
 
         // Act & Assert
@@ -96,9 +96,9 @@ public sealed class ProtosetSourceTests
 
         // Assert
         source.ShouldNotBeNull();
-        
+
         var services = await source.ListServicesAsync(TestContext.Current.CancellationToken);
-        
+
         services.ShouldContain(s => s.Contains("TestService"));
     }
 
@@ -113,9 +113,9 @@ public sealed class ProtosetSourceTests
 
         // Assert
         source.ShouldNotBeNull();
-        
+
         var services = await source.ListServicesAsync(TestContext.Current.CancellationToken);
-        
+
         services.ShouldBeEmpty();
     }
 
@@ -130,9 +130,9 @@ public sealed class ProtosetSourceTests
 
         // Assert
         source.ShouldNotBeNull();
-        
+
         var services = await source.ListServicesAsync(TestContext.Current.CancellationToken);
-        
+
         services.ShouldNotBeEmpty();
     }
 
@@ -166,7 +166,7 @@ public sealed class ProtosetSourceTests
 
         // Assert
         var sortedServices = services.OrderBy(s => s).ToList();
-        
+
         services.ShouldBe(sortedServices);
     }
 
@@ -385,9 +385,9 @@ public sealed class ProtosetSourceTests
 
         // Assert
         symbol.ShouldNotBeNull();
-        
+
         var field = symbol.ShouldBeOfType<FieldDescriptor>();
-        
+
         field.FieldType.ShouldBe(FieldType.Message);
     }
 
@@ -402,9 +402,9 @@ public sealed class ProtosetSourceTests
 
         // Assert
         symbol.ShouldNotBeNull();
-        
+
         var field = symbol.ShouldBeOfType<FieldDescriptor>();
-        
+
         field.IsRepeated.ShouldBeTrue();
     }
 

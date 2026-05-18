@@ -164,7 +164,7 @@ internal static class InvokeCommandHandler
         var exportableKeyOpt = new Option<bool>("--exportable-key")
         {
             Description = "Load client private keys with X509KeyStorageFlags.Exportable. " +
-                          "Default is EphemeralKeySet (keys never persist to the key store)."
+                          "Default is EphemeralKeySet on Linux/macOS and non-exportable UserKeySet on Windows."
         };
 
         var keepaliveTimeOpt = new Option<string?>("--keepalive-time")
@@ -663,20 +663,20 @@ internal static class InvokeCommandHandler
 
                 case false when methodDescriptor.IsServerStreaming:
 
-                    await InvokeServerStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, deadline, timing, output, unsafeShowSecrets, useTextFormat, cancellationToken);
+                    await InvokeServerStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, deadline, timing, output, useTextFormat, cancellationToken);
 
                     break;
 
                 case true when !methodDescriptor.IsServerStreaming:
 
-                    await InvokeClientStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, deadline, timing, output, unsafeShowSecrets, useTextFormat, cancellationToken);
+                    await InvokeClientStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, deadline, timing, output, useTextFormat, cancellationToken);
 
                     break;
 
                 default:
 
                     // Bidirectional streaming
-                    await InvokeBidirectionalStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, deadline, timing, output, unsafeShowSecrets, useTextFormat, cancellationToken);
+                    await InvokeBidirectionalStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, deadline, timing, output, useTextFormat, cancellationToken);
 
                     break;
             }
@@ -849,9 +849,7 @@ internal static class InvokeCommandHandler
                 ExitCode = 5,
                 Message = $"Connection to {address} timed out",
                 Address = address,
-                Hint = connectTimeout is not null
-                    ? $"Connection timeout was set to: {connectTimeout}"
-                    : verbose ? ex.Message : null,
+                Hint = BuildTimeoutHint(connectTimeout, verbose, ex.Message),
                 Suggestions =
                 [
                     "Increase timeout with --connect-timeout (e.g., --connect-timeout 30s)",
@@ -981,6 +979,16 @@ internal static class InvokeCommandHandler
         }
     }
 
+    private static string? BuildTimeoutHint(string? connectTimeout, bool verbose, string exceptionMessage)
+    {
+        if (connectTimeout is not null)
+        {
+            return $"Connection timeout was set to: {connectTimeout}";
+        }
+
+        return verbose ? exceptionMessage : null;
+    }
+
     private static async Task InvokeServerStreamingAsync(
         DynamicInvoker invoker,
         MethodDescriptor methodDescriptor,
@@ -992,7 +1000,6 @@ internal static class InvokeCommandHandler
         DateTime? deadline,
         TimingContext? timing,
         OutputFormat output,
-        bool unsafeShowSecrets,
         bool useTextFormat,
         CancellationToken cancellationToken)
     {
@@ -1068,7 +1075,6 @@ internal static class InvokeCommandHandler
         DateTime? deadline,
         TimingContext? timing,
         OutputFormat output,
-        bool unsafeShowSecrets,
         bool useTextFormat,
         CancellationToken cancellationToken)
     {
@@ -1137,7 +1143,6 @@ internal static class InvokeCommandHandler
         DateTime? deadline,
         TimingContext? timing,
         OutputFormat output,
-        bool unsafeShowSecrets,
         bool useTextFormat,
         CancellationToken cancellationToken)
     {

@@ -8,7 +8,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GRPCURL="$SCRIPT_DIR/../Src/GrpCurl.Net/bin/Debug/net10.0/GrpCurl.Net"
+. "$SCRIPT_DIR/common.sh"
 SERVER="localhost:9090"
 
 echo "=== Concatenated JSON Input for Streaming ==="
@@ -23,7 +23,7 @@ echo "--- Client Streaming: 3 messages via concatenated JSON ---"
 echo "Command: grpcurl.net invoke --plaintext -d '{...} {...} {...}' \$SERVER testing.TestService/StreamingInputCall"
 echo ""
 
-$GRPCURL invoke --plaintext \
+grpcurl_net invoke --plaintext \
   -d '{"payload":{"body":"YQ=="}} {"payload":{"body":"YmI="}} {"payload":{"body":"Y2Nj"}}' \
   $SERVER testing.TestService/StreamingInputCall
 
@@ -34,7 +34,7 @@ echo "--- Bidirectional Streaming: 2 messages via concatenated JSON ---"
 echo "Command: grpcurl.net invoke --plaintext -d '{...} {...}' \$SERVER testing.TestService/FullDuplexCall"
 echo ""
 
-$GRPCURL invoke --plaintext \
+grpcurl_net invoke --plaintext \
   -d '{"response_parameters":[{"size":5}]} {"response_parameters":[{"size":10}]}' \
   $SERVER testing.TestService/FullDuplexCall
 

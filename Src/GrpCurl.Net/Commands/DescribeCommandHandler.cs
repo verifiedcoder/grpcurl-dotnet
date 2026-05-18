@@ -454,18 +454,18 @@ internal static class DescribeCommandHandler
                     "Check firewall settings",
                     "Verify the address and port are correct"
                 },
-                StatusCode.Unimplemented => new[]
-                {
+                StatusCode.Unimplemented =>
+                [
                     "Server does not support reflection",
                     "Use --protoset to provide schema files instead",
                     "Ask server admin to enable grpc-reflection"
-                },
-                StatusCode.NotFound => new[]
-                {
+                ],
+                StatusCode.NotFound =>
+                [
                     "Use 'list' command to see available services",
                     "Check the symbol name spelling and case",
                     "Ensure the symbol is fully qualified (e.g., package.Service)"
-                },
+                ],
                 _ => []
             };
 
@@ -508,9 +508,7 @@ internal static class DescribeCommandHandler
                 ExitCode = 5,
                 Message = $"Connection to {address ?? string.Empty} timed out",
                 Address = address,
-                Hint = connectTimeout is not null
-                    ? $"Connection timeout was set to: {connectTimeout}"
-                    : verbose ? ex.Message : null,
+                Hint = BuildTimeoutHint(connectTimeout, verbose, ex.Message),
                 Suggestions =
                 [
                     "Increase timeout with --connect-timeout (e.g., --connect-timeout 30s)",
@@ -955,4 +953,14 @@ internal static class DescribeCommandHandler
             FieldType.UInt64 or FieldType.Fixed64 => "0",
             _ => ""
         };
+
+    private static string? BuildTimeoutHint(string? connectTimeout, bool verbose, string exceptionMessage)
+    {
+        if (connectTimeout is not null)
+        {
+            return $"Connection timeout was set to: {connectTimeout}";
+        }
+
+        return verbose ? exceptionMessage : null;
+    }
 }

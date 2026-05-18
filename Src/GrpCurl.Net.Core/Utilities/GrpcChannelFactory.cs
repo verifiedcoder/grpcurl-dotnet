@@ -154,11 +154,7 @@ internal static partial class GrpcChannelFactory
         {
             X509Certificate2 clientCert;
 
-            var storageFlags = options.ExportableClientKey
-                ? X509KeyStorageFlags.Exportable
-                : OperatingSystem.IsWindows()
-                    ? X509KeyStorageFlags.UserKeySet
-                    : X509KeyStorageFlags.EphemeralKeySet;
+            var storageFlags = GetClientCertificateStorageFlags(options.ExportableClientKey);
 
             // Content-based detection: try PKCS12 first because its magic bytes are stable.
             // If parsing fails for any reason, fall through to PEM (cert + separate key).
@@ -536,6 +532,18 @@ internal static partial class GrpcChannelFactory
         ///     there. Opt in only when an upstream operation needs to re-export the private key.
         /// </summary>
         public bool ExportableClientKey { get; init; }
+    }
+
+    private static X509KeyStorageFlags GetClientCertificateStorageFlags(bool exportableClientKey)
+    {
+        if (exportableClientKey)
+        {
+            return X509KeyStorageFlags.Exportable;
+        }
+
+        return OperatingSystem.IsWindows()
+            ? X509KeyStorageFlags.UserKeySet
+            : X509KeyStorageFlags.EphemeralKeySet;
     }
 
     [GeneratedRegex(@"^(\d+\.?\d*)(ms|s|m|h)?$")]

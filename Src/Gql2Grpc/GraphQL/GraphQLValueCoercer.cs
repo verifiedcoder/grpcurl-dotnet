@@ -69,11 +69,11 @@ internal static class GraphQLValueCoercer
         return result;
     }
 
-    private static JsonNode ParseIntegerLiteral(string raw)
+    private static JsonValue ParseIntegerLiteral(string raw)
     {
         if (long.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i64))
         {
-            return i64 is >= int.MinValue and <= int.MaxValue ? JsonValue.Create((int)i64) : JsonValue.Create(i64);
+            return i64 is >= int.MinValue and <= int.MaxValue ? JsonValue.Create((int)i64)! : JsonValue.Create(i64)!;
         }
 
         // Too large for long — keep as string so callers can route to the right proto field (uint64, etc.).

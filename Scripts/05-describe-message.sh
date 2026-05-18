@@ -8,7 +8,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GRPCURL="$SCRIPT_DIR/../Src/GrpCurl.Net/bin/Debug/net10.0/GrpCurl.Net"
+. "$SCRIPT_DIR/common.sh"
 SERVER="localhost:9090"
 
 echo "=== Describe Message Types ==="
@@ -17,19 +17,19 @@ echo ""
 echo "--- testing.SimpleRequest ---"
 echo "Command: grpcurl.net describe --plaintext $SERVER testing.SimpleRequest"
 echo ""
-$GRPCURL describe --plaintext $SERVER testing.SimpleRequest
+grpcurl_net describe --plaintext $SERVER testing.SimpleRequest
 
 echo ""
 echo "--- testing.Payload ---"
 echo "Command: grpcurl.net describe --plaintext $SERVER testing.Payload"
 echo ""
-$GRPCURL describe --plaintext $SERVER testing.Payload
+grpcurl_net describe --plaintext $SERVER testing.Payload
 
 echo ""
 echo "--- testing.PayloadType (enum) ---"
 echo "Command: grpcurl.net describe --plaintext $SERVER testing.PayloadType"
 echo ""
-$GRPCURL describe --plaintext $SERVER testing.PayloadType
+grpcurl_net describe --plaintext $SERVER testing.PayloadType
 
 echo ""
 echo "=== Done ==="

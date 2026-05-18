@@ -16,7 +16,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
 
         // Act
@@ -33,7 +33,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
 
         // Act
@@ -48,7 +48,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
 
         // Act
@@ -56,7 +56,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
 
         // Assert
         var sortedServices = services.OrderBy(s => s).ToList();
-        
+
         services.ShouldBe(sortedServices);
     }
 
@@ -65,7 +65,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
 
         // Act
@@ -81,11 +81,11 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
-        
+
         using var cts = new CancellationTokenSource();
-        
+
         await cts.CancelAsync();
 
         // Act & Assert
@@ -102,7 +102,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
 
         // Act
@@ -119,7 +119,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
 
         // Act
@@ -134,7 +134,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
 
         // Act
@@ -170,7 +170,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
 
         // Act - Empty call
@@ -185,9 +185,9 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
 
         // Assert
         unary.ShouldNotBeNull();
-        
+
         var unaryMethod = (MethodDescriptor)unary;
-        
+
         unaryMethod.IsClientStreaming.ShouldBeFalse();
         unaryMethod.IsServerStreaming.ShouldBeFalse();
 
@@ -196,9 +196,9 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
 
         // Assert
         serverStreaming.ShouldNotBeNull();
-        
+
         var serverStreamingMethod = (MethodDescriptor)serverStreaming;
-        
+
         serverStreamingMethod.IsClientStreaming.ShouldBeFalse();
         serverStreamingMethod.IsServerStreaming.ShouldBeTrue();
 
@@ -207,9 +207,9 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
 
         // Assert
         clientStreaming.ShouldNotBeNull();
-        
+
         var clientStreamingMethod = (MethodDescriptor)clientStreaming;
-        
+
         clientStreamingMethod.IsClientStreaming.ShouldBeTrue();
         clientStreamingMethod.IsServerStreaming.ShouldBeFalse();
 
@@ -218,9 +218,9 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
 
         // Assert
         bidi.ShouldNotBeNull();
-        
+
         var bidiMethod = (MethodDescriptor)bidi;
-        
+
         bidiMethod.IsClientStreaming.ShouldBeTrue();
         bidiMethod.IsServerStreaming.ShouldBeTrue();
     }
@@ -234,7 +234,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
 
         // Act
@@ -251,7 +251,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var messageNames = new[]
         {
@@ -282,7 +282,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
 
         // Act
@@ -303,7 +303,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
 
         // Act
@@ -334,7 +334,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
 
         // Act
@@ -354,7 +354,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
 
         // Act & Assert
@@ -371,7 +371,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
 
         // Act & Assert
@@ -401,7 +401,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
 
         // Act
         using var source = ReflectionSource.Create($"http://{fixture.Address}", channelOptions);
-        
+
         var services = await source.ListServicesAsync(TestContext.Current.CancellationToken);
 
         // Assert
@@ -433,7 +433,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
 
         // Act
@@ -448,11 +448,11 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
-        
+
         using var cts = new CancellationTokenSource();
-        
+
         await cts.CancelAsync();
 
         // Act & Assert
@@ -465,7 +465,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
 
         // Act
@@ -482,7 +482,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
 
         // Act

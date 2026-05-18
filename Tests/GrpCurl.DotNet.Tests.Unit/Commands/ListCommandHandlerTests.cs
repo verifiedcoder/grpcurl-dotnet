@@ -24,7 +24,7 @@ public sealed class ListCommandHandlerTests
 
         // Assert
         string.IsNullOrEmpty(command.Description).ShouldBeFalse();
-        
+
         command.Description.ShouldContain("List");
     }
 
@@ -46,7 +46,7 @@ public sealed class ListCommandHandlerTests
 
         // Assert
         var addressArg = command.Arguments.FirstOrDefault(a => a.Name == "address");
-        
+
         addressArg.ShouldNotBeNull();
     }
 
@@ -58,7 +58,7 @@ public sealed class ListCommandHandlerTests
 
         // Assert
         var serviceArg = command.Arguments.FirstOrDefault(a => a.Name == "service");
-        
+
         serviceArg.ShouldNotBeNull();
     }
 
@@ -70,7 +70,7 @@ public sealed class ListCommandHandlerTests
 
         // Assert
         var addressArg = command.Arguments.FirstOrDefault(a => a.Name == "address");
-        
+
         addressArg.ShouldNotBeNull();
         addressArg.Arity.ShouldBe(ArgumentArity.ZeroOrOne);
     }
@@ -83,7 +83,7 @@ public sealed class ListCommandHandlerTests
 
         // Assert
         var serviceArg = command.Arguments.FirstOrDefault(a => a.Name == "service");
-        
+
         serviceArg.ShouldNotBeNull();
         serviceArg.Arity.ShouldBe(ArgumentArity.ZeroOrOne);
     }

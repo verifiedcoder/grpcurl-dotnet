@@ -6,7 +6,7 @@
 # =============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GRPCURL="$SCRIPT_DIR/../Src/GrpCurl.Net/bin/Debug/net10.0/GrpCurl.Net"
+. "$SCRIPT_DIR/common.sh"
 SERVER="localhost:9090"
 
 echo "=== Allow Unknown Fields ==="
@@ -19,13 +19,13 @@ echo "--- Without --allow-unknown-fields (will error) ---"
 echo "Request contains 'unknown_field' which doesn't exist in the proto."
 echo "Command: grpcurl.net invoke --plaintext -d '{\"response_size\":10,\"unknown_field\":\"test\"}' $SERVER testing.TestService/UnaryCall"
 echo ""
-$GRPCURL invoke --plaintext -d '{"response_size":10,"unknown_field":"test"}' $SERVER testing.TestService/UnaryCall 2>&1 || true
+grpcurl_net invoke --plaintext -d '{"response_size":10,"unknown_field":"test"}' $SERVER testing.TestService/UnaryCall 2>&1 || true
 
 echo ""
 echo "--- With --allow-unknown-fields (success) ---"
 echo "Command: grpcurl.net invoke --plaintext --allow-unknown-fields -d '{\"response_size\":10,\"unknown_field\":\"test\"}' $SERVER testing.TestService/UnaryCall"
 echo ""
-$GRPCURL invoke --plaintext --allow-unknown-fields -d '{"response_size":10,"unknown_field":"test"}' $SERVER testing.TestService/UnaryCall
+grpcurl_net invoke --plaintext --allow-unknown-fields -d '{"response_size":10,"unknown_field":"test"}' $SERVER testing.TestService/UnaryCall
 
 echo ""
 echo "=== Done ==="

@@ -187,11 +187,11 @@ public static class MappingConfigLoader
         };
     }
 
-    private static IReadOnlyList<MappingEntry> ReadOperations(JsonArray? operations)
+    private static List<MappingEntry> ReadOperations(JsonArray? operations)
     {
         if (operations is null || operations.Count == 0)
         {
-            return Array.Empty<MappingEntry>();
+            return [];
         }
 
         var list = new List<MappingEntry>(operations.Count);
@@ -362,7 +362,7 @@ public static class MappingConfigLoader
         }
     }
 
-    private static IReadOnlyDictionary<string, string> ReadStringMap(JsonObject? map)
+    private static Dictionary<string, string> ReadStringMap(JsonObject? map)
     {
         if (map is null || map.Count == 0)
         {

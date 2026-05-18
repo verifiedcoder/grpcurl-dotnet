@@ -9,6 +9,7 @@ public sealed class JsonRequestTranslatorTests
 {
     private readonly JsonRequestTranslator _translator = new();
     private readonly MappingDefaults _defaults = new();
+    private static readonly string[] expected = ["id", "payload.body"];
 
     [Fact]
     public void Rename_maps_arg_to_target_field()
@@ -28,7 +29,7 @@ public sealed class JsonRequestTranslatorTests
         var selection = new ResolvedSelection(
             "foo", "foo",
             new Dictionary<string, JsonNode?> { ["first"] = JsonValue.Create(10) },
-            Array.Empty<ResolvedSelection>());
+            []);
 
         var json = _translator.Translate(selection, entry, _defaults);
 
@@ -53,7 +54,7 @@ public sealed class JsonRequestTranslatorTests
 
         var selection = new ResolvedSelection("foo", "foo",
             new Dictionary<string, JsonNode?> { ["first"] = JsonValue.Create(5) },
-            Array.Empty<ResolvedSelection>());
+            []);
 
         var json = _translator.Translate(selection, entry, _defaults);
 
@@ -79,7 +80,7 @@ public sealed class JsonRequestTranslatorTests
         var inputObj = new JsonObject { ["a"] = 1, ["b"] = "hello" };
         var selection = new ResolvedSelection("foo", "foo",
             new Dictionary<string, JsonNode?> { ["input"] = inputObj },
-            Array.Empty<ResolvedSelection>());
+            []);
 
         var json = _translator.Translate(selection, entry, _defaults);
         var root = JsonNode.Parse(json)!.AsObject();
@@ -105,7 +106,7 @@ public sealed class JsonRequestTranslatorTests
 
         var selection = new ResolvedSelection("foo", "foo",
             new Dictionary<string, JsonNode?>(),
-            Array.Empty<ResolvedSelection>());
+            []);
 
         var json = _translator.Translate(selection, entry, _defaults);
 
@@ -126,19 +127,18 @@ public sealed class JsonRequestTranslatorTests
 
         var selection = new ResolvedSelection("foo", "foo",
             new Dictionary<string, JsonNode?>(),
-            new[]
-            {
-                new ResolvedSelection("id", "id", new Dictionary<string, JsonNode?>(), Array.Empty<ResolvedSelection>()),
+            [
+                new ResolvedSelection("id", "id", new Dictionary<string, JsonNode?>(), []),
                 new ResolvedSelection("payload", "payload", new Dictionary<string, JsonNode?>(),
                 [
-                    new ResolvedSelection("body", "body", new Dictionary<string, JsonNode?>(), Array.Empty<ResolvedSelection>())
+                    new ResolvedSelection("body", "body", new Dictionary<string, JsonNode?>(), [])
                 ])
-            });
+            ]);
 
         var json = _translator.Translate(selection, entry, _defaults);
         var mask = JsonNode.Parse(json)!.AsObject()["read_mask"]!.GetValue<string>();
 
-        mask.Split(',').ShouldBe(new[] { "id", "payload.body" });
+        mask.Split(',').ShouldBe(expected);
     }
 
     [Fact]
@@ -154,7 +154,7 @@ public sealed class JsonRequestTranslatorTests
 
         var selection = new ResolvedSelection("foo", "foo",
             new Dictionary<string, JsonNode?> { ["userId"] = JsonValue.Create("abc") },
-            Array.Empty<ResolvedSelection>());
+            []);
 
         var json = _translator.Translate(selection, entry, _defaults);
         JsonNode.Parse(json)!.AsObject()["user_id"]!.GetValue<string>().ShouldBe("abc");

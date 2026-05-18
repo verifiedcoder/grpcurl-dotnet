@@ -8,7 +8,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GRPCURL="$SCRIPT_DIR/../Src/GrpCurl.Net/bin/Debug/net10.0/GrpCurl.Net"
+. "$SCRIPT_DIR/common.sh"
 SERVER="localhost:9090"
 
 echo "=== List Methods for testing.TestService ==="
@@ -16,7 +16,7 @@ echo ""
 echo "Command: grpcurl.net list --plaintext $SERVER testing.TestService"
 echo ""
 
-$GRPCURL list --plaintext $SERVER testing.TestService
+grpcurl_net list --plaintext $SERVER testing.TestService
 
 echo ""
 echo "=== Done ==="

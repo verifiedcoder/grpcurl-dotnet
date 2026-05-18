@@ -240,7 +240,7 @@ internal static class ProtobufReader
         while (!packedInput.IsAtEnd)
         {
             var value = ReadPackedValue(packedInput, field.FieldType);
-            
+
             values.Add(value);
         }
     }

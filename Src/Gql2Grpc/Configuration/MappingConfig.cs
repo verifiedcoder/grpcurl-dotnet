@@ -15,7 +15,7 @@ public sealed record MappingConfig
     public MappingDefaults Defaults { get; init; } = new();
 
     /// <summary>Per-operation mapping rules — at least one must match each GraphQL root field.</summary>
-    public IReadOnlyList<MappingEntry> Operations { get; init; } = Array.Empty<MappingEntry>();
+    public IReadOnlyList<MappingEntry> Operations { get; init; } = [];
 
     /// <summary>An empty configuration with default values, used when no <c>--mapping</c> is supplied.</summary>
     public static MappingConfig Empty { get; } = new();

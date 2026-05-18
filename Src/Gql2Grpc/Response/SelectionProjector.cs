@@ -11,19 +11,14 @@ namespace Gql2Grpc.Response;
 /// preserved as output keys. An <see cref="ResponseShaping.Unwrap"/> hint strips a single
 /// wrapper field before projection (for APIs that wrap lists in <c>items</c> etc.).
 /// </summary>
-public sealed class SelectionProjector
+/// <remarks>
+/// Creates a projector. When <paramref name="strict"/> is <c>true</c>, fields requested in the
+/// selection but absent from the gRPC response are reported as <c>MISSING_FIELD</c> errors;
+/// otherwise they are emitted as <c>null</c>.
+/// </remarks>
+public sealed class SelectionProjector(bool strict)
 {
-    private readonly bool _strict;
-
-    /// <summary>
-    /// Creates a projector. When <paramref name="strict"/> is <c>true</c>, fields requested in the
-    /// selection but absent from the gRPC response are reported as <c>MISSING_FIELD</c> errors;
-    /// otherwise they are emitted as <c>null</c>.
-    /// </summary>
-    public SelectionProjector(bool strict)
-    {
-        _strict = strict;
-    }
+    private readonly bool _strict = strict;
 
     /// <summary>Projects the full response for a single root field.</summary>
     public JsonNode? Project(
@@ -128,7 +123,7 @@ public sealed class SelectionProjector
         return source.TryGetPropertyValue(snake, out var viaSnake) ? viaSnake : null;
     }
 
-    private static IReadOnlyList<object> AppendPath(IReadOnlyList<object> path, object segment)
+    private static List<object> AppendPath(IReadOnlyList<object> path, object segment)
     {
         var next = new List<object>(path.Count + 1);
         next.AddRange(path);

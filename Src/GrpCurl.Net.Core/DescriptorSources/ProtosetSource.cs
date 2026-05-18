@@ -206,7 +206,7 @@ public sealed class ProtosetSource : IDescriptorSource
 
                 // Then add this dependency
                 byteStrings.Add(dep.SerializedData);
-                
+
                 included.Add(dep.Name);
             }
         }

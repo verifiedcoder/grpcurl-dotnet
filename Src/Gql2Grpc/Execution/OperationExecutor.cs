@@ -11,36 +11,24 @@ using GrpCurl.Net.DescriptorSources;
 
 namespace Gql2Grpc.Execution;
 
-internal sealed class OperationExecutor
+internal sealed class OperationExecutor(
+    MappingResolver mappingResolver,
+    IDescriptorSource descriptorSource,
+    GrpcTransport transport,
+    IRequestTranslator translator,
+    SelectionProjector projector,
+    IntrospectionExecutor introspection,
+    ExecutorOptions options,
+    VerboseLogger logger)
 {
-    private readonly MappingResolver _mappingResolver;
-    private readonly IDescriptorSource _descriptorSource;
-    private readonly GrpcTransport _transport;
-    private readonly IRequestTranslator _translator;
-    private readonly SelectionProjector _projector;
-    private readonly IntrospectionExecutor _introspection;
-    private readonly ExecutorOptions _options;
-    private readonly VerboseLogger _logger;
-
-    public OperationExecutor(
-        MappingResolver mappingResolver,
-        IDescriptorSource descriptorSource,
-        GrpcTransport transport,
-        IRequestTranslator translator,
-        SelectionProjector projector,
-        IntrospectionExecutor introspection,
-        ExecutorOptions options,
-        VerboseLogger logger)
-    {
-        _mappingResolver = mappingResolver;
-        _descriptorSource = descriptorSource;
-        _transport = transport;
-        _translator = translator;
-        _projector = projector;
-        _introspection = introspection;
-        _options = options;
-        _logger = logger;
-    }
+    private readonly MappingResolver _mappingResolver = mappingResolver;
+    private readonly IDescriptorSource _descriptorSource = descriptorSource;
+    private readonly GrpcTransport _transport = transport;
+    private readonly IRequestTranslator _translator = translator;
+    private readonly SelectionProjector _projector = projector;
+    private readonly IntrospectionExecutor _introspection = introspection;
+    private readonly ExecutorOptions _options = options;
+    private readonly VerboseLogger _logger = logger;
 
     public async Task<JsonObject> ExecuteUnaryAsync(
         GraphQLOperationType operationType,
@@ -49,7 +37,7 @@ internal sealed class OperationExecutor
     {
         if (rootSelections.Count == 0)
         {
-            return GraphQLResponseBuilder.Build(Array.Empty<RootFieldResult>(), Array.Empty<GraphQLError>());
+            return GraphQLResponseBuilder.Build([], []);
         }
 
         async Task<RootFieldResult> RunOne(ResolvedSelection selection, CancellationToken ct)
@@ -67,7 +55,7 @@ internal sealed class OperationExecutor
             RunOne,
             cancellationToken).ConfigureAwait(false);
 
-        return GraphQLResponseBuilder.Build(results, Array.Empty<GraphQLError>());
+        return GraphQLResponseBuilder.Build(results, []);
     }
 
     public async Task StreamAsync(
@@ -80,7 +68,7 @@ internal sealed class OperationExecutor
         {
             writer.WriteError(new GraphQLError(
                 $"Subscription operations must contain exactly one root field (got {rootSelections.Count}).",
-                Array.Empty<object>()));
+                []));
             return;
         }
 

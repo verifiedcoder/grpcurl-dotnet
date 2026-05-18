@@ -8,9 +8,11 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GRPCURL="$SCRIPT_DIR/../Src/GrpCurl.Net/bin/Debug/net10.0/GrpCurl.Net"
+. "$SCRIPT_DIR/common.sh"
 SERVER="localhost:9090"
-OUTPUT_FILE="/tmp/exported-service.protoset"
+OUTPUT_FILE="$(mktemp "${TMPDIR:-/tmp}/grpcurl-dotnet-export.XXXXXX")"
+rm -f "$OUTPUT_FILE"
+trap 'rm -f "$OUTPUT_FILE"' EXIT
 
 echo "=== Export Protoset ==="
 echo ""
@@ -21,7 +23,7 @@ echo ""
 echo "--- Export protoset during list operation ---"
 echo "Command: grpcurl.net list --plaintext --protoset-out $OUTPUT_FILE $SERVER"
 echo ""
-$GRPCURL list --plaintext --protoset-out "$OUTPUT_FILE" $SERVER
+grpcurl_net list --plaintext --protoset-out "$OUTPUT_FILE" $SERVER
 
 echo ""
 echo "--- Verify exported file ---"
@@ -32,12 +34,10 @@ if [ -f "$OUTPUT_FILE" ]; then
 
     echo "--- Use exported protoset ---"
     echo "Command: grpcurl.net list --protoset $OUTPUT_FILE"
-    $GRPCURL list --protoset "$OUTPUT_FILE"
+    grpcurl_net list --protoset "$OUTPUT_FILE"
 
-    # Cleanup
-    rm -f "$OUTPUT_FILE"
     echo ""
-    echo "Cleaned up temporary file."
+    echo "Temporary protoset will be cleaned up when the script exits."
 else
     echo "Export failed - file not created"
 fi

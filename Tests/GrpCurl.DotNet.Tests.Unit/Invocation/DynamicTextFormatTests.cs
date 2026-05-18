@@ -50,7 +50,7 @@ public sealed class DynamicTextFormatTests
             return;
         }
 
-        var enumValue = responseType.EnumType.Values.First();
+        var enumValue = responseType.EnumType.Values[0];
         var text = $"response_type: {enumValue.Name}";
 
         var parsed = DynamicTextFormat.Parse(descriptor, text);

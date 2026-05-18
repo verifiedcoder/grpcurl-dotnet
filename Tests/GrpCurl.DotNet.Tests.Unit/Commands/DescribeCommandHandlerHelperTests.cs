@@ -532,13 +532,13 @@ public sealed class DescribeCommandHandlerHelperTests
             Path.GetDirectoryName(typeof(TestDescriptorProvider).Assembly.Location)!,
             "TestProtosets",
             "test.protoset");
-        
+
         var source = await ProtosetSource.LoadFromFilesAsync([protosetPath], TestContext.Current.CancellationToken);
 
         var originalOut = Console.Out;
-        
+
         await using var writer = new StringWriter();
-        
+
         Console.SetOut(writer);
 
         try
@@ -548,7 +548,7 @@ public sealed class DescribeCommandHandlerHelperTests
 
             // Assert
             var output = writer.ToString();
-            
+
             output.ShouldContain("service TestService {");
             output.ShouldContain("rpc EmptyCall");
             output.ShouldContain("rpc UnaryCall");
@@ -567,13 +567,13 @@ public sealed class DescribeCommandHandlerHelperTests
             Path.GetDirectoryName(typeof(TestDescriptorProvider).Assembly.Location)!,
             "TestProtosets",
             "test.protoset");
-        
+
         var source = await ProtosetSource.LoadFromFilesAsync([protosetPath], TestContext.Current.CancellationToken);
 
         var originalOut = Console.Out;
-        
+
         await using var writer = new StringWriter();
-        
+
         Console.SetOut(writer);
 
         try
@@ -583,7 +583,7 @@ public sealed class DescribeCommandHandlerHelperTests
 
             // Assert
             var output = writer.ToString();
-            
+
             output.ShouldContain("message SimpleRequest {");
             output.ShouldContain("response_type");
             output.ShouldContain("payload");
@@ -602,13 +602,13 @@ public sealed class DescribeCommandHandlerHelperTests
             Path.GetDirectoryName(typeof(TestDescriptorProvider).Assembly.Location)!,
             "TestProtosets",
             "test.protoset");
-        
+
         var source = await ProtosetSource.LoadFromFilesAsync([protosetPath], TestContext.Current.CancellationToken);
 
         var originalOut = Console.Out;
 
         await using var writer = new StringWriter();
-        
+
         Console.SetOut(writer);
 
         try
@@ -618,7 +618,7 @@ public sealed class DescribeCommandHandlerHelperTests
 
             // Assert
             var output = writer.ToString();
-            
+
             output.ShouldContain("enum PayloadType {");
             output.ShouldContain("COMPRESSABLE");
             output.ShouldContain("UNCOMPRESSABLE");
@@ -638,13 +638,13 @@ public sealed class DescribeCommandHandlerHelperTests
             Path.GetDirectoryName(typeof(TestDescriptorProvider).Assembly.Location)!,
             "TestProtosets",
             "test.protoset");
-        
+
         var source = await ProtosetSource.LoadFromFilesAsync([protosetPath], TestContext.Current.CancellationToken);
 
         var originalOut = Console.Out;
 
         await using var writer = new StringWriter();
-        
+
         Console.SetOut(writer);
 
         try

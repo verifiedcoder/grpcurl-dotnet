@@ -12,10 +12,10 @@ public sealed class GraphQLResponseBuilderTests
         var result = new RootFieldResult(
             "foo",
             new JsonObject { ["x"] = 1 },
-            Array.Empty<GraphQLError>(),
+            [],
             Failed: false);
 
-        var envelope = GraphQLResponseBuilder.Build([result], Array.Empty<GraphQLError>());
+        var envelope = GraphQLResponseBuilder.Build([result], []);
 
         envelope.ContainsKey("errors").ShouldBeFalse();
         envelope["data"]!.AsObject()["foo"]!.AsObject()["x"]!.GetValue<int>().ShouldBe(1);
@@ -24,7 +24,7 @@ public sealed class GraphQLResponseBuilderTests
     [Fact]
     public void Error_path_is_serialised_as_json_array()
     {
-        var error = new GraphQLError("boom", new object[] { "foo", 0, "bar" });
+        var error = new GraphQLError("boom", ["foo", 0, "bar"]);
         var envelope = GraphQLResponseBuilder.BuildSingleError(error);
 
         var path = envelope["errors"]!.AsArray()[0]!.AsObject()["path"]!.AsArray();
@@ -56,10 +56,10 @@ public sealed class GraphQLResponseBuilderTests
     [Fact]
     public void Partial_success_keeps_data_object_with_null_placeholder()
     {
-        var ok = new RootFieldResult("ok", JsonValue.Create(1), Array.Empty<GraphQLError>(), Failed: false);
-        var bad = new RootFieldResult("bad", null, new[] { new GraphQLError("nope", ["bad"]) }, Failed: true);
+        var ok = new RootFieldResult("ok", JsonValue.Create(1), [], Failed: false);
+        var bad = new RootFieldResult("bad", null, [new GraphQLError("nope", ["bad"])], Failed: true);
 
-        var envelope = GraphQLResponseBuilder.Build([ok, bad], Array.Empty<GraphQLError>());
+        var envelope = GraphQLResponseBuilder.Build([ok, bad], []);
         var data = envelope["data"]!.AsObject();
 
         data["ok"]!.GetValue<int>().ShouldBe(1);

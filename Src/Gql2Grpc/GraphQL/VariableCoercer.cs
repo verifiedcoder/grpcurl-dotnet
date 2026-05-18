@@ -85,11 +85,10 @@ public static class VariableCoercer
     private static GraphQLType UnwrapNonNull(GraphQLType type) =>
         type is GraphQLNonNullType nn ? nn.Type : type;
 
-    private static JsonNode? CoerceCliScalar(string raw, GraphQLType declaredType)
+    private static JsonValue? CoerceCliScalar(string raw, GraphQLType declaredType)
     {
         var underlying = UnwrapNonNull(declaredType);
-
-        if (underlying is GraphQLListType list)
+        if (underlying is GraphQLListType)
         {
             // CLI --var cannot express lists; users must use --variables-file for lists.
             throw new ArgumentException(

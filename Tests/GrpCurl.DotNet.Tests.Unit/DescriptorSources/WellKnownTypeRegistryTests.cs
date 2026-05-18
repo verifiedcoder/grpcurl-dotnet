@@ -93,7 +93,7 @@ public sealed class WellKnownTypeRegistryTests
 
         // Assert
         result.ShouldBeTrue();
-        
+
         descriptor.ShouldNotBeNull();
     }
 
@@ -123,7 +123,7 @@ public sealed class WellKnownTypeRegistryTests
 
         // Assert
         result.ShouldBeFalse();
-        
+
         descriptor.ShouldBeNull();
     }
 
@@ -139,7 +139,7 @@ public sealed class WellKnownTypeRegistryTests
 
         // Assert
         result.ShouldBeFalse();
-        
+
         descriptor.ShouldBeNull();
     }
 
@@ -151,7 +151,7 @@ public sealed class WellKnownTypeRegistryTests
 
         // Assert
         result.ShouldBeFalse();
-        
+
         descriptor.ShouldBeNull();
     }
 
@@ -305,7 +305,7 @@ public sealed class WellKnownTypeRegistryTests
 
         // Assert - all tasks should return the same dictionary instance
         var firstResult = results[0];
-        
+
         foreach (var result in results)
         {
             ReferenceEquals(result, firstResult).ShouldBeTrue();

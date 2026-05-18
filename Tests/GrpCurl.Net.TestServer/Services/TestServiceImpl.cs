@@ -224,7 +224,7 @@ public class TestServiceImpl : TestService.TestServiceBase
         await foreach (var request in requestStream.ReadAllAsync(context.CancellationToken))
         {
             context.CancellationToken.ThrowIfCancellationRequested();
-            
+
             totalSize += request.Payload?.Body?.Length ?? 0;
         }
 

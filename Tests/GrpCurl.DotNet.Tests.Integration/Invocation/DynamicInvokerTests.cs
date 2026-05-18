@@ -18,7 +18,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.EmptyCall");
         var invoker = new DynamicInvoker(channel);
@@ -37,7 +37,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.UnaryCall");
         var invoker = new DynamicInvoker(channel);
@@ -56,7 +56,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.UnaryCall");
         var invoker = new DynamicInvoker(channel);
@@ -69,9 +69,9 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
         // Assert
         result.ShouldNotBeNull();
         response.ShouldNotBeNull();
-        
+
         var payloadField = response.Descriptor.FindFieldByName("payload");
-        
+
         if (payloadField is not null && response.Fields.TryGetValue(payloadField, out var payload))
         {
             payload.ShouldNotBeNull();
@@ -83,7 +83,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.EmptyCall");
         var metadata = GrpcChannelFactory.CreateMetadata(["x-custom-header: test-value"]);
@@ -103,15 +103,15 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.EmptyCall");
         var invoker = new DynamicInvoker(channel);
-        
+
         using var cts = new CancellationTokenSource();
-        
+
         await cts.CancelAsync();
-        
+
         var request = new SimpleDynamicMessage(methodDescriptor.InputType);
 
         // Act & Assert
@@ -128,7 +128,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.StreamingOutputCall");
         var invoker = new DynamicInvoker(channel);
@@ -150,7 +150,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.StreamingOutputCall");
         var invoker = new DynamicInvoker(channel);
@@ -172,7 +172,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.StreamingOutputCall");
         var invoker = new DynamicInvoker(channel);
@@ -194,7 +194,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.StreamingOutputCall");
         var invoker = new DynamicInvoker(channel);
@@ -204,9 +204,9 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
         await foreach (var response in invoker.InvokeServerStreamingAsync(methodDescriptor, request, cancellationToken: TestContext.Current.CancellationToken))
         {
             response.ShouldNotBeNull();
-            
+
             var dynamicResponse = response as SimpleDynamicMessage;
-            
+
             dynamicResponse.ShouldNotBeNull();
         }
     }
@@ -220,7 +220,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.StreamingInputCall");
         var invoker = new DynamicInvoker(channel);
@@ -234,15 +234,15 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
 
         // Assert
         response.ShouldNotBeNull();
-        
+
         var dynamicResponse = response as SimpleDynamicMessage;
-        
+
         dynamicResponse.ShouldNotBeNull();
-        
+
         var sizeField = dynamicResponse.Descriptor.FindFieldByName("aggregated_payload_size");
-        
+
         sizeField.ShouldNotBeNull();
-        
+
         dynamicResponse.Fields.ContainsKey(sizeField).ShouldBeTrue();
     }
 
@@ -251,7 +251,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.StreamingInputCall");
         var invoker = new DynamicInvoker(channel);
@@ -267,17 +267,17 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
 
         // Assert
         response.ShouldNotBeNull();
-        
+
         var dynamicResponse = response as SimpleDynamicMessage;
-        
+
         dynamicResponse.ShouldNotBeNull();
-        
+
         var sizeField = dynamicResponse.Descriptor.FindFieldByName("aggregated_payload_size");
-        
+
         sizeField.ShouldNotBeNull();
-        
+
         var totalSize = (int)dynamicResponse.Fields[sizeField]!;
-        
+
         totalSize.ShouldBe(600); // 100 + 200 + 300
     }
 
@@ -286,11 +286,11 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.StreamingInputCall");
         var invoker = new DynamicInvoker(channel);
-        
+
         IMessage[] requests = [];
 
         // Act
@@ -298,13 +298,13 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
 
         // Assert
         response.ShouldNotBeNull();
-        
+
         var dynamicResponse = response as SimpleDynamicMessage;
-        
+
         dynamicResponse.ShouldNotBeNull();
-        
+
         var sizeField = dynamicResponse.Descriptor.FindFieldByName("aggregated_payload_size");
-        
+
         if (sizeField is not null && dynamicResponse.Fields.TryGetValue(sizeField, out var size))
         {
             ((int)size!).ShouldBe(0);
@@ -320,7 +320,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.FullDuplexCall");
         var invoker = new DynamicInvoker(channel);
@@ -328,7 +328,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
         {
             CreateStreamingOutputRequest(methodDescriptor.InputType, [100])
         };
-        
+
         var responses = new List<IMessage>();
 
         // Act
@@ -346,7 +346,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.FullDuplexCall");
         var invoker = new DynamicInvoker(channel);
@@ -356,7 +356,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
             CreateStreamingOutputRequest(methodDescriptor.InputType, [200]),
             CreateStreamingOutputRequest(methodDescriptor.InputType, [300])
         };
-        
+
         var responses = new List<IMessage>();
 
         // Act
@@ -374,13 +374,13 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.FullDuplexCall");
         var invoker = new DynamicInvoker(channel);
-        
+
         IMessage[] requests = [];
-        
+
         var responses = new List<IMessage>();
 
         // Act
@@ -402,7 +402,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.HalfDuplexCall");
         var invoker = new DynamicInvoker(channel);
@@ -411,7 +411,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
             CreateStreamingOutputRequest(methodDescriptor.InputType, [100]),
             CreateStreamingOutputRequest(methodDescriptor.InputType, [200])
         };
-        
+
         var responses = new List<IMessage>();
 
         // Act
@@ -433,7 +433,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.EmptyCall");
         var invoker = new DynamicInvoker(channel);
@@ -452,7 +452,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.EmptyCall");
         var invoker = new DynamicInvoker(channel);
@@ -475,7 +475,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
     {
         // Arrange - use UnaryCall which returns SimpleResponse (has fields like username, oauth_scope)
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.UnaryCall");
         var invoker = new DynamicInvoker(channel);
@@ -500,7 +500,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.EmptyCall");
         var invoker = new DynamicInvoker(channel);
@@ -520,7 +520,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.StreamingOutputCall");
         var invoker = new DynamicInvoker(channel);
@@ -543,7 +543,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.StreamingInputCall");
         var invoker = new DynamicInvoker(channel);
@@ -553,9 +553,9 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
 
         // Assert
         response.ShouldNotBeNull();
-        
+
         var dynamicResponse = response as SimpleDynamicMessage;
-        
+
         dynamicResponse.ShouldNotBeNull();
     }
 
@@ -566,7 +566,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
     private static async IAsyncEnumerable<IMessage> EmptyAsyncEnumerable()
     {
         await Task.CompletedTask;
-        
+
         yield break;
     }
 

@@ -1,4 +1,3 @@
-using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using GrpCurl.Net.TestServer.Services;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -10,74 +9,14 @@ builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
 builder.Logging.SetMinimumLevel(LogLevel.Warning);
 
-var port = 9090;
-var useTls = false;
-string? tlsCertPath = null;
-string? tlsKeyPath = null;
-string? tlsCertPassword = null;
-string? clientCaPath = null;
-var requireClientCert = false;
-
-for (var i = 0; i < args.Length; i++)
-{
-    switch (args[i])
-    {
-        case "--port" or "-p" when i + 1 < args.Length:
-
-            if (int.TryParse(args[i + 1], out var p))
-            {
-                port = p;
-            }
-
-            i++;
-            break;
-
-        case "--tls":
-
-            useTls = true;
-            break;
-
-        case "--tls-cert" when i + 1 < args.Length:
-
-            useTls = true;
-            tlsCertPath = args[++i];
-            break;
-
-        case "--tls-key" when i + 1 < args.Length:
-
-            tlsKeyPath = args[++i];
-            break;
-
-        case "--tls-password" when i + 1 < args.Length:
-
-            tlsCertPassword = args[++i];
-            break;
-
-        case "--require-client-cert":
-
-            requireClientCert = true;
-            useTls = true;
-            break;
-
-        case "--client-ca" when i + 1 < args.Length:
-
-            clientCaPath = args[++i];
-            requireClientCert = true;
-            useTls = true;
-            break;
-    }
-}
+var (port, useTls, tlsCertPath, tlsKeyPath, tlsCertPassword, clientCaPath, requireClientCert) = ParseOptions(args);
 
 if (useTls)
 {
     var certPath = tlsCertPath ?? ResolveCertPath("server.crt");
     var keyPath = tlsKeyPath ?? ResolveCertPath("server.key");
     var serverCert = LoadServerCertificate(certPath, keyPath, tlsCertPassword);
-    var trustedClientCa = clientCaPath is null && requireClientCert
-        ? X509CertificateLoader.LoadCertificateFromFile(ResolveCertPath("ca.crt"))
-        : clientCaPath is not null
-            ? X509CertificateLoader.LoadCertificateFromFile(clientCaPath)
-            : null;
+    var trustedClientCa = LoadTrustedClientCa(clientCaPath, requireClientCert);
 
     builder.WebHost.ConfigureKestrel(options =>
     {
@@ -92,8 +31,8 @@ if (useTls)
                 {
                     httpsOptions.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
                     httpsOptions.AllowAnyClientCertificate();
-                    httpsOptions.ClientCertificateValidation = (cert, chain, errors) =>
-                        ValidateClientCertificate(cert, chain, errors, trustedClientCa);
+                    httpsOptions.ClientCertificateValidation = (cert, _, _) =>
+                        ValidateClientCertificate(cert, trustedClientCa);
                 }
             });
         });
@@ -144,6 +83,18 @@ static string ResolveCertPath(string fileName)
         "Run Tests/TestCertificates/generate-certs.sh (or generate-certs.ps1) first.");
 }
 
+static X509Certificate2? LoadTrustedClientCa(string? clientCaPath, bool requireClientCert)
+{
+    if (clientCaPath is not null)
+    {
+        return X509CertificateLoader.LoadCertificateFromFile(clientCaPath);
+    }
+
+    return requireClientCert
+        ? X509CertificateLoader.LoadCertificateFromFile(ResolveCertPath("ca.crt"))
+        : null;
+}
+
 static X509Certificate2 LoadServerCertificate(string certPath, string keyPath, string? password)
 {
     if (Path.GetExtension(certPath).Equals(".pfx", StringComparison.OrdinalIgnoreCase) ||
@@ -161,11 +112,14 @@ static X509Certificate2 LoadServerCertificate(string certPath, string keyPath, s
 }
 
 static bool ValidateClientCertificate(
-    X509Certificate2 clientCertificate,
-    X509Chain? chain,
-    SslPolicyErrors errors,
+    X509Certificate2? clientCertificate,
     X509Certificate2? trustedCa)
 {
+    if (clientCertificate is null)
+    {
+        return false;
+    }
+
     if (trustedCa is null)
     {
         // No CA configured: accept any cert. Useful for local development only.
@@ -181,3 +135,63 @@ static bool ValidateClientCertificate(
 
     return validationChain.Build(clientCertificate);
 }
+
+static (int Port, bool UseTls, string? TlsCertPath, string? TlsKeyPath, string? TlsCertPassword, string? ClientCaPath, bool RequireClientCert) ParseOptions(
+    IEnumerable<string> commandLineArgs)
+{
+    var port = 9090;
+    var useTls = false;
+    string? tlsCertPath = null;
+    string? tlsKeyPath = null;
+    string? tlsCertPassword = null;
+    string? clientCaPath = null;
+    var requireClientCert = false;
+    var remaining = new Queue<string>(commandLineArgs);
+
+    while (remaining.TryDequeue(out var arg))
+    {
+        switch (arg)
+        {
+            case "--port" or "-p":
+                if (int.TryParse(TryTakeOptionValue(remaining), out var p))
+                {
+                    port = p;
+                }
+
+                break;
+
+            case "--tls":
+                useTls = true;
+                break;
+
+            case "--tls-cert":
+                useTls = true;
+                tlsCertPath = TryTakeOptionValue(remaining);
+                break;
+
+            case "--tls-key":
+                tlsKeyPath = TryTakeOptionValue(remaining);
+                break;
+
+            case "--tls-password":
+                tlsCertPassword = TryTakeOptionValue(remaining);
+                break;
+
+            case "--require-client-cert":
+                requireClientCert = true;
+                useTls = true;
+                break;
+
+            case "--client-ca":
+                clientCaPath = TryTakeOptionValue(remaining);
+                requireClientCert = true;
+                useTls = true;
+                break;
+        }
+    }
+
+    return (port, useTls, tlsCertPath, tlsKeyPath, tlsCertPassword, clientCaPath, requireClientCert);
+}
+
+static string? TryTakeOptionValue(Queue<string> remaining) =>
+    remaining.TryDequeue(out var value) ? value : null;

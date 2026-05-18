@@ -13,7 +13,7 @@ public sealed class ProtosetExporterTests : IDisposable
     public ProtosetExporterTests()
     {
         var outputDir = Path.GetDirectoryName(typeof(ProtosetExporterTests).Assembly.Location);
-        
+
         _testProtosetPath = Path.Combine(outputDir!, "TestProtosets", "test.protoset");
         _wellKnownTypesProtosetPath = Path.Combine(outputDir!, "TestProtosets", "well-known-types.protoset");
     }
@@ -58,9 +58,9 @@ public sealed class ProtosetExporterTests : IDisposable
 
         // Assert
         File.Exists(outputPath).ShouldBeTrue();
-        
+
         var fileBytes = await File.ReadAllBytesAsync(outputPath, TestContext.Current.CancellationToken);
-        
+
         fileBytes.Length.ShouldBeGreaterThan(0);
     }
 
@@ -77,7 +77,7 @@ public sealed class ProtosetExporterTests : IDisposable
         // Assert - the output file should be a valid FileDescriptorSet
         var fileBytes = await File.ReadAllBytesAsync(outputPath, TestContext.Current.CancellationToken);
         var parsedFds = FileDescriptorSet.Parser.ParseFrom(fileBytes);
-        
+
         parsedFds.ShouldNotBeNull();
         parsedFds.File.ShouldNotBeEmpty();
     }
@@ -94,14 +94,14 @@ public sealed class ProtosetExporterTests : IDisposable
 
         // Assert
         File.Exists(outputPath).ShouldBeTrue();
-        
+
         var fileBytes = await File.ReadAllBytesAsync(outputPath, TestContext.Current.CancellationToken);
-        
+
         fileBytes.Length.ShouldBeGreaterThan(0);
 
         // Verify the output is a valid protobuf FileDescriptorSet
         var parsedFds = FileDescriptorSet.Parser.ParseFrom(fileBytes);
-        
+
         parsedFds.ShouldNotBeNull();
         parsedFds.File.ShouldNotBeEmpty();
     }
@@ -118,10 +118,10 @@ public sealed class ProtosetExporterTests : IDisposable
 
         // Assert
         File.Exists(outputPath).ShouldBeTrue();
-        
+
         var fileBytes = await File.ReadAllBytesAsync(outputPath, TestContext.Current.CancellationToken);
         var parsedFds = FileDescriptorSet.Parser.ParseFrom(fileBytes);
-        
+
         parsedFds.ShouldNotBeNull();
         parsedFds.File.ShouldNotBeEmpty();
     }
@@ -140,10 +140,10 @@ public sealed class ProtosetExporterTests : IDisposable
 
         // Assert
         File.Exists(outputPath).ShouldBeTrue();
-        
+
         var fileBytes = await File.ReadAllBytesAsync(outputPath, TestContext.Current.CancellationToken);
         var parsedFds = FileDescriptorSet.Parser.ParseFrom(fileBytes);
-        
+
         parsedFds.ShouldNotBeNull();
         parsedFds.File.ShouldNotBeEmpty();
     }
@@ -161,10 +161,10 @@ public sealed class ProtosetExporterTests : IDisposable
 
         // Assert - file should still be written (empty FileDescriptorSet)
         File.Exists(outputPath).ShouldBeTrue();
-        
+
         var fileBytes = await File.ReadAllBytesAsync(outputPath, TestContext.Current.CancellationToken);
         var parsedFds = FileDescriptorSet.Parser.ParseFrom(fileBytes);
-        
+
         parsedFds.ShouldNotBeNull();
         parsedFds.File.ShouldBeEmpty();
     }
@@ -187,7 +187,7 @@ public sealed class ProtosetExporterTests : IDisposable
         var fileBytes = await File.ReadAllBytesAsync(outputPath, TestContext.Current.CancellationToken);
         var parsedFds = FileDescriptorSet.Parser.ParseFrom(fileBytes);
         var sourceFileCount = source.FileDescriptorSet!.File.Count;
-        
+
         parsedFds.File.Count.ShouldBe(sourceFileCount);
     }
 
@@ -204,10 +204,10 @@ public sealed class ProtosetExporterTests : IDisposable
 
         // Assert
         File.Exists(outputPath).ShouldBeTrue();
-        
+
         var fileBytes = await File.ReadAllBytesAsync(outputPath, TestContext.Current.CancellationToken);
         var parsedFds = FileDescriptorSet.Parser.ParseFrom(fileBytes);
-        
+
         parsedFds.ShouldNotBeNull();
         parsedFds.File.ShouldNotBeEmpty();
     }

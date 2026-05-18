@@ -89,7 +89,7 @@ public sealed class ProtoSourceTests
 
         var ex = await Should.ThrowAsync<InvalidOperationException>(async () =>
         {
-            var source = await ProtoSource.LoadFromProtoFilesAsync(
+            await ProtoSource.LoadFromProtoFilesAsync(
                 ["does-not-exist.proto"],
                 [Environment.CurrentDirectory],
                 TestContext.Current.CancellationToken);
@@ -103,7 +103,7 @@ public sealed class ProtoSourceTests
     {
         await Should.ThrowAsync<ArgumentException>(async () =>
         {
-            var source = await ProtoSource.LoadFromProtoFilesAsync(
+            await ProtoSource.LoadFromProtoFilesAsync(
                 [],
                 [],
                 TestContext.Current.CancellationToken);

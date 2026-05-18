@@ -63,7 +63,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"responseSize": 42}""";
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
 
         // Act
@@ -71,9 +71,9 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         var field = descriptor.FindFieldByName("response_size");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.Fields.ContainsKey(field).ShouldBeTrue();
         message.Fields[field].ShouldBe(42);
     }
@@ -83,7 +83,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"fillUsername": true}""";
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
 
         // Act
@@ -91,9 +91,9 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         var field = descriptor.FindFieldByName("fill_username");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.Fields.ContainsKey(field).ShouldBeTrue();
         message.Fields[field].ShouldBe(true);
     }
@@ -103,7 +103,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"fillUsername": false}""";
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
 
         // Act
@@ -111,9 +111,9 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         var field = descriptor.FindFieldByName("fill_username");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.Fields.ContainsKey(field).ShouldBeTrue();
         message.Fields[field].ShouldBe(false);
     }
@@ -127,7 +127,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"responseType": "COMPRESSABLE"}""";
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
 
         // Act
@@ -135,9 +135,9 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         var field = descriptor.FindFieldByName("response_type");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.Fields.ContainsKey(field).ShouldBeTrue();
         message.Fields[field].ShouldBe(0); // COMPRESSABLE = 0
     }
@@ -147,7 +147,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"responseType": 1}""";
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
 
         // Act
@@ -155,9 +155,9 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         var field = descriptor.FindFieldByName("response_type");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.Fields.ContainsKey(field).ShouldBeTrue();
         message.Fields[field].ShouldBe(1); // UNCOMPRESSABLE = 1
     }
@@ -167,12 +167,12 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"responseType": "INVALID_ENUM"}""";
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
 
         // Act & Assert
         var ex = Should.Throw<ArgumentException>(() => new SimpleDynamicMessage(descriptor, json));
-        
+
         ex.Message.ShouldContain("Unknown enum value");
     }
 
@@ -185,7 +185,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"payload": {"type": "COMPRESSABLE", "body": "dGVzdA=="}}""";
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
 
         // Act
@@ -193,16 +193,16 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         var payloadField = descriptor.FindFieldByName("payload");
-        
+
         payloadField.ShouldNotBeNull();
-        
+
         message.Fields.ContainsKey(payloadField).ShouldBeTrue();
 
         var nestedMessage = message.Fields[payloadField].ShouldBeOfType<SimpleDynamicMessage>();
         var typeField = nestedMessage.Descriptor.FindFieldByName("type");
-        
+
         typeField.ShouldNotBeNull();
-        
+
         nestedMessage.Fields[typeField].ShouldBe(0); // COMPRESSABLE = 0
     }
 
@@ -211,7 +211,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"payload": null}""";
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
 
         // Act
@@ -219,9 +219,9 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         var payloadField = descriptor.FindFieldByName("payload");
-        
+
         payloadField.ShouldNotBeNull();
-        
+
         message.Fields.ContainsKey(payloadField).ShouldBeTrue();
         message.Fields[payloadField].ShouldBeNull();
     }
@@ -235,7 +235,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"responseParameters": []}""";
-        
+
         var descriptor = TestDescriptorProvider.StreamingOutputCallRequest;
 
         // Act
@@ -243,9 +243,9 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         var field = descriptor.FindFieldByName("response_parameters");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.RepeatedFields.ContainsKey(field).ShouldBeTrue();
         message.RepeatedFields[field].ShouldBeEmpty();
     }
@@ -255,7 +255,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"responseParameters": [{"size": 100}]}""";
-        
+
         var descriptor = TestDescriptorProvider.StreamingOutputCallRequest;
 
         // Act
@@ -263,14 +263,14 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         var field = descriptor.FindFieldByName("response_parameters");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.RepeatedFields.ContainsKey(field).ShouldBeTrue();
         message.RepeatedFields[field].ShouldHaveSingleItem();
 
         var nestedMessage = message.RepeatedFields[field][0].ShouldBeOfType<SimpleDynamicMessage>();
-        
+
         nestedMessage.ShouldNotBeNull();
     }
 
@@ -279,7 +279,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"responseParameters": [{"size": 100}, {"size": 200}, {"size": 300}]}""";
-        
+
         var descriptor = TestDescriptorProvider.StreamingOutputCallRequest;
 
         // Act
@@ -287,9 +287,9 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         var field = descriptor.FindFieldByName("response_parameters");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.RepeatedFields.ContainsKey(field).ShouldBeTrue();
         message.RepeatedFields[field].Count.ShouldBe(3);
     }
@@ -299,12 +299,12 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"responseParameters": [{"size": 100}, null, {"size": 200}]}""";
-        
+
         var descriptor = TestDescriptorProvider.StreamingOutputCallRequest;
 
         // Act & Assert
         var ex = Should.Throw<ArgumentException>(() => new SimpleDynamicMessage(descriptor, json));
-        
+
         ex.Message.ShouldContain("Null values are not allowed in repeated field");
     }
 
@@ -317,7 +317,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"responseSize": 42, "unknownField": "value"}""";
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
 
         // Act
@@ -333,7 +333,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"responseSize": 42, "unknownField": "value"}""";
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
 
         // Act & Assert
@@ -349,7 +349,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"unknownField1": 1, "unknownField2": "test", "responseSize": 42}""";
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
 
         // Act
@@ -384,7 +384,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"responseSize": 42}""";
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
         var message = new SimpleDynamicMessage(descriptor, json);
 
@@ -401,7 +401,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"fillUsername": true}""";
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
         var message = new SimpleDynamicMessage(descriptor, json);
 
@@ -417,7 +417,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"responseType": "COMPRESSABLE"}""";
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
         var message = new SimpleDynamicMessage(descriptor, json);
 
@@ -433,7 +433,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"payload": {"type": "COMPRESSABLE"}}""";
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
         var message = new SimpleDynamicMessage(descriptor, json);
 
@@ -450,7 +450,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"responseParameters": [{"size": 100}, {"size": 200}]}""";
-        
+
         var descriptor = TestDescriptorProvider.StreamingOutputCallRequest;
         var message = new SimpleDynamicMessage(descriptor, json);
 
@@ -470,20 +470,20 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string originalJson = """{"responseSize": 42, "fillUsername": true}""";
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
         var message = new SimpleDynamicMessage(descriptor, originalJson);
 
         // Act
         var binaryData = new byte[message.CalculateSize()];
-        
+
         using (var output = new CodedOutputStream(binaryData))
         {
             message.WriteTo(output);
         }
 
         var parsedMessage = new SimpleDynamicMessage(descriptor);
-        
+
         using (var input = new CodedInputStream(binaryData))
         {
             parsedMessage.MergeFrom(input);
@@ -491,9 +491,9 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         var field = descriptor.FindFieldByName("response_size");
-        
+
         field.ShouldNotBeNull();
-        
+
         parsedMessage.Fields.ContainsKey(field).ShouldBeTrue();
         parsedMessage.Fields[field].ShouldBe(42);
     }
@@ -503,20 +503,20 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string originalJson = """{"payload": {"type": "UNCOMPRESSABLE", "body": "dGVzdA=="}}""";
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
         var message = new SimpleDynamicMessage(descriptor, originalJson);
 
         // Act
         var binaryData = new byte[message.CalculateSize()];
-        
+
         using (var output = new CodedOutputStream(binaryData))
         {
             message.WriteTo(output);
         }
 
         var parsedMessage = new SimpleDynamicMessage(descriptor);
-        
+
         using (var input = new CodedInputStream(binaryData))
         {
             parsedMessage.MergeFrom(input);
@@ -524,15 +524,15 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         var payloadField = descriptor.FindFieldByName("payload");
-        
+
         payloadField.ShouldNotBeNull();
         parsedMessage.Fields.ContainsKey(payloadField).ShouldBeTrue();
 
         var nestedMessage = parsedMessage.Fields[payloadField].ShouldBeOfType<SimpleDynamicMessage>();
         var typeField = nestedMessage.Descriptor.FindFieldByName("type");
-        
+
         typeField.ShouldNotBeNull();
-        
+
         nestedMessage.Fields[typeField].ShouldBe(1); // UNCOMPRESSABLE = 1
     }
 
@@ -541,20 +541,20 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string originalJson = """{"responseParameters": [{"size": 100}, {"size": 200}, {"size": 300}]}""";
-        
+
         var descriptor = TestDescriptorProvider.StreamingOutputCallRequest;
         var message = new SimpleDynamicMessage(descriptor, originalJson);
 
         // Act
         var binaryData = new byte[message.CalculateSize()];
-        
+
         using (var output = new CodedOutputStream(binaryData))
         {
             message.WriteTo(output);
         }
 
         var parsedMessage = new SimpleDynamicMessage(descriptor);
-        
+
         using (var input = new CodedInputStream(binaryData))
         {
             parsedMessage.MergeFrom(input);
@@ -562,9 +562,9 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         var field = descriptor.FindFieldByName("response_parameters");
-        
+
         field.ShouldNotBeNull();
-        
+
         parsedMessage.RepeatedFields.ContainsKey(field).ShouldBeTrue();
         parsedMessage.RepeatedFields[field].Count.ShouldBe(3);
     }
@@ -578,7 +578,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"body": "SGVsbG8gV29ybGQ="}"""; // "Hello World" in base64
-        
+
         var descriptor = TestDescriptorProvider.Payload;
 
         // Act
@@ -586,13 +586,13 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         var field = descriptor.FindFieldByName("body");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.Fields.ContainsKey(field).ShouldBeTrue();
 
         var byteString = message.Fields[field].ShouldBeOfType<ByteString>();
-        
+
         Encoding.UTF8.GetString(byteString.ToByteArray()).ShouldBe("Hello World");
     }
 
@@ -601,7 +601,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"body": ""}""";
-        
+
         var descriptor = TestDescriptorProvider.Payload;
 
         // Act
@@ -609,13 +609,13 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         var field = descriptor.FindFieldByName("body");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.Fields.ContainsKey(field).ShouldBeTrue();
 
         var byteString = message.Fields[field].ShouldBeOfType<ByteString>();
-        
+
         byteString.ToByteArray().ShouldBeEmpty();
     }
 
@@ -624,7 +624,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"body": "SGVsbG8="}"""; // "Hello" in base64
-        
+
         var descriptor = TestDescriptorProvider.Payload;
         var message = new SimpleDynamicMessage(descriptor, json);
 
@@ -658,7 +658,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"responseSize": 42}""";
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
         var message = new SimpleDynamicMessage(descriptor, json);
 
@@ -674,14 +674,14 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"responseSize": 42, "fillUsername": true}""";
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
         var message = new SimpleDynamicMessage(descriptor, json);
 
         // Act
         var calculatedSize = message.CalculateSize();
         var binaryData = new byte[calculatedSize];
-        
+
         using (var output = new CodedOutputStream(binaryData))
         {
             message.WriteTo(output);
@@ -700,7 +700,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange - Using JSON name (camelCase)
         const string json = """{"fillUsername": true}""";
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
 
         // Act
@@ -708,9 +708,9 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         var field = descriptor.FindFieldByName("fill_username");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.Fields.ContainsKey(field).ShouldBeTrue();
     }
 
@@ -719,7 +719,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange - Using proto name (snake_case)
         const string json = """{"fill_username": true}""";
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
 
         // Act
@@ -727,9 +727,9 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         var field = descriptor.FindFieldByName("fill_username");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.Fields.ContainsKey(field).ShouldBeTrue();
     }
 
@@ -738,7 +738,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange - Using different case
         const string json = """{"FILLUSERNAME": true}""";
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
 
         // Act
@@ -746,9 +746,9 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         var field = descriptor.FindFieldByName("fill_username");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.Fields.ContainsKey(field).ShouldBeTrue();
     }
 
@@ -761,7 +761,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"responseSize": }"""; // Invalid JSON
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
 
         // Act & Assert
@@ -773,7 +773,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = "[1, 2, 3]"; // Array instead of object
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
 
         // Act & Assert
@@ -862,7 +862,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange - set response_size to 42
         const string inputJson = """{"responseSize": 42}""";
-        
+
         var descriptor = TestDescriptorProvider.SimpleRequest;
         var message = new SimpleDynamicMessage(descriptor, inputJson);
 
@@ -871,10 +871,10 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert - response_size should be 42 (not duplicated with 0)
         json.ShouldContain("\"response_size\":42");
-        
+
         // Should not contain default 0 for response_size
         var count = json.Split("response_size").Length - 1;
-        
+
         count.ShouldBe(1);
     }
 
@@ -1018,7 +1018,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"string_map":{"a":"b","c":"d"}}""";
-        
+
         var descriptor = TestDescriptorProvider.MapFieldsMessage;
 
         // Act
@@ -1076,7 +1076,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"string_value":"hello","name":"test"}""";
-        
+
         var descriptor = TestDescriptorProvider.OneofMessage;
 
         // Act
@@ -1282,7 +1282,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"float_val": "NaN"}""";
-        
+
         var descriptor = TestDescriptorProvider.AllScalarsMessage;
 
         // Act
@@ -1290,13 +1290,13 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         var field = descriptor.FindFieldByName("float_val");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.Fields.ContainsKey(field).ShouldBeTrue();
-        
+
         var value = message.Fields[field].ShouldBeOfType<float>();
-        
+
         float.IsNaN(value).ShouldBeTrue();
     }
 
@@ -1305,7 +1305,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"float_val": "Infinity"}""";
-        
+
         var descriptor = TestDescriptorProvider.AllScalarsMessage;
 
         // Act
@@ -1313,13 +1313,13 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         var field = descriptor.FindFieldByName("float_val");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.Fields.ContainsKey(field).ShouldBeTrue();
-        
+
         var value = message.Fields[field].ShouldBeOfType<float>();
-        
+
         value.ShouldBe(float.PositiveInfinity);
     }
 
@@ -1328,7 +1328,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"float_val": "-Infinity"}""";
-        
+
         var descriptor = TestDescriptorProvider.AllScalarsMessage;
 
         // Act
@@ -1336,13 +1336,13 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         var field = descriptor.FindFieldByName("float_val");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.Fields.ContainsKey(field).ShouldBeTrue();
-        
+
         var value = message.Fields[field].ShouldBeOfType<float>();
-        
+
         value.ShouldBe(float.NegativeInfinity);
     }
 
@@ -1355,7 +1355,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"int64_val": "9223372036854775807"}""";
-        
+
         var descriptor = TestDescriptorProvider.AllScalarsMessage;
 
         // Act
@@ -1363,9 +1363,9 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         var field = descriptor.FindFieldByName("int64_val");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.Fields.ContainsKey(field).ShouldBeTrue();
         message.Fields[field].ShouldBe(long.MaxValue);
     }
@@ -1375,7 +1375,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange
         const string json = """{"uint64_val": "18446744073709551615"}""";
-        
+
         var descriptor = TestDescriptorProvider.AllScalarsMessage;
 
         // Act
@@ -1383,9 +1383,9 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         var field = descriptor.FindFieldByName("uint64_val");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.Fields.ContainsKey(field).ShouldBeTrue();
         message.Fields[field].ShouldBe(ulong.MaxValue);
     }
@@ -1431,7 +1431,7 @@ public sealed class SimpleDynamicMessageTests
     {
         // Arrange - set string_value in the oneof via JSON parsing
         const string json = """{"string_value": "hello"}""";
-        
+
         var descriptor = TestDescriptorProvider.OneofMessage;
         var message = new SimpleDynamicMessage(descriptor, json);
 

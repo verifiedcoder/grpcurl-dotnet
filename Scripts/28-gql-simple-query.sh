@@ -8,7 +8,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GQL2GRPC="$SCRIPT_DIR/../Src/Gql2Grpc/bin/Debug/net10.0/Gql2Grpc"
+. "$SCRIPT_DIR/common.sh"
 SERVER="localhost:9090"
 
 echo "=== gql2grpc: Simple reflection-based query ==="
@@ -18,7 +18,7 @@ echo ""
 echo "Command: gql2grpc --plaintext --default-service testing.TestService $SERVER 'query { EmptyCall }'"
 echo ""
 
-$GQL2GRPC --plaintext --default-service testing.TestService $SERVER 'query { EmptyCall }'
+gql2grpc_cli --plaintext --default-service testing.TestService $SERVER 'query { EmptyCall }'
 
 echo ""
 echo "=== Done ==="

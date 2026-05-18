@@ -101,9 +101,9 @@ public sealed class GrpcCommandExceptionTests
 
         // Assert
         caught.ShouldNotBeNull();
-        
+
         var grpcException = caught.ShouldBeOfType<GrpcCommandException>();
-        
+
         grpcException.ExitCode.ShouldBe(5);
     }
 

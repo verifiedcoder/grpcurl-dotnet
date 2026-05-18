@@ -27,12 +27,12 @@ public static class ParallelFieldScheduler
     {
         if (contexts.Count == 0)
         {
-            return Array.Empty<RootFieldResult>();
+            return [];
         }
 
         if (contexts.Count == 1)
         {
-            return new[] { await worker(contexts[0], cancellationToken).ConfigureAwait(false) };
+            return [await worker(contexts[0], cancellationToken).ConfigureAwait(false)];
         }
 
         var results = new RootFieldResult?[contexts.Count];
@@ -51,6 +51,6 @@ public static class ParallelFieldScheduler
                 results[index] = await worker(contexts[index], ct).ConfigureAwait(false);
             }).ConfigureAwait(false);
 
-        return results.Cast<RootFieldResult>().ToList();
+        return [.. results.Cast<RootFieldResult>()];
     }
 }

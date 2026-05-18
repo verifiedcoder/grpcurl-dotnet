@@ -8,7 +8,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GRPCURL="$SCRIPT_DIR/../Src/GrpCurl.Net/bin/Debug/net10.0/GrpCurl.Net"
+. "$SCRIPT_DIR/common.sh"
 SERVER="localhost:9090"
 
 echo "=== Full Duplex Bidirectional Streaming ==="
@@ -32,7 +32,7 @@ echo ""
 echo "Command: echo '<requests>' | grpcurl.net invoke --plaintext -d @ $SERVER testing.TestService/FullDuplexCall"
 echo ""
 
-echo "$REQUESTS" | $GRPCURL invoke --plaintext -d @ $SERVER testing.TestService/FullDuplexCall
+echo "$REQUESTS" | grpcurl_net invoke --plaintext -d @ $SERVER testing.TestService/FullDuplexCall
 
 echo ""
 echo "=== Done ==="

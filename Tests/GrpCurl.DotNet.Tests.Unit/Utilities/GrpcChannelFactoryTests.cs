@@ -109,7 +109,7 @@ public sealed class GrpcChannelFactoryTests
     {
         // Arrange & Act & Assert
         var ex = Should.Throw<ArgumentException>(() => GrpcChannelFactory.ParseSize(input));
-        
+
         ex.Message.ShouldContain("empty");
     }
 
@@ -121,7 +121,7 @@ public sealed class GrpcChannelFactoryTests
     {
         // Arrange & Act & Assert
         var ex = Should.Throw<ArgumentException>(() => GrpcChannelFactory.ParseSize(input));
-        
+
         ex.Message.ShouldContain("Invalid size format");
     }
 
@@ -130,7 +130,7 @@ public sealed class GrpcChannelFactoryTests
     {
         // Arrange & Act & Assert
         var ex = Should.Throw<ArgumentException>(() => GrpcChannelFactory.ParseSize("3GB"));
-        
+
         ex.Message.ShouldContain("too large");
     }
 
@@ -305,13 +305,13 @@ public sealed class GrpcChannelFactoryTests
     {
         // Arrange
         const string varName = "GRPCURL_NONEXISTENT_VAR_12345";
-        
+
         Environment.SetEnvironmentVariable(varName, null);
 
         // Act & Assert
         var ex = Should.Throw<ArgumentException>(() =>
             GrpcChannelFactory.CreateMetadata([$"Header: ${{{varName}}}"]));
-        
+
         ex.Message.ShouldContain(varName);
         ex.Message.ShouldContain("not found");
         ex.Message.ShouldContain("Header:"); // Verify header context is included

@@ -418,12 +418,12 @@ internal static class ListCommandHandler
                     "Check firewall settings",
                     "Verify the address and port are correct"
                 },
-                StatusCode.Unimplemented => new[]
-                {
+                StatusCode.Unimplemented =>
+                [
                     "Server does not support reflection",
                     "Use --protoset to provide schema files instead",
                     "Ask server admin to enable grpc-reflection"
-                },
+                ],
                 _ => []
             };
 
@@ -466,9 +466,7 @@ internal static class ListCommandHandler
                 ExitCode = 5,
                 Message = $"Connection to {address ?? string.Empty} timed out",
                 Address = address,
-                Hint = connectTimeout is not null
-                    ? $"Connection timeout was set to: {connectTimeout}"
-                    : verbose ? ex.Message : null,
+                Hint = BuildTimeoutHint(connectTimeout, verbose, ex.Message),
                 Suggestions =
                 [
                     "Increase timeout with --connect-timeout (e.g., --connect-timeout 30s)",
@@ -567,5 +565,15 @@ internal static class ListCommandHandler
         }
 
         OutputRenderer.WriteListMethods(serviceName, serviceDescriptor, output);
+    }
+
+    private static string? BuildTimeoutHint(string? connectTimeout, bool verbose, string exceptionMessage)
+    {
+        if (connectTimeout is not null)
+        {
+            return $"Connection timeout was set to: {connectTimeout}";
+        }
+
+        return verbose ? exceptionMessage : null;
     }
 }

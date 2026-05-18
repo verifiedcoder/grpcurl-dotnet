@@ -1,57 +1,120 @@
 using System.Diagnostics;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
+
+namespace GrpCurl.Net.ValidationRunner;
 
 // Cross-platform validation runner. Publishes the GrpCurl.Net CLI and the test server
-// to a temp directory, then exercises every demo scenario against the *published*
-// binaries (not `dotnet run`). Replaces the Bash production-validation flow with a
-// runner that works identically on Windows, Linux, and macOS. Implements
-// CODE-REVIEW.md Phase 15.
-
-var repoRoot = LocateRepoRoot();
-var ci = args.Contains("--ci");
-var publishDir = Path.Combine(Path.GetTempPath(), "grpcurl-validation-" + Guid.NewGuid().ToString("N"));
-
-Directory.CreateDirectory(publishDir);
-
-var publishedCli = Path.Combine(publishDir, "GrpCurl.Net.dll");
-var publishedServer = Path.Combine(publishDir, "GrpCurl.Net.TestServer.dll");
-
-Console.WriteLine($"== Publishing GrpCurl.Net CLI to {publishDir}");
-
-await RunDotnet("publish", repoRoot, ["Src/GrpCurl.Net/GrpCurl.Net.csproj", "-c", "Release", "--no-restore", "-o", publishDir]);
-
-Console.WriteLine($"== Publishing TestServer to {publishDir}");
-
-await RunDotnet("publish", repoRoot, ["Tests/GrpCurl.Net.TestServer/GrpCurl.Net.TestServer.csproj", "-c", "Release", "--no-restore", "-o", publishDir]);
-
-if (!File.Exists(publishedCli))
+// to a temp directory, then exercises every demo scenario against the published binaries.
+internal static class Program
 {
-    Console.Error.WriteLine($"Publish did not produce {publishedCli}.");
-    Environment.Exit(1);
-}
-
-if (!File.Exists(publishedServer))
-{
-    Console.Error.WriteLine($"Publish did not produce {publishedServer}.");
-    Environment.Exit(1);
-}
-
-var plaintextPort = FindFreePort();
-
-Console.WriteLine($"== Starting TestServer on port {plaintextPort}");
-
-var serverProcess = StartProcess("dotnet", [publishedServer, "--port", plaintextPort.ToString()]);
-
-try
-{
-    if (!await WaitForPort("127.0.0.1", plaintextPort, TimeSpan.FromSeconds(30)))
+    public static async Task<int> Main(string[] args)
     {
-        throw new InvalidOperationException($"TestServer did not start listening on port {plaintextPort}.");
+        string? publishDir = null;
+        Process? serverProcess = null;
+
+        try
+        {
+            ValidateArguments(args);
+
+            var repoRoot = LocateRepoRoot();
+            publishDir = Path.Combine(Path.GetTempPath(), "grpcurl-validation-" + Guid.NewGuid().ToString("N"));
+
+            Directory.CreateDirectory(publishDir);
+
+            var publishedCli = Path.Combine(publishDir, "GrpCurl.Net.dll");
+            var publishedServer = Path.Combine(publishDir, "GrpCurl.Net.TestServer.dll");
+            var artifactsDir = Path.Combine(publishDir, "artifacts");
+
+            await Console.Out.WriteLineAsync($"== Publishing GrpCurl.Net CLI to {publishDir}");
+
+            await PublishProject(repoRoot, "Src/GrpCurl.Net/GrpCurl.Net.csproj", publishDir, artifactsDir).ConfigureAwait(false);
+
+            await Console.Out.WriteLineAsync($"== Publishing TestServer to {publishDir}");
+
+            await PublishProject(repoRoot, "Tests/GrpCurl.Net.TestServer/GrpCurl.Net.TestServer.csproj", publishDir, artifactsDir).ConfigureAwait(false);
+
+            if (!File.Exists(publishedCli))
+            {
+                throw new InvalidOperationException($"Publish did not produce {publishedCli}.");
+            }
+
+            if (!File.Exists(publishedServer))
+            {
+                throw new InvalidOperationException($"Publish did not produce {publishedServer}.");
+            }
+
+            var plaintextPort = FindFreePort();
+
+            await Console.Out.WriteLineAsync($"== Starting TestServer on port {plaintextPort}");
+
+            serverProcess = StartProcess("dotnet", [publishedServer, "--port", plaintextPort.ToString()]);
+
+            if (!await WaitForPort("127.0.0.1", plaintextPort, TimeSpan.FromSeconds(30)).ConfigureAwait(false))
+            {
+                throw new InvalidOperationException($"TestServer did not start listening on port {plaintextPort}.");
+            }
+
+            var scenarios = BuildScenarios(plaintextPort);
+            var failed = new List<string>();
+
+            foreach (var scenario in scenarios)
+            {
+                await Console.Out.WriteLineAsync($"\n== {scenario.Name}");
+                await Console.Out.WriteLineAsync($"   $ grpcurl.net {string.Join(' ', scenario.Args)}");
+
+                var (exitCode, stdout, stderr) = await RunPublishedCli(publishedCli, scenario.Args).ConfigureAwait(false);
+
+                if (exitCode != 0)
+                {
+                    failed.Add($"{scenario.Name}: exit {exitCode}\n stderr: {stderr.Trim()}");
+                    continue;
+                }
+
+                try
+                {
+                    if (!scenario.Validator(stdout))
+                    {
+                        failed.Add($"{scenario.Name}: output did not match expectations\n stdout: {stdout.Trim()}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    failed.Add($"{scenario.Name}: validator threw {ex.Message}\n stdout: {stdout.Trim()}");
+                }
+            }
+
+            if (failed.Count > 0)
+            {
+                await Console.Error.WriteLineAsync();
+                await Console.Error.WriteLineAsync("== FAILED SCENARIOS ==");
+
+                foreach (var line in failed)
+                {
+                    await Console.Error.WriteLineAsync(" - " + line);
+                }
+
+                throw new InvalidOperationException($"{failed.Count} validation scenario(s) failed.");
+            }
+
+            await Console.Out.WriteLineAsync($"\n== {scenarios.Count} scenarios passed.");
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            await Console.Error.WriteLineAsync();
+            await Console.Error.WriteLineAsync("== VALIDATION RUNNER FAILED ==");
+            await Console.Error.WriteLineAsync(ex.Message);
+            return 1;
+        }
+        finally
+        {
+            StopProcess(serverProcess);
+            DeleteDirectory(publishDir);
+        }
     }
 
-    var scenarios = new List<Scenario>
-    {
+    private static List<Scenario> BuildScenarios(int plaintextPort) =>
+    [
         new("list-services", ["list", "--plaintext", $"localhost:{plaintextPort}"], output =>
         {
             output.ShouldContain("testing.TestService");
@@ -93,201 +156,210 @@ try
             output.ShouldContain("testing.TestService");
             return true;
         })
-    };
+    ];
 
-    var failed = new List<string>();
-
-    foreach (var scenario in scenarios)
+    private static void ValidateArguments(IEnumerable<string> args)
     {
-        Console.WriteLine($"\n== {scenario.Name}");
-        Console.WriteLine($"   $ grpcurl.net {string.Join(' ', scenario.Args)}");
-
-        var (exitCode, stdout, stderr) = await RunPublishedCli(publishedCli, scenario.Args);
-
-        if (exitCode != 0)
+        if (args.FirstOrDefault(arg => !string.Equals(arg, "--ci", StringComparison.Ordinal)) is { } unknownArg)
         {
-            failed.Add($"{scenario.Name}: exit {exitCode}\n stderr: {stderr.Trim()}");
-            continue;
+            throw new ArgumentException($"Unknown argument '{unknownArg}'.");
+        }
+    }
+
+    private static async Task<(int ExitCode, string StdOut, string StdErr)> RunPublishedCli(string cliDll, IReadOnlyList<string> args)
+    {
+        var psi = new ProcessStartInfo("dotnet")
+        {
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        psi.ArgumentList.Add(cliDll);
+
+        foreach (var arg in args)
+        {
+            psi.ArgumentList.Add(arg);
         }
 
-        try
+        using var process = Process.Start(psi) ?? throw new InvalidOperationException("Could not start CLI.");
+
+        var stdoutTask = process.StandardOutput.ReadToEndAsync();
+        var stderrTask = process.StandardError.ReadToEndAsync();
+
+        await process.WaitForExitAsync().ConfigureAwait(false);
+
+        return (process.ExitCode, await stdoutTask.ConfigureAwait(false), await stderrTask.ConfigureAwait(false));
+    }
+
+    private static Process StartProcess(string fileName, IReadOnlyList<string> args)
+    {
+        var psi = new ProcessStartInfo(fileName)
         {
-            if (!scenario.Validator(stdout))
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        foreach (var arg in args)
+        {
+            psi.ArgumentList.Add(arg);
+        }
+
+        var process = Process.Start(psi) ?? throw new InvalidOperationException($"Could not start {fileName}.");
+
+        _ = Task.Run(() => DrainOutputAsync(process.StandardOutput, Console.Out, "[server] "));
+        _ = Task.Run(() => DrainOutputAsync(process.StandardError, Console.Error, "[server.err] "));
+
+        return process;
+    }
+
+    private static async Task DrainOutputAsync(TextReader reader, TextWriter writer, string prefix)
+    {
+        while (await reader.ReadLineAsync().ConfigureAwait(false) is { } line)
+        {
+            await writer.WriteLineAsync(prefix + line).ConfigureAwait(false);
+        }
+    }
+
+    private static async Task RunDotnet(string verb, string workingDirectory, IReadOnlyList<string> args)
+    {
+        var psi = new ProcessStartInfo("dotnet")
+        {
+            WorkingDirectory = workingDirectory,
+            UseShellExecute = false
+        };
+
+        psi.ArgumentList.Add(verb);
+
+        foreach (var arg in args)
+        {
+            psi.ArgumentList.Add(arg);
+        }
+
+        using var process = Process.Start(psi) ?? throw new InvalidOperationException("Failed to start dotnet.");
+
+        await process.WaitForExitAsync().ConfigureAwait(false);
+
+        if (process.ExitCode != 0)
+        {
+            throw new InvalidOperationException(
+                $"dotnet {verb} {string.Join(' ', args)} failed with exit code {process.ExitCode}.");
+        }
+    }
+
+    private static async Task PublishProject(string repoRoot, string projectPath, string publishDir, string artifactsDir)
+    {
+        await RunDotnet(
+            "restore",
+            repoRoot,
+            [projectPath, "--locked-mode", "--artifacts-path", artifactsDir, "-p:NuGetAudit=false"]).ConfigureAwait(false);
+
+        await RunDotnet(
+            "publish",
+            repoRoot,
+            [projectPath, "-c", "Release", "--no-restore", "--artifacts-path", artifactsDir, "-o", publishDir]).ConfigureAwait(false);
+    }
+
+    private static int FindFreePort()
+    {
+        using var listener = new TcpListener(System.Net.IPAddress.Loopback, 0);
+        listener.Start();
+        var port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+        listener.Stop();
+        return port;
+    }
+
+    private static async Task<bool> WaitForPort(string host, int port, TimeSpan timeout)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+
+        while (DateTime.UtcNow < deadline)
+        {
+            try
             {
-                failed.Add($"{scenario.Name}: output did not match expectations\n stdout: {stdout.Trim()}");
+                using var client = new TcpClient();
+                await client.ConnectAsync(host, port).ConfigureAwait(false);
+                return true;
+            }
+            catch (SocketException)
+            {
+                await Task.Delay(200).ConfigureAwait(false);
             }
         }
-        catch (Exception ex)
+
+        return false;
+    }
+
+    private static string LocateRepoRoot()
+    {
+        var candidates = new[]
         {
-            failed.Add($"{scenario.Name}: validator threw {ex.Message}\n stdout: {stdout.Trim()}");
-        }
-    }
+            Directory.GetCurrentDirectory(),
+            AppContext.BaseDirectory
+        };
 
-    if (failed.Count > 0)
-    {
-        Console.Error.WriteLine();
-        Console.Error.WriteLine("== FAILED SCENARIOS ==");
-
-        foreach (var line in failed)
+        foreach (var candidate in candidates)
         {
-            Console.Error.WriteLine(" - " + line);
+            var dir = candidate;
+
+            while (!string.IsNullOrEmpty(dir))
+            {
+                if (File.Exists(Path.Combine(dir, "GrpCurl.Net.slnx")))
+                {
+                    return dir;
+                }
+
+                dir = Path.GetDirectoryName(dir);
+            }
         }
 
-        Environment.Exit(1);
+        throw new InvalidOperationException("Could not locate the repository root (GrpCurl.Net.slnx).");
     }
 
-    Console.WriteLine($"\n== {scenarios.Count} scenarios passed.");
-}
-finally
-{
-    try
+    private static void StopProcess(Process? process)
     {
-        if (!serverProcess.HasExited)
+        if (process is null)
         {
-            serverProcess.Kill(entireProcessTree: true);
+            return;
         }
-    }
-    catch
-    {
-        // Best effort.
-    }
 
-    try { Directory.Delete(publishDir, recursive: true); } catch { }
-}
-
-static async Task<(int ExitCode, string StdOut, string StdErr)> RunPublishedCli(string cliDll, IReadOnlyList<string> args)
-{
-    var psi = new ProcessStartInfo("dotnet")
-    {
-        RedirectStandardOutput = true,
-        RedirectStandardError = true,
-        UseShellExecute = false,
-        CreateNoWindow = true
-    };
-
-    psi.ArgumentList.Add(cliDll);
-
-    foreach (var arg in args)
-    {
-        psi.ArgumentList.Add(arg);
-    }
-
-    using var p = Process.Start(psi) ?? throw new InvalidOperationException("Could not start CLI.");
-
-    var stdoutTask = p.StandardOutput.ReadToEndAsync();
-    var stderrTask = p.StandardError.ReadToEndAsync();
-
-    await p.WaitForExitAsync();
-
-    return (p.ExitCode, await stdoutTask, await stderrTask);
-}
-
-static Process StartProcess(string fileName, IReadOnlyList<string> args)
-{
-    var psi = new ProcessStartInfo(fileName)
-    {
-        RedirectStandardOutput = true,
-        RedirectStandardError = true,
-        UseShellExecute = false,
-        CreateNoWindow = true
-    };
-
-    foreach (var arg in args)
-    {
-        psi.ArgumentList.Add(arg);
-    }
-
-    var p = Process.Start(psi) ?? throw new InvalidOperationException($"Could not start {fileName}.");
-
-    _ = Task.Run(async () =>
-    {
-        while (await p.StandardOutput.ReadLineAsync() is { } line)
-        {
-            Console.WriteLine($"[server] {line}");
-        }
-    });
-
-    _ = Task.Run(async () =>
-    {
-        while (await p.StandardError.ReadLineAsync() is { } line)
-        {
-            Console.Error.WriteLine($"[server.err] {line}");
-        }
-    });
-
-    return p;
-}
-
-static async Task RunDotnet(string verb, string workingDirectory, IReadOnlyList<string> args)
-{
-    var psi = new ProcessStartInfo("dotnet")
-    {
-        WorkingDirectory = workingDirectory,
-        UseShellExecute = false
-    };
-
-    psi.ArgumentList.Add(verb);
-
-    foreach (var arg in args)
-    {
-        psi.ArgumentList.Add(arg);
-    }
-
-    using var p = Process.Start(psi) ?? throw new InvalidOperationException("Failed to start dotnet.");
-
-    await p.WaitForExitAsync();
-
-    if (p.ExitCode != 0)
-    {
-        throw new InvalidOperationException($"dotnet {verb} failed with exit code {p.ExitCode}.");
-    }
-}
-
-static int FindFreePort()
-{
-    using var listener = new TcpListener(System.Net.IPAddress.Loopback, 0);
-    listener.Start();
-    var port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
-    listener.Stop();
-    return port;
-}
-
-static async Task<bool> WaitForPort(string host, int port, TimeSpan timeout)
-{
-    var deadline = DateTime.UtcNow + timeout;
-
-    while (DateTime.UtcNow < deadline)
-    {
         try
         {
-            using var client = new TcpClient();
-            await client.ConnectAsync(host, port);
-            return true;
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+                process.WaitForExit(5000);
+            }
         }
-        catch (SocketException)
+        catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
         {
-            await Task.Delay(200);
+            Console.Error.WriteLine($"Failed to stop validation server: {ex.Message}");
+        }
+        finally
+        {
+            process.Dispose();
         }
     }
 
-    return false;
-}
-
-static string LocateRepoRoot()
-{
-    var dir = AppContext.BaseDirectory;
-
-    while (!string.IsNullOrEmpty(dir))
+    private static void DeleteDirectory(string? path)
     {
-        if (File.Exists(Path.Combine(dir, "GrpCurl.Net.slnx")))
+        if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
         {
-            return dir;
+            return;
         }
 
-        dir = Path.GetDirectoryName(dir);
+        try
+        {
+            Directory.Delete(path, recursive: true);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            Console.Error.WriteLine($"Failed to delete temporary directory '{path}': {ex.Message}");
+        }
     }
-
-    throw new InvalidOperationException("Could not locate the repository root (GrpCurl.Net.slnx).");
 }
 
 internal sealed record Scenario(string Name, IReadOnlyList<string> Args, Func<string, bool> Validator);

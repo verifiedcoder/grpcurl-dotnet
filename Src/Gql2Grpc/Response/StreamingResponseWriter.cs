@@ -8,15 +8,10 @@ namespace Gql2Grpc.Response;
 /// Each message becomes one line containing a self-contained <c>{"data":{"&lt;field&gt;":&lt;value&gt;}}</c>
 /// payload. A terminating error envelope is written if the stream fails.
 /// </summary>
-public sealed class StreamingResponseWriter
+/// <remarks>Wraps the supplied <paramref name="output"/> writer (typically <see cref="Console.Out"/>).</remarks>
+public sealed class StreamingResponseWriter(TextWriter output)
 {
-    private readonly TextWriter _output;
-
-    /// <summary>Wraps the supplied <paramref name="output"/> writer (typically <see cref="Console.Out"/>).</summary>
-    public StreamingResponseWriter(TextWriter output)
-    {
-        _output = output;
-    }
+    private readonly TextWriter _output = output;
 
     /// <summary>Emits a single data envelope line for the given response key and payload.</summary>
     public void WriteData(string responseKey, JsonNode? payload)

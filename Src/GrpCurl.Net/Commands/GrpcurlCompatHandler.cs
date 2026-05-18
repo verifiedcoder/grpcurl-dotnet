@@ -71,33 +71,20 @@ internal static class GrpcurlCompatHandler
             rewritten.Add(arg);
         }
 
+        var orderedPositionals = positionals;
+
         // Resolve the subcommand from positionals:
         //  - 0 positionals → list (without an address, fails validation cleanly)
         //  - 1 positional that looks like host:port → list <host:port>
         //  - 2 positionals where the second is "Service/Method" → invoke
         //  - 2 positionals where the second is a symbol → describe
-        string subcommand;
-        var orderedPositionals = positionals;
-
-        switch (positionals.Count)
+        string subcommand = positionals.Count switch
         {
-            case 0:
-                subcommand = "list";
-                break;
-
-            case 1:
-                subcommand = "list";
-                break;
-
-            case 2 when positionals[1].Contains('/'):
-                subcommand = "invoke";
-                break;
-
-            default:
-                subcommand = "describe";
-                break;
-        }
-
+            0 => "list",
+            1 => "list",
+            2 when positionals[1].Contains('/') => "invoke",
+            _ => "describe",
+        };
         var final = new List<string> { subcommand };
 
         final.AddRange(rewritten);

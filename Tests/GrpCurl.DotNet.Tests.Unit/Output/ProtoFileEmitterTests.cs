@@ -32,7 +32,7 @@ public sealed class ProtoFileEmitterTests
         }
         finally
         {
-            try { Directory.Delete(outDir, recursive: true); } catch { }
+            DeleteDirectory(outDir);
         }
     }
 
@@ -53,7 +53,23 @@ public sealed class ProtoFileEmitterTests
         }
         finally
         {
-            try { Directory.Delete(outDir, recursive: true); } catch { }
+            DeleteDirectory(outDir);
+        }
+    }
+
+    private static void DeleteDirectory(string path)
+    {
+        try
+        {
+            Directory.Delete(path, recursive: true);
+        }
+        catch (IOException ex)
+        {
+            Console.Error.WriteLine($"Failed to delete temporary directory '{path}': {ex.Message}");
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Console.Error.WriteLine($"Failed to delete temporary directory '{path}': {ex.Message}");
         }
     }
 }

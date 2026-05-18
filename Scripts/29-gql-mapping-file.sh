@@ -8,9 +8,10 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GQL2GRPC="$SCRIPT_DIR/../Src/Gql2Grpc/bin/Debug/net10.0/Gql2Grpc"
+. "$SCRIPT_DIR/common.sh"
 SERVER="localhost:9090"
-MAPPING="$(mktemp --suffix=.yaml)"
+MAPPING="$(mktemp "${TMPDIR:-/tmp}/gql2grpc-mapping.XXXXXX")"
+trap 'rm -f "$MAPPING"' EXIT
 
 cat > "$MAPPING" <<'EOF'
 version: 1
@@ -32,9 +33,7 @@ echo ""
 echo "Command: gql2grpc --plaintext --mapping $MAPPING $SERVER 'query { unaryCall(input: { payload: { body: \"aGVsbG8=\" } }) { payload { body } } }'"
 echo ""
 
-$GQL2GRPC --plaintext --mapping "$MAPPING" $SERVER 'query { unaryCall(input: { payload: { body: "aGVsbG8=" } }) { payload { body } } }'
-
-rm -f "$MAPPING"
+gql2grpc_cli --plaintext --mapping "$MAPPING" $SERVER 'query { unaryCall(input: { payload: { body: "aGVsbG8=" } }) { payload { body } } }'
 
 echo ""
 echo "=== Done ==="

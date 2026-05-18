@@ -15,9 +15,9 @@ namespace GrpCurl.Net.Invocation;
 internal sealed class InvocationResult
 {
     public required IMessage Response { get; init; }
-    
+
     public Metadata? ResponseHeaders { get; init; }
-    
+
     public Metadata? ResponseTrailers { get; init; }
 }
 
@@ -55,7 +55,7 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
 
         var response = await call.ResponseAsync;
         var responseHeaders = await call.ResponseHeadersAsync;
-        
+
         Metadata? responseTrailers = null;
 
         try
@@ -263,9 +263,9 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
 
         // Create a linked token source for the write task so we can cancel it independently
         using var writeCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        
+
         var writeToken = writeCts.Token;
-        
+
         Exception? readException = null;
 
         // Capture the streams so the write task lambda does not capture 'call' itself.
@@ -992,15 +992,15 @@ internal class SimpleDynamicMessage : IMessage
         switch (field.FieldType)
         {
             case FieldType.String:
-                
+
                 sb.Append("\"\"");
-                
+
                 break;
 
             case FieldType.Bool:
-                
+
                 sb.Append("false");
-                
+
                 break;
 
             case FieldType.Int32:
@@ -1010,9 +1010,9 @@ internal class SimpleDynamicMessage : IMessage
             case FieldType.Fixed32:
             case FieldType.Float:
             case FieldType.Double:
-                
+
                 sb.Append('0');
-                
+
                 break;
 
             case FieldType.Int64:
@@ -1021,21 +1021,21 @@ internal class SimpleDynamicMessage : IMessage
 
             case FieldType.UInt64:
             case FieldType.Fixed64:
-                
+
                 sb.Append("\"0\"");
-                
+
                 break;
 
             case FieldType.Bytes:
-                
+
                 sb.Append("\"\"");
-                
+
                 break;
 
             case FieldType.Enum:
-                
+
                 var enumValue = field.EnumType.Values.FirstOrDefault();
-                
+
                 if (enumValue is not null)
                 {
                     sb.Append('"');
@@ -1046,7 +1046,7 @@ internal class SimpleDynamicMessage : IMessage
                 {
                     sb.Append('0');
                 }
-                
+
                 break;
 
             // ReSharper disable once DuplicatedSwitchSectionBodies for clarity
@@ -1235,14 +1235,14 @@ internal class SimpleDynamicMessage : IMessage
                 break;
 
             case FieldType.Group:
-                
+
                 // Groups are a deprecated proto2 feature not supported in proto3.
                 // Modern gRPC services use proto3, so Group support is not implemented.
                 sb.Append("null");
                 break;
 
             default:
-                
+
                 sb.Append("null");
                 break;
         }

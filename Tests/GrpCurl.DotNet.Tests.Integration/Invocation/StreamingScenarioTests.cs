@@ -19,16 +19,16 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.StreamingOutputCall");
         var invoker = new DynamicInvoker(channel);
         var request = CreateStreamingOutputRequest(methodDescriptor.InputType, [100, 100, 100, 100, 100]);
-        
+
         using var cts = new CancellationTokenSource();
-        
+
         var responses = new List<IMessage>();
-        
+
         Exception? caughtException = null;
 
         // Act
@@ -55,7 +55,7 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
 
         // Assert
         caughtException.ShouldNotBeNull();
-        
+
         responses.Count.ShouldBeGreaterThanOrEqualTo(2);
         responses.Count.ShouldBeLessThan(5);
     }
@@ -65,14 +65,14 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.StreamingOutputCall");
         var invoker = new DynamicInvoker(channel);
         var request = CreateStreamingOutputRequest(methodDescriptor.InputType, [100]);
-        
+
         using var cts = new CancellationTokenSource();
-        
+
         await cts.CancelAsync();
 
         // Act & Assert
@@ -95,14 +95,14 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.StreamingInputCall");
         var invoker = new DynamicInvoker(channel);
         var requests = CreateStreamingInputRequests(methodDescriptor.InputType, [100, 200]);
-        
+
         using var cts = new CancellationTokenSource();
-        
+
         await cts.CancelAsync();
 
         // Act & Assert
@@ -115,7 +115,7 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.StreamingInputCall");
         var invoker = new DynamicInvoker(channel);
@@ -127,17 +127,17 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
 
         // Assert
         response.ShouldNotBeNull();
-        
+
         var dynamicResponse = response as SimpleDynamicMessage;
-        
+
         dynamicResponse.ShouldNotBeNull();
-        
+
         var sizeField = dynamicResponse.Descriptor.FindFieldByName("aggregated_payload_size");
-        
+
         sizeField.ShouldNotBeNull();
-        
+
         var totalSize = (int)dynamicResponse.Fields[sizeField]!;
-        
+
         totalSize.ShouldBe(500); // 50 * 10
     }
 
@@ -150,7 +150,7 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.FullDuplexCall");
         var invoker = new DynamicInvoker(channel);
@@ -158,9 +158,9 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
         {
             CreateStreamingOutputRequest(methodDescriptor.InputType, [100])
         };
-        
+
         using var cts = new CancellationTokenSource();
-        
+
         await cts.CancelAsync();
 
         // Act & Assert
@@ -179,14 +179,14 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.FullDuplexCall");
         var invoker = new DynamicInvoker(channel);
         var requests = Enumerable.Range(1, 10)
             .Select(_ => CreateStreamingOutputRequest(methodDescriptor.InputType, [50]))
             .ToList();
-        
+
         var responses = new List<IMessage>();
 
         // Act
@@ -204,7 +204,7 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.FullDuplexCall");
         var invoker = new DynamicInvoker(channel);
@@ -213,7 +213,7 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
             CreateStreamingOutputRequest(methodDescriptor.InputType, [100, 200, 300]),
             CreateStreamingOutputRequest(methodDescriptor.InputType, [400, 500, 600])
         };
-        
+
         var responses = new List<IMessage>();
 
         // Act
@@ -235,7 +235,7 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.StreamingOutputCall");
         var metadata = GrpcChannelFactory.CreateMetadata(["x-custom-header: test-value"]);
@@ -258,7 +258,7 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.StreamingInputCall");
         var metadata = GrpcChannelFactory.CreateMetadata(["x-custom-header: test-value"]);
@@ -277,7 +277,7 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.FullDuplexCall");
         var metadata = GrpcChannelFactory.CreateMetadata(["x-custom-header: test-value"]);
@@ -286,7 +286,7 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
         {
             CreateStreamingOutputRequest(methodDescriptor.InputType, [100])
         };
-        
+
         var responses = new List<IMessage>();
 
         // Act
@@ -308,7 +308,7 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.StreamingOutputCall");
         var invoker = new DynamicInvoker(channel);
@@ -323,13 +323,13 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
 
         // Assert
         responses.Count.ShouldBe(3);
-        
+
         foreach (var dynamicResponse in responses.Select(response => response as SimpleDynamicMessage))
         {
             dynamicResponse.ShouldNotBeNull();
-            
+
             var payloadField = dynamicResponse.Descriptor.FindFieldByName("payload");
-            
+
             if (payloadField is not null)
             {
                 dynamicResponse.Fields.ContainsKey(payloadField).ShouldBeTrue();
@@ -342,7 +342,7 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
     {
         // Arrange
         using var channel = CreateChannel();
-        
+
         var source = new ReflectionSource(channel);
         var methodDescriptor = await GetMethodDescriptor(source, "testing.TestService.StreamingInputCall");
         var invoker = new DynamicInvoker(channel);
@@ -354,17 +354,17 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
 
         // Assert
         response.ShouldNotBeNull();
-        
+
         var dynamicResponse = response as SimpleDynamicMessage;
-        
+
         dynamicResponse.ShouldNotBeNull();
-        
+
         var sizeField = dynamicResponse.Descriptor.FindFieldByName("aggregated_payload_size");
-        
+
         sizeField.ShouldNotBeNull();
-        
+
         var totalSize = (int)dynamicResponse.Fields[sizeField]!;
-        
+
         totalSize.ShouldBe(1111); // 1 + 10 + 100 + 1000
     }
 

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace GrpCurl.Net.Commands;
+namespace GrpCurl.Net.Exceptions;
 
 /// <summary>
 ///     Discriminator for the cause of a CLI error. Drives both stderr text rendering

@@ -1,4 +1,5 @@
 using GrpCurl.Net.Commands;
+using GrpCurl.Net.Exceptions;
 using System.Text.Json;
 
 namespace GrpCurl.Net.Tests.Unit.Commands;

@@ -21,7 +21,7 @@ public sealed class ProtobufReaderWriterTests
         var descriptor = TestDescriptorProvider.GetMessageDescriptor("testing.EchoStatus");
         var message = new SimpleDynamicMessage(descriptor);
         var codeField = descriptor.FindFieldByNumber(1);
-        
+
         message.Fields[codeField!] = value;
 
         // Act
@@ -43,7 +43,7 @@ public sealed class ProtobufReaderWriterTests
         var descriptor = TestDescriptorProvider.GetMessageDescriptor("testing.EchoStatus");
         var message = new SimpleDynamicMessage(descriptor);
         var messageField = descriptor.FindFieldByNumber(2);
-        
+
         message.Fields[messageField!] = value;
 
         // Act
@@ -63,7 +63,7 @@ public sealed class ProtobufReaderWriterTests
         var descriptor = TestDescriptorProvider.GetMessageDescriptor("testing.SimpleRequest");
         var message = new SimpleDynamicMessage(descriptor);
         var boolField = descriptor.FindFieldByNumber(4);
-        
+
         message.Fields[boolField!] = value;
 
         // Act
@@ -84,7 +84,7 @@ public sealed class ProtobufReaderWriterTests
         var descriptor = TestDescriptorProvider.GetMessageDescriptor("testing.SimpleRequest");
         var message = new SimpleDynamicMessage(descriptor);
         var enumField = descriptor.FindFieldByNumber(1);
-        
+
         message.Fields[enumField!] = enumValue;
 
         // Act
@@ -103,7 +103,7 @@ public sealed class ProtobufReaderWriterTests
         var message = new SimpleDynamicMessage(descriptor);
         var bytesField = descriptor.FindFieldByNumber(2);
         var originalBytes = ByteString.CopyFromUtf8("binary data here");
-        
+
         message.Fields[bytesField!] = originalBytes;
 
         // Act
@@ -122,7 +122,7 @@ public sealed class ProtobufReaderWriterTests
         var message = new SimpleDynamicMessage(descriptor);
         var bytesField = descriptor.FindFieldByNumber(2);
         var emptyBytes = ByteString.Empty;
-        
+
         message.Fields[bytesField!] = emptyBytes;
 
         // Act
@@ -164,7 +164,7 @@ public sealed class ProtobufReaderWriterTests
         deserialized.Fields.ContainsKey(payloadField!).ShouldBeTrue();
 
         var deserializedPayload = deserialized.Fields[payloadField!].ShouldBeOfType<SimpleDynamicMessage>();
-        
+
         deserializedPayload.Fields[typeField!].ShouldBe(1);
         deserializedPayload.Fields[bodyField!].ShouldBe(ByteString.CopyFromUtf8("test data"));
     }
@@ -194,7 +194,7 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         var deserializedStatus = deserialized.Fields[statusField!].ShouldBeOfType<SimpleDynamicMessage>();
-        
+
         deserializedStatus.Fields[codeField!].ShouldBe(404);
         deserializedStatus.Fields[msgField!].ShouldBe("Not Found");
     }
@@ -259,7 +259,7 @@ public sealed class ProtobufReaderWriterTests
         var descriptor = TestDescriptorProvider.GetMessageDescriptor("testing.StreamingOutputCallRequest");
         var message = new SimpleDynamicMessage(descriptor);
         var paramsField = descriptor.FindFieldByNumber(2);
-        
+
         message.RepeatedFields[paramsField!] = [];
 
         // Act
@@ -300,7 +300,7 @@ public sealed class ProtobufReaderWriterTests
         var message = new SimpleDynamicMessage(descriptor);
         var codeField = descriptor.FindFieldByNumber(1);
         var msgField = descriptor.FindFieldByNumber(2);
-        
+
         message.Fields[codeField!] = 42;
         message.Fields[msgField!] = "test";
 
@@ -324,7 +324,7 @@ public sealed class ProtobufReaderWriterTests
 
         var nestedPayload = new SimpleDynamicMessage(payloadDescriptor);
         var typeField = payloadDescriptor.FindFieldByNumber(1);
-        
+
         nestedPayload.Fields[typeField!] = 1;
 
         message.Fields[payloadField!] = nestedPayload;
@@ -387,7 +387,7 @@ public sealed class ProtobufReaderWriterTests
 
         // Act
         using var input = new CodedInputStream(bytes);
-        
+
         ProtobufReader.MergeFrom(message, input);
 
         // Assert
@@ -409,7 +409,7 @@ public sealed class ProtobufReaderWriterTests
 
         // Act
         using var input = new CodedInputStream(bytes);
-        
+
         ProtobufReader.MergeFrom(message, input);
 
         // Assert
@@ -438,7 +438,7 @@ public sealed class ProtobufReaderWriterTests
 
         // Act
         using var input = new CodedInputStream(bytes);
-        
+
         ProtobufReader.MergeFrom(message, input);
 
         // Assert
@@ -468,7 +468,7 @@ public sealed class ProtobufReaderWriterTests
 
         // Act
         using var input = new CodedInputStream(bytes);
-        
+
         ProtobufReader.MergeFrom(message, input);
 
         // Assert
@@ -508,12 +508,12 @@ public sealed class ProtobufReaderWriterTests
 
         // Act
         using var input = new CodedInputStream(bytes);
-        
+
         ProtobufReader.MergeFrom(message, input);
 
         // Assert
         var readPayload = message.Fields[payloadField!].ShouldBeOfType<SimpleDynamicMessage>();
-        
+
         readPayload.Fields[typeField!].ShouldBe(1);
     }
 
@@ -557,7 +557,7 @@ public sealed class ProtobufReaderWriterTests
 
         // Act
         using var input = new CodedInputStream(bytes);
-        
+
         ProtobufReader.MergeFrom(message, input);
 
         // Assert
@@ -667,13 +667,13 @@ public sealed class ProtobufReaderWriterTests
 
         // Verify nested payload
         var deserializedPayload = deserialized.Fields[descriptor.FindFieldByNumber(3)!].ShouldBeOfType<SimpleDynamicMessage>();
-        
+
         deserializedPayload.Fields[payloadDescriptor.FindFieldByNumber(1)!].ShouldBe(0);
         deserializedPayload.Fields[payloadDescriptor.FindFieldByNumber(2)!].ShouldBe(ByteString.CopyFromUtf8("test payload data"));
 
         // Verify nested status
         var deserializedStatus = deserialized.Fields[descriptor.FindFieldByNumber(7)!].ShouldBeOfType<SimpleDynamicMessage>();
-        
+
         deserializedStatus.Fields[statusDescriptor.FindFieldByNumber(1)!].ShouldBe(200);
         deserializedStatus.Fields[statusDescriptor.FindFieldByNumber(2)!].ShouldBe("OK");
     }
@@ -726,7 +726,7 @@ public sealed class ProtobufReaderWriterTests
         for (var i = 0; i < 5; i++)
         {
             var param = deserialized.RepeatedFields[paramsField][i].ShouldBeOfType<SimpleDynamicMessage>();
-            
+
             param.Fields[paramDescriptor.FindFieldByNumber(1)!].ShouldBe((i + 1) * 100);
             param.Fields[paramDescriptor.FindFieldByNumber(2)!].ShouldBe((i + 1) * 1000);
         }
@@ -741,7 +741,7 @@ public sealed class ProtobufReaderWriterTests
 
         // Create a large byte array (1MB)
         var largeData = new byte[1024 * 1024];
-        
+
         new Random(42).NextBytes(largeData);
 
         original.Fields[descriptor.FindFieldByNumber(2)!] = ByteString.CopyFrom(largeData);
@@ -752,7 +752,7 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         var resultBytes = deserialized.Fields[descriptor.FindFieldByNumber(2)!].ShouldBeOfType<ByteString>();
-        
+
         resultBytes.Length.ShouldBe(largeData.Length);
         resultBytes.ToByteArray().ShouldBe(largeData);
     }
@@ -772,7 +772,7 @@ public sealed class ProtobufReaderWriterTests
         var descriptor = TestDescriptorProvider.GetMessageDescriptor("testing.ResponseParameters");
         var original = new SimpleDynamicMessage(descriptor);
         var sizeField = descriptor.FindFieldByNumber(1);
-        
+
         original.Fields[sizeField!] = value;
 
         // Act
@@ -795,7 +795,7 @@ public sealed class ProtobufReaderWriterTests
         var descriptor = TestDescriptorProvider.GetMessageDescriptor("testing.EchoStatus");
         var original = new SimpleDynamicMessage(descriptor);
         var codeField = descriptor.FindFieldByNumber(1);
-        
+
         original.Fields[codeField!] = value;
 
         // Act
@@ -817,7 +817,7 @@ public sealed class ProtobufReaderWriterTests
         var descriptor = TestDescriptorProvider.GetMessageDescriptor("testing.EchoStatus");
         var message = new SimpleDynamicMessage(descriptor);
         var codeField = descriptor.FindFieldByNumber(1);
-        
+
         message.Fields[codeField!] = null;
 
         // Act
@@ -837,7 +837,7 @@ public sealed class ProtobufReaderWriterTests
 
         // Act
         using var input = new CodedInputStream(bytes);
-        
+
         ProtobufReader.MergeFrom(message, input);
 
         // Assert
@@ -871,7 +871,7 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         var deserializedPayload = deserialized.Fields[descriptor.FindFieldByNumber(3)!].ShouldBeOfType<SimpleDynamicMessage>();
-        
+
         deserializedPayload.Fields[payloadDescriptor.FindFieldByNumber(1)!].ShouldBe(2);
         deserializedPayload.Fields[payloadDescriptor.FindFieldByNumber(2)!].ShouldBe(ByteString.CopyFromUtf8("nested data"));
     }
@@ -900,9 +900,9 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         deserialized.RepeatedFields.ContainsKey(intField).ShouldBeTrue();
-        
+
         var values = deserialized.RepeatedFields[intField];
-        
+
         values.Count.ShouldBe(7);
         values[0].ShouldBe(1);
         values[1].ShouldBe(2);
@@ -933,9 +933,9 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         deserialized.RepeatedFields.ContainsKey(boolField).ShouldBeTrue();
-        
+
         var values = deserialized.RepeatedFields[boolField];
-        
+
         values.Count.ShouldBe(5);
         values[0].ShouldBe(true);
         values[1].ShouldBe(false);
@@ -964,9 +964,9 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         deserialized.RepeatedFields.ContainsKey(enumField).ShouldBeTrue();
-        
+
         var values = deserialized.RepeatedFields[enumField];
-        
+
         values.Count.ShouldBe(4);
         values[0].ShouldBe(0);
         values[1].ShouldBe(1);
@@ -994,9 +994,9 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         deserialized.RepeatedFields.ContainsKey(doubleField).ShouldBeTrue();
-        
+
         var values = deserialized.RepeatedFields[doubleField];
-        
+
         values.Count.ShouldBe(5);
         values[0].ShouldBe(1.5);
         values[1].ShouldBe(-2.7);
@@ -1025,9 +1025,9 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         deserialized.RepeatedFields.ContainsKey(fixedField).ShouldBeTrue();
-        
+
         var values = deserialized.RepeatedFields[fixedField];
-        
+
         values.Count.ShouldBe(4);
         values[0].ShouldBe(0u);
         values[1].ShouldBe(1u);
@@ -1055,7 +1055,7 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert - empty packed field should produce empty bytes
         bytes.ShouldBeEmpty();
-        
+
         deserialized.RepeatedFields.ShouldBeEmpty();
     }
 
@@ -1148,9 +1148,9 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         message.RepeatedFields.ContainsKey(intField).ShouldBeTrue();
-        
+
         var values = message.RepeatedFields[intField];
-        
+
         values.Count.ShouldBe(3);
         values[0].ShouldBe(1);
         values[1].ShouldBe(2);
@@ -1173,7 +1173,7 @@ public sealed class ProtobufReaderWriterTests
         var descriptor = TestDescriptorProvider.GetMessageDescriptor("testing.AllScalarsMessage");
         var message = new SimpleDynamicMessage(descriptor);
         var field = descriptor.FindFieldByNumber(2)!; // float_val
-        
+
         message.Fields[field] = value;
 
         // Act
@@ -1196,7 +1196,7 @@ public sealed class ProtobufReaderWriterTests
         var descriptor = TestDescriptorProvider.GetMessageDescriptor("testing.AllScalarsMessage");
         var message = new SimpleDynamicMessage(descriptor);
         var field = descriptor.FindFieldByNumber(1)!; // double_val
-        
+
         message.Fields[field] = value;
 
         // Act
@@ -1219,7 +1219,7 @@ public sealed class ProtobufReaderWriterTests
         var descriptor = TestDescriptorProvider.GetMessageDescriptor("testing.AllScalarsMessage");
         var message = new SimpleDynamicMessage(descriptor);
         var field = descriptor.FindFieldByNumber(4)!; // int64_val
-        
+
         message.Fields[field] = value;
 
         // Act
@@ -1240,7 +1240,7 @@ public sealed class ProtobufReaderWriterTests
         var descriptor = TestDescriptorProvider.GetMessageDescriptor("testing.AllScalarsMessage");
         var message = new SimpleDynamicMessage(descriptor);
         var field = descriptor.FindFieldByNumber(5)!; // uint32_val
-        
+
         message.Fields[field] = value;
 
         // Act
@@ -1261,7 +1261,7 @@ public sealed class ProtobufReaderWriterTests
         var descriptor = TestDescriptorProvider.GetMessageDescriptor("testing.AllScalarsMessage");
         var message = new SimpleDynamicMessage(descriptor);
         var field = descriptor.FindFieldByNumber(6)!; // uint64_val
-        
+
         message.Fields[field] = value;
 
         // Act
@@ -1284,7 +1284,7 @@ public sealed class ProtobufReaderWriterTests
         var descriptor = TestDescriptorProvider.GetMessageDescriptor("testing.AllScalarsMessage");
         var message = new SimpleDynamicMessage(descriptor);
         var field = descriptor.FindFieldByNumber(7)!; // sint32_val
-        
+
         message.Fields[field] = value;
 
         // Act
@@ -1307,7 +1307,7 @@ public sealed class ProtobufReaderWriterTests
         var descriptor = TestDescriptorProvider.GetMessageDescriptor("testing.AllScalarsMessage");
         var message = new SimpleDynamicMessage(descriptor);
         var field = descriptor.FindFieldByNumber(8)!; // sint64_val
-        
+
         message.Fields[field] = value;
 
         // Act
@@ -1328,7 +1328,7 @@ public sealed class ProtobufReaderWriterTests
         var descriptor = TestDescriptorProvider.GetMessageDescriptor("testing.AllScalarsMessage");
         var message = new SimpleDynamicMessage(descriptor);
         var field = descriptor.FindFieldByNumber(9)!; // fixed32_val
-        
+
         message.Fields[field] = value;
 
         // Act
@@ -1349,7 +1349,7 @@ public sealed class ProtobufReaderWriterTests
         var descriptor = TestDescriptorProvider.GetMessageDescriptor("testing.AllScalarsMessage");
         var message = new SimpleDynamicMessage(descriptor);
         var field = descriptor.FindFieldByNumber(10)!; // fixed64_val
-        
+
         message.Fields[field] = value;
 
         // Act
@@ -1372,7 +1372,7 @@ public sealed class ProtobufReaderWriterTests
         var descriptor = TestDescriptorProvider.GetMessageDescriptor("testing.AllScalarsMessage");
         var message = new SimpleDynamicMessage(descriptor);
         var field = descriptor.FindFieldByNumber(11)!; // sfixed32_val
-        
+
         message.Fields[field] = value;
 
         // Act
@@ -1395,7 +1395,7 @@ public sealed class ProtobufReaderWriterTests
         var descriptor = TestDescriptorProvider.GetMessageDescriptor("testing.AllScalarsMessage");
         var message = new SimpleDynamicMessage(descriptor);
         var field = descriptor.FindFieldByNumber(12)!; // sfixed64_val
-        
+
         message.Fields[field] = value;
 
         // Act
@@ -1526,9 +1526,9 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         deserialized.RepeatedFields.ContainsKey(field).ShouldBeTrue();
-        
+
         var values = deserialized.RepeatedFields[field];
-        
+
         values.Count.ShouldBe(4);
         values[0].ShouldBe(1.5f);
         values[1].ShouldBe(-2.7f);
@@ -1556,9 +1556,9 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         deserialized.RepeatedFields.ContainsKey(field).ShouldBeTrue();
-        
+
         var values = deserialized.RepeatedFields[field];
-        
+
         values.Count.ShouldBe(5);
         values[0].ShouldBe(0L);
         values[1].ShouldBe(42L);
@@ -1587,9 +1587,9 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         deserialized.RepeatedFields.ContainsKey(field).ShouldBeTrue();
-        
+
         var values = deserialized.RepeatedFields[field];
-        
+
         values.Count.ShouldBe(4);
         values[0].ShouldBe(0u);
         values[1].ShouldBe(1u);
@@ -1617,9 +1617,9 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         deserialized.RepeatedFields.ContainsKey(field).ShouldBeTrue();
-        
+
         var values = deserialized.RepeatedFields[field];
-        
+
         values.Count.ShouldBe(3);
         values[0].ShouldBe(0UL);
         values[1].ShouldBe(42UL);
@@ -1646,9 +1646,9 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         deserialized.RepeatedFields.ContainsKey(field).ShouldBeTrue();
-        
+
         var values = deserialized.RepeatedFields[field];
-        
+
         values.Count.ShouldBe(5);
         values[0].ShouldBe(0);
         values[1].ShouldBe(42);
@@ -1677,9 +1677,9 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         deserialized.RepeatedFields.ContainsKey(field).ShouldBeTrue();
-        
+
         var values = deserialized.RepeatedFields[field];
-        
+
         values.Count.ShouldBe(4);
         values[0].ShouldBe(0L);
         values[1].ShouldBe(42L);
@@ -1707,9 +1707,9 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         deserialized.RepeatedFields.ContainsKey(field).ShouldBeTrue();
-        
+
         var values = deserialized.RepeatedFields[field];
-        
+
         values.Count.ShouldBe(3);
         values[0].ShouldBe(0UL);
         values[1].ShouldBe(42UL);
@@ -1736,9 +1736,9 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         deserialized.RepeatedFields.ContainsKey(field).ShouldBeTrue();
-        
+
         var values = deserialized.RepeatedFields[field];
-        
+
         values.Count.ShouldBe(4);
         values[0].ShouldBe(0);
         values[1].ShouldBe(42);
@@ -1766,9 +1766,9 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         deserialized.RepeatedFields.ContainsKey(field).ShouldBeTrue();
-        
+
         var values = deserialized.RepeatedFields[field];
-        
+
         values.Count.ShouldBe(4);
         values[0].ShouldBe(0L);
         values[1].ShouldBe(42L);
@@ -1800,9 +1800,9 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         deserialized.MapFields.ContainsKey(stringMapField).ShouldBeTrue();
-        
+
         var map = deserialized.MapFields[stringMapField];
-        
+
         map.Count.ShouldBe(2);
         map["key1"].ShouldBe("val1");
         map["key2"].ShouldBe("val2");
@@ -1828,9 +1828,9 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         deserialized.MapFields.ContainsKey(intMapField).ShouldBeTrue();
-        
+
         var map = deserialized.MapFields[intMapField];
-        
+
         map.Count.ShouldBe(2);
         map["count"].ShouldBe(42);
         map["size"].ShouldBe(100);
@@ -1856,9 +1856,9 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         deserialized.MapFields.ContainsKey(intKeyMapField).ShouldBeTrue();
-        
+
         var map = deserialized.MapFields[intKeyMapField];
-        
+
         map.Count.ShouldBe(2);
         map[1].ShouldBe("one");
         map[2].ShouldBe("two");
@@ -1875,7 +1875,7 @@ public sealed class ProtobufReaderWriterTests
 
         var payload = new SimpleDynamicMessage(payloadDescriptor);
         var bodyField = payloadDescriptor.FindFieldByNumber(2)!;
-        
+
         payload.Fields[bodyField] = ByteString.CopyFromUtf8("map payload body");
 
         message.MapFields[messageMapField] = new Dictionary<object, object?>
@@ -1889,14 +1889,14 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         deserialized.MapFields.ContainsKey(messageMapField).ShouldBeTrue();
-        
+
         var map = deserialized.MapFields[messageMapField];
-        
+
         map.Count.ShouldBe(1);
         map.ContainsKey("item").ShouldBeTrue();
 
         var deserializedPayload = map["item"].ShouldBeOfType<SimpleDynamicMessage>();
-        
+
         deserializedPayload.Fields[bodyField].ShouldBe(ByteString.CopyFromUtf8("map payload body"));
     }
 
@@ -1998,7 +1998,7 @@ public sealed class ProtobufReaderWriterTests
         // Other oneof fields should not be present
         var intValueField = descriptor.FindFieldByNumber(2)!;
         var messageValueField = descriptor.FindFieldByNumber(3)!;
-        
+
         deserialized.Fields.ContainsKey(intValueField).ShouldBeFalse();
         deserialized.Fields.ContainsKey(messageValueField).ShouldBeFalse();
     }
@@ -2024,7 +2024,7 @@ public sealed class ProtobufReaderWriterTests
         // Other oneof fields should not be present
         var stringValueField = descriptor.FindFieldByNumber(1)!;
         var messageValueField = descriptor.FindFieldByNumber(3)!;
-        
+
         deserialized.Fields.ContainsKey(stringValueField).ShouldBeFalse();
         deserialized.Fields.ContainsKey(messageValueField).ShouldBeFalse();
     }
@@ -2040,7 +2040,7 @@ public sealed class ProtobufReaderWriterTests
 
         var payload = new SimpleDynamicMessage(payloadDescriptor);
         var bodyField = payloadDescriptor.FindFieldByNumber(2)!;
-        
+
         payload.Fields[bodyField] = ByteString.CopyFromUtf8("oneof payload");
 
         message.Fields[messageValueField] = payload;
@@ -2051,15 +2051,15 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         deserialized.Fields.ContainsKey(messageValueField).ShouldBeTrue();
-        
+
         var deserializedPayload = deserialized.Fields[messageValueField].ShouldBeOfType<SimpleDynamicMessage>();
-        
+
         deserializedPayload.Fields[bodyField].ShouldBe(ByteString.CopyFromUtf8("oneof payload"));
 
         // Other oneof fields should not be present
         var stringValueField = descriptor.FindFieldByNumber(1)!;
         var intValueField = descriptor.FindFieldByNumber(2)!;
-        
+
         deserialized.Fields.ContainsKey(stringValueField).ShouldBeFalse();
         deserialized.Fields.ContainsKey(intValueField).ShouldBeFalse();
     }

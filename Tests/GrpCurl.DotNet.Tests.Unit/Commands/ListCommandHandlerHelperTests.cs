@@ -18,13 +18,13 @@ public sealed class ListCommandHandlerHelperTests
             Path.GetDirectoryName(typeof(TestDescriptorProvider).Assembly.Location)!,
             "TestProtosets",
             "test.protoset");
-        
+
         var source = await ProtosetSource.LoadFromFilesAsync([protosetPath], TestContext.Current.CancellationToken);
 
         var originalOut = Console.Out;
-        
+
         await using var writer = new StringWriter();
-        
+
         Console.SetOut(writer);
 
         try
@@ -34,13 +34,13 @@ public sealed class ListCommandHandlerHelperTests
 
             // Assert
             var output = writer.ToString();
-            
+
             output.ShouldContain("testing.TestService");
             output.ShouldContain("testing.UnimplementedService");
 
             // Verify each service is on its own line
             var lines = output.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
-            
+
             lines.Length.ShouldBeGreaterThanOrEqualTo(2);
         }
         finally
@@ -61,13 +61,13 @@ public sealed class ListCommandHandlerHelperTests
             Path.GetDirectoryName(typeof(TestDescriptorProvider).Assembly.Location)!,
             "TestProtosets",
             "test.protoset");
-        
+
         var source = await ProtosetSource.LoadFromFilesAsync([protosetPath], TestContext.Current.CancellationToken);
 
         var originalOut = Console.Out;
 
         await using var writer = new StringWriter();
-        
+
         Console.SetOut(writer);
 
         try
@@ -77,7 +77,7 @@ public sealed class ListCommandHandlerHelperTests
 
             // Assert
             var output = writer.ToString();
-            
+
             output.ShouldContain("testing.TestService.EmptyCall");
             output.ShouldContain("testing.TestService.UnaryCall");
             output.ShouldContain("testing.TestService.StreamingOutputCall");
@@ -99,7 +99,7 @@ public sealed class ListCommandHandlerHelperTests
             Path.GetDirectoryName(typeof(TestDescriptorProvider).Assembly.Location)!,
             "TestProtosets",
             "test.protoset");
-        
+
         var source = await ProtosetSource.LoadFromFilesAsync([protosetPath], TestContext.Current.CancellationToken);
 
         // Act & Assert - passing a message type instead of a service should throw

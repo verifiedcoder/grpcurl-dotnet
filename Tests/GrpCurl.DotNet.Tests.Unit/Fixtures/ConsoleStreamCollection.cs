@@ -10,4 +10,8 @@ namespace GrpCurl.Net.Tests.Unit.Fixtures;
 public sealed class ConsoleStreamCollection
 {
     public const string Name = "ConsoleStream";
+
+    private ConsoleStreamCollection()
+    {
+    }
 }

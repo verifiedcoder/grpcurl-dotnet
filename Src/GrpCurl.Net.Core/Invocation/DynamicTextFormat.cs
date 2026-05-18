@@ -215,13 +215,7 @@ internal static class DynamicTextFormat
 
             var field = message.Descriptor.Fields.InDeclarationOrder()
                 .FirstOrDefault(f => string.Equals(f.Name, fieldName, StringComparison.Ordinal)
-                                  || string.Equals(f.JsonName, fieldName, StringComparison.Ordinal));
-
-            if (field is null)
-            {
-                throw new FormatException($"Unknown field '{fieldName}' on {message.Descriptor.FullName}.");
-            }
-
+                                  || string.Equals(f.JsonName, fieldName, StringComparison.Ordinal)) ?? throw new FormatException($"Unknown field '{fieldName}' on {message.Descriptor.FullName}.");
             var separator = lexer.Read();
 
             object? value;
@@ -300,7 +294,7 @@ internal static class DynamicTextFormat
         };
     }
 
-    private static object ParseEnumOrNumber(string token, FieldDescriptor field)
+    private static int ParseEnumOrNumber(string token, FieldDescriptor field)
     {
         if (field.FieldType == FieldType.Enum && field.EnumType is { } enumType)
         {
@@ -328,18 +322,43 @@ internal static class DynamicTextFormat
     private static string UnescapeString(string escaped)
     {
         var sb = new StringBuilder(escaped.Length);
+        var escaping = false;
+        var waitingForFirstHexDigit = false;
+        char? firstHexDigit = null;
 
-        for (var i = 0; i < escaped.Length; i++)
+        foreach (var ch in escaped)
         {
-            if (escaped[i] != '\\')
+            if (waitingForFirstHexDigit)
             {
-                sb.Append(escaped[i]);
+                firstHexDigit = ch;
+                waitingForFirstHexDigit = false;
                 continue;
             }
 
-            i++;
+            if (firstHexDigit is { } highHex)
+            {
+                sb.Append((char)ParseHexByte(highHex, ch));
+                firstHexDigit = null;
+                continue;
+            }
 
-            switch (escaped[i])
+            if (!escaping)
+            {
+                if (ch == '\\')
+                {
+                    escaping = true;
+                }
+                else
+                {
+                    sb.Append(ch);
+                }
+
+                continue;
+            }
+
+            escaping = false;
+
+            switch (ch)
             {
                 case 'n': sb.Append('\n'); break;
                 case 'r': sb.Append('\r'); break;
@@ -347,12 +366,19 @@ internal static class DynamicTextFormat
                 case '\\': sb.Append('\\'); break;
                 case '"': sb.Append('"'); break;
                 case '\'': sb.Append('\''); break;
-                case 'x':
-                    sb.Append((char)Convert.ToInt32(escaped.Substring(i + 1, 2), 16));
-                    i += 2;
-                    break;
-                default: sb.Append(escaped[i]); break;
+                case 'x': waitingForFirstHexDigit = true; break;
+                default: sb.Append(ch); break;
             }
+        }
+
+        if (escaping)
+        {
+            throw new FormatException("Trailing escape sequence.");
+        }
+
+        if (waitingForFirstHexDigit || firstHexDigit is not null)
+        {
+            throw new FormatException("Hex escape sequence requires two digits.");
         }
 
         return sb.ToString();
@@ -361,50 +387,86 @@ internal static class DynamicTextFormat
     private static byte[] UnescapeBytes(string escaped)
     {
         var bytes = new List<byte>(escaped.Length);
+        var escaping = false;
+        var waitingForFirstHexDigit = false;
+        char? firstHexDigit = null;
 
-        for (var i = 0; i < escaped.Length; i++)
+        foreach (var ch in escaped)
         {
-            if (escaped[i] != '\\')
+            if (waitingForFirstHexDigit)
             {
-                bytes.Add((byte)escaped[i]);
+                firstHexDigit = ch;
+                waitingForFirstHexDigit = false;
                 continue;
             }
 
-            i++;
+            if (firstHexDigit is { } highHex)
+            {
+                bytes.Add(ParseHexByte(highHex, ch));
+                firstHexDigit = null;
+                continue;
+            }
 
-            switch (escaped[i])
+            if (!escaping)
+            {
+                if (ch == '\\')
+                {
+                    escaping = true;
+                }
+                else
+                {
+                    bytes.Add((byte)ch);
+                }
+
+                continue;
+            }
+
+            escaping = false;
+
+            switch (ch)
             {
                 case 'n': bytes.Add(0x0a); break;
                 case 'r': bytes.Add(0x0d); break;
                 case 't': bytes.Add(0x09); break;
                 case '\\': bytes.Add(0x5c); break;
                 case '"': bytes.Add(0x22); break;
-                case 'x':
-                    bytes.Add(Convert.ToByte(escaped.Substring(i + 1, 2), 16));
-                    i += 2;
-                    break;
-                default: bytes.Add((byte)escaped[i]); break;
+                case 'x': waitingForFirstHexDigit = true; break;
+                default: bytes.Add((byte)ch); break;
             }
+        }
+
+        if (escaping)
+        {
+            throw new FormatException("Trailing escape sequence.");
+        }
+
+        if (waitingForFirstHexDigit || firstHexDigit is not null)
+        {
+            throw new FormatException("Hex escape sequence requires two digits.");
         }
 
         return [.. bytes];
     }
 
+    private static byte ParseHexByte(char high, char low) => (byte)((HexValue(high) << 4) + HexValue(low));
+
+    private static int HexValue(char ch) => ch switch
+    {
+        >= '0' and <= '9' => ch - '0',
+        >= 'a' and <= 'f' => ch - 'a' + 10,
+        >= 'A' and <= 'F' => ch - 'A' + 10,
+        _ => throw new FormatException($"Invalid hex digit '{ch}'.")
+    };
+
     /// <summary>
     ///     Minimal lexer that yields field names, ':', '{', '}', quoted strings, and bare
     ///     numeric/identifier tokens. Whitespace and `#`-prefixed comments are skipped.
     /// </summary>
-    private sealed class Lexer
+    private sealed class Lexer(string text)
     {
-        private readonly string _text;
-        private int _pos;
+        private readonly string _text = text;
+        private int _pos = 0;
         private string? _peeked;
-
-        public Lexer(string text)
-        {
-            _text = text;
-            _pos = 0;
-        }
 
         public string? Peek()
         {

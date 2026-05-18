@@ -36,9 +36,9 @@ public sealed class FieldMaskProjectorTests
     [Fact]
     public void Empty_selection_produces_empty_string()
     {
-        FieldMaskProjector.Build(Array.Empty<ResolvedSelection>()).ShouldBe(string.Empty);
+        FieldMaskProjector.Build([]).ShouldBe(string.Empty);
     }
 
     private static ResolvedSelection Leaf(string name) =>
-        new(name, name, new Dictionary<string, JsonNode?>(), Array.Empty<ResolvedSelection>());
+        new(name, name, new Dictionary<string, JsonNode?>(), []);
 }

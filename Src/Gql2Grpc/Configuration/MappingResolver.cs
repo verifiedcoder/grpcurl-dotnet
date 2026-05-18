@@ -7,23 +7,16 @@ namespace Gql2Grpc.Configuration;
 /// Explicit entries in the config take precedence; when no entry matches, a convention-based
 /// entry is synthesised from the supplied <see cref="MappingDefaults"/> and the CLI default service.
 /// </summary>
-public sealed class MappingResolver
+/// <remarks>
+/// Constructs a resolver against a loaded <paramref name="config"/>. The optional
+/// <paramref name="cliDefaultService"/> mirrors the CLI's <c>--default-service</c> flag and
+/// supplies a fully-qualified gRPC service for entries (or convention fallbacks) that omit one.
+/// </remarks>
+public sealed class MappingResolver(MappingConfig config, string? cliDefaultService)
 {
-    private readonly MappingConfig _config;
-    private readonly string? _cliDefaultService;
-    private readonly IReadOnlyDictionary<(string, GraphQLOperationType), MappingEntry> _explicitLookup;
-
-    /// <summary>
-    /// Constructs a resolver against a loaded <paramref name="config"/>. The optional
-    /// <paramref name="cliDefaultService"/> mirrors the CLI's <c>--default-service</c> flag and
-    /// supplies a fully-qualified gRPC service for entries (or convention fallbacks) that omit one.
-    /// </summary>
-    public MappingResolver(MappingConfig config, string? cliDefaultService)
-    {
-        _config = config;
-        _cliDefaultService = cliDefaultService;
-        _explicitLookup = BuildLookup(config.Operations);
-    }
+    private readonly MappingConfig _config = config;
+    private readonly string? _cliDefaultService = cliDefaultService;
+    private readonly Dictionary<(string, GraphQLOperationType), MappingEntry> _explicitLookup = BuildLookup(config.Operations);
 
     /// <summary>
     /// Effective argument-name aliases after merging <see cref="MappingDefaults.ArgumentAliases"/>
@@ -93,7 +86,7 @@ public sealed class MappingResolver
         };
     }
 
-    private static IReadOnlyDictionary<(string, GraphQLOperationType), MappingEntry> BuildLookup(
+    private static Dictionary<(string, GraphQLOperationType), MappingEntry> BuildLookup(
         IReadOnlyList<MappingEntry> operations)
     {
         var dict = new Dictionary<(string, GraphQLOperationType), MappingEntry>(operations.Count);

@@ -8,7 +8,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GRPCURL="$SCRIPT_DIR/../Src/GrpCurl.Net/bin/Debug/net10.0/GrpCurl.Net"
+. "$SCRIPT_DIR/common.sh"
 SERVER="localhost:9090"
 
 echo "=== Invoke UnaryCall with Request Data ==="
@@ -20,13 +20,13 @@ echo ""
 echo "--- Request with response_size: 10 ---"
 echo "Command: grpcurl.net invoke --plaintext -d '{\"response_size\": 10}' $SERVER testing.TestService/UnaryCall"
 echo ""
-$GRPCURL invoke --plaintext -d '{"response_size": 10}' $SERVER testing.TestService/UnaryCall
+grpcurl_net invoke --plaintext -d '{"response_size": 10}' $SERVER testing.TestService/UnaryCall
 
 echo ""
 echo "--- Request with fill_username: true ---"
 echo "Command: grpcurl.net invoke --plaintext -d '{\"fill_username\": true}' $SERVER testing.TestService/UnaryCall"
 echo ""
-$GRPCURL invoke --plaintext -d '{"fill_username": true}' $SERVER testing.TestService/UnaryCall
+grpcurl_net invoke --plaintext -d '{"fill_username": true}' $SERVER testing.TestService/UnaryCall
 
 echo ""
 echo "=== Done ==="

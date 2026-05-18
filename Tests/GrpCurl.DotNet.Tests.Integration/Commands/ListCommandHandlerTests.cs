@@ -16,7 +16,7 @@ public sealed class ListCommandHandlerTests(GrpcTestFixture fixture)
     {
         // Arrange
         var originalOut = Console.Out;
-        
+
         await using var writer = new StringWriter();
 
         try
@@ -51,7 +51,7 @@ public sealed class ListCommandHandlerTests(GrpcTestFixture fixture)
 
         // Assert
         var output = writer.ToString();
-        
+
         output.ShouldContain("testing.TestService");
         output.ShouldContain("testing.UnimplementedService");
     }
@@ -61,7 +61,7 @@ public sealed class ListCommandHandlerTests(GrpcTestFixture fixture)
     {
         // Arrange
         var originalOut = Console.Out;
-        
+
         await using var writer = new StringWriter();
 
         try
@@ -121,7 +121,7 @@ public sealed class ListCommandHandlerTests(GrpcTestFixture fixture)
     {
         // Arrange
         var originalOut = Console.Out;
-        
+
         await using var writer = new StringWriter();
 
         try
@@ -156,7 +156,7 @@ public sealed class ListCommandHandlerTests(GrpcTestFixture fixture)
 
         // Assert
         var output = writer.ToString();
-        
+
         output.ShouldNotBeNullOrWhiteSpace();
         output.ShouldContain("testing.TestService");
     }
@@ -166,7 +166,7 @@ public sealed class ListCommandHandlerTests(GrpcTestFixture fixture)
     {
         // Arrange
         var originalOut = Console.Out;
-        
+
         await using var writer = new StringWriter();
 
         try
@@ -201,7 +201,7 @@ public sealed class ListCommandHandlerTests(GrpcTestFixture fixture)
 
         // Assert
         var output = writer.ToString();
-        
+
         output.ShouldContain("testing.TestService.EmptyCall");
         output.ShouldContain("testing.TestService.UnaryCall");
     }
@@ -237,7 +237,7 @@ public sealed class ListCommandHandlerTests(GrpcTestFixture fixture)
 
             // Assert
             File.Exists(tempFile).ShouldBeTrue();
-            
+
             new FileInfo(tempFile).Length.ShouldBeGreaterThan(0);
         }
         finally
@@ -344,7 +344,7 @@ public sealed class ListCommandHandlerTests(GrpcTestFixture fixture)
         // Arrange - When protoset is provided with an address but no service,
         // the address is reassigned to become the service argument.
         var originalOut = Console.Out;
-        
+
         await using var writer = new StringWriter();
 
         try
@@ -380,9 +380,9 @@ public sealed class ListCommandHandlerTests(GrpcTestFixture fixture)
         // Assert - output should contain method names, proving address was treated as service
         var output = writer.ToString();
         var lines = output.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
-        
+
         lines.ShouldNotBeEmpty();
-        
+
         output.ShouldContain("testing.TestService.");
     }
 

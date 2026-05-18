@@ -18,7 +18,6 @@ public static class GraphQLResponseBuilder
     {
         var envelope = new JsonObject();
         var dataObj = new JsonObject();
-        var anySuccess = false;
         var errors = new List<GraphQLError>();
 
         foreach (var result in fieldResults)
@@ -26,11 +25,6 @@ public static class GraphQLResponseBuilder
             if (result.Data is not null || !result.Failed)
             {
                 dataObj[result.ResponseKey] = result.Data?.DeepClone();
-
-                if (!result.Failed)
-                {
-                    anySuccess = true;
-                }
             }
             else
             {
@@ -42,9 +36,7 @@ public static class GraphQLResponseBuilder
 
         errors.AddRange(additionalErrors);
 
-        envelope["data"] = anySuccess || fieldResults.Count > 0 && errors.Count == 0
-            ? dataObj
-            : (fieldResults.Count == 0 ? null : dataObj);
+        envelope["data"] = fieldResults.Count == 0 ? null : dataObj;
 
         if (errors.Count > 0)
         {

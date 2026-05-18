@@ -199,14 +199,19 @@ internal static class QueryCommandHandler
 
     private static async Task<int> ExecuteAsync(CliOptions cli, CancellationToken cancellationToken)
     {
-        var verbosity = cli.VeryVerbose ? VerbosityLevel.VeryVerbose : cli.Verbose ? VerbosityLevel.Verbose : VerbosityLevel.Quiet;
+        var verbosity = GetVerbosity(cli);
         var logger = new VerboseLogger(verbosity);
 
         // --max-time bounds the *entire* GraphQL-to-gRPC operation, including query/variables
         // file reads, mapping load, descriptor source resolution, and the actual gRPC call.
         // The earlier implementation only enforced it on the gRPC deadline, so slow file
         // reads or descriptor probes could outlive the budget.
-        var maxTimeSpan = cli.MaxTime is null ? (TimeSpan?)null : GrpcChannelFactory.ParseDuration(cli.MaxTime);
+        TimeSpan? maxTimeSpan = null;
+
+        if (cli.MaxTime is not null)
+        {
+            maxTimeSpan = GrpcChannelFactory.ParseDuration(cli.MaxTime);
+        }
 
         using var deadlineCts = maxTimeSpan is not null
             ? new CancellationTokenSource(maxTimeSpan.Value)
@@ -304,6 +309,16 @@ internal static class QueryCommandHandler
         Console.WriteLine(GraphQLResponseBuilder.Serialize(envelope));
     }
 
+    private static VerbosityLevel GetVerbosity(CliOptions cli)
+    {
+        if (cli.VeryVerbose)
+        {
+            return VerbosityLevel.VeryVerbose;
+        }
+
+        return cli.Verbose ? VerbosityLevel.Verbose : VerbosityLevel.Quiet;
+    }
+
     private static int ExitCodeFromEnvelope(JsonObject envelope)
     {
         if (envelope["errors"] is not JsonArray errors || errors.Count == 0)
@@ -330,31 +345,25 @@ internal static class QueryCommandHandler
         GraphQLOperationType operationType,
         MappingResolver mappingResolver)
     {
-        foreach (var selection in rootSelections)
+        return rootSelections
+            .Where(selection => !IntrospectionExecutor.IsIntrospectionField(selection.Name))
+            .Select(selection => TryResolveMapping(selection.Name, operationType, mappingResolver))
+            .Any(entry => entry?.Kind == MethodKind.ServerStreaming);
+    }
+
+    private static MappingEntry? TryResolveMapping(
+        string selectionName,
+        GraphQLOperationType operationType,
+        MappingResolver mappingResolver)
+    {
+        try
         {
-            if (IntrospectionExecutor.IsIntrospectionField(selection.Name))
-            {
-                continue;
-            }
-
-            MappingEntry entry;
-
-            try
-            {
-                entry = mappingResolver.Resolve(selection.Name, operationType);
-            }
-            catch
-            {
-                continue;
-            }
-
-            if (entry.Kind == MethodKind.ServerStreaming)
-            {
-                return true;
-            }
+            return mappingResolver.Resolve(selectionName, operationType);
         }
-
-        return false;
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
     }
 
     private static async Task<string> ResolveQueryAsync(CliOptions cli, CancellationToken cancellationToken)
@@ -372,7 +381,7 @@ internal static class QueryCommandHandler
         throw new GrpcCommandException("No GraphQL document supplied. Pass a positional query string or --file.", exitCode: 2);
     }
 
-    private static IReadOnlyDictionary<string, string> ParseCliVariables(IReadOnlyList<string> variables)
+    private static Dictionary<string, string> ParseCliVariables(IReadOnlyList<string> variables)
     {
         var dict = new Dictionary<string, string>(StringComparer.Ordinal);
 

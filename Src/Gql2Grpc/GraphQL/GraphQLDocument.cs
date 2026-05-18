@@ -6,22 +6,17 @@ namespace Gql2Grpc.GraphQL;
 /// A parsed GraphQL document: the set of operations it declares and the fragment definitions
 /// available for resolution. Produced by <see cref="GraphQLDocumentParser"/>.
 /// </summary>
-public sealed class GraphQLDocument
+/// <remarks>Constructs a document with the given operations and fragment definitions.</remarks>
+public sealed class GraphQLDocument(
+    IReadOnlyList<GraphQLOperation> operations,
+    IReadOnlyDictionary<string, GraphQLFragmentDefinition> fragments)
 {
-    /// <summary>Constructs a document with the given operations and fragment definitions.</summary>
-    public GraphQLDocument(
-        IReadOnlyList<GraphQLOperation> operations,
-        IReadOnlyDictionary<string, GraphQLFragmentDefinition> fragments)
-    {
-        Operations = operations;
-        Fragments = fragments;
-    }
 
     /// <summary>All executable operations declared by the document, in source order.</summary>
-    public IReadOnlyList<GraphQLOperation> Operations { get; }
+    public IReadOnlyList<GraphQLOperation> Operations { get; } = operations;
 
     /// <summary>Fragment definitions, keyed by name, available to <see cref="SelectionResolver"/>.</summary>
-    public IReadOnlyDictionary<string, GraphQLFragmentDefinition> Fragments { get; }
+    public IReadOnlyDictionary<string, GraphQLFragmentDefinition> Fragments { get; } = fragments;
 
     /// <summary>
     /// Selects the operation to execute. When the document has a single operation, the name is optional.

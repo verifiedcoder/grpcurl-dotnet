@@ -23,7 +23,7 @@ These options are available for all commands:
 | `--key <path>` | Client private key file (PEM) for mutual TLS. Omit for PKCS12 (key inside the bundle). |
 | `--cert-password <password>` | Password for an encrypted PKCS12 (.p12/.pfx) client certificate. |
 | `--revocation-mode <online\|offline\|nocheck>` | Certificate revocation policy when `--cacert` is set. Default: `online`. Use `nocheck` only against self-signed test fixtures with no CRL distribution point. |
-| `--exportable-key` | Load PKCS12 client keys with `X509KeyStorageFlags.Exportable`. Default is `EphemeralKeySet` so the key never persists. |
+| `--exportable-key` | Load PKCS12 client keys with `X509KeyStorageFlags.Exportable`. By default, Linux/macOS use `EphemeralKeySet`; Windows uses non-exportable `UserKeySet` because Schannel-backed mTLS cannot use ephemeral client private keys. |
 | `--connect-timeout <duration>` | Per-attempt TCP/TLS connection timeout (e.g. `10s`, `1m`, `500ms`). Honoured on both plaintext and TLS. |
 | `--keepalive-time <duration>` | HTTP/2 keepalive ping interval (default `60s`). |
 | `--keepalive-timeout <duration>` | HTTP/2 keepalive ping ack timeout (default `30s`). |
@@ -173,6 +173,15 @@ grpcurl.net invoke [options] <address> <method>
 | `--rpc-header <header>` | Add header to RPC requests only |
 
 `--output` and `--force` are inherited from [Global Options](#global-options) and behave identically here. In `--output json` mode, each response message becomes a single NDJSON line (`{"kind":"message","index":N,"message":{...}}`) on stdout; errors render as a one-line `{"kind":"error",...}` envelope on stderr.
+
+> [!TIP]
+> The inline JSON examples in this reference use POSIX shell quoting. In PowerShell, prefer stdin for JSON payloads and quote the literal `@` argument so PowerShell does not treat it as splatting:
+>
+> ```powershell
+> @'
+> {"name": "World"}
+> '@ | grpcurl.net invoke --plaintext -d '@' localhost:9090 my.package.Service/SayHello
+> ```
 
 ### Examples
 

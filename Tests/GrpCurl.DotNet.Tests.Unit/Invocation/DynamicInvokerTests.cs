@@ -26,7 +26,7 @@ public sealed class DynamicInvokerTests
         message.ShouldBeOfType<SimpleDynamicMessage>();
 
         var dynamicMessage = (SimpleDynamicMessage)message;
-        
+
         dynamicMessage.Fields.ShouldBeEmpty();
         dynamicMessage.RepeatedFields.ShouldBeEmpty();
         dynamicMessage.MapFields.ShouldBeEmpty();
@@ -46,7 +46,7 @@ public sealed class DynamicInvokerTests
         message.ShouldBeOfType<SimpleDynamicMessage>();
 
         var dynamicMessage = (SimpleDynamicMessage)message;
-        
+
         dynamicMessage.Fields.ShouldBeEmpty();
         dynamicMessage.RepeatedFields.ShouldBeEmpty();
         dynamicMessage.MapFields.ShouldBeEmpty();
@@ -57,7 +57,7 @@ public sealed class DynamicInvokerTests
     {
         // Arrange
         var descriptor = TestDescriptorProvider.SimpleRequest;
-        
+
         const string json = """{"responseSize": 42, "nonExistentField": "bad"}""";
 
         // Act & Assert
@@ -72,7 +72,7 @@ public sealed class DynamicInvokerTests
     {
         // Arrange
         var descriptor = TestDescriptorProvider.SimpleRequest;
-        
+
         const string json = """{"responseSize": 42, "nonExistentField": "ignored"}""";
 
         // Act -- allowUnknownFields defaults to true
@@ -80,16 +80,16 @@ public sealed class DynamicInvokerTests
 
         // Assert
         message.ShouldNotBeNull();
-        
+
         var dynamicMessage = (SimpleDynamicMessage)message;
-        
+
         dynamicMessage.UnknownFields.ShouldContain("nonExistentField");
 
         // The known field should still be parsed
         var field = descriptor.FindFieldByName("response_size");
-        
+
         field.ShouldNotBeNull();
-        
+
         dynamicMessage.Fields.ContainsKey(field).ShouldBeTrue();
         dynamicMessage.Fields[field].ShouldBe(42);
     }
@@ -99,7 +99,7 @@ public sealed class DynamicInvokerTests
     {
         // Arrange
         var descriptor = TestDescriptorProvider.SimpleRequest;
-        
+
         const string json = """{"responseSize": 100, "fillUsername": true}""";
 
         // Act
@@ -107,19 +107,19 @@ public sealed class DynamicInvokerTests
 
         // Assert
         message.ShouldNotBeNull();
-        
+
         var dynamicMessage = (SimpleDynamicMessage)message;
 
         var sizeField = descriptor.FindFieldByName("response_size");
-        
+
         sizeField.ShouldNotBeNull();
-        
+
         dynamicMessage.Fields[sizeField].ShouldBe(100);
 
         var usernameField = descriptor.FindFieldByName("fill_username");
-        
+
         usernameField.ShouldNotBeNull();
-        
+
         dynamicMessage.Fields[usernameField].ShouldBe(true);
     }
 
@@ -199,7 +199,7 @@ public sealed class DynamicInvokerTests
     {
         // Arrange -- MapFieldsMessage field 1 is map<string, string> string_map
         var descriptor = TestDescriptorProvider.MapFieldsMessage;
-        
+
         const string json = """{"stringMap": {"hello": "world", "foo": "bar"}}""";
 
         // Act
@@ -207,13 +207,13 @@ public sealed class DynamicInvokerTests
 
         // Assert
         var field = descriptor.FindFieldByName("string_map");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.MapFields.ContainsKey(field).ShouldBeTrue();
 
         var map = message.MapFields[field];
-        
+
         map.Count.ShouldBe(2);
 
         // Keys should be strings
@@ -227,7 +227,7 @@ public sealed class DynamicInvokerTests
     {
         // Arrange -- MapFieldsMessage field 3 is map<int32, string> int_key_map
         var descriptor = TestDescriptorProvider.MapFieldsMessage;
-        
+
         const string json = """{"intKeyMap": {"1": "one", "2": "two", "42": "forty-two"}}""";
 
         // Act
@@ -235,18 +235,18 @@ public sealed class DynamicInvokerTests
 
         // Assert
         var field = descriptor.FindFieldByName("int_key_map");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.MapFields.ContainsKey(field).ShouldBeTrue();
 
         var map = message.MapFields[field];
-        
+
         map.Count.ShouldBe(3);
 
         // Keys should be converted from string to int32
         map.Keys.ShouldAllBe(k => k is int);
-        
+
         map[1].ShouldBe("one");
         map[2].ShouldBe("two");
         map[42].ShouldBe("forty-two");
@@ -257,7 +257,7 @@ public sealed class DynamicInvokerTests
     {
         // Arrange -- map<int32, string> supports negative keys
         var descriptor = TestDescriptorProvider.MapFieldsMessage;
-        
+
         const string json = """{"intKeyMap": {"-1": "negative-one", "0": "zero"}}""";
 
         // Act
@@ -265,13 +265,13 @@ public sealed class DynamicInvokerTests
 
         // Assert
         var field = descriptor.FindFieldByName("int_key_map");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.MapFields.ContainsKey(field).ShouldBeTrue();
 
         var map = message.MapFields[field];
-        
+
         map.Count.ShouldBe(2);
         map[-1].ShouldBe("negative-one");
         map[0].ShouldBe("zero");
@@ -282,7 +282,7 @@ public sealed class DynamicInvokerTests
     {
         // Arrange -- MapFieldsMessage field 2 is map<string, int32> int_map
         var descriptor = TestDescriptorProvider.MapFieldsMessage;
-        
+
         const string json = """{"intMap": {"alpha": 10, "beta": 20}}""";
 
         // Act
@@ -290,13 +290,13 @@ public sealed class DynamicInvokerTests
 
         // Assert
         var field = descriptor.FindFieldByName("int_map");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.MapFields.ContainsKey(field).ShouldBeTrue();
 
         var map = message.MapFields[field];
-        
+
         map.Count.ShouldBe(2);
 
         // Keys should remain strings, values should be int32
@@ -310,7 +310,7 @@ public sealed class DynamicInvokerTests
     {
         // Arrange -- MapFieldsMessage field 4 is map<string, Payload> message_map
         var descriptor = TestDescriptorProvider.MapFieldsMessage;
-        
+
         const string json = """{"messageMap": {"key1": {"type": "COMPRESSABLE", "body": "dGVzdA=="}}}""";
 
         // Act
@@ -318,21 +318,21 @@ public sealed class DynamicInvokerTests
 
         // Assert
         var field = descriptor.FindFieldByName("message_map");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.MapFields.ContainsKey(field).ShouldBeTrue();
 
         var map = message.MapFields[field];
-        
+
         map.Count.ShouldBe(1);
 
         // Value should be a SimpleDynamicMessage (Payload)
         var payloadMessage = map["key1"].ShouldBeOfType<SimpleDynamicMessage>();
         var typeField = payloadMessage.Descriptor.FindFieldByName("type");
-        
+
         typeField.ShouldNotBeNull();
-        
+
         payloadMessage.Fields[typeField].ShouldBe(0); // COMPRESSABLE = 0
     }
 
@@ -341,7 +341,7 @@ public sealed class DynamicInvokerTests
     {
         // Arrange -- empty map
         var descriptor = TestDescriptorProvider.MapFieldsMessage;
-        
+
         const string json = """{"stringMap": {}}""";
 
         // Act
@@ -349,9 +349,9 @@ public sealed class DynamicInvokerTests
 
         // Assert
         var field = descriptor.FindFieldByName("string_map");
-        
+
         field.ShouldNotBeNull();
-        
+
         message.MapFields.ContainsKey(field).ShouldBeTrue();
         message.MapFields[field].ShouldBeEmpty();
     }
@@ -365,9 +365,9 @@ public sealed class DynamicInvokerTests
     {
         // Arrange
         var descriptor = TestDescriptorProvider.MapFieldsMessage;
-        
+
         const string json = """{"stringMap": {"key1": "val1"}}""";
-        
+
         var message = new SimpleDynamicMessage(descriptor, json);
 
         // Act
@@ -383,9 +383,9 @@ public sealed class DynamicInvokerTests
     {
         // Arrange
         var descriptor = TestDescriptorProvider.MapFieldsMessage;
-        
+
         const string json = """{"intKeyMap": {"42": "answer"}}""";
-        
+
         var message = new SimpleDynamicMessage(descriptor, json);
 
         // Act
@@ -519,7 +519,7 @@ public sealed class DynamicInvokerTests
     {
         // Arrange
         var descriptor = TestDescriptorProvider.MapFieldsMessage;
-        
+
         const string json = """{"stringMap": {"a": "1"}, "intKeyMap": {"5": "five"}}""";
 
         // Act
@@ -527,19 +527,19 @@ public sealed class DynamicInvokerTests
 
         // Assert
         message.ShouldNotBeNull();
-        
+
         var dynamicMessage = (SimpleDynamicMessage)message;
 
         var stringMapField = descriptor.FindFieldByName("string_map");
-        
+
         stringMapField.ShouldNotBeNull();
-        
+
         dynamicMessage.MapFields[stringMapField]["a"].ShouldBe("1");
 
         var intKeyMapField = descriptor.FindFieldByName("int_key_map");
-        
+
         intKeyMapField.ShouldNotBeNull();
-        
+
         dynamicMessage.MapFields[intKeyMapField][5].ShouldBe("five");
     }
 

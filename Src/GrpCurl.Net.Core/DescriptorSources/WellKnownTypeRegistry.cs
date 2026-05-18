@@ -14,7 +14,7 @@ public static class WellKnownTypeRegistry
     /// <summary>
     ///     Gets the dictionary mapping well-known proto file names to their FileDescriptors.
     /// </summary>
-    public static IReadOnlyDictionary<string, FileDescriptor> Descriptors 
+    public static IReadOnlyDictionary<string, FileDescriptor> Descriptors
         => LazyDescriptors.Value;
 
     /// <summary>
@@ -23,7 +23,7 @@ public static class WellKnownTypeRegistry
     /// <param name="fileName">The proto file name (e.g., "google/protobuf/timestamp.proto").</param>
     /// <param name="descriptor">The FileDescriptor if found, null otherwise.</param>
     /// <returns>True if the file is a well-known type and was found, false otherwise.</returns>
-    public static bool TryGetDescriptor(string fileName, out FileDescriptor? descriptor) 
+    public static bool TryGetDescriptor(string fileName, out FileDescriptor? descriptor)
         => LazyDescriptors.Value.TryGetValue(fileName, out descriptor);
 
     private static Dictionary<string, FileDescriptor> BuildRegistry()

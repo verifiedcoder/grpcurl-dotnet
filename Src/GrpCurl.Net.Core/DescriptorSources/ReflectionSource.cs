@@ -349,7 +349,7 @@ public sealed class ReflectionSource(GrpcChannel channel, Metadata? metadata = n
 
             // Then add this dependency
             byteStrings.Add(dep.SerializedData);
-            
+
             included.Add(dep.Name);
         }
     }

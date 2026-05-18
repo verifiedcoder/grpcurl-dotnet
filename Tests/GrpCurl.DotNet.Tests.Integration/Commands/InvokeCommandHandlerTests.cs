@@ -19,7 +19,7 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
         // Arrange
         var output = new StringWriter();
         var originalOut = Console.Out;
-        
+
         Console.SetOut(output);
 
         try
@@ -53,7 +53,7 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
 
             // Assert
             var result = output.ToString().Trim();
-            
+
             result.ShouldNotBeNullOrWhiteSpace();
             result.ShouldContain("{");
             result.ShouldContain("}");
@@ -70,7 +70,7 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
         // Arrange
         var output = new StringWriter();
         var originalOut = Console.Out;
-        
+
         Console.SetOut(output);
 
         const string requestData = """
@@ -112,7 +112,7 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
 
             // Assert
             var result = output.ToString().Trim();
-            
+
             result.ShouldNotBeNullOrWhiteSpace();
             result.ShouldContain("payload");
             result.ShouldContain("body");
@@ -129,7 +129,7 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
         // Arrange
         var output = new StringWriter();
         var originalOut = Console.Out;
-        
+
         Console.SetOut(output);
 
         const string requestData = """
@@ -174,7 +174,7 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
             // Assert - should contain multiple JSON objects with payload
             var result = output.ToString();
             var payloadCount = CountOccurrences(result, "\"payload\"");
-            
+
             payloadCount.ShouldBe(3);
         }
         finally
@@ -189,7 +189,7 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
         // Arrange
         var output = new StringWriter();
         var originalOut = Console.Out;
-        
+
         Console.SetOut(output);
 
         try
@@ -223,7 +223,7 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
 
             // Assert - with emitDefaults, default-valued fields should appear in the output
             var result = output.ToString();
-            
+
             result.ShouldContain("username");
         }
         finally
@@ -238,7 +238,7 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
         // Arrange
         var output = new StringWriter();
         var originalOut = Console.Out;
-        
+
         Console.SetOut(output);
 
         try
@@ -272,7 +272,7 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
 
             // Assert - should succeed and produce valid JSON output
             var result = output.ToString().Trim();
-            
+
             result.ShouldNotBeNullOrWhiteSpace();
             result.ShouldContain("{");
             result.ShouldContain("}");
@@ -289,9 +289,9 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
         // Arrange
         var output = new StringWriter();
         var originalOut = Console.Out;
-        
+
         Console.SetOut(output);
-        
+
         var tempFile = Path.Combine(Path.GetTempPath(), $"protoset-out-{Guid.NewGuid()}.protoset");
 
         try
@@ -325,9 +325,9 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
 
             // Assert
             File.Exists(tempFile).ShouldBeTrue();
-            
+
             var fileBytes = await File.ReadAllBytesAsync(tempFile, TestContext.Current.CancellationToken);
-            
+
             fileBytes.Length.ShouldBeGreaterThan(0);
         }
         finally
@@ -351,7 +351,7 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
         // Arrange
         var output = new StringWriter();
         var originalOut = Console.Out;
-        
+
         Console.SetOut(output);
 
         try
@@ -398,7 +398,7 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
         // Arrange
         var output = new StringWriter();
         var originalOut = Console.Out;
-        
+
         Console.SetOut(output);
 
         try
@@ -445,7 +445,7 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
         // Arrange
         var output = new StringWriter();
         var originalOut = Console.Out;
-        
+
         Console.SetOut(output);
 
         try
@@ -492,7 +492,7 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
         // Arrange
         var output = new StringWriter();
         var originalOut = Console.Out;
-        
+
         Console.SetOut(output);
 
         try
@@ -539,7 +539,7 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
         // Arrange
         var output = new StringWriter();
         var originalOut = Console.Out;
-        
+
         Console.SetOut(output);
 
         try

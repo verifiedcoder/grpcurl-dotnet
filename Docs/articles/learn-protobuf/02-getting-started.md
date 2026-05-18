@@ -10,6 +10,20 @@ Before you begin, make sure you have:
 - **GrpCurl.Net** cloned and built (see [Chapter 1](01-what-is-protobuf.md) if you have not done this yet)
 - A terminal open in the repository root directory
 
+The examples use the installed-tool command name `grpcurl.net`. If you are running directly from source, replace `grpcurl.net` with `dotnet run --project Src/GrpCurl.Net --`. For example, `grpcurl.net list --plaintext localhost:9090` becomes:
+
+```bash
+dotnet run --project Src/GrpCurl.Net -- list --plaintext localhost:9090
+```
+
+When an example passes JSON with `-d '{...}'`, that quoting is for Bash-like shells. In PowerShell, pipe a here-string into stdin and quote `@`:
+
+```powershell
+@'
+{"payload": {"body": "SGVsbG8gV29ybGQ="}}
+'@ | grpcurl.net invoke --plaintext -d '@' localhost:9090 testing.TestService/UnaryCall
+```
+
 ## Step 1: Start the TestServer
 
 GrpCurl.Net ships with a built-in test server that implements several gRPC services. This server is perfect for learning because it supports **server reflection**, meaning we can explore its API without needing any `.proto` files on hand.

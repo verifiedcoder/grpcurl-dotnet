@@ -28,10 +28,10 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var secondsField = descriptor.FindFieldByNumber(1);
         var nanosField = descriptor.FindFieldByNumber(2);
-        
+
         result.Fields[secondsField!].ShouldBe(expectedSeconds);
 
         // Nanos might vary slightly due to parsing precision
@@ -95,9 +95,9 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var secondsField = descriptor.FindFieldByNumber(1);
-        
+
         result.Fields.ContainsKey(secondsField!).ShouldBeTrue();
     }
 
@@ -123,10 +123,10 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var secondsField = descriptor.FindFieldByNumber(1);
         var nanosField = descriptor.FindFieldByNumber(2);
-        
+
         result.Fields[secondsField!].ShouldBe(expectedSeconds);
 
         if (expectedNanos > 0)
@@ -204,10 +204,10 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var nanosField = descriptor.FindFieldByNumber(2);
         var nanos = (int)result.Fields[nanosField!]!;
-        
+
         nanos.ShouldBeLessThanOrEqualTo(999999999);
     }
 
@@ -230,9 +230,9 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var valueField = descriptor.FindFieldByNumber(1);
-        
+
         result.Fields[valueField!].ShouldBe(expected);
     }
 
@@ -251,9 +251,9 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var valueField = descriptor.FindFieldByNumber(1);
-        
+
         result.Fields[valueField!].ShouldBe(expected);
     }
 
@@ -272,9 +272,9 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var valueField = descriptor.FindFieldByNumber(1);
-        
+
         result.Fields[valueField!].ShouldBe(expected);
     }
 
@@ -292,9 +292,9 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var valueField = descriptor.FindFieldByNumber(1);
-        
+
         result.Fields[valueField!].ShouldBe(expected);
     }
 
@@ -314,9 +314,9 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var valueField = descriptor.FindFieldByNumber(1);
-        
+
         ((float)result.Fields[valueField!]!).ShouldBe(expected, 0.00001f);
     }
 
@@ -335,9 +335,9 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var valueField = descriptor.FindFieldByNumber(1);
-        
+
         ((double)result.Fields[valueField!]!).ShouldBe(expected, 0.0000000001);
     }
 
@@ -355,9 +355,9 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var valueField = descriptor.FindFieldByNumber(1);
-        
+
         result.Fields[valueField!].ShouldBe(expected);
     }
 
@@ -376,9 +376,9 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var valueField = descriptor.FindFieldByNumber(1);
-        
+
         result.Fields[valueField!].ShouldBe(expected);
     }
 
@@ -395,9 +395,9 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var valueField = descriptor.FindFieldByNumber(1);
-        
+
         result.Fields[valueField!].ShouldNotBeNull();
     }
 
@@ -410,7 +410,7 @@ public sealed class WellKnownTypeHandlerTests
     {
         // Arrange
         const string json = """{"@type": "type.googleapis.com/google.protobuf.Duration", "value": "10s"}""";
-        
+
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Any");
         var element = JsonDocument.Parse(json).RootElement;
 
@@ -419,9 +419,9 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var typeUrlField = descriptor.FindFieldByNumber(1);
-        
+
         result.Fields[typeUrlField!].ShouldBe("type.googleapis.com/google.protobuf.Duration");
     }
 
@@ -444,7 +444,7 @@ public sealed class WellKnownTypeHandlerTests
     {
         // Arrange
         const string json = """{"@type": "type.googleapis.com/test.Message", "name": "test", "count": 42}""";
-        
+
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Any");
         var element = JsonDocument.Parse(json).RootElement;
 
@@ -453,14 +453,14 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var valueField = descriptor.FindFieldByNumber(2);
-        
+
         result.Fields.ContainsKey(valueField!).ShouldBeTrue();
-        
+
         var valueBytes = (ByteString)result.Fields[valueField!]!;
         var valueJson = Encoding.UTF8.GetString(valueBytes.ToByteArray());
-        
+
         valueJson.ShouldContain("name");
         valueJson.ShouldContain("test");
     }
@@ -516,13 +516,13 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var pathsField = descriptor.FindFieldByNumber(1);
-        
+
         result.RepeatedFields.ContainsKey(pathsField!).ShouldBeTrue();
-        
+
         var actualPaths = result.RepeatedFields[pathsField!].Select(p => p?.ToString()).ToArray();
-        
+
         actualPaths.Length.ShouldBe(expectedPaths.Length);
         actualPaths.ShouldBe(expectedPaths);
     }
@@ -578,7 +578,7 @@ public sealed class WellKnownTypeHandlerTests
     {
         // Arrange
         const string json = """{"key1": "value1", "key2": 42}""";
-        
+
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Struct");
         var element = JsonDocument.Parse(json).RootElement;
 
@@ -587,9 +587,9 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var fieldsField = descriptor.FindFieldByNumber(1);
-        
+
         result.MapFields.ContainsKey(fieldsField!).ShouldBeTrue();
         result.MapFields[fieldsField!].Count.ShouldBe(2);
     }
@@ -627,7 +627,7 @@ public sealed class WellKnownTypeHandlerTests
     {
         // Arrange
         const string json = """{"nested": {"inner": "value"}}""";
-        
+
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Struct");
         var element = JsonDocument.Parse(json).RootElement;
 
@@ -636,9 +636,9 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var fieldsField = descriptor.FindFieldByNumber(1);
-        
+
         result.MapFields.ContainsKey(fieldsField!).ShouldBeTrue();
     }
 
@@ -658,9 +658,9 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var nullField = descriptor.FindFieldByNumber(1);
-        
+
         result.Fields.ContainsKey(nullField!).ShouldBeTrue();
     }
 
@@ -680,9 +680,9 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var numberField = descriptor.FindFieldByNumber(2);
-        
+
         result.Fields[numberField!].ShouldBe(expected);
     }
 
@@ -700,9 +700,9 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var stringField = descriptor.FindFieldByNumber(3);
-        
+
         result.Fields[stringField!].ShouldBe(expected);
     }
 
@@ -720,9 +720,9 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var boolField = descriptor.FindFieldByNumber(4);
-        
+
         result.Fields[boolField!].ShouldBe(expected);
     }
 
@@ -738,9 +738,9 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var structField = descriptor.FindFieldByNumber(5);
-        
+
         result.Fields.ContainsKey(structField!).ShouldBeTrue();
     }
 
@@ -756,9 +756,9 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var listField = descriptor.FindFieldByNumber(6);
-        
+
         result.Fields.ContainsKey(listField!).ShouldBeTrue();
     }
 
@@ -774,7 +774,7 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var numberField = descriptor.FindFieldByNumber(2);
 
         if (numberField!.ContainingOneof is null)
@@ -802,9 +802,9 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var valuesField = descriptor.FindFieldByNumber(1);
-        
+
         result.RepeatedFields.ContainsKey(valuesField!).ShouldBeTrue();
         result.RepeatedFields[valuesField!].Count.ShouldBe(4);
     }
@@ -821,9 +821,9 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var valuesField = descriptor.FindFieldByNumber(1);
-        
+
         result.RepeatedFields.ContainsKey(valuesField!).ShouldBeTrue();
         result.RepeatedFields[valuesField!].ShouldBeEmpty();
     }
@@ -854,9 +854,9 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         result.ShouldNotBeNull();
-        
+
         var valuesField = descriptor.FindFieldByNumber(1);
-        
+
         result.RepeatedFields[valuesField!].Count.ShouldBe(2);
     }
 
@@ -872,10 +872,10 @@ public sealed class WellKnownTypeHandlerTests
         var message = new SimpleDynamicMessage(descriptor);
         var secondsField = descriptor.FindFieldByNumber(1);
         var nanosField = descriptor.FindFieldByNumber(2);
-        
+
         message.Fields[secondsField!] = 1705314600L; // 2024-01-15T10:30:00Z
         message.Fields[nanosField!] = 0;
-        
+
         var sb = new StringBuilder();
 
         // Act
@@ -883,7 +883,7 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         var result = sb.ToString();
-        
+
         result.ShouldStartWith("\"");
         result.ShouldEndWith("Z\"");
         result.ShouldContain("2024-01-15");
@@ -897,10 +897,10 @@ public sealed class WellKnownTypeHandlerTests
         var message = new SimpleDynamicMessage(descriptor);
         var secondsField = descriptor.FindFieldByNumber(1);
         var nanosField = descriptor.FindFieldByNumber(2);
-        
+
         message.Fields[secondsField!] = 1705314600L;
         message.Fields[nanosField!] = 123000000; // 0.123 seconds
-        
+
         var sb = new StringBuilder();
 
         // Act
@@ -908,7 +908,7 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         var result = sb.ToString();
-        
+
         result.ShouldContain(".123");
     }
 
@@ -920,10 +920,10 @@ public sealed class WellKnownTypeHandlerTests
         var message = new SimpleDynamicMessage(descriptor);
         var secondsField = descriptor.FindFieldByNumber(1);
         var nanosField = descriptor.FindFieldByNumber(2);
-        
+
         message.Fields[secondsField!] = 0L;
         message.Fields[nanosField!] = 0;
-        
+
         var sb = new StringBuilder();
 
         // Act
@@ -931,7 +931,7 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         var result = sb.ToString();
-        
+
         result.ShouldContain("1970-01-01");
     }
 
@@ -950,10 +950,10 @@ public sealed class WellKnownTypeHandlerTests
         var message = new SimpleDynamicMessage(descriptor);
         var secondsField = descriptor.FindFieldByNumber(1);
         var nanosField = descriptor.FindFieldByNumber(2);
-        
+
         message.Fields[secondsField!] = seconds;
         message.Fields[nanosField!] = nanos;
-        
+
         var sb = new StringBuilder();
 
         // Act
@@ -971,10 +971,10 @@ public sealed class WellKnownTypeHandlerTests
         var message = new SimpleDynamicMessage(descriptor);
         var secondsField = descriptor.FindFieldByNumber(1);
         var nanosField = descriptor.FindFieldByNumber(2);
-        
+
         message.Fields[secondsField!] = 1L;
         message.Fields[nanosField!] = 500000000; // 0.5 seconds
-        
+
         var sb = new StringBuilder();
 
         // Act
@@ -992,10 +992,10 @@ public sealed class WellKnownTypeHandlerTests
         var message = new SimpleDynamicMessage(descriptor);
         var secondsField = descriptor.FindFieldByNumber(1);
         var nanosField = descriptor.FindFieldByNumber(2);
-        
+
         message.Fields[secondsField!] = 1L;
         message.Fields[nanosField!] = 123456789;
-        
+
         var sb = new StringBuilder();
 
         // Act
@@ -1016,9 +1016,9 @@ public sealed class WellKnownTypeHandlerTests
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Int32Value");
         var message = new SimpleDynamicMessage(descriptor);
         var valueField = descriptor.FindFieldByNumber(1);
-        
+
         message.Fields[valueField!] = 42;
-        
+
         var sb = new StringBuilder();
 
         // Act
@@ -1035,9 +1035,9 @@ public sealed class WellKnownTypeHandlerTests
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.StringValue");
         var message = new SimpleDynamicMessage(descriptor);
         var valueField = descriptor.FindFieldByNumber(1);
-        
+
         message.Fields[valueField!] = "hello";
-        
+
         var sb = new StringBuilder();
 
         // Act
@@ -1054,9 +1054,9 @@ public sealed class WellKnownTypeHandlerTests
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.BoolValue");
         var message = new SimpleDynamicMessage(descriptor);
         var valueField = descriptor.FindFieldByNumber(1);
-        
+
         message.Fields[valueField!] = true;
-        
+
         var sb = new StringBuilder();
 
         // Act
@@ -1092,9 +1092,9 @@ public sealed class WellKnownTypeHandlerTests
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Any");
         var message = new SimpleDynamicMessage(descriptor);
         var typeUrlField = descriptor.FindFieldByNumber(1);
-        
+
         message.Fields[typeUrlField!] = "type.googleapis.com/test.Message";
-        
+
         var sb = new StringBuilder();
 
         // Act
@@ -1102,7 +1102,7 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         var result = sb.ToString();
-        
+
         result.ShouldContain("@type");
         result.ShouldContain("type.googleapis.com/test.Message");
     }
@@ -1115,10 +1115,10 @@ public sealed class WellKnownTypeHandlerTests
         var message = new SimpleDynamicMessage(descriptor);
         var typeUrlField = descriptor.FindFieldByNumber(1);
         var valueField = descriptor.FindFieldByNumber(2);
-        
+
         message.Fields[typeUrlField!] = "type.googleapis.com/test.Message";
         message.Fields[valueField!] = ByteString.CopyFromUtf8("{\"name\":\"test\"}");
-        
+
         var sb = new StringBuilder();
 
         // Act
@@ -1126,7 +1126,7 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         var result = sb.ToString();
-        
+
         result.ShouldContain("name");
         result.ShouldContain("test");
     }
@@ -1174,9 +1174,9 @@ public sealed class WellKnownTypeHandlerTests
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.FieldMask");
         var message = new SimpleDynamicMessage(descriptor);
         var pathsField = descriptor.FindFieldByNumber(1);
-        
+
         message.RepeatedFields[pathsField!] = ["name", "email", "age"];
-        
+
         var sb = new StringBuilder();
 
         // Act
@@ -1193,9 +1193,9 @@ public sealed class WellKnownTypeHandlerTests
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.FieldMask");
         var message = new SimpleDynamicMessage(descriptor);
         var pathsField = descriptor.FindFieldByNumber(1);
-        
+
         message.RepeatedFields[pathsField!] = ["user.name"];
-        
+
         var sb = new StringBuilder();
 
         // Act
@@ -1237,9 +1237,9 @@ public sealed class WellKnownTypeHandlerTests
         {
             Fields = { [stringField!] = "test" }
         };
-        
+
         message.MapFields[fieldsField!] = new Dictionary<object, object?> { { "key", valueMessage } };
-        
+
         var sb = new StringBuilder();
 
         // Act
@@ -1247,7 +1247,7 @@ public sealed class WellKnownTypeHandlerTests
 
         // Assert
         var result = sb.ToString();
-        
+
         result.ShouldStartWith("{");
         result.ShouldEndWith("}");
         result.ShouldContain("key");
@@ -1279,9 +1279,9 @@ public sealed class WellKnownTypeHandlerTests
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Value");
         var message = new SimpleDynamicMessage(descriptor);
         var nullField = descriptor.FindFieldByNumber(1);
-        
+
         message.Fields[nullField!] = 0; // NullValue.NULL_VALUE
-        
+
         var sb = new StringBuilder();
 
         // Act
@@ -1298,9 +1298,9 @@ public sealed class WellKnownTypeHandlerTests
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Value");
         var message = new SimpleDynamicMessage(descriptor);
         var numberField = descriptor.FindFieldByNumber(2);
-        
+
         message.Fields[numberField!] = 42.5;
-        
+
         var sb = new StringBuilder();
 
         // Act
@@ -1317,9 +1317,9 @@ public sealed class WellKnownTypeHandlerTests
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Value");
         var message = new SimpleDynamicMessage(descriptor);
         var stringField = descriptor.FindFieldByNumber(3);
-        
+
         message.Fields[stringField!] = "hello";
-        
+
         var sb = new StringBuilder();
 
         // Act
@@ -1336,9 +1336,9 @@ public sealed class WellKnownTypeHandlerTests
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Value");
         var message = new SimpleDynamicMessage(descriptor);
         var boolField = descriptor.FindFieldByNumber(4);
-        
+
         message.Fields[boolField!] = true;
-        
+
         var sb = new StringBuilder();
 
         // Act
@@ -1355,9 +1355,9 @@ public sealed class WellKnownTypeHandlerTests
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Value");
         var message = new SimpleDynamicMessage(descriptor);
         var boolField = descriptor.FindFieldByNumber(4);
-        
+
         message.Fields[boolField!] = false;
-        
+
         var sb = new StringBuilder();
 
         // Act
@@ -1397,9 +1397,9 @@ public sealed class WellKnownTypeHandlerTests
         var numberField = valueDescriptor.FindFieldByNumber(2);
         var value1 = new SimpleDynamicMessage(valueDescriptor) { Fields = { [numberField!] = 1.0 } };
         var value2 = new SimpleDynamicMessage(valueDescriptor) { Fields = { [numberField!] = 2.0 } };
-        
+
         message.RepeatedFields[valuesField!] = [value1, value2];
-        
+
         var sb = new StringBuilder();
 
         // Act
@@ -1416,9 +1416,9 @@ public sealed class WellKnownTypeHandlerTests
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.ListValue");
         var message = new SimpleDynamicMessage(descriptor);
         var valuesField = descriptor.FindFieldByNumber(1);
-        
+
         message.RepeatedFields[valuesField!] = [];
-        
+
         var sb = new StringBuilder();
 
         // Act
@@ -1450,9 +1450,9 @@ public sealed class WellKnownTypeHandlerTests
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.ListValue");
         var message = new SimpleDynamicMessage(descriptor);
         var valuesField = descriptor.FindFieldByNumber(1);
-        
+
         message.RepeatedFields[valuesField!] = [null, null];
-        
+
         var sb = new StringBuilder();
 
         // Act
@@ -1517,12 +1517,12 @@ public sealed class WellKnownTypeHandlerTests
                 sb.Append('"');
                 break;
 
-            #pragma warning disable S3458
+#pragma warning disable S3458
             case FieldType.Group:
             case FieldType.Message:
             case FieldType.Bytes:
             case FieldType.Enum:
-            #pragma warning restore S3458
+#pragma warning restore S3458
             default:
                 sb.Append("null");
                 break;

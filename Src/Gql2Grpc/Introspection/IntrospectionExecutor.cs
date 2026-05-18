@@ -8,7 +8,8 @@ namespace Gql2Grpc.Introspection;
 /// Handles <c>__schema</c>, <c>__type(name:)</c>, and <c>__typename</c> GraphQL introspection
 /// selections entirely from the synthesised schema (no RPC).
 /// </summary>
-public sealed class IntrospectionExecutor
+/// <remarks>Creates an executor that uses <paramref name="schemaBuilder"/> for schema synthesis and <paramref name="projector"/> for response shaping.</remarks>
+public sealed class IntrospectionExecutor(GraphQLSchemaBuilder schemaBuilder, SelectionProjector projector)
 {
     /// <summary>The <c>__schema</c> introspection meta-field name.</summary>
     public const string SchemaField = "__schema";
@@ -19,16 +20,9 @@ public sealed class IntrospectionExecutor
     /// <summary>The <c>__typename</c> introspection meta-field name.</summary>
     public const string TypenameField = "__typename";
 
-    private readonly GraphQLSchemaBuilder _schemaBuilder;
-    private readonly SelectionProjector _projector;
+    private readonly GraphQLSchemaBuilder _schemaBuilder = schemaBuilder;
+    private readonly SelectionProjector _projector = projector;
     private JsonObject? _schemaCache;
-
-    /// <summary>Creates an executor that uses <paramref name="schemaBuilder"/> for schema synthesis and <paramref name="projector"/> for response shaping.</summary>
-    public IntrospectionExecutor(GraphQLSchemaBuilder schemaBuilder, SelectionProjector projector)
-    {
-        _schemaBuilder = schemaBuilder;
-        _projector = projector;
-    }
 
     /// <summary>Returns <c>true</c> if <paramref name="name"/> is one of the introspection meta-fields.</summary>
     public static bool IsIntrospectionField(string name) =>

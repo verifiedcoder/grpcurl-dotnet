@@ -11,14 +11,9 @@ namespace Gql2Grpc.Execution;
 /// raw <c>IMessage</c> types. The GraphQL pipeline only speaks JSON, so this boundary keeps
 /// protobuf types off of the rest of Gql2Grpc.
 /// </summary>
-internal sealed class GrpcTransport
+internal sealed class GrpcTransport(GrpcChannel channel)
 {
-    private readonly DynamicInvoker _invoker;
-
-    public GrpcTransport(GrpcChannel channel)
-    {
-        _invoker = new DynamicInvoker(channel);
-    }
+    private readonly DynamicInvoker _invoker = new(channel);
 
     public async Task<string> InvokeUnaryAsync(
         MethodDescriptor method,

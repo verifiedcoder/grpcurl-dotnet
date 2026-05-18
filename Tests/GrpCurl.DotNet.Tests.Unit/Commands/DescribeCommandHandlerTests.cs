@@ -24,7 +24,7 @@ public sealed class DescribeCommandHandlerTests
 
         // Assert
         string.IsNullOrEmpty(command.Description).ShouldBeFalse();
-        
+
         command.Description.ShouldContain("Describe");
     }
 
@@ -46,7 +46,7 @@ public sealed class DescribeCommandHandlerTests
 
         // Assert
         var addressArg = command.Arguments.FirstOrDefault(a => a.Name == "address");
-        
+
         addressArg.ShouldNotBeNull();
     }
 
@@ -58,7 +58,7 @@ public sealed class DescribeCommandHandlerTests
 
         // Assert
         var symbolArg = command.Arguments.FirstOrDefault(a => a.Name == "symbol");
-        
+
         symbolArg.ShouldNotBeNull();
     }
 
@@ -70,7 +70,7 @@ public sealed class DescribeCommandHandlerTests
 
         // Assert
         var addressArg = command.Arguments.FirstOrDefault(a => a.Name == "address");
-        
+
         addressArg.ShouldNotBeNull();
         addressArg.Arity.ShouldBe(ArgumentArity.ZeroOrOne);
     }
@@ -83,7 +83,7 @@ public sealed class DescribeCommandHandlerTests
 
         // Assert
         var symbolArg = command.Arguments.FirstOrDefault(a => a.Name == "symbol");
-        
+
         symbolArg.ShouldNotBeNull();
         symbolArg.Arity.ShouldBe(ArgumentArity.ZeroOrOne);
     }

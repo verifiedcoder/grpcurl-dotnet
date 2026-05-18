@@ -12,26 +12,28 @@ namespace Gql2Grpc.Introspection;
 /// <c>__schema</c> introspection selection. The built schema is cached per-instance, so callers
 /// should create one builder per operation invocation.
 /// </summary>
-public sealed class GraphQLSchemaBuilder
+/// <remarks>
+/// Constructs a builder that derives the GraphQL schema from <paramref name="source"/>'s
+/// descriptor set and applies type-name overrides from <paramref name="config"/>'s
+/// <see cref="MappingDefaults.Introspection"/>.
+/// </remarks>
+public sealed class GraphQLSchemaBuilder(IDescriptorSource source, MappingConfig config)
 {
-    private readonly IDescriptorSource _source;
-    private readonly MappingConfig _config;
-    private readonly IReadOnlyDictionary<string, string> _typeOverrides;
+    private readonly IDescriptorSource _source = source;
+    private readonly MappingConfig _config = config;
+    private readonly IReadOnlyDictionary<string, string> _typeOverrides = config.Defaults.Introspection.TypeOverrides;
 
     private JsonArray? _cachedTypes;
     private readonly Dictionary<string, JsonObject> _typesByName = new(StringComparer.Ordinal);
-
-    /// <summary>
-    /// Constructs a builder that derives the GraphQL schema from <paramref name="source"/>'s
-    /// descriptor set and applies type-name overrides from <paramref name="config"/>'s
-    /// <see cref="MappingDefaults.Introspection"/>.
-    /// </summary>
-    public GraphQLSchemaBuilder(IDescriptorSource source, MappingConfig config)
-    {
-        _source = source;
-        _config = config;
-        _typeOverrides = config.Defaults.Introspection.TypeOverrides;
-    }
+    private static readonly string[] BuiltInScalarNames =
+    [
+        TypeMappings.StringTypeName,
+        TypeMappings.IntTypeName,
+        TypeMappings.FloatTypeName,
+        TypeMappings.BooleanTypeName,
+        TypeMappings.IdTypeName
+    ];
+    private static readonly string[] ExecutableDirectiveLocations = ["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"];
 
     /// <summary>
     /// Builds (or returns the cached) <c>__Schema</c> object, including all types, root operation
@@ -74,7 +76,7 @@ public sealed class GraphQLSchemaBuilder
 
         var types = new JsonArray();
 
-        foreach (var scalar in new[] { TypeMappings.StringTypeName, TypeMappings.IntTypeName, TypeMappings.FloatTypeName, TypeMappings.BooleanTypeName, TypeMappings.IdTypeName })
+        foreach (var scalar in BuiltInScalarNames)
         {
             AppendType(types, ScalarType(scalar, $"Built-in GraphQL scalar {scalar}."));
         }
@@ -84,16 +86,16 @@ public sealed class GraphQLSchemaBuilder
             AppendType(types, ScalarType(custom, $"Gql2Grpc custom scalar {custom}."));
         }
 
-        AppendType(types, ObjectType("Query", null, BuildRootFields(GraphQLOperationType.Query), Array.Empty<JsonObject>()));
+        AppendType(types, ObjectType("Query", null, BuildRootFields(GraphQLOperationType.Query), []));
 
         if (HasOperationsOfType(GraphQLOperationType.Mutation))
         {
-            AppendType(types, ObjectType("Mutation", null, BuildRootFields(GraphQLOperationType.Mutation), Array.Empty<JsonObject>()));
+            AppendType(types, ObjectType("Mutation", null, BuildRootFields(GraphQLOperationType.Mutation), []));
         }
 
         if (HasOperationsOfType(GraphQLOperationType.Subscription))
         {
-            AppendType(types, ObjectType("Subscription", null, BuildRootFields(GraphQLOperationType.Subscription), Array.Empty<JsonObject>()));
+            AppendType(types, ObjectType("Subscription", null, BuildRootFields(GraphQLOperationType.Subscription), []));
         }
 
         if (_source.FileDescriptorSet is { } descriptorSet)
@@ -150,12 +152,12 @@ public sealed class GraphQLSchemaBuilder
         foreach (var field in message.Field)
         {
             var typeRef = BuildFieldTypeRef(field);
-            var fieldJson = FieldDefinition(field.JsonName, null, Array.Empty<JsonObject>(), typeRef);
+            var fieldJson = FieldDefinition(field.JsonName, null, [], typeRef);
             fields.Add(fieldJson);
             inputFields.Add(InputValue(field.JsonName, null, typeRef, null));
         }
 
-        AppendType(types, ObjectType(name, fullName, fields, Array.Empty<JsonObject>()));
+        AppendType(types, ObjectType(name, fullName, fields, []));
         AppendType(types, InputObjectType(name + "Input", $"Input form of {name}.", inputFields));
 
         foreach (var nested in message.NestedType)
@@ -208,15 +210,15 @@ public sealed class GraphQLSchemaBuilder
         {
             case FieldDescriptorProto.Types.Type.Message:
                 {
-                    var targetName = ResolveTypeNameFromProtoRef(field.TypeName);
+                    var (FullyQualified, GraphQLName) = ResolveTypeNameFromProtoRef(field.TypeName);
 
-                    if (TypeMappings.TryGetWellKnownScalar(targetName.FullyQualified, out var scalar))
+                    if (TypeMappings.TryGetWellKnownScalar(FullyQualified, out var scalar))
                     {
                         inner = TypeRef(scalar, "SCALAR");
                     }
                     else
                     {
-                        inner = TypeRef(targetName.GraphQLName, "OBJECT");
+                        inner = TypeRef(GraphQLName, "OBJECT");
                     }
 
                     break;
@@ -224,8 +226,8 @@ public sealed class GraphQLSchemaBuilder
 
             case FieldDescriptorProto.Types.Type.Enum:
                 {
-                    var targetName = ResolveTypeNameFromProtoRef(field.TypeName);
-                    inner = TypeRef(targetName.GraphQLName, "ENUM");
+                    var (_, GraphQLName) = ResolveTypeNameFromProtoRef(field.TypeName);
+                    inner = TypeRef(GraphQLName, "ENUM");
                     break;
                 }
 
@@ -287,7 +289,7 @@ public sealed class GraphQLSchemaBuilder
         }
     }
 
-    private IReadOnlyList<JsonObject> BuildEntryArguments(MappingEntry entry)
+    private static List<JsonObject> BuildEntryArguments(MappingEntry entry)
     {
         var list = new List<JsonObject>();
 
@@ -312,22 +314,22 @@ public sealed class GraphQLSchemaBuilder
     private bool HasOperationsOfType(GraphQLOperationType type) =>
         _config.Operations.Any(entry => entry.OperationType == type);
 
-    private void AddIntrospectionTypes(JsonArray types)
+    private static void AddIntrospectionTypes(JsonArray types)
     {
         AppendType(types, ScalarType("__TypeKind", "Enum-like scalar for introspection kinds."));
 
-        AppendType(types, ObjectType("__Schema", null, new[]
-        {
+        AppendType(types, ObjectType("__Schema", null,
+        [
             FieldDefinition("description", null, [], TypeRef(TypeMappings.StringTypeName, "SCALAR")),
             FieldDefinition("queryType", null, [], NonNull(TypeRef("__Type", "OBJECT"))),
             FieldDefinition("mutationType", null, [], TypeRef("__Type", "OBJECT")),
             FieldDefinition("subscriptionType", null, [], TypeRef("__Type", "OBJECT")),
             FieldDefinition("types", null, [], NonNull(ListOf(NonNull(TypeRef("__Type", "OBJECT"))))),
             FieldDefinition("directives", null, [], NonNull(ListOf(NonNull(TypeRef("__Directive", "OBJECT")))))
-        }, Array.Empty<JsonObject>()));
+        ], []));
 
-        AppendType(types, ObjectType("__Type", null, new[]
-        {
+        AppendType(types, ObjectType("__Type", null,
+        [
             FieldDefinition("kind", null, [], NonNull(TypeRef("__TypeKind", "SCALAR"))),
             FieldDefinition("name", null, [], TypeRef(TypeMappings.StringTypeName, "SCALAR")),
             FieldDefinition("description", null, [], TypeRef(TypeMappings.StringTypeName, "SCALAR")),
@@ -337,56 +339,56 @@ public sealed class GraphQLSchemaBuilder
             FieldDefinition("enumValues", null, [], ListOf(NonNull(TypeRef("__EnumValue", "OBJECT")))),
             FieldDefinition("possibleTypes", null, [], ListOf(NonNull(TypeRef("__Type", "OBJECT")))),
             FieldDefinition("ofType", null, [], TypeRef("__Type", "OBJECT"))
-        }, Array.Empty<JsonObject>()));
+        ], []));
 
-        AppendType(types, ObjectType("__Field", null, new[]
-        {
+        AppendType(types, ObjectType("__Field", null,
+        [
             FieldDefinition("name", null, [], NonNull(TypeRef(TypeMappings.StringTypeName, "SCALAR"))),
             FieldDefinition("description", null, [], TypeRef(TypeMappings.StringTypeName, "SCALAR")),
             FieldDefinition("args", null, [], NonNull(ListOf(NonNull(TypeRef("__InputValue", "OBJECT"))))),
             FieldDefinition("type", null, [], NonNull(TypeRef("__Type", "OBJECT"))),
             FieldDefinition("isDeprecated", null, [], NonNull(TypeRef(TypeMappings.BooleanTypeName, "SCALAR"))),
             FieldDefinition("deprecationReason", null, [], TypeRef(TypeMappings.StringTypeName, "SCALAR"))
-        }, Array.Empty<JsonObject>()));
+        ], []));
 
-        AppendType(types, ObjectType("__InputValue", null, new[]
-        {
+        AppendType(types, ObjectType("__InputValue", null,
+        [
             FieldDefinition("name", null, [], NonNull(TypeRef(TypeMappings.StringTypeName, "SCALAR"))),
             FieldDefinition("description", null, [], TypeRef(TypeMappings.StringTypeName, "SCALAR")),
             FieldDefinition("type", null, [], NonNull(TypeRef("__Type", "OBJECT"))),
             FieldDefinition("defaultValue", null, [], TypeRef(TypeMappings.StringTypeName, "SCALAR"))
-        }, Array.Empty<JsonObject>()));
+        ], []));
 
-        AppendType(types, ObjectType("__EnumValue", null, new[]
-        {
+        AppendType(types, ObjectType("__EnumValue", null,
+        [
             FieldDefinition("name", null, [], NonNull(TypeRef(TypeMappings.StringTypeName, "SCALAR"))),
             FieldDefinition("description", null, [], TypeRef(TypeMappings.StringTypeName, "SCALAR")),
             FieldDefinition("isDeprecated", null, [], NonNull(TypeRef(TypeMappings.BooleanTypeName, "SCALAR"))),
             FieldDefinition("deprecationReason", null, [], TypeRef(TypeMappings.StringTypeName, "SCALAR"))
-        }, Array.Empty<JsonObject>()));
+        ], []));
 
-        AppendType(types, ObjectType("__Directive", null, new[]
-        {
+        AppendType(types, ObjectType("__Directive", null,
+        [
             FieldDefinition("name", null, [], NonNull(TypeRef(TypeMappings.StringTypeName, "SCALAR"))),
             FieldDefinition("description", null, [], TypeRef(TypeMappings.StringTypeName, "SCALAR")),
             FieldDefinition("locations", null, [], NonNull(ListOf(NonNull(TypeRef(TypeMappings.StringTypeName, "SCALAR"))))),
             FieldDefinition("args", null, [], NonNull(ListOf(NonNull(TypeRef("__InputValue", "OBJECT")))))
-        }, Array.Empty<JsonObject>()));
+        ], []));
     }
 
-    private JsonArray BuildDirectives()
+    private static JsonArray BuildDirectives()
     {
         var directives = new JsonArray
         {
             DirectiveDefinition("include", "Directs the executor to include this field or fragment only when the `if` argument is true.",
-                new[] { "FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT" },
-                new[] { InputValue("if", null, NonNull(TypeRef(TypeMappings.BooleanTypeName, "SCALAR")), null) }),
+                ExecutableDirectiveLocations,
+                [InputValue("if", null, NonNull(TypeRef(TypeMappings.BooleanTypeName, "SCALAR")), null)]),
             DirectiveDefinition("skip", "Directs the executor to skip this field or fragment when the `if` argument is true.",
-                new[] { "FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT" },
-                new[] { InputValue("if", null, NonNull(TypeRef(TypeMappings.BooleanTypeName, "SCALAR")), null) }),
+                ExecutableDirectiveLocations,
+                [InputValue("if", null, NonNull(TypeRef(TypeMappings.BooleanTypeName, "SCALAR")), null)]),
             DirectiveDefinition("deprecated", "Marks an element of a GraphQL schema as no longer supported.",
-                new[] { "FIELD_DEFINITION", "ENUM_VALUE" },
-                new[] { InputValue("reason", null, TypeRef(TypeMappings.StringTypeName, "SCALAR"), JsonValue.Create("No longer supported")) })
+                ["FIELD_DEFINITION", "ENUM_VALUE"],
+                [InputValue("reason", null, TypeRef(TypeMappings.StringTypeName, "SCALAR"), JsonValue.Create("No longer supported"))])
         };
         return directives;
     }
@@ -425,6 +427,13 @@ public sealed class GraphQLSchemaBuilder
             fieldArr.Add(f);
         }
 
+        var interfaceArr = new JsonArray();
+
+        foreach (var i in interfaces)
+        {
+            interfaceArr.Add(i);
+        }
+
         return new JsonObject
         {
             ["kind"] = "OBJECT",
@@ -432,7 +441,7 @@ public sealed class GraphQLSchemaBuilder
             ["description"] = description,
             ["fields"] = fieldArr,
             ["inputFields"] = null,
-            ["interfaces"] = new JsonArray(),
+            ["interfaces"] = interfaceArr,
             ["enumValues"] = null,
             ["possibleTypes"] = null
         };
@@ -521,7 +530,7 @@ public sealed class GraphQLSchemaBuilder
         ["defaultValue"] = defaultValue?.DeepClone()
     };
 
-    private void AppendType(JsonArray types, JsonObject type)
+    private static void AppendType(JsonArray types, JsonObject type)
     {
         types.Add(type);
     }

@@ -9,23 +9,17 @@ namespace Gql2Grpc.GraphQL;
 /// evaluated against coerced variables, aliases become the <c>ResponseKey</c>, and variable
 /// references in arguments are substituted. Downstream layers operate only on the resolved tree.
 /// </summary>
-public sealed class SelectionResolver
+/// <remarks>
+/// Constructs a resolver that uses <paramref name="fragments"/> for spread expansion and
+/// <paramref name="variables"/> to substitute <c>$var</c> references and evaluate
+/// <c>@include</c>/<c>@skip</c> directives.
+/// </remarks>
+public sealed class SelectionResolver(
+    IReadOnlyDictionary<string, GraphQLFragmentDefinition> fragments,
+    IReadOnlyDictionary<string, JsonNode?> variables)
 {
-    private readonly IReadOnlyDictionary<string, GraphQLFragmentDefinition> _fragments;
-    private readonly IReadOnlyDictionary<string, JsonNode?> _variables;
-
-    /// <summary>
-    /// Constructs a resolver that uses <paramref name="fragments"/> for spread expansion and
-    /// <paramref name="variables"/> to substitute <c>$var</c> references and evaluate
-    /// <c>@include</c>/<c>@skip</c> directives.
-    /// </summary>
-    public SelectionResolver(
-        IReadOnlyDictionary<string, GraphQLFragmentDefinition> fragments,
-        IReadOnlyDictionary<string, JsonNode?> variables)
-    {
-        _fragments = fragments;
-        _variables = variables;
-    }
+    private readonly IReadOnlyDictionary<string, GraphQLFragmentDefinition> _fragments = fragments;
+    private readonly IReadOnlyDictionary<string, JsonNode?> _variables = variables;
 
     /// <summary>
     /// Expands a top-level selection set into a flat <see cref="ResolvedSelection"/> tree with
@@ -98,7 +92,7 @@ public sealed class SelectionResolver
 
         var args = ExtractArguments(field);
         var children = field.SelectionSet is null
-            ? Array.Empty<ResolvedSelection>()
+            ? []
             : Resolve(field.SelectionSet);
 
         var resolved = new ResolvedSelection(responseKey, name, args, children);
@@ -134,7 +128,7 @@ public sealed class SelectionResolver
         }
     }
 
-    private IReadOnlyDictionary<string, JsonNode?> ExtractArguments(GraphQLField field)
+    private Dictionary<string, JsonNode?> ExtractArguments(GraphQLField field)
     {
         if (field.Arguments is null || field.Arguments.Count == 0)
         {
@@ -164,19 +158,13 @@ public sealed class SelectionResolver
         {
             var name = directive.Name.StringValue;
 
-            if (string.Equals(name, "include", StringComparison.Ordinal))
+            if (string.Equals(name, "include", StringComparison.Ordinal) && !DirectiveIfArgument(directive))
             {
-                if (!DirectiveIfArgument(directive))
-                {
-                    return false;
-                }
+                return false;
             }
-            else if (string.Equals(name, "skip", StringComparison.Ordinal))
+            else if (string.Equals(name, "skip", StringComparison.Ordinal) && DirectiveIfArgument(directive))
             {
-                if (DirectiveIfArgument(directive))
-                {
-                    return false;
-                }
+                return false;
             }
         }
 
@@ -193,14 +181,8 @@ public sealed class SelectionResolver
 
     private bool DirectiveIfArgument(GraphQLDirective directive)
     {
-        var ifArg = directive.Arguments?.FirstOrDefault(a =>
-            string.Equals(a.Name.StringValue, "if", StringComparison.Ordinal));
-
-        if (ifArg is null)
-        {
-            throw new ArgumentException($"Directive @{directive.Name.StringValue} requires an 'if' argument.");
-        }
-
+        var ifArg = (directive.Arguments?.FirstOrDefault(a =>
+            string.Equals(a.Name.StringValue, "if", StringComparison.Ordinal))) ?? throw new ArgumentException($"Directive @{directive.Name.StringValue} requires an 'if' argument.");
         var value = GraphQLValueCoercer.ToJsonNode(ifArg.Value, _variables);
 
         if (value is JsonValue jv && jv.TryGetValue(out bool b))

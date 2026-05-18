@@ -133,6 +133,14 @@ Example Output:
 }
 ```
 
+PowerShell handles quotes in native command arguments differently from Bash. If inline JSON quoting gives you an error such as `Invalid JSON in request data`, use stdin and quote the literal `@` argument:
+
+```powershell
+@'
+{"payload": {"body": "SGVsbG8gV29ybGQ="}}
+'@ | grpcurl.net invoke --plaintext -d '@' localhost:9090 testing.TestService/UnaryCall
+```
+
 ## Common Options
 
 ### Connection Options

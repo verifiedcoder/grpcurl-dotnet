@@ -1,5 +1,3 @@
-using GrpCurl.Net.Commands;
-
 namespace GrpCurl.Net.Exceptions;
 
 /// <summary>

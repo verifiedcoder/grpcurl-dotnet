@@ -83,41 +83,20 @@ public static class RichStatusDecoder
 
         // Try the small set of well-known google.rpc.* detail types so callers see
         // structured fields rather than opaque base64. Anything else is surfaced raw.
-        switch (typeName)
+        return typeName switch
         {
-            case "google.rpc.ErrorInfo":
-                return TryUnpack(any, ErrorInfo.Parser, typeUrl, rawValue);
-
-            case "google.rpc.RetryInfo":
-                return TryUnpack(any, RetryInfo.Parser, typeUrl, rawValue);
-
-            case "google.rpc.DebugInfo":
-                return TryUnpack(any, DebugInfo.Parser, typeUrl, rawValue);
-
-            case "google.rpc.QuotaFailure":
-                return TryUnpack(any, QuotaFailure.Parser, typeUrl, rawValue);
-
-            case "google.rpc.PreconditionFailure":
-                return TryUnpack(any, PreconditionFailure.Parser, typeUrl, rawValue);
-
-            case "google.rpc.BadRequest":
-                return TryUnpack(any, BadRequest.Parser, typeUrl, rawValue);
-
-            case "google.rpc.RequestInfo":
-                return TryUnpack(any, RequestInfo.Parser, typeUrl, rawValue);
-
-            case "google.rpc.ResourceInfo":
-                return TryUnpack(any, ResourceInfo.Parser, typeUrl, rawValue);
-
-            case "google.rpc.Help":
-                return TryUnpack(any, Help.Parser, typeUrl, rawValue);
-
-            case "google.rpc.LocalizedMessage":
-                return TryUnpack(any, LocalizedMessage.Parser, typeUrl, rawValue);
-
-            default:
-                return new StatusDetail(typeUrl, rawValue, ParsedMessage: null);
-        }
+            "google.rpc.ErrorInfo" => TryUnpack(any, ErrorInfo.Parser, typeUrl, rawValue),
+            "google.rpc.RetryInfo" => TryUnpack(any, RetryInfo.Parser, typeUrl, rawValue),
+            "google.rpc.DebugInfo" => TryUnpack(any, DebugInfo.Parser, typeUrl, rawValue),
+            "google.rpc.QuotaFailure" => TryUnpack(any, QuotaFailure.Parser, typeUrl, rawValue),
+            "google.rpc.PreconditionFailure" => TryUnpack(any, PreconditionFailure.Parser, typeUrl, rawValue),
+            "google.rpc.BadRequest" => TryUnpack(any, BadRequest.Parser, typeUrl, rawValue),
+            "google.rpc.RequestInfo" => TryUnpack(any, RequestInfo.Parser, typeUrl, rawValue),
+            "google.rpc.ResourceInfo" => TryUnpack(any, ResourceInfo.Parser, typeUrl, rawValue),
+            "google.rpc.Help" => TryUnpack(any, Help.Parser, typeUrl, rawValue),
+            "google.rpc.LocalizedMessage" => TryUnpack(any, LocalizedMessage.Parser, typeUrl, rawValue),
+            _ => new StatusDetail(typeUrl, rawValue, ParsedMessage: null),
+        };
     }
 
     private static StatusDetail TryUnpack<T>(Any any, MessageParser<T> parser, string typeUrl, byte[] rawValue)

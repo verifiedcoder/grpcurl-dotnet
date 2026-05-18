@@ -357,7 +357,7 @@ internal static class WellKnownTypeHandler
 
             case JsonValueKind.Undefined:
             default:
-                
+
                 throw new InvalidOperationException("Invalid JSON Value Kind.");
         }
 

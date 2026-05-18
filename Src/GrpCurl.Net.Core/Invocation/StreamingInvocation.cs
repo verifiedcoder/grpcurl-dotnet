@@ -10,26 +10,18 @@ namespace GrpCurl.Net.Invocation;
 ///     can emit headers/trailers uniformly with the unary case (CODE-REVIEW.md P2
 ///     "Response Headers/Trailers Parity").
 /// </summary>
-internal sealed class StreamingInvocationResult : IDisposable
+internal sealed class StreamingInvocationResult(
+    Task<Metadata> headers,
+    IAsyncEnumerable<IMessage> responseStream,
+    Func<Metadata?> trailersAccessor,
+    Action dispose) : IDisposable
 {
-    private readonly Action _dispose;
-    private readonly Func<Metadata?> _trailersAccessor;
+    private readonly Action _dispose = dispose;
+    private readonly Func<Metadata?> _trailersAccessor = trailersAccessor;
 
-    public StreamingInvocationResult(
-        Task<Metadata> headers,
-        IAsyncEnumerable<IMessage> responseStream,
-        Func<Metadata?> trailersAccessor,
-        Action dispose)
-    {
-        ResponseHeadersAsync = headers;
-        ResponseStream = responseStream;
-        _trailersAccessor = trailersAccessor;
-        _dispose = dispose;
-    }
+    public Task<Metadata> ResponseHeadersAsync { get; } = headers;
 
-    public Task<Metadata> ResponseHeadersAsync { get; }
-
-    public IAsyncEnumerable<IMessage> ResponseStream { get; }
+    public IAsyncEnumerable<IMessage> ResponseStream { get; } = responseStream;
 
     /// <summary>
     ///     Returns the trailers once the response stream has completed. Returns
@@ -54,26 +46,18 @@ internal sealed class StreamingInvocationResult : IDisposable
 ///     Variant for client-streaming RPCs: caller writes requests, server returns a single
 ///     response. Exposes the response together with headers and trailers.
 /// </summary>
-internal sealed class ClientStreamingInvocationResult : IDisposable
+internal sealed class ClientStreamingInvocationResult(
+    Task<Metadata> headers,
+    IMessage response,
+    Func<Metadata?> trailersAccessor,
+    Action dispose) : IDisposable
 {
-    private readonly Action _dispose;
-    private readonly Func<Metadata?> _trailersAccessor;
+    private readonly Action _dispose = dispose;
+    private readonly Func<Metadata?> _trailersAccessor = trailersAccessor;
 
-    public ClientStreamingInvocationResult(
-        Task<Metadata> headers,
-        IMessage response,
-        Func<Metadata?> trailersAccessor,
-        Action dispose)
-    {
-        ResponseHeadersAsync = headers;
-        Response = response;
-        _trailersAccessor = trailersAccessor;
-        _dispose = dispose;
-    }
+    public Task<Metadata> ResponseHeadersAsync { get; } = headers;
 
-    public Task<Metadata> ResponseHeadersAsync { get; }
-
-    public IMessage Response { get; }
+    public IMessage Response { get; } = response;
 
     public Metadata? GetTrailers()
     {

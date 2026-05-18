@@ -2,17 +2,17 @@
 
 Two things live here:
 
-1. **`ValidationRunner/`** — the **canonical** cross-platform validation runner. A .NET
+1. **`ValidationRunner/`** - the **canonical** cross-platform validation runner. A .NET
    console project that publishes the GrpCurl.Net CLI + TestServer to a temp directory
-   and exercises every feature scenario against those *published* binaries. Runs
+   and exercises the production smoke-test scenarios against those *published* binaries. Runs
    identically on Windows, Linux, and macOS. This is what CI runs.
 
-2. **`01-*.sh` … `32-*.sh`** — feature **demonstration** scripts. Bash-only. Useful for
-   manual exploration on Unix / WSL / Git Bash; **not** the supported validation flow.
-   They `dotnet run` against debug builds and assume a TestServer is listening on
-   localhost:9090.
+2. **`01-*.sh` ... `32-*.sh`** - feature **demonstration** scripts. Bash-only. Useful for
+   manual exploration on Linux, macOS, WSL, or Git Bash; **not** the supported validation
+   flow. Scripts `02` through `32` source `common.sh`, invoke the CLIs with `dotnet run`,
+   and assume a TestServer is listening on `localhost:9090`.
 
-3. **`dev-bootstrap/install-go.sh`** — optional developer bootstrap that installs Go,
+3. **`dev-bootstrap/install-go.sh`** - optional developer bootstrap that installs Go,
    upstream `grpcurl`, and the `grpc-go` interop server into the current user's HOME
    (no `sudo`, no `/usr/local` edits). Versions and checksums are pinned. Use it only
    if you want to compare GrpCurl.Net against upstream behaviour locally.
@@ -21,23 +21,25 @@ Two things live here:
 
 ```bash
 cd repo
-dotnet run --project Scripts/ValidationRunner --configuration Release
+dotnet run --project Scripts/ValidationRunner/ValidationRunner.csproj --configuration Release -- --ci
 ```
 
 The runner publishes the CLI + test server, picks a free localhost port, runs every
 scenario, asserts on exit code + stdout/stderr, and tears down the test server. It
 exits non-zero if any scenario fails. CI invokes it on every OS in the matrix.
 
-Scenarios cover: `list` services and methods, `describe`, unary/server-streaming/JSON-
-envelope `invoke`, binary `-bin` metadata, and the drop-in upstream-grpcurl flag
-shape. Each scenario maps 1-to-1 to one of the numbered Bash demos below.
+Scenarios cover: `list` services and methods, `describe`, unary/server-streaming/JSON
+envelope `invoke`, binary `-bin` metadata, and the drop-in upstream-grpcurl flag shape.
+The numbered Bash demos below are broader teaching examples for manual exploration.
 
-## Unix-only feature demos
+## Bash feature demos
 
-These scripts are convenient for manual exploration but are **Unix/WSL/Git-Bash only**.
-They assume a debug build under `Src/GrpCurl.Net/bin/Debug/net10.0/GrpCurl.Net` and a
-TestServer on `localhost:9090`. To run them on Windows, use WSL or Git Bash, or run
-the ValidationRunner instead.
+These scripts are convenient for manual exploration but require **Bash**. They run on
+Linux, macOS, WSL, and Git Bash. They invoke the source projects through `dotnet run`,
+so they do not depend on OS-specific apphost filenames in `bin/Debug`. Start the
+TestServer on `localhost:9090` first, then run the individual demo scripts from a
+second terminal. `common.sh` detects either `dotnet` or `dotnet.exe`; when WSL is
+using the Windows SDK, it converts absolute WSL paths before handing them to .NET.
 
 ```bash
 # Terminal 1
@@ -86,7 +88,7 @@ bash Scripts/08-invoke-unary-call.sh
 | **Gql2Grpc (GraphQL bridge)** | |
 | 28-gql-simple-query.sh | Simple reflection-based GraphQL query |
 | 29-gql-mapping-file.sh | Query with a mapping file (nested request shape) |
-| 30-gql-subscription.sh | GraphQL subscription → server-streaming (NDJSON) |
+| 30-gql-subscription.sh | GraphQL subscription to server-streaming (NDJSON) |
 | 31-gql-error-envelope.sh | Force a gRPC error and show the GraphQL error envelope |
 | 32-gql-introspection.sh | `__schema` introspection over the synthesised schema |
 | **Validation entry points** | |
@@ -119,12 +121,13 @@ dotnet run --project Tests/GrpCurl.Net.TestServer -- --port 9443 --require-clien
 
 ## Troubleshooting
 
-**"Connection refused"** — Ensure TestServer is running on port 9090.
+**"Connection refused"** - Ensure TestServer is running on port 9090.
 
-**"File not found"** — Run `dotnet build` from `repo/`.
+**"Project file not found"** - Run scripts from inside the repository checkout, or keep
+the repository layout intact so `Scripts/common.sh` can find `Src/`.
 
-**Permission denied** — Run `chmod +x *.sh`. On Windows, run via Git Bash / WSL, or
+**Permission denied** - Run `chmod +x *.sh`. On Windows, run via Git Bash / WSL, or
 prefer the cross-platform ValidationRunner.
 
-**protoc not found** — Some demos use `--proto` which needs `protoc` on PATH. Install
+**protoc not found** - Some demos use `--proto` which needs `protoc` on PATH. Install
 via `apt install protobuf-compiler`, `brew install protobuf`, or `choco install protoc`.

@@ -8,7 +8,9 @@ public sealed class ListCommandHandlerTests
     [Fact]
     public void Create_ReturnsValidCommand()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var command = ListCommandHandler.Create();
 
         // Assert
@@ -19,7 +21,9 @@ public sealed class ListCommandHandlerTests
     [Fact]
     public void Create_HasDescription()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var command = ListCommandHandler.Create();
 
         // Assert
@@ -31,7 +35,9 @@ public sealed class ListCommandHandlerTests
     [Fact]
     public void Create_HasTwoArguments()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var command = ListCommandHandler.Create();
 
         // Assert
@@ -41,7 +47,9 @@ public sealed class ListCommandHandlerTests
     [Fact]
     public void Create_HasAddressArgument()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var command = ListCommandHandler.Create();
 
         // Assert
@@ -53,7 +61,9 @@ public sealed class ListCommandHandlerTests
     [Fact]
     public void Create_HasServiceArgument()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var command = ListCommandHandler.Create();
 
         // Assert
@@ -65,7 +75,9 @@ public sealed class ListCommandHandlerTests
     [Fact]
     public void Create_AddressArgument_IsOptional()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var command = ListCommandHandler.Create();
 
         // Assert
@@ -78,7 +90,9 @@ public sealed class ListCommandHandlerTests
     [Fact]
     public void Create_ServiceArgument_IsOptional()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var command = ListCommandHandler.Create();
 
         // Assert
@@ -91,7 +105,9 @@ public sealed class ListCommandHandlerTests
     [Fact]
     public void Create_HasMultipleOptions()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var command = ListCommandHandler.Create();
 
         // Assert

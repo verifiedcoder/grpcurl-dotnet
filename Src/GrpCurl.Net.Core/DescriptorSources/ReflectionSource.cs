@@ -56,9 +56,9 @@ public sealed class ReflectionSource(GrpcChannel channel, Metadata? metadata = n
         return
         [
             .. _symbolCache.Values
-                .OfType<ServiceDescriptor>()
-                .Select(s => s.FullName)
-                .OrderBy(name => name)
+                           .OfType<ServiceDescriptor>()
+                           .Select(s => s.FullName)
+                           .OrderBy(name => name)
         ];
     }
 
@@ -93,15 +93,26 @@ public sealed class ReflectionSource(GrpcChannel channel, Metadata? metadata = n
     }
 
     /// <summary>
+    ///     Disposes the channel, if this instance owns it.
+    /// </summary>
+    public void Dispose()
+    {
+        if (ownsChannel)
+        {
+            _channel.Dispose();
+        }
+    }
+
+    /// <summary>
     ///     Creates a new ReflectionSource for the specified server address.
     ///     This is a convenience factory for simple use cases where you don't need
     ///     fine-grained control over the gRPC channel configuration.
     /// </summary>
     /// <remarks>
     ///     The returned instance owns its channel and will dispose it when
-    ///     <see cref="Dispose"/> is called. For advanced scenarios requiring
+    ///     <see cref="Dispose" /> is called. For advanced scenarios requiring
     ///     TLS configuration, custom headers, or channel reuse, create the
-    ///     <see cref="GrpcChannel"/> separately and use the constructor instead.
+    ///     <see cref="GrpcChannel" /> separately and use the constructor instead.
     /// </remarks>
     /// <param name="address">The gRPC server address (e.g., "https://localhost:50051").</param>
     /// <param name="options">Optional channel options for configuring the underlying HTTP handler.</param>
@@ -118,17 +129,6 @@ public sealed class ReflectionSource(GrpcChannel channel, Metadata? metadata = n
         var channel = GrpcChannel.ForAddress(address, options ?? new GrpcChannelOptions());
 
         return new ReflectionSource(channel, null, true);
-    }
-
-    /// <summary>
-    ///     Disposes the channel, if this instance owns it.
-    /// </summary>
-    public void Dispose()
-    {
-        if (ownsChannel)
-        {
-            _channel.Dispose();
-        }
     }
 
     private async Task LoadServicesAsync(CancellationToken cancellationToken)
@@ -299,7 +299,6 @@ public sealed class ReflectionSource(GrpcChannel channel, Metadata? metadata = n
             resolved[fileName] = wellKnownDescriptor;
 
             return wellKnownDescriptor;
-
         }
 
         // Resolve dependencies first

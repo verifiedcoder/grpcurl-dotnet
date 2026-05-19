@@ -1,19 +1,19 @@
-using System.Text.Json;
 using Gql2Grpc.GraphQL;
 using Grpc.Core;
+using System.Text.Json;
 
 namespace Gql2Grpc.Diagnostics;
 
 /// <summary>
-/// Converts common failure exceptions into <see cref="GraphQLError"/> values (for the response
-/// envelope) and exit codes matching <c>GrpCurl.Net</c>'s convention.
+///     Converts common failure exceptions into <see cref="GraphQLError" /> values (for the response
+///     envelope) and exit codes matching <c>GrpCurl.Net</c>'s convention.
 /// </summary>
 /// <remarks>
-/// Field-level callers (the executor) use <see cref="ToFieldError"/> to attach the error to a
-/// specific GraphQL response key. Command-level callers (the SetAction catch chain) use
-/// <see cref="ToTopLevelError"/>, which omits the <c>path</c> entirely.
-/// Extensions (<c>code</c>, and for RPC errors <c>grpcStatus</c>/<c>grpcStatusCode</c>) are always
-/// emitted — there is no opt-out.
+///     Field-level callers (the executor) use <see cref="ToFieldError" /> to attach the error to a
+///     specific GraphQL response key. Command-level callers (the SetAction catch chain) use
+///     <see cref="ToTopLevelError" />, which omits the <c>path</c> entirely.
+///     Extensions (<c>code</c>, and for RPC errors <c>grpcStatus</c>/<c>grpcStatusCode</c>) are always
+///     emitted — there is no opt-out.
 /// </remarks>
 internal static class ExceptionTranslator
 {
@@ -32,22 +32,19 @@ internal static class ExceptionTranslator
         => Build(exception, []);
 
     public static int ExitCodeFor(Exception exception)
-    {
-        return exception switch
+        => exception switch
         {
-            OperationCanceledException => CanceledExitCode,
-            RpcException rpc => GrpcExitCodeBase + (int)rpc.StatusCode,
-            JsonException => UsageExitCode,
+            OperationCanceledException                          => CanceledExitCode,
+            RpcException rpc                                    => GrpcExitCodeBase + (int)rpc.StatusCode,
+            JsonException                                       => UsageExitCode,
             FileNotFoundException or DirectoryNotFoundException => SchemaExitCode,
-            HttpRequestException => NetworkExitCode,
-            TimeoutException => TimeoutExitCode,
-            _ => CommandFailedExitCode
+            HttpRequestException                                => NetworkExitCode,
+            TimeoutException                                    => TimeoutExitCode,
+            _                                                   => CommandFailedExitCode
         };
-    }
 
     private static GraphQLError Build(Exception exception, IReadOnlyList<object> path)
-    {
-        return exception switch
+        => exception switch
         {
             RpcException rpc => FromRpcException(rpc, path),
             JsonException json => new GraphQLError(
@@ -75,7 +72,6 @@ internal static class ExceptionTranslator
                 path,
                 new Dictionary<string, object?> { ["code"] = "INTERNAL_ERROR" })
         };
-    }
 
     private static GraphQLError FromRpcException(RpcException rpc, IReadOnlyList<object> path)
     {
@@ -87,6 +83,7 @@ internal static class ExceptionTranslator
         };
 
         var detail = string.IsNullOrEmpty(rpc.Status.Detail) ? rpc.Message : rpc.Status.Detail;
+
         return new GraphQLError(detail, path, extensions);
     }
 }

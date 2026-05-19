@@ -20,6 +20,11 @@ public sealed class SecretRedactorTests
     [InlineData("x-amz-security-token")]
     public void ShouldRedact_AlwaysSensitiveHeaders_ReturnsTrue(string headerName)
     {
+        // Arrange
+
+        // Assert
+
+        // Act
         SecretRedactor.ShouldRedact(headerName).ShouldBeTrue();
     }
 
@@ -35,6 +40,11 @@ public sealed class SecretRedactorTests
     [InlineData("user-password")]
     public void ShouldRedact_SensitiveSuffix_ReturnsTrue(string headerName)
     {
+        // Arrange
+
+        // Assert
+
+        // Act
         SecretRedactor.ShouldRedact(headerName).ShouldBeTrue();
     }
 
@@ -44,6 +54,11 @@ public sealed class SecretRedactorTests
     [InlineData("custom-metadata-bin")]
     public void ShouldRedact_BinaryMetadata_ReturnsTrue(string headerName)
     {
+        // Arrange
+
+        // Assert
+
+        // Act
         SecretRedactor.ShouldRedact(headerName).ShouldBeTrue();
     }
 
@@ -57,12 +72,22 @@ public sealed class SecretRedactorTests
     [InlineData("grpc-accept-encoding")]
     public void ShouldRedact_NonSensitiveHeaders_ReturnsFalse(string headerName)
     {
+        // Arrange
+
+        // Assert
+
+        // Act
         SecretRedactor.ShouldRedact(headerName).ShouldBeFalse();
     }
 
     [Fact]
     public void ShouldRedact_NullOrEmpty_ReturnsFalse()
     {
+        // Arrange
+
+        // Assert
+
+        // Act
         SecretRedactor.ShouldRedact(null!).ShouldBeFalse();
         SecretRedactor.ShouldRedact(string.Empty).ShouldBeFalse();
     }
@@ -70,30 +95,43 @@ public sealed class SecretRedactorTests
     [Fact]
     public void FormatValue_SensitiveHeader_ReturnsRedactedPlaceholder()
     {
+        // Arrange
+
+        // Act
         var result = SecretRedactor.FormatValue("authorization", "Bearer eyJ.example.token", unsafeShowSecrets: false);
 
+        // Assert
         result.ShouldBe("[REDACTED]");
     }
 
     [Fact]
     public void FormatValue_SensitiveHeader_UnsafeShowSecrets_ReturnsRawValue()
     {
+        // Arrange
+
+        // Act
         var result = SecretRedactor.FormatValue("authorization", "Bearer eyJ.example.token", unsafeShowSecrets: true);
 
+        // Assert
         result.ShouldBe("Bearer eyJ.example.token");
     }
 
     [Fact]
     public void FormatValue_NonSensitiveHeader_ReturnsRawValue()
     {
+        // Arrange
+
+        // Act
         var result = SecretRedactor.FormatValue("user-agent", "grpcurl.net/1.0", unsafeShowSecrets: false);
 
+        // Assert
         result.ShouldBe("grpcurl.net/1.0");
     }
 
     [Fact]
     public void FormatLines_MixedMetadata_RedactsOnlySensitive()
     {
+        // Arrange
         var metadata = new Metadata
         {
             { "user-agent", "grpcurl.net/1.0" },
@@ -102,8 +140,10 @@ public sealed class SecretRedactorTests
             { "cookie", "session=xyz" }
         };
 
+        // Act
         var lines = SecretRedactor.FormatLines(metadata, unsafeShowSecrets: false).ToArray();
 
+        // Assert
         lines.ShouldContain("user-agent: grpcurl.net/1.0");
         lines.ShouldContain("authorization: [REDACTED]");
         lines.ShouldContain("x-request-id: abc123");
@@ -113,14 +153,17 @@ public sealed class SecretRedactorTests
     [Fact]
     public void FormatLines_UnsafeShowSecrets_RevealsAllValues()
     {
+        // Arrange
         var metadata = new Metadata
         {
             { "authorization", "Bearer secret-token" },
             { "cookie", "session=xyz" }
         };
 
+        // Act
         var lines = SecretRedactor.FormatLines(metadata, unsafeShowSecrets: true).ToArray();
 
+        // Assert
         lines.ShouldContain("authorization: Bearer secret-token");
         lines.ShouldContain("cookie: session=xyz");
     }
@@ -128,14 +171,18 @@ public sealed class SecretRedactorTests
     [Fact]
     public void FormatLines_BinaryMetadata_RedactedByDefault_RevealedWhenUnsafe()
     {
+        // Arrange
         var metadata = new Metadata
         {
-            { "trace-bin", new byte[] { 1, 2, 3, 4 } }
+            { "trace-bin", [1, 2, 3, 4] }
         };
 
         var redacted = SecretRedactor.FormatLines(metadata, unsafeShowSecrets: false).Single();
+
+        // Act
         var revealed = SecretRedactor.FormatLines(metadata, unsafeShowSecrets: true).Single();
 
+        // Assert
         redacted.ShouldBe("trace-bin: [REDACTED]");
         revealed.ShouldStartWith("trace-bin: ");
         revealed.ShouldEndWith("AQIDBA==");

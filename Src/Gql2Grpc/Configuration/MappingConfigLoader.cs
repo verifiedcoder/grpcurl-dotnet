@@ -1,26 +1,26 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using Gql2Grpc.GraphQL;
 using GrpCurl.Net.Utilities;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using YamlDotNet.Serialization;
 
 namespace Gql2Grpc.Configuration;
 
 /// <summary>
-/// Loads a <see cref="MappingConfig"/> from a YAML or JSON file path. Format is detected from the
-/// extension (<c>.yaml</c>/<c>.yml</c> → YAML, <c>.json</c> → JSON; everything else tries YAML then
-/// JSON). Literal values are expanded for <c>${ENV_VAR}</c> references at load time, reusing
-/// <see cref="GrpcChannelFactory.ExpandEnvironmentVariables"/>.
+///     Loads a <see cref="MappingConfig" /> from a YAML or JSON file path. Format is detected from the
+///     extension (<c>.yaml</c>/<c>.yml</c> → YAML, <c>.json</c> → JSON; everything else tries YAML then
+///     JSON). Literal values are expanded for <c>${ENV_VAR}</c> references at load time, reusing
+///     <see cref="GrpcChannelFactory.ExpandEnvironmentVariables" />.
 /// </summary>
 public static class MappingConfigLoader
 {
     /// <summary>
-    /// Loads and parses a mapping configuration from <paramref name="path"/>. Returns
-    /// <see cref="MappingConfig.Empty"/> when <paramref name="path"/> is <c>null</c> or empty.
+    ///     Loads and parses a mapping configuration from <paramref name="path" />. Returns
+    ///     <see cref="MappingConfig.Empty" /> when <paramref name="path" /> is <c>null</c> or empty.
     /// </summary>
     /// <param name="path">Path to a YAML or JSON mapping file (extension-detected).</param>
     /// <param name="cancellationToken">Cancellation token applied to the async file read.</param>
-    /// <exception cref="FileNotFoundException">Thrown when <paramref name="path"/> is set but does not exist.</exception>
+    /// <exception cref="FileNotFoundException">Thrown when <paramref name="path" /> is set but does not exist.</exception>
     /// <exception cref="InvalidDataException">Thrown when the file does not contain a top-level object/map.</exception>
     public static async Task<MappingConfig> LoadAsync(string? path, CancellationToken cancellationToken = default)
     {
@@ -37,22 +37,19 @@ public static class MappingConfigLoader
         var text = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
         var extension = Path.GetExtension(path).ToLowerInvariant();
 
-        JsonNode? root = extension switch
+        var root = extension switch
         {
             ".yaml" or ".yml" => ParseYaml(text),
-            ".json" => JsonNode.Parse(text),
-            _ => TryParseAny(text)
+            ".json"           => JsonNode.Parse(text),
+            _                 => TryParseAny(text)
         };
 
-        if (root is not JsonObject rootObject)
-        {
-            throw new InvalidDataException("Mapping file must contain a top-level object/map.");
-        }
-
-        return FromJson(rootObject);
+        return root is not JsonObject rootObject
+            ? throw new InvalidDataException("Mapping file must contain a top-level object/map.")
+            : FromJson(rootObject);
     }
 
-    /// <summary>Parses an already-deserialized JSON object into a <see cref="MappingConfig"/>.</summary>
+    /// <summary>Parses an already-deserialized JSON object into a <see cref="MappingConfig" />.</summary>
     /// <param name="root">JSON object containing the mapping configuration shape.</param>
     /// <exception cref="InvalidDataException">Thrown when required fields are missing or invalid.</exception>
     public static MappingConfig FromJson(JsonObject root)
@@ -75,6 +72,7 @@ public static class MappingConfigLoader
     {
         var deserializer = new DeserializerBuilder().Build();
         var value = deserializer.Deserialize<object?>(text);
+
         return YamlToJson(value);
     }
 
@@ -95,53 +93,64 @@ public static class MappingConfigLoader
         switch (node)
         {
             case null:
+
                 return null;
+
             case string s:
+
                 return JsonValue.Create(ExpandLiteral(s));
+
             case bool b:
+
                 return JsonValue.Create(b);
+
             case int i:
+
                 return JsonValue.Create(i);
+
             case long l:
+
                 return JsonValue.Create(l);
+
             case double d:
+
                 return JsonValue.Create(d);
+
             case IDictionary<object, object?> dict:
+
+            {
+                var obj = new JsonObject();
+
+                foreach (var (k, v) in dict)
                 {
-                    var obj = new JsonObject();
-
-                    foreach (var (k, v) in dict)
-                    {
-                        obj[k.ToString()!] = YamlToJson(v);
-                    }
-
-                    return obj;
+                    obj[k.ToString()!] = YamlToJson(v);
                 }
+
+                return obj;
+            }
+
             case IEnumerable<object?> list:
+
+            {
+                var arr = new JsonArray();
+
+                foreach (var item in list)
                 {
-                    var arr = new JsonArray();
-
-                    foreach (var item in list)
-                    {
-                        arr.Add(YamlToJson(item));
-                    }
-
-                    return arr;
+                    arr.Add(YamlToJson(item));
                 }
+
+                return arr;
+            }
+
             default:
+
                 return JsonValue.Create(node.ToString());
         }
     }
 
-    private static string ExpandLiteral(string value)
-    {
-        if (!value.Contains("${", StringComparison.Ordinal))
-        {
-            return value;
-        }
-
-        return GrpcChannelFactory.ExpandEnvironmentVariables(value, value);
-    }
+    private static string ExpandLiteral(string value) => !value.Contains("${", StringComparison.Ordinal)
+        ? value
+        : GrpcChannelFactory.ExpandEnvironmentVariables(value, value);
 
     private static MappingDefaults ReadDefaults(JsonObject? defaults)
     {
@@ -212,10 +221,10 @@ public static class MappingConfigLoader
     private static MappingEntry ReadEntry(JsonObject entry)
     {
         var graphqlField = GetString(entry, "graphqlField")
-            ?? throw new InvalidDataException("Every operations entry must declare 'graphqlField'.");
+                           ?? throw new InvalidDataException("Every operations entry must declare 'graphqlField'.");
 
         var method = GetString(entry, "method")
-            ?? throw new InvalidDataException($"Operations entry '{graphqlField}' must declare 'method'.");
+                     ?? throw new InvalidDataException($"Operations entry '{graphqlField}' must declare 'method'.");
 
         var operationType = ParseOperationType(GetString(entry, "operationType"), graphqlField);
         var kind = ParseMethodKind(GetString(entry, "kind"), operationType);
@@ -258,8 +267,9 @@ public static class MappingConfigLoader
                 }
 
                 selectionMaskPath = GetString(specialObj, "fieldMask")
-                    ?? throw new InvalidDataException(
-                        $"Operations entry '{graphqlField}' has $selection without a 'fieldMask' target path.");
+                                    ?? throw new InvalidDataException(
+                                        $"Operations entry '{graphqlField}' has $selection without a 'fieldMask' target path.");
+
                 continue;
             }
 
@@ -273,10 +283,12 @@ public static class MappingConfigLoader
     {
         switch (node)
         {
-            case JsonValue v when v.TryGetValue(out string? scalar) && scalar is not null:
+            case JsonValue v when v.TryGetValue(out string? scalar):
+
                 return new ArgumentRule.Rename(scalar);
 
             case JsonObject obj:
+
                 if (GetBool(obj, "skip") == true)
                 {
                     return new ArgumentRule.SkipArgument();
@@ -301,6 +313,7 @@ public static class MappingConfigLoader
                     $"Operations entry '{graphqlField}' argument '{argName}' has an unrecognised rule shape.");
 
             default:
+
                 throw new InvalidDataException(
                     $"Operations entry '{graphqlField}' argument '{argName}' must be a string or object.");
         }
@@ -323,8 +336,8 @@ public static class MappingConfigLoader
     {
         return (raw ?? "query").ToLowerInvariant() switch
         {
-            "query" => GraphQLOperationType.Query,
-            "mutation" => GraphQLOperationType.Mutation,
+            "query"        => GraphQLOperationType.Query,
+            "mutation"     => GraphQLOperationType.Mutation,
             "subscription" => GraphQLOperationType.Subscription,
             _ => throw new InvalidDataException(
                 $"Operations entry '{fieldName}' has unknown operationType '{raw}'.")
@@ -340,9 +353,9 @@ public static class MappingConfigLoader
 
         return raw.ToLowerInvariant() switch
         {
-            "unary" => MethodKind.Unary,
+            "unary"                                                       => MethodKind.Unary,
             "serverstreaming" or "server_streaming" or "server-streaming" => MethodKind.ServerStreaming,
-            _ => throw new InvalidDataException($"Unknown method kind '{raw}'.")
+            _                                                             => throw new InvalidDataException($"Unknown method kind '{raw}'.")
         };
     }
 
@@ -356,8 +369,7 @@ public static class MappingConfigLoader
 
             if (!seen.Add(key))
             {
-                throw new InvalidDataException(
-                    $"Duplicate mapping for ({entry.GraphqlField}, {entry.OperationType}).");
+                throw new InvalidDataException($"Duplicate mapping for ({entry.GraphqlField}, {entry.OperationType}).");
             }
         }
     }
@@ -373,7 +385,7 @@ public static class MappingConfigLoader
 
         foreach (var (k, v) in map)
         {
-            if (v is JsonValue vv && vv.TryGetValue(out string? s) && s is not null)
+            if (v is JsonValue vv && vv.TryGetValue(out string? s))
             {
                 result[k] = s;
             }
@@ -382,8 +394,10 @@ public static class MappingConfigLoader
         return result;
     }
 
-    private static string? GetString(JsonObject obj, string key) =>
-        obj[key] is JsonValue v && v.TryGetValue(out string? s) ? s : null;
+    private static string? GetString(JsonObject obj, string key)
+        => obj[key] is JsonValue v && v.TryGetValue(out string? s)
+            ? s
+            : null;
 
     private static bool? GetBool(JsonObject obj, string key)
     {

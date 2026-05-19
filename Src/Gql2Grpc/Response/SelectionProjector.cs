@@ -1,25 +1,23 @@
-using System.Text.Json.Nodes;
 using Gql2Grpc.Configuration;
 using Gql2Grpc.GraphQL;
+using System.Text.Json.Nodes;
 
 namespace Gql2Grpc.Response;
 
 /// <summary>
-/// Prunes a gRPC response JSON tree to match a GraphQL selection. Source field names are
-/// assumed to be snake_case (canonical protobuf JSON); both snake_case and the verbatim
-/// GraphQL name are tried for compatibility with servers that emit camelCase. Aliases are
-/// preserved as output keys. An <see cref="ResponseShaping.Unwrap"/> hint strips a single
-/// wrapper field before projection (for APIs that wrap lists in <c>items</c> etc.).
+///     Prunes a gRPC response JSON tree to match a GraphQL selection. Source field names are
+///     assumed to be snake_case (canonical protobuf JSON); both snake_case and the verbatim
+///     GraphQL name are tried for compatibility with servers that emit camelCase. Aliases are
+///     preserved as output keys. An <see cref="ResponseShaping.Unwrap" /> hint strips a single
+///     wrapper field before projection (for APIs that wrap lists in <c>items</c> etc.).
 /// </summary>
 /// <remarks>
-/// Creates a projector. When <paramref name="strict"/> is <c>true</c>, fields requested in the
-/// selection but absent from the gRPC response are reported as <c>MISSING_FIELD</c> errors;
-/// otherwise they are emitted as <c>null</c>.
+///     Creates a projector. When <paramref name="strict" /> is <c>true</c>, fields requested in the
+///     selection but absent from the gRPC response are reported as <c>MISSING_FIELD</c> errors;
+///     otherwise they are emitted as <c>null</c>.
 /// </remarks>
 public sealed class SelectionProjector(bool strict)
 {
-    private readonly bool _strict = strict;
-
     /// <summary>Projects the full response for a single root field.</summary>
     public JsonNode? Project(
         JsonNode? source,
@@ -56,8 +54,8 @@ public sealed class SelectionProjector(bool strict)
         return source switch
         {
             JsonArray array => ProjectArray(array, selections, path, errorSink),
-            JsonObject obj => ProjectObject(obj, selections, path, errorSink),
-            _ => source.DeepClone() // Value/Struct scalar passthrough
+            JsonObject obj  => ProjectObject(obj, selections, path, errorSink),
+            _               => source.DeepClone() // Value/Struct scalar passthrough
         };
     }
 
@@ -93,15 +91,16 @@ public sealed class SelectionProjector(bool strict)
 
             if (child is null && !source.ContainsKey(selection.Name) && !source.ContainsKey(ConventionDefaults.ToSnakeCase(selection.Name)))
             {
-                if (_strict)
+                if (strict)
                 {
                     errorSink.Add(new GraphQLError(
-                        $"Field '{selection.ResponseKey}' was not present in the gRPC response.",
-                        childPath,
-                        new Dictionary<string, object?> { ["code"] = "MISSING_FIELD" }));
+                                      $"Field '{selection.ResponseKey}' was not present in the gRPC response.",
+                                      childPath,
+                                      new Dictionary<string, object?> { ["code"] = "MISSING_FIELD" }));
                 }
 
                 result[selection.ResponseKey] = null;
+
                 continue;
             }
 
@@ -126,8 +125,10 @@ public sealed class SelectionProjector(bool strict)
     private static List<object> AppendPath(IReadOnlyList<object> path, object segment)
     {
         var next = new List<object>(path.Count + 1);
+
         next.AddRange(path);
         next.Add(segment);
+
         return next;
     }
 }

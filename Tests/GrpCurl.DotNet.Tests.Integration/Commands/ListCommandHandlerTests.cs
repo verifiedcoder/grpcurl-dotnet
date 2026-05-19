@@ -256,7 +256,10 @@ public sealed class ListCommandHandlerTests(GrpcTestFixture fixture)
     [Fact]
     public async Task ExecuteAsync_NoAddressNoProtoset_ThrowsGrpcCommandException()
     {
-        // Arrange & Act & Assert
+        // Arrange
+
+        // Act
+        // Assert
         var exception = await Should.ThrowAsync<GrpcCommandException>(() =>
             ListCommandHandler.ExecuteAsync(
                 address: null,
@@ -284,7 +287,10 @@ public sealed class ListCommandHandlerTests(GrpcTestFixture fixture)
     [Fact]
     public async Task ExecuteAsync_InvalidService_ThrowsGrpcCommandException()
     {
-        // Arrange & Act & Assert
+        // Arrange
+
+        // Act
+        // Assert
         var exception = await Should.ThrowAsync<GrpcCommandException>(() =>
             ListCommandHandler.ExecuteAsync(
                 address: fixture.Address,
@@ -315,7 +321,8 @@ public sealed class ListCommandHandlerTests(GrpcTestFixture fixture)
         // Arrange
         var nonExistentPath = Path.Combine(Path.GetTempPath(), "does-not-exist.protoset");
 
-        // Act & Assert
+        // Act
+        // Assert
         await Should.ThrowAsync<GrpcCommandException>(() =>
             ListCommandHandler.ExecuteAsync(
                 address: null,

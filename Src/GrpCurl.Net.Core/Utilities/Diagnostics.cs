@@ -9,22 +9,22 @@ namespace GrpCurl.Net.Utilities;
 /// </summary>
 /// <remarks>
 ///     <para>
-///         A new <see cref="IAnsiConsole"/> is constructed per call so that tests which
-///         redirect stderr via <see cref="Console.SetError"/> capture output written here.
+///         A new <see cref="IAnsiConsole" /> is constructed per call so that tests which
+///         redirect stderr via <see cref="Console.SetError" /> capture output written here.
 ///         The construction cost is negligible compared to actual diagnostic frequency.
 ///     </para>
 /// </remarks>
 internal static class Diagnostics
 {
-    /// <summary>Builds a fresh <see cref="IAnsiConsole"/> bound to the current <see cref="Console.Error"/>.</summary>
+    /// <summary>Convenience accessor for an <see cref="IAnsiConsole" /> targeting stderr.</summary>
+    public static IAnsiConsole Stderr => CreateStderr();
+
+    /// <summary>Builds a fresh <see cref="IAnsiConsole" /> bound to the current <see cref="Console.Error" />.</summary>
     public static IAnsiConsole CreateStderr()
         => AnsiConsole.Create(new AnsiConsoleSettings
         {
             Out = new AnsiConsoleOutput(Console.Error)
         });
-
-    /// <summary>Convenience accessor for an <see cref="IAnsiConsole"/> targeting stderr.</summary>
-    public static IAnsiConsole Stderr => CreateStderr();
 
     /// <summary>Writes a Spectre.Console markup line to stderr.</summary>
     public static void Markup(string message)

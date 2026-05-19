@@ -16,7 +16,10 @@ internal static class WellKnownTypeHandler
     /// </summary>
     /// <param name="element">The JSON element.</param>
     /// <param name="messageType">The message descriptor.</param>
-    /// <returns>An instance of <see cref="SimpleDynamicMessage"/> representing the protobuf format, or null if the provided JSON element is not string.</returns>
+    /// <returns>
+    ///     An instance of <see cref="SimpleDynamicMessage" /> representing the protobuf format, or null if the provided
+    ///     JSON element is not string.
+    /// </returns>
     public static SimpleDynamicMessage? ConvertTimestamp(JsonElement element, MessageDescriptor messageType)
     {
         // Timestamp is encoded as RFC 3339 string in JSON
@@ -213,7 +216,7 @@ internal static class WellKnownTypeHandler
     ///     Empty is encoded as empty JSON object. Just return an empty message.
     /// </summary>
     /// <param name="messageType">The message type.</param>
-    /// <returns>A <see cref="SimpleDynamicMessage"/> representing the empty message.</returns>
+    /// <returns>A <see cref="SimpleDynamicMessage" /> representing the empty message.</returns>
     public static SimpleDynamicMessage ConvertEmpty(MessageDescriptor messageType)
         => new(messageType);
 
@@ -244,9 +247,9 @@ internal static class WellKnownTypeHandler
 
         // Split by comma and trim whitespace
         var paths = pathsString.Split(',', StringSplitOptions.RemoveEmptyEntries)
-            .Select(p => p.Trim())
-            .Cast<object?>()
-            .ToList();
+                               .Select(p => p.Trim())
+                               .Cast<object?>()
+                               .ToList();
 
         message.RepeatedFields[pathsField] = paths;
 
@@ -299,14 +302,14 @@ internal static class WellKnownTypeHandler
 
         /*
          * google.protobuf.Value has oneof kind with fields:
-         * 
+         *
          * 1: null_value (NullValue enum)
          * 2: number_value (double)
          * 3: string_value (string)
          * 4: bool_value (bool)
          * 5: struct_value (Struct)
          * 6: list_value (ListValue)
-        */
+         */
         FieldDescriptor? activeField;
         object? value;
 
@@ -315,7 +318,7 @@ internal static class WellKnownTypeHandler
             case JsonValueKind.Null:
 
                 activeField = messageType.FindFieldByNumber(1); // null_value
-                value = 0; // NullValue.NULL_VALUE = 0
+                value = 0;                                      // NullValue.NULL_VALUE = 0
 
                 break;
 
@@ -409,7 +412,7 @@ internal static class WellKnownTypeHandler
     ///     Provides serialisation from Protobuf to JSON.
     /// </summary>
     /// <param name="sb">The string builder.</param>
-    /// <param name="timestamp">A <see cref="SimpleDynamicMessage"/> reprsenting the timestamp to write.</param>
+    /// <param name="timestamp">A <see cref="SimpleDynamicMessage" /> reprsenting the timestamp to write.</param>
     public static void WriteTimestampJson(StringBuilder sb, SimpleDynamicMessage timestamp)
     {
         // Get seconds and nanos fields

@@ -4,9 +4,12 @@ using Grpc.Core;
 using GrpCurl.Net.DescriptorSources;
 using GrpCurl.Net.Exceptions;
 using GrpCurl.Net.Invocation;
+using GrpCurl.Net.Output;
 using GrpCurl.Net.Utilities;
 using Spectre.Console;
 using System.CommandLine;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Text.Json;
 
 namespace GrpCurl.Net.Commands;
@@ -338,25 +341,22 @@ internal static class InvokeCommandHandler
     }
 
     internal static IMessage ParseRequestPayload(
-        Google.Protobuf.Reflection.MessageDescriptor inputType,
+        MessageDescriptor inputType,
         string? requestText,
         bool allowUnknownFields,
         bool textFormat)
     {
         if (textFormat)
         {
-            if (string.IsNullOrEmpty(requestText))
-            {
-                return new SimpleDynamicMessage(inputType);
-            }
-
-            return DynamicTextFormat.Parse(inputType, requestText);
+            return string.IsNullOrEmpty(requestText)
+                ? new SimpleDynamicMessage(inputType)
+                : DynamicTextFormat.Parse(inputType, requestText);
         }
 
         return DynamicInvoker.CreateMessageFromJson(inputType, requestText, allowUnknownFields);
     }
 
-    internal static System.Security.Cryptography.X509Certificates.X509RevocationMode? ParseRevocationMode(string? mode)
+    internal static X509RevocationMode? ParseRevocationMode(string? mode)
     {
         if (string.IsNullOrEmpty(mode))
         {
@@ -365,9 +365,9 @@ internal static class InvokeCommandHandler
 
         return mode.ToLowerInvariant() switch
         {
-            "online" => System.Security.Cryptography.X509Certificates.X509RevocationMode.Online,
-            "offline" => System.Security.Cryptography.X509Certificates.X509RevocationMode.Offline,
-            "nocheck" or "no-check" or "none" => System.Security.Cryptography.X509Certificates.X509RevocationMode.NoCheck,
+            "online"                          => X509RevocationMode.Online,
+            "offline"                         => X509RevocationMode.Offline,
+            "nocheck" or "no-check" or "none" => X509RevocationMode.NoCheck,
             _ => throw new ArgumentException(
                 $"Unknown --revocation-mode '{mode}'. Expected: online, offline, nocheck.",
                 nameof(mode))
@@ -443,10 +443,17 @@ internal static class InvokeCommandHandler
         ValidateOptions(plaintext, insecure, serverName, maxMsgSz, verbose);
 
         var parsedRevocationMode = ParseRevocationMode(revocationMode);
-        var parsedKeepaliveTime = keepaliveTime is null ? (TimeSpan?)null : GrpcChannelFactory.ParseDuration(keepaliveTime);
-        var parsedKeepaliveTimeout = keepaliveTimeout is null ? (TimeSpan?)null : GrpcChannelFactory.ParseDuration(keepaliveTimeout);
+
+        var parsedKeepaliveTime = keepaliveTime is null
+            ? (TimeSpan?)null
+            : GrpcChannelFactory.ParseDuration(keepaliveTime);
+
+        var parsedKeepaliveTimeout = keepaliveTimeout is null
+            ? (TimeSpan?)null
+            : GrpcChannelFactory.ParseDuration(keepaliveTimeout);
+
         var useTextFormat = !string.IsNullOrEmpty(requestFormat)
-            && string.Equals(requestFormat, "text", StringComparison.OrdinalIgnoreCase);
+                            && string.Equals(requestFormat, "text", StringComparison.OrdinalIgnoreCase);
 
         if (!string.IsNullOrEmpty(requestFormat)
             && !string.Equals(requestFormat, "json", StringComparison.OrdinalIgnoreCase)
@@ -461,7 +468,9 @@ internal static class InvokeCommandHandler
         }
 
         // Create timing context if very verbose mode is enabled
-        var timing = veryVerbose ? new TimingContext() : null;
+        var timing = veryVerbose
+            ? new TimingContext()
+            : null;
 
         // --max-time bounds the *entire* operation, not just the RPC. The deadline starts
         // here so it covers protoset loading, reflection schema lookup, stdin reads,
@@ -472,12 +481,15 @@ internal static class InvokeCommandHandler
         var maxTimeSpan = maxTime is not null ? GrpcChannelFactory.ParseDuration(maxTime) : (TimeSpan?)null;
 
         using var ctrlCCts = new CancellationTokenSource();
+
         using var deadlineCts = maxTimeSpan is not null
             ? new CancellationTokenSource(maxTimeSpan.Value)
             : new CancellationTokenSource();
+
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(deadlineCts.Token, ctrlCCts.Token);
 
         var operationToken = linkedCts.Token;
+
         DateTime? rpcDeadline = maxTimeSpan is not null ? DateTime.UtcNow.Add(maxTimeSpan.Value) : null;
 
         var cancelHandler = CancelHandler();
@@ -644,39 +656,36 @@ internal static class InvokeCommandHandler
                 (headerStrings ?? []).Concat(rpcHeaders ?? []),
                 userAgent);
 
+            timing?.StartPhase("RPC Invocation");
+
             // operationToken / rpcDeadline are computed at the top of ExecuteAsync so the
             // budget covers protoset loading, reflection, stdin reads, and the RPC. The
             // remaining deadline for the gRPC call is derived from "wall-clock now" so a
             // slow descriptor probe shrinks the budget the RPC sees.
-            var cancellationToken = operationToken;
-            var deadline = rpcDeadline;
-
-            timing?.StartPhase("RPC Invocation");
-
             switch (methodDescriptor.IsClientStreaming)
             {
                 case false when !methodDescriptor.IsServerStreaming:
 
-                    await InvokeUnaryAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, deadline, timing, output, unsafeShowSecrets, useTextFormat, cancellationToken);
+                    await InvokeUnaryAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, rpcDeadline, timing, output, unsafeShowSecrets, useTextFormat, operationToken);
 
                     break;
 
                 case false when methodDescriptor.IsServerStreaming:
 
-                    await InvokeServerStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, deadline, timing, output, useTextFormat, cancellationToken);
+                    await InvokeServerStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, rpcDeadline, timing, output, useTextFormat, operationToken);
 
                     break;
 
                 case true when !methodDescriptor.IsServerStreaming:
 
-                    await InvokeClientStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, deadline, timing, output, useTextFormat, cancellationToken);
+                    await InvokeClientStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, rpcDeadline, timing, output, useTextFormat, operationToken);
 
                     break;
 
                 default:
 
                     // Bidirectional streaming
-                    await InvokeBidirectionalStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, deadline, timing, output, useTextFormat, cancellationToken);
+                    await InvokeBidirectionalStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, rpcDeadline, timing, output, useTextFormat, operationToken);
 
                     break;
             }
@@ -695,7 +704,7 @@ internal static class InvokeCommandHandler
             // Export reconstructed .proto sources if --proto-out-dir specified.
             if (!string.IsNullOrEmpty(protoOutDir))
             {
-                await GrpCurl.Net.Output.ProtoFileEmitter.WriteAsync(descriptorSource, protoOutDir, force, operationToken);
+                await ProtoFileEmitter.WriteAsync(descriptorSource, protoOutDir, force, operationToken);
 
                 if (verbose)
                 {
@@ -786,17 +795,14 @@ internal static class InvokeCommandHandler
             {
                 var entries = new List<RpcStatusDetailEntry>(decodedDetails.Details.Count);
 
-                foreach (var detail in decodedDetails.Details)
+                entries.AddRange(decodedDetails.Details.Select(detail => new RpcStatusDetailEntry
                 {
-                    entries.Add(new RpcStatusDetailEntry
-                    {
-                        TypeUrl = detail.TypeUrl,
-                        RawBase64 = detail.ParsedMessage is null ? Convert.ToBase64String(detail.RawValue) : null,
-                        Json = detail.ParsedMessage is { } parsed
-                            ? Google.Protobuf.JsonFormatter.Default.Format(parsed)
-                            : null
-                    });
-                }
+                    TypeUrl = detail.TypeUrl,
+                    RawBase64 = detail.ParsedMessage is null ? Convert.ToBase64String(detail.RawValue) : null,
+                    Json = detail.ParsedMessage is { } parsed
+                        ? JsonFormatter.Default.Format(parsed)
+                        : null
+                }));
 
                 statusDetailsInfo = new RpcStatusDetailsInfo
                 {
@@ -895,9 +901,6 @@ internal static class InvokeCommandHandler
         {
             // Unregister Ctrl+C handler to avoid memory leaks
             Console.CancelKeyPress -= cancelHandler;
-
-            // Dispose deadline CancellationTokenSource
-            deadlineCts?.Dispose();
         }
 
         return;
@@ -969,7 +972,7 @@ internal static class InvokeCommandHandler
             await Console.Error.WriteLineAsync("Response contents:");
         }
 
-        OutputRenderer.WriteInvokeMessage(result.Response, index: 0, emitDefaults, output, textFormat: useTextFormat);
+        OutputRenderer.WriteInvokeMessage(result.Response, 0, emitDefaults, output, textFormat: useTextFormat);
 
         if (verbose)
         {
@@ -1036,7 +1039,7 @@ internal static class InvokeCommandHandler
             await Console.Error.WriteLineAsync("Response stream:");
         }
 
-        await foreach (var response in streamingResult.ResponseStream)
+        await foreach (var response in streamingResult.ResponseStream.WithCancellation(cancellationToken))
         {
             if (responseCount == 0)
             {
@@ -1102,16 +1105,20 @@ internal static class InvokeCommandHandler
         if (verbose)
         {
             WriteVerboseResponseHeaders(await clientResult.ResponseHeadersAsync);
+
             await Console.Error.WriteLineAsync("Response contents:");
         }
 
-        OutputRenderer.WriteInvokeMessage(clientResult.Response, index: 0, emitDefaults, output, textFormat: useTextFormat);
+        OutputRenderer.WriteInvokeMessage(clientResult.Response, 0, emitDefaults, output, textFormat: useTextFormat);
 
-        if (verbose)
+        if (!verbose)
         {
-            WriteVerboseResponseTrailers(clientResult.GetTrailers());
-            Diagnostics.Markup($"[dim]Client streaming completed, sent {sentCount} message(s)[/]");
+            return;
         }
+
+        WriteVerboseResponseTrailers(clientResult.GetTrailers());
+
+        Diagnostics.Markup($"[dim]Client streaming completed, sent {sentCount} message(s)[/]");
 
         return;
 
@@ -1166,7 +1173,7 @@ internal static class InvokeCommandHandler
             await Console.Error.WriteLineAsync("Response stream:");
         }
 
-        await foreach (var response in duplexResult.ResponseStream)
+        await foreach (var response in duplexResult.ResponseStream.WithCancellation(cancellationToken))
         {
             if (responseCount == 0)
             {
@@ -1288,7 +1295,7 @@ internal static class InvokeCommandHandler
     /// <summary>
     ///     Generates request messages from JSON input (supports single object, array,
     ///     concatenated objects, or stdin in any of those forms). When stdin is used,
-    ///     the body is read fully up to <paramref name="maxStdinBytes"/> bytes (default
+    ///     the body is read fully up to <paramref name="maxStdinBytes" /> bytes (default
     ///     16 MiB) so we can accept pretty-printed JSON arrays and concatenated objects
     ///     across multiple lines — parity with upstream grpcurl. The earlier line-based
     ///     stdin parser broke on blank lines (CODE-REVIEW.md P2 "Streaming stdin
@@ -1371,7 +1378,7 @@ internal static class InvokeCommandHandler
 
     /// <summary>
     ///     Reads stdin into a string, refusing inputs larger than
-    ///     <paramref name="maxBytes"/> so a wedged or hostile producer can't drive the
+    ///     <paramref name="maxBytes" /> so a wedged or hostile producer can't drive the
     ///     CLI into memory pressure. Returns immediately on EOF.
     /// </summary>
     private static async Task<string> ReadStdinBoundedAsync(long maxBytes)
@@ -1397,7 +1404,7 @@ internal static class InvokeCommandHandler
             await buffer.WriteAsync(read.AsMemory(0, n));
         }
 
-        return System.Text.Encoding.UTF8.GetString(buffer.GetBuffer(), 0, (int)buffer.Length);
+        return Encoding.UTF8.GetString(buffer.GetBuffer(), 0, (int)buffer.Length);
     }
 
     /// <summary>
@@ -1407,12 +1414,11 @@ internal static class InvokeCommandHandler
     internal static List<string> ParseConcatenatedJsonObjects(string json)
     {
         var results = new List<string>();
-        var bytes = System.Text.Encoding.UTF8.GetBytes(json);
+        var bytes = Encoding.UTF8.GetBytes(json);
         var reader = new Utf8JsonReader(bytes, new JsonReaderOptions { AllowMultipleValues = true });
         var startIndex = 0;
 
         while (reader.Read())
-        {
             switch (reader.TokenType)
             {
                 case JsonTokenType.StartObject when reader.CurrentDepth == 0:
@@ -1423,13 +1429,13 @@ internal static class InvokeCommandHandler
 
                 case JsonTokenType.EndObject when reader.CurrentDepth == 0:
 
-                    {
-                        var length = (int)reader.BytesConsumed - startIndex;
-                        var objectJson = System.Text.Encoding.UTF8.GetString(bytes, startIndex, length);
-                        results.Add(objectJson);
+                {
+                    var length = (int)reader.BytesConsumed - startIndex;
+                    var objectJson = Encoding.UTF8.GetString(bytes, startIndex, length);
+                    results.Add(objectJson);
 
-                        break;
-                    }
+                    break;
+                }
 
                 case JsonTokenType.None:
                 case JsonTokenType.StartObject:
@@ -1445,9 +1451,9 @@ internal static class InvokeCommandHandler
                 case JsonTokenType.Null:
 
                 default:
+
                     break;
             }
-        }
 
         return results;
     }

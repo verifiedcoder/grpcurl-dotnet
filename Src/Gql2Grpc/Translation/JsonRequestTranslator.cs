@@ -1,12 +1,12 @@
-using System.Text.Json.Nodes;
 using Gql2Grpc.Configuration;
 using Gql2Grpc.GraphQL;
+using System.Text.Json.Nodes;
 
 namespace Gql2Grpc.Translation;
 
 /// <summary>
-/// Applies mapping-entry argument rules (and convention fallback) to a resolved GraphQL selection
-/// to produce the request JSON accepted by GrpCurl.Net's dynamic invocation.
+///     Applies mapping-entry argument rules (and convention fallback) to a resolved GraphQL selection
+///     to produce the request JSON accepted by GrpCurl.Net's dynamic invocation.
 /// </summary>
 public sealed class JsonRequestTranslator : IRequestTranslator
 {
@@ -18,11 +18,14 @@ public sealed class JsonRequestTranslator : IRequestTranslator
         // 1. Literals are always applied, even when the caller didn't supply the argument.
         foreach (var (argName, rule) in entry.Arguments)
         {
-            if (rule is ArgumentRule.Literal literal)
+            if (rule is not ArgumentRule.Literal literal)
             {
-                var targetPath = ResolveTargetPath(argName, entry, defaults);
-                SetAtPath(request, targetPath, JsonValue.Create(literal.Value));
+                continue;
             }
+
+            var targetPath = ResolveTargetPath(argName, entry, defaults);
+
+            SetAtPath(request, targetPath, JsonValue.Create(literal.Value));
         }
 
         // 2. Caller-supplied arguments route through their matching rule, or the convention fallback.
@@ -32,14 +35,16 @@ public sealed class JsonRequestTranslator : IRequestTranslator
         }
 
         // 3. $selection.fieldMask — derive a FieldMask from the resolved selection tree.
-        if (entry.SelectionFieldMaskPath is { } maskPath)
+        if (entry.SelectionFieldMaskPath is not { } maskPath)
         {
-            var mask = FieldMaskProjector.Build(root.Children);
+            return request.ToJsonString();
+        }
 
-            if (!string.IsNullOrEmpty(mask))
-            {
-                SetAtPath(request, maskPath, JsonValue.Create(mask));
-            }
+        var mask = FieldMaskProjector.Build(root.Children);
+
+        if (!string.IsNullOrEmpty(mask))
+        {
+            SetAtPath(request, maskPath, JsonValue.Create(mask));
         }
 
         return request.ToJsonString();
@@ -57,27 +62,36 @@ public sealed class JsonRequestTranslator : IRequestTranslator
             switch (rule)
             {
                 case ArgumentRule.SkipArgument:
+
                     return;
 
                 case ArgumentRule.Literal:
+
                     // Already applied during phase 1; callers don't override literals.
                     return;
 
-                case ArgumentRule.PathRule path when path.Path == ".":
+                case ArgumentRule.PathRule { Path: "." }:
+
                     SpreadOntoRoot(request, value);
+
                     return;
 
                 case ArgumentRule.PathRule path:
+
                     SetAtPath(request, path.Path, value?.DeepClone());
+
                     return;
 
                 case ArgumentRule.Rename rename:
+
                     SetAtPath(request, rename.GrpcFieldName, value?.DeepClone());
+
                     return;
             }
         }
 
         var conventionTarget = ResolveTargetPath(argName, entry, defaults);
+
         SetAtPath(request, conventionTarget, value?.DeepClone());
     }
 
@@ -88,8 +102,8 @@ public sealed class JsonRequestTranslator : IRequestTranslator
             return rule switch
             {
                 ArgumentRule.PathRule p when p.Path != "." => p.Path,
-                ArgumentRule.Rename r => r.GrpcFieldName,
-                _ => ConventionDefaults.ToSnakeCase(argName)
+                ArgumentRule.Rename r                      => r.GrpcFieldName,
+                _                                          => ConventionDefaults.ToSnakeCase(argName)
             };
         }
 
@@ -102,7 +116,7 @@ public sealed class JsonRequestTranslator : IRequestTranslator
     {
         if (value is not JsonObject obj)
         {
-            // Spreading a non-object (null, scalar, array) is a caller error but we fail loudly upstream
+            // Spreading a non-object (null, scalar, array) is a caller error, but we fail loudly upstream
             // rather than silently dropping data.
             throw new ArgumentException(
                 "Argument rule { path: \".\" } requires an object value; got " +
@@ -123,7 +137,7 @@ public sealed class JsonRequestTranslator : IRequestTranslator
         }
 
         var segments = path.Split('.');
-        JsonObject current = root;
+        var current = root;
 
         for (var i = 0; i < segments.Length - 1; i++)
         {

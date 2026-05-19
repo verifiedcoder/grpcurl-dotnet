@@ -170,7 +170,8 @@ public sealed class SimpleDynamicMessageTests
 
         var descriptor = TestDescriptorProvider.SimpleRequest;
 
-        // Act & Assert
+        // Act
+        // Assert
         var ex = Should.Throw<ArgumentException>(() => new SimpleDynamicMessage(descriptor, json));
 
         ex.Message.ShouldContain("Unknown enum value");
@@ -302,7 +303,8 @@ public sealed class SimpleDynamicMessageTests
 
         var descriptor = TestDescriptorProvider.StreamingOutputCallRequest;
 
-        // Act & Assert
+        // Act
+        // Assert
         var ex = Should.Throw<ArgumentException>(() => new SimpleDynamicMessage(descriptor, json));
 
         ex.Message.ShouldContain("Null values are not allowed in repeated field");
@@ -336,7 +338,8 @@ public sealed class SimpleDynamicMessageTests
 
         var descriptor = TestDescriptorProvider.SimpleRequest;
 
-        // Act & Assert
+        // Act
+        // Assert
         var ex = Should.Throw<ArgumentException>(() =>
             new SimpleDynamicMessage(descriptor, json, allowUnknownFields: false));
 
@@ -764,7 +767,8 @@ public sealed class SimpleDynamicMessageTests
 
         var descriptor = TestDescriptorProvider.SimpleRequest;
 
-        // Act & Assert
+        // Act
+        // Assert
         Should.Throw<System.Text.Json.JsonException>(() => new SimpleDynamicMessage(descriptor, json));
     }
 
@@ -776,7 +780,8 @@ public sealed class SimpleDynamicMessageTests
 
         var descriptor = TestDescriptorProvider.SimpleRequest;
 
-        // Act & Assert
+        // Act
+        // Assert
         Should.Throw<InvalidOperationException>(() => new SimpleDynamicMessage(descriptor, json));
     }
 

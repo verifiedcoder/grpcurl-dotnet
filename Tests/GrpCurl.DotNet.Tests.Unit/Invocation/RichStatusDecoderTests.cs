@@ -10,16 +10,19 @@ public sealed class RichStatusDecoderTests
     [Fact]
     public void TryDecodeBytes_RoundTrips_CodeAndMessage()
     {
-        var status = new Google.Rpc.Status
+        // Arrange
+        var status = new Status
         {
             Code = 5,
             Message = "not found"
         };
 
+        // Act
         var decoded = RichStatusDecoder.TryDecodeBytes(status.ToByteArray());
 
+        // Assert
         decoded.ShouldNotBeNull();
-        decoded!.Code.ShouldBe(5);
+        decoded.Code.ShouldBe(5);
         decoded.Message.ShouldBe("not found");
         decoded.Details.ShouldBeEmpty();
     }
@@ -27,6 +30,7 @@ public sealed class RichStatusDecoderTests
     [Fact]
     public void TryDecodeBytes_KnownDetail_ParsesIntoTypedMessage()
     {
+        // Arrange
         var errorInfo = new ErrorInfo
         {
             Reason = "QUOTA_EXCEEDED",
@@ -35,17 +39,19 @@ public sealed class RichStatusDecoderTests
 
         errorInfo.Metadata.Add("region", "us-east-1");
 
-        var status = new Google.Rpc.Status
+        var status = new Status
         {
             Code = 8,
             Message = "Quota exceeded",
             Details = { Any.Pack(errorInfo) }
         };
 
+        // Act
         var decoded = RichStatusDecoder.TryDecodeBytes(status.ToByteArray());
 
+        // Assert
         decoded.ShouldNotBeNull();
-        decoded!.Details.Count.ShouldBe(1);
+        decoded.Details.Count.ShouldBe(1);
 
         var detail = decoded.Details[0];
 
@@ -58,23 +64,26 @@ public sealed class RichStatusDecoderTests
     [Fact]
     public void TryDecodeBytes_UnknownDetail_KeepsRawBytes()
     {
+        // Arrange
         var unknownTypePayload = new Any
         {
             TypeUrl = "type.googleapis.com/com.example.Custom",
             Value = ByteString.CopyFrom([0x01, 0x02, 0x03])
         };
 
-        var status = new Google.Rpc.Status
+        var status = new Status
         {
             Code = 13,
             Message = "internal",
             Details = { unknownTypePayload }
         };
 
+        // Act
         var decoded = RichStatusDecoder.TryDecodeBytes(status.ToByteArray());
 
+        // Assert
         decoded.ShouldNotBeNull();
-        decoded!.Details.Count.ShouldBe(1);
+        decoded.Details.Count.ShouldBe(1);
         decoded.Details[0].ParsedMessage.ShouldBeNull();
         decoded.Details[0].RawValue.ShouldBe([1, 2, 3]);
     }
@@ -82,8 +91,12 @@ public sealed class RichStatusDecoderTests
     [Fact]
     public void TryDecodeBytes_GarbagePayload_ReturnsNull()
     {
+        // Arrange
+
+        // Act
         var decoded = RichStatusDecoder.TryDecodeBytes([0xff, 0xff, 0xff, 0xff]);
 
+        // Assert
         decoded.ShouldBeNull();
     }
 }

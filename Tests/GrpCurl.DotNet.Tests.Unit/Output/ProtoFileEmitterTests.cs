@@ -14,10 +14,14 @@ public sealed class ProtoFileEmitterTests
     [Fact]
     public async Task WriteAsync_ReconstructsProtoFile_WithSyntaxAndPackage()
     {
+        // Arrange
         var source = await ProtosetSource.LoadFromFilesAsync([TestProtosetPath], TestContext.Current.CancellationToken);
         var outDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
+        // Act
         try
+
+        // Assert
         {
             await ProtoFileEmitter.WriteAsync(source, outDir, force: true, TestContext.Current.CancellationToken);
 
@@ -39,10 +43,14 @@ public sealed class ProtoFileEmitterTests
     [Fact]
     public async Task WriteAsync_ExistingFile_RefusesWithoutForce()
     {
+        // Arrange
         var source = await ProtosetSource.LoadFromFilesAsync([TestProtosetPath], TestContext.Current.CancellationToken);
         var outDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
+        // Act
         try
+
+        // Assert
         {
             await ProtoFileEmitter.WriteAsync(source, outDir, force: false, TestContext.Current.CancellationToken);
 

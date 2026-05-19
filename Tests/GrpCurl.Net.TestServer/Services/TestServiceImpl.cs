@@ -119,17 +119,9 @@ public class TestServiceImpl : TestService.TestServiceBase
     }
 
     private static string? GetHeaderValue(ServerCallContext context, string headerName)
-    {
-        foreach (var entry in context.RequestHeaders)
-        {
-            if (string.Equals(entry.Key, headerName, StringComparison.OrdinalIgnoreCase) && !entry.IsBinary)
-            {
-                return entry.Value;
-            }
-        }
-
-        return null;
-    }
+        => (from entry in context.RequestHeaders
+            where string.Equals(entry.Key, headerName, StringComparison.OrdinalIgnoreCase) && !entry.IsBinary
+            select entry.Value).FirstOrDefault();
 
     /// <summary>
     ///     One request followed by a sequence of responses (streamed download).

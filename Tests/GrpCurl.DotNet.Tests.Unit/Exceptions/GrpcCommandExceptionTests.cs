@@ -9,7 +9,9 @@ public sealed class GrpcCommandExceptionTests
     [Fact]
     public void Constructor_WithMessageOnly_SetsDefaultExitCode()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var exception = new GrpcCommandException("Test error");
 
         // Assert
@@ -20,7 +22,9 @@ public sealed class GrpcCommandExceptionTests
     [Fact]
     public void Constructor_WithMessageAndExitCode_SetsProperties()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var exception = new GrpcCommandException("Custom error", 42);
 
         // Assert
@@ -31,7 +35,9 @@ public sealed class GrpcCommandExceptionTests
     [Fact]
     public void Constructor_WithZeroExitCode_SetsExitCode()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var exception = new GrpcCommandException("Success with error", 0);
 
         // Assert
@@ -41,7 +47,9 @@ public sealed class GrpcCommandExceptionTests
     [Fact]
     public void Constructor_WithNegativeExitCode_SetsExitCode()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var exception = new GrpcCommandException("Negative code", -1);
 
         // Assert
@@ -51,7 +59,9 @@ public sealed class GrpcCommandExceptionTests
     [Fact]
     public void Constructor_WithLargeExitCode_SetsExitCode()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var exception = new GrpcCommandException("Large code", 255);
 
         // Assert
@@ -61,7 +71,9 @@ public sealed class GrpcCommandExceptionTests
     [Fact]
     public void Constructor_WithEmptyMessage_SetsMessage()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var exception = new GrpcCommandException("");
 
         // Assert
@@ -76,7 +88,9 @@ public sealed class GrpcCommandExceptionTests
     [Fact]
     public void GrpcCommandException_InheritsFromException()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var exception = new GrpcCommandException("Test");
 
         // Assert
@@ -118,7 +132,9 @@ public sealed class GrpcCommandExceptionTests
     [InlineData(130, "User cancellation (Ctrl+C)")]
     public void ExitCode_CommonValues_AreSupported(int exitCode, string description)
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var exception = new GrpcCommandException(description, exitCode);
 
         // Assert

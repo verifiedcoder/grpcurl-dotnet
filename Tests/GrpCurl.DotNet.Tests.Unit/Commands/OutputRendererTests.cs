@@ -1,7 +1,6 @@
 using GrpCurl.Net.Commands;
 using GrpCurl.Net.DescriptorSources;
 using GrpCurl.Net.Tests.Unit.Fixtures;
-using System.IO;
 using System.Text.Json;
 
 namespace GrpCurl.Net.Tests.Unit.Commands;
@@ -11,12 +10,15 @@ public sealed class OutputRendererTests
     [Fact]
     public void WriteListServices_Text_OutputsOneServicePerLine()
     {
+        // Arrange
         var services = new[] { "alpha.Foo", "beta.Bar" };
 
         var output = Capture(w => OutputRenderer.WriteListServices(services, OutputFormat.Text, w));
 
+        // Act
         var lines = TestConsole.SplitLines(output);
 
+        // Assert
         lines.Length.ShouldBe(2);
         lines[0].ShouldBe("alpha.Foo");
         lines[1].ShouldBe("beta.Bar");
@@ -25,12 +27,15 @@ public sealed class OutputRendererTests
     [Fact]
     public void WriteListServices_Json_OutputsSingleEnvelope()
     {
+        // Arrange
         var services = new[] { "alpha.Foo", "beta.Bar" };
 
         var output = Capture(w => OutputRenderer.WriteListServices(services, OutputFormat.Json, w));
 
+        // Act
         var trimmed = output.TrimEnd();
 
+        // Assert
         trimmed.IndexOf('\n').ShouldBe(-1);
 
         using var doc = JsonDocument.Parse(trimmed);
@@ -47,6 +52,7 @@ public sealed class OutputRendererTests
     [Fact]
     public async Task WriteListMethods_Json_IncludesMethodMetadata()
     {
+        // Arrange
         var protosetPath = Path.Combine(
             Path.GetDirectoryName(typeof(TestDescriptorProvider).Assembly.Location)!,
             "TestProtosets",
@@ -59,8 +65,11 @@ public sealed class OutputRendererTests
         var output = Capture(w => OutputRenderer.WriteListMethods("testing.TestService", svc, OutputFormat.Json, w));
 
         using var doc = JsonDocument.Parse(output.TrimEnd());
+
+        // Act
         var root = doc.RootElement;
 
+        // Assert
         root.GetProperty("kind").GetString().ShouldBe("methods");
         root.GetProperty("service").GetString().ShouldBe("testing.TestService");
 
@@ -81,6 +90,7 @@ public sealed class OutputRendererTests
     [Fact]
     public async Task WriteDescribeJson_Service_HasExpectedShape()
     {
+        // Arrange
         var protosetPath = Path.Combine(
             Path.GetDirectoryName(typeof(TestDescriptorProvider).Assembly.Location)!,
             "TestProtosets",
@@ -92,8 +102,11 @@ public sealed class OutputRendererTests
         var output = Capture(w => OutputRenderer.WriteDescribeJson(descriptor!, msgTemplate: false, w));
 
         using var doc = JsonDocument.Parse(output.TrimEnd());
+
+        // Act
         var root = doc.RootElement;
 
+        // Assert
         root.GetProperty("kind").GetString().ShouldBe("service");
         root.GetProperty("fullName").GetString().ShouldBe("testing.TestService");
         root.GetProperty("name").GetString().ShouldBe("TestService");
@@ -104,6 +117,7 @@ public sealed class OutputRendererTests
     [Fact]
     public async Task WriteDescribeJson_Message_IncludesFieldsAndOneofs()
     {
+        // Arrange
         var protosetPath = Path.Combine(
             Path.GetDirectoryName(typeof(TestDescriptorProvider).Assembly.Location)!,
             "TestProtosets",
@@ -115,8 +129,11 @@ public sealed class OutputRendererTests
         var output = Capture(w => OutputRenderer.WriteDescribeJson(descriptor!, msgTemplate: false, w));
 
         using var doc = JsonDocument.Parse(output.TrimEnd());
+
+        // Act
         var root = doc.RootElement;
 
+        // Assert
         root.GetProperty("kind").GetString().ShouldBe("message");
         root.GetProperty("fullName").GetString().ShouldBe("testing.SimpleRequest");
         root.GetProperty("fields").GetArrayLength().ShouldBeGreaterThan(0);
@@ -136,6 +153,7 @@ public sealed class OutputRendererTests
     [Fact]
     public async Task WriteDescribeJson_Enum_HasValuesArray()
     {
+        // Arrange
         var protosetPath = Path.Combine(
             Path.GetDirectoryName(typeof(TestDescriptorProvider).Assembly.Location)!,
             "TestProtosets",
@@ -147,8 +165,11 @@ public sealed class OutputRendererTests
         var output = Capture(w => OutputRenderer.WriteDescribeJson(descriptor!, msgTemplate: false, w));
 
         using var doc = JsonDocument.Parse(output.TrimEnd());
+
+        // Act
         var root = doc.RootElement;
 
+        // Assert
         root.GetProperty("kind").GetString().ShouldBe("enum");
 
         var values = root.GetProperty("values");
@@ -161,6 +182,7 @@ public sealed class OutputRendererTests
     [Fact]
     public async Task WriteDescribeJson_MessageTemplate_EmitsTemplateKind()
     {
+        // Arrange
         var protosetPath = Path.Combine(
             Path.GetDirectoryName(typeof(TestDescriptorProvider).Assembly.Location)!,
             "TestProtosets",
@@ -172,8 +194,11 @@ public sealed class OutputRendererTests
         var output = Capture(w => OutputRenderer.WriteDescribeJson(descriptor!, msgTemplate: true, w));
 
         using var doc = JsonDocument.Parse(output.TrimEnd());
+
+        // Act
         var root = doc.RootElement;
 
+        // Assert
         root.GetProperty("kind").GetString().ShouldBe("messageTemplate");
         root.GetProperty("fullName").GetString().ShouldBe("testing.SimpleRequest");
         root.TryGetProperty("template", out _).ShouldBeTrue();

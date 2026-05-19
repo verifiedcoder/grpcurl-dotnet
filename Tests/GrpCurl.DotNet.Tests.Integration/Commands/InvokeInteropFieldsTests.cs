@@ -14,6 +14,7 @@ public sealed class InvokeInteropFieldsTests(GrpcTestFixture fixture)
     [Fact]
     public async Task UnaryCall_ResponseSize_FillsPayloadToRequestedSize()
     {
+        // Arrange
         var stdout = new StringWriter();
         var originalOut = Console.Out;
 
@@ -55,15 +56,19 @@ public sealed class InvokeInteropFieldsTests(GrpcTestFixture fixture)
 
         using var doc = JsonDocument.Parse(stdout.ToString().Trim());
         var payload = doc.RootElement.GetProperty("message").GetProperty("payload");
+
+        // Act
         var body = payload.GetProperty("body").GetString();
 
+        // Assert
         body.ShouldNotBeNull();
-        Convert.FromBase64String(body!).Length.ShouldBe(512);
+        Convert.FromBase64String(body).Length.ShouldBe(512);
     }
 
     [Fact]
     public async Task UnaryCall_FillUsername_PopulatesFromHeader()
     {
+        // Arrange
         var stdout = new StringWriter();
         var originalOut = Console.Out;
 
@@ -103,19 +108,26 @@ public sealed class InvokeInteropFieldsTests(GrpcTestFixture fixture)
             Console.SetOut(originalOut);
         }
 
+        // Act
         using var doc = JsonDocument.Parse(stdout.ToString().Trim());
+
+        // Assert
         doc.RootElement.GetProperty("message").GetProperty("username").GetString().ShouldBe("alice");
     }
 
     [Fact]
     public async Task UnaryCall_ResponseStatus_FailsWithGivenCode()
     {
+        // Arrange
         var stderr = new StringWriter();
         var originalError = Console.Error;
 
         Console.SetError(stderr);
 
+        // Act
         try
+
+        // Assert
         {
             var ex = await Should.ThrowAsync<Exceptions.GrpcCommandException>(async () =>
                 await InvokeCommandHandler.ExecuteAsync(

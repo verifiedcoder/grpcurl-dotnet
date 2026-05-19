@@ -75,7 +75,8 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
 
         await cts.CancelAsync();
 
-        // Act & Assert
+        // Act
+        // Assert
         // The pre-cancelled token should cause an immediate exception before any iteration
         await Should.ThrowAsync<OperationCanceledException>(async () =>
         {
@@ -105,7 +106,8 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
 
         await cts.CancelAsync();
 
-        // Act & Assert
+        // Act
+        // Assert
         await Should.ThrowAsync<OperationCanceledException>(() =>
             invoker.InvokeClientStreamingAsync(methodDescriptor, ToAsyncEnumerable(requests), cancellationToken: cts.Token));
     }
@@ -163,7 +165,8 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
 
         await cts.CancelAsync();
 
-        // Act & Assert
+        // Act
+        // Assert
         // The pre-cancelled token should cause an immediate exception before any iteration
         await Should.ThrowAsync<OperationCanceledException>(async () =>
         {

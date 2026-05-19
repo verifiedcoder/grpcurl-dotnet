@@ -5,7 +5,7 @@ using GrpCurl.Net.Tests.Unit.Fixtures;
 
 namespace GrpCurl.Net.Tests.Unit.Commands;
 
-[Collection(Fixtures.ConsoleStreamCollection.Name)]
+[Collection(ConsoleStreamCollection.Name)]
 public sealed class ListCommandHandlerHelperTests
 {
     #region ListServicesAsync Tests
@@ -102,7 +102,8 @@ public sealed class ListCommandHandlerHelperTests
 
         var source = await ProtosetSource.LoadFromFilesAsync([protosetPath], TestContext.Current.CancellationToken);
 
-        // Act & Assert - passing a message type instead of a service should throw
+        // Act
+        // Assert
         var exception = await Should.ThrowAsync<GrpcCommandException>(
             () => ListCommandHandler.ListMethodsAsync(source, "testing.SimpleRequest", verbose: false));
 

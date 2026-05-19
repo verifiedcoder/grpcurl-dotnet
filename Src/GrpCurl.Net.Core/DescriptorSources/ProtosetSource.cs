@@ -19,10 +19,10 @@ public sealed class ProtosetSource : IDescriptorSource
     public Task<IReadOnlyList<string>> ListServicesAsync(CancellationToken cancellationToken = default)
     {
         var services = _fileDescriptors.Values
-            .SelectMany(fd => fd.Services)
-            .Select(s => s.FullName)
-            .OrderBy(name => name)
-            .ToList();
+                                       .SelectMany(fd => fd.Services)
+                                       .Select(s => s.FullName)
+                                       .OrderBy(name => name)
+                                       .ToList();
 
         return Task.FromResult<IReadOnlyList<string>>(services);
     }
@@ -135,6 +135,7 @@ public sealed class ProtosetSource : IDescriptorSource
         if (visitedInCurrentPath.Contains(fileName))
         {
             var cycle = string.Join(" -> ", visitedInCurrentPath) + " -> " + fileName;
+
             throw new InvalidOperationException($"Circular dependency detected: {cycle}");
         }
 
@@ -149,7 +150,6 @@ public sealed class ProtosetSource : IDescriptorSource
             resolved[fileName] = wellKnownDescriptor;
 
             return wellKnownDescriptor;
-
         }
 
         // Track current file in resolution path
@@ -159,8 +159,8 @@ public sealed class ProtosetSource : IDescriptorSource
         {
             // Resolve dependencies first
             var dependencies = fileProto.Dependency
-                .Select(dependency => ResolveFileDescriptor(dependency, unresolved, resolved, visitedInCurrentPath))
-                .ToList();
+                                        .Select(dependency => ResolveFileDescriptor(dependency, unresolved, resolved, visitedInCurrentPath))
+                                        .ToList();
 
             // Collect ALL transitive dependency ByteStrings in dependency order
             // BuildFromByteStrings needs all dependencies present, not just direct ones

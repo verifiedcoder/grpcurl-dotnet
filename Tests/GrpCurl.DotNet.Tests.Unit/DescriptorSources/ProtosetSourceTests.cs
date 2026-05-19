@@ -25,7 +25,9 @@ public sealed class ProtosetSourceTests
     [Fact]
     public async Task LoadFromFileAsync_ValidProtoset_LoadsSuccessfully()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var source = await ProtosetSource.LoadFromFileAsync(_testProtosetPath, TestContext.Current.CancellationToken);
 
         // Assert
@@ -39,7 +41,8 @@ public sealed class ProtosetSourceTests
         // Arrange
         var nonExistentPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".protoset");
 
-        // Act & Assert
+        // Act
+        // Assert
         await Should.ThrowAsync<FileNotFoundException>(() =>
             ProtosetSource.LoadFromFileAsync(nonExistentPath, TestContext.Current.CancellationToken));
     }
@@ -53,7 +56,8 @@ public sealed class ProtosetSourceTests
             await File.WriteAllTextAsync(_invalidProtosetPath, "not a valid protoset", TestContext.Current.CancellationToken);
         }
 
-        // Act & Assert
+        // Act
+        // Assert
         await Should.ThrowAsync<Exception>(() =>
             ProtosetSource.LoadFromFileAsync(_invalidProtosetPath, TestContext.Current.CancellationToken));
     }
@@ -61,7 +65,9 @@ public sealed class ProtosetSourceTests
     [Fact]
     public async Task LoadFromFileAsync_EmptyProtoset_LoadsSuccessfully()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var source = await ProtosetSource.LoadFromFileAsync(_emptyProtosetPath, TestContext.Current.CancellationToken);
 
         // Assert
@@ -76,7 +82,8 @@ public sealed class ProtosetSourceTests
 
         await cts.CancelAsync();
 
-        // Act & Assert
+        // Act
+        // Assert
         await Should.ThrowAsync<TaskCanceledException>(() =>
             ProtosetSource.LoadFromFileAsync(_testProtosetPath, cts.Token));
     }
@@ -312,7 +319,8 @@ public sealed class ProtosetSourceTests
             "testing.StreamingOutputCallResponse"
         };
 
-        // Act & Assert
+        // Act
+        // Assert
         foreach (var name in messageNames)
         {
             var symbol = await source.FindSymbolAsync(name, TestContext.Current.CancellationToken);
@@ -458,7 +466,9 @@ public sealed class ProtosetSourceTests
     [Fact]
     public async Task FileDescriptorSet_AfterLoading_IsPopulated()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var source = await ProtosetSource.LoadFromFileAsync(_testProtosetPath, TestContext.Current.CancellationToken);
 
         // Assert
@@ -486,7 +496,9 @@ public sealed class ProtosetSourceTests
     [Fact]
     public async Task LoadFromFileAsync_WellKnownTypes_LoadsSuccessfully()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var source = await ProtosetSource.LoadFromFileAsync(_wellKnownTypesProtosetPath, TestContext.Current.CancellationToken);
 
         // Assert

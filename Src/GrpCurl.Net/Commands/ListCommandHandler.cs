@@ -3,7 +3,6 @@ using Grpc.Core;
 using GrpCurl.Net.DescriptorSources;
 using GrpCurl.Net.Exceptions;
 using GrpCurl.Net.Utilities;
-using Spectre.Console;
 using System.CommandLine;
 
 namespace GrpCurl.Net.Commands;
@@ -220,14 +219,15 @@ internal static class ListCommandHandler
 
             // Warn about incompatible option combinations
             case > 0 when !string.IsNullOrEmpty(address):
-                {
-                    if (verbose)
-                    {
-                        Diagnostics.Markup("[yellow]Warning:[/] Both --protoset and address specified. Using protoset files (server reflection will be ignored).");
-                    }
 
-                    break;
+            {
+                if (verbose)
+                {
+                    Diagnostics.Markup("[yellow]Warning:[/] Both --protoset and address specified. Using protoset files (server reflection will be ignored).");
                 }
+
+                break;
+            }
         }
 
         // Warn about TLS-specific options used with --plaintext
@@ -334,13 +334,19 @@ internal static class ListCommandHandler
 
             var descriptorSource = session.Source;
 
-            if (verbose && protosets.Length == 0)
+            switch (verbose)
             {
-                Diagnostics.Markup("[dim]Connected successfully, querying server reflection...[/]");
-            }
-            else if (verbose && protosets.Length > 0)
-            {
-                Diagnostics.Markup("[dim]Protoset files loaded successfully[/]");
+                case true when protosets.Length == 0:
+
+                    Diagnostics.Markup("[dim]Connected successfully, querying server reflection...[/]");
+
+                    break;
+
+                case true when protosets.Length > 0:
+
+                    Diagnostics.Markup("[dim]Protoset files loaded successfully[/]");
+
+                    break;
             }
 
             timing?.StartPhase("Schema Discovery");
@@ -549,7 +555,7 @@ internal static class ListCommandHandler
 
             ErrorRenderer.Render(envelope, output);
 
-            throw new GrpcCommandException(envelope.Message, envelope.ExitCode, silent: true) { Envelope = envelope };
+            throw new GrpcCommandException(envelope.Message, envelope.ExitCode, true) { Envelope = envelope };
         }
 
         if (verbose)

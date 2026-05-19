@@ -1,33 +1,33 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<OutputType>Exe</OutputType>
-		<TargetFramework>net10.0</TargetFramework>
-		<Version>1.0.0</Version>
-		<AssemblyVersion>1.0.0.0</AssemblyVersion>
-		<InformationalVersion>1.0.0</InformationalVersion>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<PackAsTool>true</PackAsTool>
-		<ToolCommandName>grpcurl.net</ToolCommandName>
-		<IsPackable>true</IsPackable>
-		<PackageId>GrpCurl.Net</PackageId>
-		<Description>grpcurl-compatible .NET CLI tool for invoking gRPC services with JSON input/output. Supports reflection, protosets, proto source files, TLS/mTLS, drop-in grpcurl flags, and protobuf text format.</Description>
-		<PackageTags>grpc;grpcurl;protobuf;cli;dotnet-tool</PackageTags>
-	</PropertyGroup>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <Version>1.0.0</Version>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <InformationalVersion>1.0.0</InformationalVersion>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>grpcurl.net</ToolCommandName>
+        <IsPackable>true</IsPackable>
+        <PackageId>GrpCurl.Net</PackageId>
+        <Description>grpcurl-compatible .NET CLI tool for invoking gRPC services with JSON input/output. Supports reflection, protosets, proto source files, TLS/mTLS, drop-in grpcurl flags, and protobuf text format.</Description>
+        <PackageTags>grpc;grpcurl;protobuf;cli;dotnet-tool</PackageTags>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\GrpCurl.Net.Core\GrpCurl.Net.Core.csproj" />
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\GrpCurl.Net.Core\GrpCurl.Net.Core.csproj" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Spectre.Console" />
-		<PackageReference Include="System.CommandLine" />
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Spectre.Console" />
+        <PackageReference Include="System.CommandLine" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<InternalsVisibleTo Include="GrpCurl.Net.Tests.Unit" />
-		<InternalsVisibleTo Include="GrpCurl.Net.Tests.Integration" />
-		<InternalsVisibleTo Include="Gql2Grpc.Tests" />
-	</ItemGroup>
+    <ItemGroup>
+        <InternalsVisibleTo Include="GrpCurl.Net.Tests.Unit" />
+        <InternalsVisibleTo Include="GrpCurl.Net.Tests.Integration" />
+        <InternalsVisibleTo Include="Gql2Grpc.Tests" />
+    </ItemGroup>
 
 </Project>

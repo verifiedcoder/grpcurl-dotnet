@@ -13,9 +13,13 @@ public sealed class InvokeStdinTtyTests(GrpcTestFixture fixture)
     [Fact]
     public async Task ExecuteAsync_DataAt_StdinNotRedirected_FailsFastWithUsageError()
     {
+        // Arrange
         ConsoleEnvironment.SetIsInputRedirectedOverride(() => false);
 
+        // Act
         try
+
+        // Assert
         {
             var ex = await Should.ThrowAsync<GrpcCommandException>(() =>
                 InvokeCommandHandler.ExecuteAsync(

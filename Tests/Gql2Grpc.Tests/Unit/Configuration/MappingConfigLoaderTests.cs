@@ -8,7 +8,8 @@ public sealed class MappingConfigLoaderTests
     [Fact]
     public async Task Parses_yaml_into_mapping_config()
     {
-        var yaml = @"
+        // Arrange
+        const string yaml = @"
 version: 1
 defaults:
   service: test.Svc
@@ -18,8 +19,11 @@ operations:
     method: DoFoo
 ";
         var path = WriteTemp(yaml, ".yaml");
+
+        // Act
         var config = await MappingConfigLoader.LoadAsync(path, TestContext.Current.CancellationToken);
 
+        // Assert
         config.Version.ShouldBe(1);
         config.Defaults.Service.ShouldBe("test.Svc");
         config.Operations.Count.ShouldBe(1);
@@ -31,10 +35,15 @@ operations:
     [Fact]
     public async Task Parses_json_into_mapping_config()
     {
-        var json = """{ "operations": [{ "graphqlField": "x", "method": "GoX", "service": "s.Svc" }] }""";
+        // Arrange
+        const string json = """{ "operations": [{ "graphqlField": "x", "method": "GoX", "service": "s.Svc" }] }""";
+
         var path = WriteTemp(json, ".json");
+
+        // Act
         var config = await MappingConfigLoader.LoadAsync(path, TestContext.Current.CancellationToken);
 
+        // Assert
         config.Operations.Count.ShouldBe(1);
         config.Operations[0].Service.ShouldBe("s.Svc");
     }
@@ -42,7 +51,8 @@ operations:
     [Fact]
     public async Task Argument_rule_rename_is_recognised()
     {
-        var yaml = @"
+        // Arrange
+        const string yaml = @"
 operations:
   - graphqlField: foo
     method: M
@@ -51,8 +61,11 @@ operations:
       a: b
 ";
         var path = WriteTemp(yaml, ".yaml");
+
+        // Act
         var config = await MappingConfigLoader.LoadAsync(path, TestContext.Current.CancellationToken);
 
+        // Assert
         config.Operations[0].Arguments.ShouldContainKey("a");
         config.Operations[0].Arguments["a"].ShouldBeOfType<ArgumentRule.Rename>();
     }
@@ -60,7 +73,8 @@ operations:
     [Fact]
     public async Task Argument_rule_path_and_literal_are_recognised()
     {
-        var yaml = @"
+        // Arrange
+        const string yaml = @"
 operations:
   - graphqlField: foo
     method: M
@@ -74,7 +88,10 @@ operations:
         var path = WriteTemp(yaml, ".yaml");
         var config = await MappingConfigLoader.LoadAsync(path, TestContext.Current.CancellationToken);
 
+        // Act
         var args = config.Operations[0].Arguments;
+
+        // Assert
         args["a"].ShouldBeOfType<ArgumentRule.PathRule>().Path.ShouldBe("p.q");
         args["b"].ShouldBeOfType<ArgumentRule.Literal>().Value.ShouldBe("hello");
         args["c"].ShouldBeOfType<ArgumentRule.SkipArgument>();
@@ -84,7 +101,8 @@ operations:
     [Fact]
     public async Task Duplicate_field_operation_pairs_rejected()
     {
-        var yaml = @"
+        // Arrange
+        const string yaml = @"
 operations:
   - graphqlField: foo
     method: M1
@@ -93,7 +111,11 @@ operations:
     method: M2
     service: s.Svc
 ";
+
+        // Act
         var path = WriteTemp(yaml, ".yaml");
+
+        // Assert
         await Should.ThrowAsync<InvalidDataException>(async () =>
             await MappingConfigLoader.LoadAsync(path, TestContext.Current.CancellationToken));
     }
@@ -101,7 +123,12 @@ operations:
     [Fact]
     public async Task Missing_path_returns_empty_config()
     {
+        // Arrange
+
+        // Act
         var config = await MappingConfigLoader.LoadAsync(null, TestContext.Current.CancellationToken);
+
+        // Assert
         config.ShouldBeSameAs(MappingConfig.Empty);
     }
 
@@ -109,8 +136,10 @@ operations:
     {
         var path = Path.GetTempFileName();
         var renamed = path + ext;
+
         File.Move(path, renamed);
         File.WriteAllText(renamed, contents);
+
         return renamed;
     }
 }

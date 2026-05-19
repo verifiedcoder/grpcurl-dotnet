@@ -26,7 +26,8 @@ public sealed class ProtosetExporterTests : IDisposable
         // Arrange
         var source = await ProtosetSource.LoadFromFileAsync(_testProtosetPath, TestContext.Current.CancellationToken);
 
-        // Act & Assert - should not throw, should not create any file
+        // Act
+        // Assert
         await Should.NotThrowAsync(() =>
             ProtosetExporter.WriteProtosetAsync(source, null));
     }
@@ -37,7 +38,8 @@ public sealed class ProtosetExporterTests : IDisposable
         // Arrange
         var source = await ProtosetSource.LoadFromFileAsync(_testProtosetPath, TestContext.Current.CancellationToken);
 
-        // Act & Assert - should not throw, should not create any file
+        // Act
+        // Assert
         await Should.NotThrowAsync(() =>
             ProtosetExporter.WriteProtosetAsync(source, ""));
     }
@@ -219,11 +221,14 @@ public sealed class ProtosetExporterTests : IDisposable
     [Fact]
     public async Task WriteProtosetAsync_ExistingFile_WithoutForce_Throws()
     {
+        // Arrange
         var source = await ProtosetSource.LoadFromFileAsync(_testProtosetPath, TestContext.Current.CancellationToken);
         var outputPath = CreateTempFilePath();
 
+        // Act
         await File.WriteAllTextAsync(outputPath, "initial content", TestContext.Current.CancellationToken);
 
+        // Assert
         var ex = await Should.ThrowAsync<IOException>(() =>
             ProtosetExporter.WriteProtosetAsync(source, outputPath));
 
@@ -239,6 +244,7 @@ public sealed class ProtosetExporterTests : IDisposable
     [Fact]
     public async Task WriteProtosetAsync_ExistingFile_WithForce_Overwrites()
     {
+        // Arrange
         var source = await ProtosetSource.LoadFromFileAsync(_testProtosetPath, TestContext.Current.CancellationToken);
         var outputPath = CreateTempFilePath();
 
@@ -247,8 +253,11 @@ public sealed class ProtosetExporterTests : IDisposable
         await ProtosetExporter.WriteProtosetAsync(source, outputPath, force: true, []);
 
         var fileBytes = await File.ReadAllBytesAsync(outputPath, TestContext.Current.CancellationToken);
+
+        // Act
         var parsedFds = FileDescriptorSet.Parser.ParseFrom(fileBytes);
 
+        // Assert
         parsedFds.ShouldNotBeNull();
         parsedFds.File.ShouldNotBeEmpty();
     }

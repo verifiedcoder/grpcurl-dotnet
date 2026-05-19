@@ -16,8 +16,48 @@ internal static class GrpcurlCompatHandler
     };
 
     /// <summary>
-    ///     Returns the rewritten argv if <paramref name="args"/> looks like an upstream
-    ///     grpcurl invocation, otherwise <see langword="null"/> (caller continues with
+    ///     Upstream-grpcurl single-dash flag → native --double-dash flag.
+    /// </summary>
+    private static readonly Dictionary<string, FlagMapping> UpstreamFlagMap = new(StringComparer.Ordinal)
+    {
+        // Booleans
+        ["-plaintext"] = new FlagMapping("--plaintext", true),
+        ["-insecure"] = new FlagMapping("--insecure", true),
+        ["-emit-defaults"] = new FlagMapping("--emit-defaults", true),
+        ["-v"] = new FlagMapping("--verbose", true),
+        ["-vv"] = new FlagMapping("--very-verbose", true),
+        ["-allow-unknown-fields"] = new FlagMapping("--allow-unknown-fields", true),
+        ["-unsafe-show-secrets"] = new FlagMapping("--unsafe-show-secrets", true),
+
+        // String values
+        ["-cacert"] = new FlagMapping("--cacert", false),
+        ["-cert"] = new FlagMapping("--cert", false),
+        ["-key"] = new FlagMapping("--key", false),
+        ["-servername"] = new FlagMapping("--servername", false),
+        ["-authority"] = new FlagMapping("--authority", false),
+        ["-user-agent"] = new FlagMapping("--user-agent", false),
+        ["-d"] = new FlagMapping("--data", false),
+        ["-data"] = new FlagMapping("--data", false),
+        ["-format"] = new FlagMapping("--format", false),
+        ["-max-time"] = new FlagMapping("--max-time", false),
+        ["-connect-timeout"] = new FlagMapping("--connect-timeout", false),
+        ["-max-msg-sz"] = new FlagMapping("--max-msg-sz", false),
+        ["-keepalive-time"] = new FlagMapping("--keepalive-time", false),
+        ["-keepalive-timeout"] = new FlagMapping("--keepalive-timeout", false),
+        ["-proto-out-dir"] = new FlagMapping("--proto-out-dir", false),
+        ["-protoset"] = new FlagMapping("--protoset", false),
+        ["-protoset-out"] = new FlagMapping("--protoset-out", false),
+        ["-proto"] = new FlagMapping("--proto", false),
+        ["-import-path"] = new FlagMapping("--import-path", false),
+        ["-I"] = new FlagMapping("--import-path", false),
+        ["-H"] = new FlagMapping("--header", false),
+        ["-rpc-header"] = new FlagMapping("--rpc-header", false),
+        ["-reflect-header"] = new FlagMapping("--reflect-header", false)
+    };
+
+    /// <summary>
+    ///     Returns the rewritten argv if <paramref name="args" /> looks like an upstream
+    ///     grpcurl invocation, otherwise <see langword="null" /> (caller continues with
     ///     native parsing).
     /// </summary>
     public static string[]? TryRewrite(string[] args)
@@ -64,6 +104,7 @@ internal static class GrpcurlCompatHandler
             if (!arg.StartsWith('-'))
             {
                 positionals.Add(arg);
+
                 continue;
             }
 
@@ -71,24 +112,23 @@ internal static class GrpcurlCompatHandler
             rewritten.Add(arg);
         }
 
-        var orderedPositionals = positionals;
-
         // Resolve the subcommand from positionals:
         //  - 0 positionals → list (without an address, fails validation cleanly)
         //  - 1 positional that looks like host:port → list <host:port>
         //  - 2 positionals where the second is "Service/Method" → invoke
         //  - 2 positionals where the second is a symbol → describe
-        string subcommand = positionals.Count switch
+        var subcommand = positionals.Count switch
         {
-            0 => "list",
-            1 => "list",
+            0                                   => "list",
+            1                                   => "list",
             2 when positionals[1].Contains('/') => "invoke",
-            _ => "describe",
+            _                                   => "describe"
         };
+
         var final = new List<string> { subcommand };
 
         final.AddRange(rewritten);
-        final.AddRange(orderedPositionals);
+        final.AddRange(positionals);
 
         return [.. final];
     }
@@ -100,8 +140,8 @@ internal static class GrpcurlCompatHandler
            && UpstreamFlagMap.ContainsKey(arg);
 
     /// <summary>
-    ///     Maps a single argv token. Returns <see langword="true"/> when the token was
-    ///     consumed (and any associated value advanced through <paramref name="index"/>).
+    ///     Maps a single argv token. Returns <see langword="true" /> when the token was
+    ///     consumed (and any associated value advanced through <paramref name="index" />).
     /// </summary>
     private static bool TryMapFlag(string arg, string[] args, ref int index, List<string> output)
     {
@@ -122,6 +162,7 @@ internal static class GrpcurlCompatHandler
         if (mapping.Boolean)
         {
             output.Add(mapping.NativeName);
+
             return true;
         }
 
@@ -140,6 +181,7 @@ internal static class GrpcurlCompatHandler
         {
             // Missing value — let System.CommandLine produce the error.
             output.Add(mapping.NativeName);
+
             return true;
         }
 
@@ -150,44 +192,4 @@ internal static class GrpcurlCompatHandler
     }
 
     private sealed record FlagMapping(string NativeName, bool Boolean);
-
-    /// <summary>
-    ///     Upstream-grpcurl single-dash flag → native --double-dash flag.
-    /// </summary>
-    private static readonly Dictionary<string, FlagMapping> UpstreamFlagMap = new(StringComparer.Ordinal)
-    {
-        // Booleans
-        ["-plaintext"] = new("--plaintext", Boolean: true),
-        ["-insecure"] = new("--insecure", Boolean: true),
-        ["-emit-defaults"] = new("--emit-defaults", Boolean: true),
-        ["-v"] = new("--verbose", Boolean: true),
-        ["-vv"] = new("--very-verbose", Boolean: true),
-        ["-allow-unknown-fields"] = new("--allow-unknown-fields", Boolean: true),
-        ["-unsafe-show-secrets"] = new("--unsafe-show-secrets", Boolean: true),
-
-        // String values
-        ["-cacert"] = new("--cacert", Boolean: false),
-        ["-cert"] = new("--cert", Boolean: false),
-        ["-key"] = new("--key", Boolean: false),
-        ["-servername"] = new("--servername", Boolean: false),
-        ["-authority"] = new("--authority", Boolean: false),
-        ["-user-agent"] = new("--user-agent", Boolean: false),
-        ["-d"] = new("--data", Boolean: false),
-        ["-data"] = new("--data", Boolean: false),
-        ["-format"] = new("--format", Boolean: false),
-        ["-max-time"] = new("--max-time", Boolean: false),
-        ["-connect-timeout"] = new("--connect-timeout", Boolean: false),
-        ["-max-msg-sz"] = new("--max-msg-sz", Boolean: false),
-        ["-keepalive-time"] = new("--keepalive-time", Boolean: false),
-        ["-keepalive-timeout"] = new("--keepalive-timeout", Boolean: false),
-        ["-proto-out-dir"] = new("--proto-out-dir", Boolean: false),
-        ["-protoset"] = new("--protoset", Boolean: false),
-        ["-protoset-out"] = new("--protoset-out", Boolean: false),
-        ["-proto"] = new("--proto", Boolean: false),
-        ["-import-path"] = new("--import-path", Boolean: false),
-        ["-I"] = new("--import-path", Boolean: false),
-        ["-H"] = new("--header", Boolean: false),
-        ["-rpc-header"] = new("--rpc-header", Boolean: false),
-        ["-reflect-header"] = new("--reflect-header", Boolean: false),
-    };
 }

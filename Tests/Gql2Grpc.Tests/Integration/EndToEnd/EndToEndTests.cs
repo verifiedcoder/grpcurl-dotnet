@@ -14,11 +14,15 @@ public sealed class EndToEndTests(GrpcTestFixture fixture)
     [Fact]
     public async Task Unary_empty_call_returns_graphql_envelope()
     {
+        // Arrange
+
+        // Act
         var (stdout, exitCode) = await RunAsync(
             Address,
             "--plaintext", "--mapping", MappingPath,
             "query { emptyCall }");
 
+        // Assert
         exitCode.ShouldBe(0);
 
         var envelope = JsonNode.Parse(stdout)!.AsObject();
@@ -29,11 +33,15 @@ public sealed class EndToEndTests(GrpcTestFixture fixture)
     [Fact]
     public async Task Unary_call_with_nested_request_payload()
     {
+        // Arrange
+
+        // Act
         var (stdout, exitCode) = await RunAsync(
             Address,
             "--plaintext", "--mapping", MappingPath,
             "query { unaryCall(input: { responseSize: 10 }) { payload { body } } }");
 
+        // Assert
         exitCode.ShouldBe(0);
 
         var envelope = JsonNode.Parse(stdout)!.AsObject();
@@ -44,11 +52,15 @@ public sealed class EndToEndTests(GrpcTestFixture fixture)
     [Fact]
     public async Task Mutation_routed_to_unary_grpc()
     {
+        // Arrange
+
+        // Act
         var (stdout, exitCode) = await RunAsync(
             Address,
             "--plaintext", "--mapping", MappingPath,
             "mutation { createPayload(input: { responseSize: 5 }) { payload { body } } }");
 
+        // Assert
         exitCode.ShouldBe(0);
         JsonNode.Parse(stdout)!.AsObject()["data"]!.AsObject()
             .ContainsKey("createPayload").ShouldBeTrue();
@@ -57,12 +69,16 @@ public sealed class EndToEndTests(GrpcTestFixture fixture)
     [Fact]
     public async Task Header_pass_through_triggers_fail_early()
     {
+        // Arrange
+
+        // Act
         var (stdout, exitCode) = await RunAsync(
             Address,
             "--plaintext", "--mapping", MappingPath,
             "-H", "fail-early: 3",
             "query { emptyCall }");
 
+        // Assert
         exitCode.ShouldNotBe(0);
 
         var envelope = JsonNode.Parse(stdout)!.AsObject();
@@ -75,11 +91,15 @@ public sealed class EndToEndTests(GrpcTestFixture fixture)
     [Fact]
     public async Task Subscription_emits_ndjson_lines()
     {
+        // Arrange
+
+        // Act
         var (stdout, exitCode) = await RunAsync(
             Address,
             "--plaintext", "--mapping", MappingPath,
             "subscription { streamingOutput(input: { responseParameters: [{ size: 1 }, { size: 1 }] }) { payload { body } } }");
 
+        // Assert
         exitCode.ShouldBe(0);
 
         var lines = stdout
@@ -99,11 +119,15 @@ public sealed class EndToEndTests(GrpcTestFixture fixture)
     [Fact]
     public async Task Introspection_schema_query_is_answered_locally()
     {
+        // Arrange
+
+        // Act
         var (stdout, exitCode) = await RunAsync(
             Address,
             "--plaintext", "--mapping", MappingPath,
             "query { __schema { queryType { name } } }");
 
+        // Assert
         exitCode.ShouldBe(0);
 
         var envelope = JsonNode.Parse(stdout)!.AsObject();
@@ -114,10 +138,14 @@ public sealed class EndToEndTests(GrpcTestFixture fixture)
     [Fact]
     public async Task Top_level_failure_emits_envelope_on_stdout_with_extensions()
     {
+        // Arrange
         // Missing the GraphQL document is a top-level usage error caught above the executor.
         // It must still produce a parseable GraphQL envelope on stdout.
+
+        // Act
         var (stdout, exitCode) = await RunAsync(Address, "--plaintext");
 
+        // Assert
         exitCode.ShouldBe(2);
 
         var envelope = JsonNode.Parse(stdout)!.AsObject();
@@ -134,12 +162,16 @@ public sealed class EndToEndTests(GrpcTestFixture fixture)
     [Fact]
     public async Task Reflection_based_discovery_works_without_mapping_file()
     {
+        // Arrange
+
+        // Act
         var (stdout, exitCode) = await RunAsync(
             Address,
             "--plaintext",
             "--default-service", "testing.TestService",
             "query { EmptyCall }");
 
+        // Assert
         exitCode.ShouldBe(0);
         var envelope = JsonNode.Parse(stdout)!.AsObject();
         envelope["data"]!.AsObject().ContainsKey("EmptyCall").ShouldBeTrue();

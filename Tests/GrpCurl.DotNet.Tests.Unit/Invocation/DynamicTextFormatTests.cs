@@ -23,6 +23,7 @@ public sealed class DynamicTextFormatTests
     [Fact]
     public async Task PrintAndParse_RoundTrip_Scalars()
     {
+        // Arrange
         var descriptor = await LoadSimpleRequestAsync();
         var message = new SimpleDynamicMessage(descriptor);
 
@@ -30,8 +31,10 @@ public sealed class DynamicTextFormatTests
 
         message.Fields[responseSize] = 1024;
 
+        // Act
         var text = DynamicTextFormat.Print(message);
 
+        // Assert
         text.ShouldContain("response_size: 1024");
 
         var parsed = DynamicTextFormat.Parse(descriptor, text);
@@ -42,6 +45,7 @@ public sealed class DynamicTextFormatTests
     [Fact]
     public async Task Parse_EnumByName_ResolvesNumber()
     {
+        // Arrange
         var descriptor = await LoadSimpleRequestAsync();
         var responseType = descriptor.Fields.InDeclarationOrder().FirstOrDefault(f => f.Name == "response_type");
 
@@ -53,14 +57,17 @@ public sealed class DynamicTextFormatTests
         var enumValue = responseType.EnumType.Values[0];
         var text = $"response_type: {enumValue.Name}";
 
+        // Act
         var parsed = DynamicTextFormat.Parse(descriptor, text);
 
+        // Assert
         parsed.Fields[responseType].ShouldBe(enumValue.Number);
     }
 
     [Fact]
     public async Task Print_QuotesStrings_AndEscapesSpecialCharacters()
     {
+        // Arrange
         var descriptor = await LoadSimpleRequestAsync();
         var stringField = descriptor.Fields.InDeclarationOrder()
             .FirstOrDefault(f => f.FieldType == FieldType.String);
@@ -70,12 +77,18 @@ public sealed class DynamicTextFormatTests
             return;
         }
 
-        var message = new SimpleDynamicMessage(descriptor);
+        var message = new SimpleDynamicMessage(descriptor)
+        {
+            Fields =
+            {
+                [stringField] = "hello\nworld"
+            }
+        };
 
-        message.Fields[stringField] = "hello\nworld";
-
+        // Act
         var text = DynamicTextFormat.Print(message);
 
+        // Assert
         text.ShouldContain($"{stringField.Name}: \"hello\\nworld\"");
     }
 }

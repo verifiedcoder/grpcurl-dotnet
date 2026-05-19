@@ -1,6 +1,7 @@
 using Grpc.Core;
 using Grpc.Net.Client;
 using System.Net.Security;
+using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
@@ -16,11 +17,13 @@ internal static partial class GrpcChannelFactory
     {
         options ??= new ChannelOptions();
 
-        // Unix-domain socket addresses are accepted as `unix:///absolute/path`. They are
-        // valid on Linux and macOS; Windows fails fast with a clear error rather than
-        // pretending to dial a TCP endpoint. Grpc.Net.Client doesn't natively resolve
-        // unix: schemes, so we plug a ConnectCallback on the SocketsHttpHandler and ask
-        // it to open a UnixDomainSocketEndPoint instead.
+        /*
+         * Unix-domain socket addresses are accepted as `unix:///absolute/path`. They are
+         * valid on Linux and macOS; Windows fails fast with a clear error rather than
+         * pretending to dial a TCP endpoint. Grpc.Net.Client doesn't natively resolve
+         * unix: schemes, so we plug a ConnectCallback on the SocketsHttpHandler and ask
+         * it to open a UnixDomainSocketEndPoint instead.
+         */
         var unixSocketPath = TryExtractUnixSocketPath(address);
 
         if (unixSocketPath is not null)
@@ -32,9 +35,11 @@ internal static partial class GrpcChannelFactory
                     $"Cannot dial '{address}' on {Environment.OSVersion.Platform}.");
             }
 
-            // Grpc.Net.Client requires an http(s):// scheme even when the actual transport
-            // is a Unix socket, so we feed it a placeholder address and let the connect
-            // callback redirect the socket.
+            /*
+             * Grpc.Net.Client requires an http(s):// scheme even when the actual transport
+             * is a Unix socket, so we feed it a placeholder address and let the connect
+             * callback redirect the socket.
+             */
             return CreateUnixSocketChannel(unixSocketPath, options);
         }
 
@@ -57,16 +62,16 @@ internal static partial class GrpcChannelFactory
         // Bug history: previously the fast path triggered for any plaintext call, silently
         // discarding --connect-timeout (see CODE-REVIEW.md P1 "plaintext --connect-timeout").
         if (options is
-            {
-                Plaintext: true,
-                InsecureSkipVerify: false,
-                CaCertPath: null,
-                ClientCertPath: null,
-                ConnectTimeout: null,
-                KeepaliveTime: null,
-                Authority: null,
-                ServerName: null
-            })
+        {
+            Plaintext: true,
+            InsecureSkipVerify: false,
+            CaCertPath: null,
+            ClientCertPath: null,
+            ConnectTimeout: null,
+            KeepaliveTime: null,
+            Authority: null,
+            ServerName: null
+        })
         {
             return GrpcChannel.ForAddress(address, channelOptions);
         }
@@ -170,7 +175,7 @@ internal static partial class GrpcChannelFactory
                 using var pemCert = X509Certificate2.CreateFromPemFile(options.ClientCertPath, options.ClientKeyPath);
                 clientCert = X509CertificateLoader.LoadPkcs12(
                     pemCert.Export(X509ContentType.Pkcs12),
-                    password: null,
+                    null,
                     storageFlags);
             }
             catch (CryptographicException ex)
@@ -201,26 +206,30 @@ internal static partial class GrpcChannelFactory
     }
 
     /// <summary>
-    ///     Returns the Unix socket path encoded in <paramref name="address"/> if it begins
-    ///     with the <c>unix://</c> or <c>unix:</c> scheme, otherwise <see langword="null"/>.
+    ///     Returns the Unix socket path encoded in <paramref name="address" /> if it begins
+    ///     with the <c>unix://</c> or <c>unix:</c> scheme, otherwise <see langword="null" />.
     /// </summary>
     /// <remarks>
     ///     Accepted forms (matching upstream grpcurl):
     ///     <list type="bullet">
-    ///       <item><description><c>unix:///var/run/foo.sock</c> (absolute path with triple slash)</description></item>
-    ///       <item><description><c>unix:/var/run/foo.sock</c> (single slash variant)</description></item>
+    ///         <item>
+    ///             <description><c>unix:///var/run/foo.sock</c> (absolute path with triple slash)</description>
+    ///         </item>
+    ///         <item>
+    ///             <description><c>unix:/var/run/foo.sock</c> (single slash variant)</description>
+    ///         </item>
     ///     </list>
     /// </remarks>
     internal static string? TryExtractUnixSocketPath(string address)
     {
-        const string Prefix = "unix:";
+        const string prefix = "unix:";
 
-        if (!address.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase))
+        if (!address.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
         {
             return null;
         }
 
-        var path = address[Prefix.Length..];
+        var path = address[prefix.Length..];
 
         // Strip the optional double-slash from unix:// for parity with upstream grpcurl.
         if (path.StartsWith("//", StringComparison.Ordinal))
@@ -251,20 +260,21 @@ internal static partial class GrpcChannelFactory
             ConnectTimeout = options.ConnectTimeout ?? TimeSpan.FromSeconds(10),
             ConnectCallback = async (_, cancellationToken) =>
             {
-                var socket = new System.Net.Sockets.Socket(
-                    System.Net.Sockets.AddressFamily.Unix,
-                    System.Net.Sockets.SocketType.Stream,
-                    System.Net.Sockets.ProtocolType.Unspecified);
+                var socket = new Socket(
+                    AddressFamily.Unix,
+                    SocketType.Stream,
+                    ProtocolType.Unspecified);
 
                 try
                 {
-                    await socket.ConnectAsync(new System.Net.Sockets.UnixDomainSocketEndPoint(socketPath), cancellationToken).ConfigureAwait(false);
+                    await socket.ConnectAsync(new UnixDomainSocketEndPoint(socketPath), cancellationToken).ConfigureAwait(false);
 
-                    return new System.Net.Sockets.NetworkStream(socket, ownsSocket: true);
+                    return new NetworkStream(socket, true);
                 }
                 catch
                 {
                     socket.Dispose();
+
                     throw;
                 }
             }
@@ -288,7 +298,7 @@ internal static partial class GrpcChannelFactory
     ///     Creates metadata from header strings in "name: value" format.
     /// </summary>
     /// <param name="headers">Header strings in "name: value" format</param>
-    /// <param name="userAgent">Optional user-agent header value. Defaults to <see cref="UserAgentProvider.Default"/>.</param>
+    /// <param name="userAgent">Optional user-agent header value. Defaults to <see cref="UserAgentProvider.Default" />.</param>
     public static Metadata CreateMetadata(IEnumerable<string>? headers, string? userAgent = null)
     {
         var metadata = new Metadata();
@@ -344,6 +354,7 @@ internal static partial class GrpcChannelFactory
                 }
 
                 metadata.Add(name, decoded);
+
                 continue;
             }
 
@@ -381,7 +392,7 @@ internal static partial class GrpcChannelFactory
 
             var varName = result.Substring(start + 2, end - start - 2);
             var varValue = Environment.GetEnvironmentVariable(varName)
-                ?? throw new ArgumentException($"Environment variable '${{{varName}}}' not found. Header: '{headerContext}'");
+                           ?? throw new ArgumentException($"Environment variable '${{{varName}}}' not found. Header: '{headerContext}'");
 
             result = result[..start] + varValue + result[(end + 1)..];
 
@@ -428,11 +439,11 @@ internal static partial class GrpcChannelFactory
         return unit switch
         {
             "ms" => TimeSpan.FromMilliseconds(value),
-            "s" => TimeSpan.FromSeconds(value),
-            "m" => TimeSpan.FromMinutes(value),
-            "h" => TimeSpan.FromHours(value),
-            "" => TimeSpan.FromSeconds(value), // Default to seconds for compatibility
-            _ => throw new ArgumentException($"Unknown duration unit: '{unit}'")
+            "s"  => TimeSpan.FromSeconds(value),
+            "m"  => TimeSpan.FromMinutes(value),
+            "h"  => TimeSpan.FromHours(value),
+            ""   => TimeSpan.FromSeconds(value), // Default to seconds for compatibility
+            _    => throw new ArgumentException($"Unknown duration unit: '{unit}'")
         };
     }
 
@@ -473,10 +484,10 @@ internal static partial class GrpcChannelFactory
         var bytes = unit switch
         {
             "B" or "" => value, // Plain number or explicit bytes
-            "KB" => value * 1024,
-            "MB" => value * 1024 * 1024,
-            "GB" => value * 1024 * 1024 * 1024,
-            _ => throw new ArgumentException($"Unknown size unit: '{unit}'")
+            "KB"      => value * 1024,
+            "MB"      => value * 1024 * 1024,
+            "GB"      => value * 1024 * 1024 * 1024,
+            _         => throw new ArgumentException($"Unknown size unit: '{unit}'")
         };
 
         // Check for overflow
@@ -487,6 +498,24 @@ internal static partial class GrpcChannelFactory
 
         return (int)bytes;
     }
+
+    private static X509KeyStorageFlags GetClientCertificateStorageFlags(bool exportableClientKey)
+    {
+        if (exportableClientKey)
+        {
+            return X509KeyStorageFlags.Exportable;
+        }
+
+        return OperatingSystem.IsWindows()
+            ? X509KeyStorageFlags.UserKeySet
+            : X509KeyStorageFlags.EphemeralKeySet;
+    }
+
+    [GeneratedRegex(@"^(\d+\.?\d*)(ms|s|m|h)?$")]
+    private static partial Regex DurationRegex();
+
+    [GeneratedRegex(@"^(\d+\.?\d*)\s*(B|KB|MB|GB)?$", RegexOptions.IgnoreCase)]
+    private static partial Regex SizeRegex();
 
     public class ChannelOptions
     {
@@ -518,37 +547,19 @@ internal static partial class GrpcChannelFactory
 
         /// <summary>
         ///     Revocation policy for the custom-CA chain validator. Default is
-        ///     <see cref="X509RevocationMode.Online"/> when a custom CA is supplied; set
-        ///     to <see cref="X509RevocationMode.NoCheck"/> for air-gapped environments via
+        ///     <see cref="X509RevocationMode.Online" /> when a custom CA is supplied; set
+        ///     to <see cref="X509RevocationMode.NoCheck" /> for air-gapped environments via
         ///     <c>--revocation-mode nocheck</c>.
         /// </summary>
         public X509RevocationMode? RevocationMode { get; init; }
 
         /// <summary>
-        ///     If <see langword="true"/>, PKCS12 client keys are loaded with
-        ///     <see cref="X509KeyStorageFlags.Exportable"/>. Default is ephemeral on
+        ///     If <see langword="true" />, PKCS12 client keys are loaded with
+        ///     <see cref="X509KeyStorageFlags.Exportable" />. Default is ephemeral on
         ///     TLS stacks that support it; Windows uses a non-exportable user key set
         ///     because SslStream client authentication cannot use ephemeral private keys
         ///     there. Opt in only when an upstream operation needs to re-export the private key.
         /// </summary>
         public bool ExportableClientKey { get; init; }
     }
-
-    private static X509KeyStorageFlags GetClientCertificateStorageFlags(bool exportableClientKey)
-    {
-        if (exportableClientKey)
-        {
-            return X509KeyStorageFlags.Exportable;
-        }
-
-        return OperatingSystem.IsWindows()
-            ? X509KeyStorageFlags.UserKeySet
-            : X509KeyStorageFlags.EphemeralKeySet;
-    }
-
-    [GeneratedRegex(@"^(\d+\.?\d*)(ms|s|m|h)?$")]
-    private static partial Regex DurationRegex();
-
-    [GeneratedRegex(@"^(\d+\.?\d*)\s*(B|KB|MB|GB)?$", RegexOptions.IgnoreCase)]
-    private static partial Regex SizeRegex();
 }

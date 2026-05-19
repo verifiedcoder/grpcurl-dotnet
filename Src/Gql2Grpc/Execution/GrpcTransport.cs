@@ -1,15 +1,15 @@
-using System.Runtime.CompilerServices;
 using Google.Protobuf.Reflection;
 using Grpc.Core;
 using Grpc.Net.Client;
 using GrpCurl.Net.Invocation;
+using System.Runtime.CompilerServices;
 
 namespace Gql2Grpc.Execution;
 
 /// <summary>
-/// Thin adapter over <see cref="DynamicInvoker"/> that works in JSON string terms rather than
-/// raw <c>IMessage</c> types. The GraphQL pipeline only speaks JSON, so this boundary keeps
-/// protobuf types off of the rest of Gql2Grpc.
+///     Thin adapter over <see cref="DynamicInvoker" /> that works in JSON string terms rather than
+///     raw <c>IMessage</c> types. The GraphQL pipeline only speaks JSON, so this boundary keeps
+///     protobuf types off of the rest of Gql2Grpc.
 /// </summary>
 internal sealed class GrpcTransport(GrpcChannel channel)
 {
@@ -26,6 +26,7 @@ internal sealed class GrpcTransport(GrpcChannel channel)
     {
         var request = DynamicInvoker.CreateMessageFromJson(method.InputType, requestJson, allowUnknownFields);
         var result = await _invoker.InvokeUnaryAsync(method, request, metadata, deadline, cancellationToken).ConfigureAwait(false);
+
         return DynamicInvoker.MessageToJson(result.Response, emitDefaults);
     }
 

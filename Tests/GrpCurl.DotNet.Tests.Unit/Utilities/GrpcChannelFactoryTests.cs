@@ -36,7 +36,9 @@ public sealed class GrpcChannelFactoryTests
     [InlineData("0", 0)]
     public void ParseDuration_ValidInputs_ParsesCorrectly(string input, int expectedMs)
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var result = GrpcChannelFactory.ParseDuration(input);
 
         // Assert
@@ -48,7 +50,10 @@ public sealed class GrpcChannelFactoryTests
     [InlineData("   ")]
     public void ParseDuration_EmptyString_ThrowsException(string input)
     {
-        // Arrange & Act & Assert
+        // Arrange
+
+        // Act
+        // Assert
         var ex = Should.Throw<ArgumentException>(() => GrpcChannelFactory.ParseDuration(input));
         ex.Message.ShouldContain("empty");
     }
@@ -60,7 +65,10 @@ public sealed class GrpcChannelFactoryTests
     [InlineData("10 seconds")]
     public void ParseDuration_InvalidFormat_ThrowsException(string input)
     {
-        // Arrange & Act & Assert
+        // Arrange
+
+        // Act
+        // Assert
         var ex = Should.Throw<ArgumentException>(() => GrpcChannelFactory.ParseDuration(input));
         ex.Message.ShouldContain("Invalid duration format");
     }
@@ -95,7 +103,9 @@ public sealed class GrpcChannelFactoryTests
     [InlineData("0.5KB", 512)]
     public void ParseSize_ValidInputs_ParsesCorrectly(string input, int expectedBytes)
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var result = GrpcChannelFactory.ParseSize(input);
 
         // Assert
@@ -107,7 +117,10 @@ public sealed class GrpcChannelFactoryTests
     [InlineData("   ")]
     public void ParseSize_EmptyString_ThrowsException(string input)
     {
-        // Arrange & Act & Assert
+        // Arrange
+
+        // Act
+        // Assert
         var ex = Should.Throw<ArgumentException>(() => GrpcChannelFactory.ParseSize(input));
 
         ex.Message.ShouldContain("empty");
@@ -119,7 +132,10 @@ public sealed class GrpcChannelFactoryTests
     [InlineData("MB10")]
     public void ParseSize_InvalidFormat_ThrowsException(string input)
     {
-        // Arrange & Act & Assert
+        // Arrange
+
+        // Act
+        // Assert
         var ex = Should.Throw<ArgumentException>(() => GrpcChannelFactory.ParseSize(input));
 
         ex.Message.ShouldContain("Invalid size format");
@@ -128,7 +144,10 @@ public sealed class GrpcChannelFactoryTests
     [Fact]
     public void ParseSize_Overflow_ThrowsException()
     {
-        // Arrange & Act & Assert
+        // Arrange
+
+        // Act
+        // Assert
         var ex = Should.Throw<ArgumentException>(() => GrpcChannelFactory.ParseSize("3GB"));
 
         ex.Message.ShouldContain("too large");
@@ -141,7 +160,9 @@ public sealed class GrpcChannelFactoryTests
     [Fact]
     public void CreateMetadata_NullHeaders_ReturnsDefaultUserAgent()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var metadata = GrpcChannelFactory.CreateMetadata(null);
 
         // Assert
@@ -154,7 +175,9 @@ public sealed class GrpcChannelFactoryTests
     [Fact]
     public void CreateMetadata_EmptyHeaders_ReturnsDefaultUserAgent()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var metadata = GrpcChannelFactory.CreateMetadata([]);
 
         // Assert
@@ -165,7 +188,9 @@ public sealed class GrpcChannelFactoryTests
     [Fact]
     public void CreateMetadata_SingleHeader_ParsesCorrectly()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var metadata = GrpcChannelFactory.CreateMetadata(["Authorization: Bearer token123"]);
 
         // Assert
@@ -197,7 +222,9 @@ public sealed class GrpcChannelFactoryTests
     [Fact]
     public void CreateMetadata_CustomUserAgent_OverridesDefault()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var metadata = GrpcChannelFactory.CreateMetadata(null, "my-custom-agent/2.0");
 
         // Assert
@@ -209,7 +236,9 @@ public sealed class GrpcChannelFactoryTests
     [Fact]
     public void CreateMetadata_HeaderWithColonInValue_ParsesCorrectly()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var metadata = GrpcChannelFactory.CreateMetadata(["Time: 10:30:45"]);
 
         // Assert
@@ -219,7 +248,10 @@ public sealed class GrpcChannelFactoryTests
     [Fact]
     public void CreateMetadata_InvalidHeaderFormat_ThrowsException()
     {
-        // Arrange & Act & Assert
+        // Arrange
+
+        // Act
+        // Assert
         var ex = Should.Throw<ArgumentException>(() =>
             GrpcChannelFactory.CreateMetadata(["invalid-header-without-colon"]));
         ex.Message.ShouldContain("Invalid header format");
@@ -241,7 +273,9 @@ public sealed class GrpcChannelFactoryTests
     [Fact]
     public void CreateMetadata_HeaderTrimsWhitespace()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var metadata = GrpcChannelFactory.CreateMetadata(["  Key  :  Value  "]);
 
         // Assert
@@ -308,7 +342,8 @@ public sealed class GrpcChannelFactoryTests
 
         Environment.SetEnvironmentVariable(varName, null);
 
-        // Act & Assert
+        // Act
+        // Assert
         var ex = Should.Throw<ArgumentException>(() =>
             GrpcChannelFactory.CreateMetadata([$"Header: ${{{varName}}}"]));
 
@@ -346,7 +381,9 @@ public sealed class GrpcChannelFactoryTests
     [Fact]
     public void Create_WithHttpScheme_CreatesChannel()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         using var channel = GrpcChannelFactory.Create("http://localhost:50051");
 
         // Assert
@@ -357,7 +394,9 @@ public sealed class GrpcChannelFactoryTests
     [Fact]
     public void Create_WithHttpsScheme_CreatesChannel()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         using var channel = GrpcChannelFactory.Create("https://localhost:50051");
 
         // Assert
@@ -368,7 +407,9 @@ public sealed class GrpcChannelFactoryTests
     [Fact]
     public void Create_WithoutScheme_CreatesChannel()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         using var channel = GrpcChannelFactory.Create("localhost:50051");
 
         // Assert
@@ -379,7 +420,9 @@ public sealed class GrpcChannelFactoryTests
     [Fact]
     public void Create_WithPlaintextOption_CreatesChannel()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         using var channel = GrpcChannelFactory.Create(
             "localhost:50051",
             new GrpcChannelFactory.ChannelOptions
@@ -395,7 +438,9 @@ public sealed class GrpcChannelFactoryTests
     [Fact]
     public void Create_WithNullOptions_UsesDefaults()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         using var channel = GrpcChannelFactory.Create("https://localhost:50051");
 
         // Assert
@@ -405,7 +450,9 @@ public sealed class GrpcChannelFactoryTests
     [Fact]
     public void Create_WithInsecureSkipVerify_CreatesChannel()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         using var channel = GrpcChannelFactory.Create(
             "localhost:50051",
             new GrpcChannelFactory.ChannelOptions
@@ -501,7 +548,9 @@ public sealed class GrpcChannelFactoryTests
     [Fact]
     public void Create_WithServerName_CreatesChannel()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         using var channel = GrpcChannelFactory.Create(
             "localhost:50051",
             new GrpcChannelFactory.ChannelOptions
@@ -517,7 +566,9 @@ public sealed class GrpcChannelFactoryTests
     [Fact]
     public void Create_WithAuthority_CreatesChannel()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         using var channel = GrpcChannelFactory.Create(
             "localhost:50051",
             new GrpcChannelFactory.ChannelOptions
@@ -533,7 +584,9 @@ public sealed class GrpcChannelFactoryTests
     [Fact]
     public void Create_WithConnectTimeout_CreatesChannel()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         using var channel = GrpcChannelFactory.Create(
             "localhost:50051",
             new GrpcChannelFactory.ChannelOptions
@@ -549,7 +602,9 @@ public sealed class GrpcChannelFactoryTests
     [Fact]
     public void Create_WithMaxMessageSizes_CreatesChannel()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         using var channel = GrpcChannelFactory.Create(
             "localhost:50051",
             new GrpcChannelFactory.ChannelOptions
@@ -569,7 +624,8 @@ public sealed class GrpcChannelFactoryTests
         // Arrange
         var clientCertPath = Path.Combine(AppContext.BaseDirectory, "TestCertificates", "client.crt");
 
-        // Act & Assert
+        // Act
+        // Assert
         var ex = Should.Throw<ArgumentException>(() =>
             GrpcChannelFactory.Create(
                 "localhost:50051",
@@ -588,7 +644,8 @@ public sealed class GrpcChannelFactoryTests
         // Arrange
         var nonExistentPath = Path.Combine(AppContext.BaseDirectory, "TestCertificates", "nonexistent-ca.crt");
 
-        // Act & Assert
+        // Act
+        // Assert
         Should.Throw<Exception>(() =>
             GrpcChannelFactory.Create(
                 "localhost:50051",
@@ -604,7 +661,8 @@ public sealed class GrpcChannelFactoryTests
         // Arrange
         var nonExistentPath = Path.Combine(AppContext.BaseDirectory, "TestCertificates", "nonexistent-client.crt");
 
-        // Act & Assert
+        // Act
+        // Assert
         Should.Throw<Exception>(() =>
             GrpcChannelFactory.Create(
                 "localhost:50051",
@@ -688,7 +746,9 @@ public sealed class GrpcChannelFactoryTests
     [Fact]
     public void Create_WithKeepaliveTime_CreatesChannel()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         using var channel = GrpcChannelFactory.Create(
             "localhost:50051",
             new GrpcChannelFactory.ChannelOptions
@@ -708,7 +768,9 @@ public sealed class GrpcChannelFactoryTests
     [Fact]
     public void ChannelOptions_DefaultValues()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var options = new GrpcChannelFactory.ChannelOptions();
 
         // Assert
@@ -728,7 +790,9 @@ public sealed class GrpcChannelFactoryTests
     [Fact]
     public void ChannelOptions_AllPropertiesSettable()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var options = new GrpcChannelFactory.ChannelOptions
         {
             Plaintext = true,

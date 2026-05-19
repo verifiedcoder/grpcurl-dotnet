@@ -4,7 +4,7 @@ using GrpCurl.Net.Tests.Unit.Fixtures;
 
 namespace GrpCurl.Net.Tests.Unit.Commands;
 
-[Collection(Fixtures.ConsoleStreamCollection.Name)]
+[Collection(ConsoleStreamCollection.Name)]
 public sealed class DescribeCommandHandlerHelperTests
 {
     #region GetScalarTypeName Tests
@@ -15,7 +15,8 @@ public sealed class DescribeCommandHandlerHelperTests
         // Arrange
         var desc = TestDescriptorProvider.AllScalarsMessage;
 
-        // Act & Assert
+        // Act
+        // Assert
         DescribeCommandHandler.GetScalarTypeName(desc.FindFieldByNumber(1)!).ShouldBe("double");
         DescribeCommandHandler.GetScalarTypeName(desc.FindFieldByNumber(2)!).ShouldBe("float");
         DescribeCommandHandler.GetScalarTypeName(desc.FindFieldByNumber(3)!).ShouldBe("int32");
@@ -117,7 +118,8 @@ public sealed class DescribeCommandHandlerHelperTests
         // Arrange
         var desc = TestDescriptorProvider.AllScalarsMessage;
 
-        // Act & Assert - numeric types return 0 or "0" (quoted for 64-bit types per protobuf JSON spec)
+        // Act
+        // Assert
         DescribeCommandHandler.GetScalarDefault(desc.FindFieldByNumber(1)!).ShouldBe(0);     // double
         DescribeCommandHandler.GetScalarDefault(desc.FindFieldByNumber(2)!).ShouldBe(0);     // float
         DescribeCommandHandler.GetScalarDefault(desc.FindFieldByNumber(3)!).ShouldBe(0);     // int32
@@ -287,7 +289,7 @@ public sealed class DescribeCommandHandlerHelperTests
         // Assert
         result.ShouldBeOfType<Dictionary<string, object?>>();
 
-        var dict = (Dictionary<string, object?>)result!;
+        var dict = (Dictionary<string, object?>)result;
 
         dict.ShouldContainKey("google.protobuf.Struct");
         dict["google.protobuf.Struct"].ShouldBe("supports arbitrary JSON objects");
@@ -305,7 +307,7 @@ public sealed class DescribeCommandHandlerHelperTests
         // Assert
         result.ShouldBeOfType<Dictionary<string, object?>>();
 
-        var dict = (Dictionary<string, object?>)result!;
+        var dict = (Dictionary<string, object?>)result;
 
         dict.ShouldContainKey("google.protobuf.Value");
         dict["google.protobuf.Value"].ShouldBe("supports arbitrary JSON");
@@ -323,7 +325,7 @@ public sealed class DescribeCommandHandlerHelperTests
         // Assert
         result.ShouldBeOfType<List<object?>>();
 
-        var list = (List<object?>)result!;
+        var list = (List<object?>)result;
 
         list.Count.ShouldBe(1);
         list[0].ShouldBeOfType<Dictionary<string, object?>>();
@@ -346,7 +348,7 @@ public sealed class DescribeCommandHandlerHelperTests
         // Assert
         result.ShouldBeOfType<Dictionary<string, object?>>();
 
-        var dict = (Dictionary<string, object?>)result!;
+        var dict = (Dictionary<string, object?>)result;
 
         dict.ShouldContainKey("@type");
         dict["@type"].ShouldBe("type.googleapis.com/google.protobuf.Empty");
@@ -370,7 +372,7 @@ public sealed class DescribeCommandHandlerHelperTests
         // Assert
         result.ShouldBeOfType<Dictionary<string, object?>>();
 
-        var dict = (Dictionary<string, object?>)result!;
+        var dict = (Dictionary<string, object?>)result;
 
         dict.ShouldContainKey("paths");
         dict["paths"].ShouldBeOfType<List<object?>>();
@@ -419,7 +421,7 @@ public sealed class DescribeCommandHandlerHelperTests
         // Assert
         result.ShouldBeOfType<Dictionary<string, object?>>();
 
-        var dict = (Dictionary<string, object?>)result!;
+        var dict = (Dictionary<string, object?>)result;
 
         dict.ShouldBeEmpty();
     }

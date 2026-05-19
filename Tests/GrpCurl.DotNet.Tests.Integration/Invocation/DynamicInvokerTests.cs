@@ -114,7 +114,8 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
 
         var request = new SimpleDynamicMessage(methodDescriptor.InputType);
 
-        // Act & Assert
+        // Act
+        // Assert
         await Should.ThrowAsync<OperationCanceledException>(() =>
             invoker.InvokeUnaryAsync(methodDescriptor, request, cancellationToken: cts.Token));
     }
@@ -200,7 +201,8 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
         var invoker = new DynamicInvoker(channel);
         var request = CreateStreamingOutputRequest(methodDescriptor.InputType, [50, 100]);
 
-        // Act & Assert
+        // Act
+        // Assert
         await foreach (var response in invoker.InvokeServerStreamingAsync(methodDescriptor, request, cancellationToken: TestContext.Current.CancellationToken))
         {
             response.ShouldNotBeNull();
@@ -580,7 +582,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
 
     private static async Task<MethodDescriptor> GetMethodDescriptor(ReflectionSource source, string methodName)
     {
-        // Arrange & Act
+        // Act
         var symbol = await source.FindSymbolAsync(methodName);
 
         // Assert

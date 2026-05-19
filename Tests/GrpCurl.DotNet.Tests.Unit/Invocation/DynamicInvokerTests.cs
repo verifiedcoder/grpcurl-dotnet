@@ -60,7 +60,8 @@ public sealed class DynamicInvokerTests
 
         const string json = """{"responseSize": 42, "nonExistentField": "bad"}""";
 
-        // Act & Assert
+        // Act
+        // Assert
         var ex = Should.Throw<ArgumentException>(() => DynamicInvoker.CreateMessageFromJson(descriptor, json, allowUnknownFields: false));
 
         ex.Message.ShouldContain("Unknown field 'nonExistentField'");

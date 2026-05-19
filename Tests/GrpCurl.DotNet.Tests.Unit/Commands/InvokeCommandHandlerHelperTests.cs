@@ -6,7 +6,7 @@ using GrpCurl.Net.Tests.Unit.Fixtures;
 
 namespace GrpCurl.Net.Tests.Unit.Commands;
 
-[Collection(Fixtures.ConsoleStreamCollection.Name)]
+[Collection(ConsoleStreamCollection.Name)]
 public sealed class InvokeCommandHandlerHelperTests
 {
     #region WriteVerboseMethodInfo Tests
@@ -158,7 +158,10 @@ public sealed class InvokeCommandHandlerHelperTests
 
         Console.SetError(writer);
 
+        // Act
         try
+
+        // Assert
         {
             InvokeCommandHandler.WriteVerboseMethodInfo(unaryMethod, metadata, unsafeShowSecrets: true);
 

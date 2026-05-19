@@ -364,7 +364,8 @@ public sealed class DescribeCommandHandlerTests(GrpcTestFixture fixture)
 
         try
         {
-            // Act & Assert
+            // Act
+            // Assert
             await Should.ThrowAsync<GrpcCommandException>(() =>
                 DescribeCommandHandler.ExecuteAsync(
                     address: fixture.Address,
@@ -396,7 +397,10 @@ public sealed class DescribeCommandHandlerTests(GrpcTestFixture fixture)
     [Fact]
     public async Task ExecuteAsync_NoAddressNoProtoset_ThrowsGrpcCommandException()
     {
-        // Arrange & Act & Assert
+        // Arrange
+
+        // Act
+        // Assert
         await Should.ThrowAsync<GrpcCommandException>(() =>
             DescribeCommandHandler.ExecuteAsync(
                 address: null,
@@ -426,7 +430,8 @@ public sealed class DescribeCommandHandlerTests(GrpcTestFixture fixture)
         // Arrange
         var badPath = Path.Combine(Path.GetTempPath(), $"nonexistent-{Guid.NewGuid()}.protoset");
 
-        // Act & Assert
+        // Act
+        // Assert
         await Should.ThrowAsync<GrpcCommandException>(() =>
             DescribeCommandHandler.ExecuteAsync(
                 address: null,

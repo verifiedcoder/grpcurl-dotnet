@@ -91,9 +91,9 @@ internal static class ProtobufReader
 
                     // Clear any other field in this oneof
                     oneof.Fields
-                        .Where(f => f != field)
-                        .ToList()
-                        .ForEach(f => message.Fields.Remove(f));
+                         .Where(f => f != field)
+                         .ToList()
+                         .ForEach(f => message.Fields.Remove(f));
 
                     // Track which field is active in this oneof
                     message.OneofFields[oneof] = field;
@@ -108,30 +108,30 @@ internal static class ProtobufReader
     private static object? ReadSingleFieldValue(CodedInputStream input, FieldDescriptor field)
         => field.FieldType switch
         {
-            FieldType.String => input.ReadString(),
-            FieldType.Int32 => input.ReadInt32(),
-            FieldType.SInt32 => input.ReadSInt32(),
+            FieldType.String   => input.ReadString(),
+            FieldType.Int32    => input.ReadInt32(),
+            FieldType.SInt32   => input.ReadSInt32(),
             FieldType.SFixed32 => input.ReadSFixed32(),
-            FieldType.Int64 => input.ReadInt64(),
-            FieldType.SInt64 => input.ReadSInt64(),
+            FieldType.Int64    => input.ReadInt64(),
+            FieldType.SInt64   => input.ReadSInt64(),
             FieldType.SFixed64 => input.ReadSFixed64(),
-            FieldType.UInt32 => input.ReadUInt32(),
-            FieldType.Fixed32 => input.ReadFixed32(),
-            FieldType.UInt64 => input.ReadUInt64(),
-            FieldType.Fixed64 => input.ReadFixed64(),
-            FieldType.Bool => input.ReadBool(),
-            FieldType.Float => input.ReadFloat(),
-            FieldType.Double => input.ReadDouble(),
-            FieldType.Bytes => input.ReadBytes(),
-            FieldType.Enum => input.ReadEnum(),
-            FieldType.Message => ReadNestedMessage(input, field),
+            FieldType.UInt32   => input.ReadUInt32(),
+            FieldType.Fixed32  => input.ReadFixed32(),
+            FieldType.UInt64   => input.ReadUInt64(),
+            FieldType.Fixed64  => input.ReadFixed64(),
+            FieldType.Bool     => input.ReadBool(),
+            FieldType.Float    => input.ReadFloat(),
+            FieldType.Double   => input.ReadDouble(),
+            FieldType.Bytes    => input.ReadBytes(),
+            FieldType.Enum     => input.ReadEnum(),
+            FieldType.Message  => ReadNestedMessage(input, field),
             // proto2 groups: wire types StartGroup (3) and EndGroup (4) bracket a sub-message.
             // The fields between the SGROUP tag (already consumed by ReadTag) and the matching
             // EGROUP tag are parsed as a nested message. Not common in modern gRPC, but real
             // proto2 services still use them — see CODE-REVIEW.md P2 "proto2 / legacy
             // descriptor support partial".
             FieldType.Group => ReadGroup(input, field),
-            _ => throw new InvalidOperationException($"Unsupported field type: {field.FieldType}")
+            _               => throw new InvalidOperationException($"Unsupported field type: {field.FieldType}")
         };
 
     private static SimpleDynamicMessage ReadNestedMessage(CodedInputStream input, FieldDescriptor field)
@@ -180,6 +180,7 @@ internal static class ProtobufReader
             if (groupField is null)
             {
                 input.SkipLastField();
+
                 continue;
             }
 
@@ -215,12 +216,12 @@ internal static class ProtobufReader
         => fieldType switch
         {
             FieldType.Int32 or FieldType.Int64 or
-            FieldType.UInt32 or FieldType.UInt64 or
-            FieldType.SInt32 or FieldType.SInt64 or
-            FieldType.Fixed32 or FieldType.Fixed64 or
-            FieldType.SFixed32 or FieldType.SFixed64 or
-            FieldType.Float or FieldType.Double or
-            FieldType.Bool or FieldType.Enum => true,
+                FieldType.UInt32 or FieldType.UInt64 or
+                FieldType.SInt32 or FieldType.SInt64 or
+                FieldType.Fixed32 or FieldType.Fixed64 or
+                FieldType.SFixed32 or FieldType.SFixed64 or
+                FieldType.Float or FieldType.Double or
+                FieldType.Bool or FieldType.Enum => true,
             _ => false
         };
 
@@ -251,20 +252,20 @@ internal static class ProtobufReader
     private static object ReadPackedValue(CodedInputStream input, FieldType fieldType)
         => fieldType switch
         {
-            FieldType.Int32 => input.ReadInt32(),
-            FieldType.SInt32 => input.ReadSInt32(),
+            FieldType.Int32    => input.ReadInt32(),
+            FieldType.SInt32   => input.ReadSInt32(),
             FieldType.SFixed32 => input.ReadSFixed32(),
-            FieldType.Int64 => input.ReadInt64(),
-            FieldType.SInt64 => input.ReadSInt64(),
+            FieldType.Int64    => input.ReadInt64(),
+            FieldType.SInt64   => input.ReadSInt64(),
             FieldType.SFixed64 => input.ReadSFixed64(),
-            FieldType.UInt32 => input.ReadUInt32(),
-            FieldType.Fixed32 => input.ReadFixed32(),
-            FieldType.UInt64 => input.ReadUInt64(),
-            FieldType.Fixed64 => input.ReadFixed64(),
-            FieldType.Bool => input.ReadBool(),
-            FieldType.Float => input.ReadFloat(),
-            FieldType.Double => input.ReadDouble(),
-            FieldType.Enum => input.ReadEnum(),
+            FieldType.UInt32   => input.ReadUInt32(),
+            FieldType.Fixed32  => input.ReadFixed32(),
+            FieldType.UInt64   => input.ReadUInt64(),
+            FieldType.Fixed64  => input.ReadFixed64(),
+            FieldType.Bool     => input.ReadBool(),
+            FieldType.Float    => input.ReadFloat(),
+            FieldType.Double   => input.ReadDouble(),
+            FieldType.Enum     => input.ReadEnum(),
             FieldType.String or FieldType.Bytes or FieldType.Message or FieldType.Group =>
                 throw new InvalidOperationException($"Field type {fieldType} is not packable and cannot appear in packed encoding."),
             _ => throw new InvalidOperationException($"Unknown field type: {fieldType}")

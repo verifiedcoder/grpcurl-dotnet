@@ -1,5 +1,3 @@
-using System.CommandLine;
-using System.Text.Json.Nodes;
 using Gql2Grpc.Configuration;
 using Gql2Grpc.Diagnostics;
 using Gql2Grpc.Execution;
@@ -7,10 +5,11 @@ using Gql2Grpc.GraphQL;
 using Gql2Grpc.Introspection;
 using Gql2Grpc.Response;
 using Gql2Grpc.Translation;
-using Grpc.Core;
 using GrpCurl.Net.DescriptorSources;
 using GrpCurl.Net.Exceptions;
 using GrpCurl.Net.Utilities;
+using System.CommandLine;
+using System.Text.Json.Nodes;
 
 namespace Gql2Grpc.Commands;
 
@@ -62,7 +61,7 @@ internal static class QueryCommandHandler
         var serverNameOpt = new Option<string?>("--servername") { Description = "Override TLS server name" };
         var userAgentOpt = new Option<string?>("--user-agent")
         {
-            Description = $"Custom User-Agent header (default: {GrpCurl.Net.Utilities.UserAgentProvider.Default})"
+            Description = $"Custom User-Agent header (default: {UserAgentProvider.Default})"
         };
 
         var connectTimeoutOpt = new Option<string?>("--connect-timeout") { Description = "Connection timeout (e.g. '10s')" };
@@ -74,11 +73,13 @@ internal static class QueryCommandHandler
             Description = "Header (name: value); applied to both reflection and RPC",
             Arity = ArgumentArity.ZeroOrMore
         };
+
         var reflectHeaderOpt = new Option<string[]>("--reflect-header")
         {
             Description = "Header sent only on reflection requests",
             Arity = ArgumentArity.ZeroOrMore
         };
+
         var rpcHeaderOpt = new Option<string[]>("--rpc-header")
         {
             Description = "Header sent only on RPC requests",
@@ -92,6 +93,7 @@ internal static class QueryCommandHandler
             Description = "Operation variable (name=value)",
             Arity = ArgumentArity.ZeroOrMore
         };
+
         var variablesFileOpt = new Option<string?>("--variables-file") { Description = "JSON file of operation variables" };
 
         var mappingOpt = new Option<string?>("--mapping") { Description = "Mapping file (YAML or JSON)" };
@@ -103,6 +105,7 @@ internal static class QueryCommandHandler
             Description = "Skip unknown fields in request JSON instead of erroring",
             DefaultValueFactory = _ => true
         };
+
         var strictSelectionOpt = new Option<bool>("--strict-selection") { Description = "Missing response fields raise GraphQL errors instead of null" };
         var rawOpt = new Option<bool>("--raw") { Description = "Emit unshaped gRPC JSON only (bypass selection projection)" };
 
@@ -190,6 +193,7 @@ internal static class QueryCommandHandler
             catch (Exception ex)
             {
                 EmitTopLevelError(ExceptionTranslator.ToTopLevelError(ex));
+
                 return ExceptionTranslator.ExitCodeFor(ex);
             }
         });
@@ -218,6 +222,7 @@ internal static class QueryCommandHandler
             : new CancellationTokenSource();
 
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(deadlineCts.Token, cancellationToken);
+
         var operationToken = linkedCts.Token;
 
         var queryText = await ResolveQueryAsync(cli, operationToken).ConfigureAwait(false);
@@ -247,9 +252,11 @@ internal static class QueryCommandHandler
         await using var descriptorBundle = await DescriptorSourceFactory.CreateAsync(
             cli.Address, cli.Protosets, channelOptions, reflectionMetadata, operationToken).ConfigureAwait(false);
 
-        // Gql2Grpc always invokes RPCs against a live server even when --protoset is used
-        // for offline schema: the GraphQL query still has to be forwarded. Reject the
-        // protoset-only-no-address combination here with a clear message.
+        /*
+         * Gql2Grpc always invokes RPCs against a live server even when --protoset is used
+         * for offline schema: the GraphQL query still has to be forwarded. Reject the
+         * protoset-only-no-address combination here with a clear message.
+         */
         var transportChannel = descriptorBundle.Channel ?? throw new GrpcCommandException(
             "Gql2Grpc requires a target gRPC address; supply <address> or use --address.",
             exitCode: 2);
@@ -293,12 +300,17 @@ internal static class QueryCommandHandler
             exitCode = ExitCodeFromEnvelope(envelope);
         }
 
-        if (!string.IsNullOrEmpty(cli.ProtosetOut))
+        if (string.IsNullOrEmpty(cli.ProtosetOut))
         {
-            await GrpCurl.Net.Utilities.ProtosetExporter.WriteProtosetAsync(
-                descriptorBundle.Source, cli.ProtosetOut, cli.Force, []).ConfigureAwait(false);
-            logger.Verbose($"Wrote FileDescriptorSet to {cli.ProtosetOut}");
+            return exitCode;
         }
+
+        await ProtosetExporter.WriteProtosetAsync(
+            descriptorBundle.Source,
+            cli.ProtosetOut,
+            cli.Force, []).ConfigureAwait(false);
+
+        logger.Verbose($"Wrote FileDescriptorSet to {cli.ProtosetOut}");
 
         return exitCode;
     }
@@ -306,6 +318,7 @@ internal static class QueryCommandHandler
     private static void EmitTopLevelError(GraphQLError error)
     {
         var envelope = GraphQLResponseBuilder.BuildSingleError(error);
+
         Console.WriteLine(GraphQLResponseBuilder.Serialize(envelope));
     }
 
@@ -373,12 +386,9 @@ internal static class QueryCommandHandler
             return await File.ReadAllTextAsync(cli.QueryFile, cancellationToken).ConfigureAwait(false);
         }
 
-        if (!string.IsNullOrEmpty(cli.QueryInline))
-        {
-            return cli.QueryInline!;
-        }
-
-        throw new GrpcCommandException("No GraphQL document supplied. Pass a positional query string or --file.", exitCode: 2);
+        return !string.IsNullOrEmpty(cli.QueryInline)
+            ? cli.QueryInline!
+            : throw new GrpcCommandException("No GraphQL document supplied. Pass a positional query string or --file.", exitCode: 2);
     }
 
     private static Dictionary<string, string> ParseCliVariables(IReadOnlyList<string> variables)
@@ -401,6 +411,7 @@ internal static class QueryCommandHandler
 
             var name = entry[..equals].Trim();
             var value = entry[(equals + 1)..];
+
             dict[name] = value;
         }
 
@@ -410,6 +421,7 @@ internal static class QueryCommandHandler
     private static GrpcChannelFactory.ChannelOptions BuildChannelOptions(CliOptions cli)
     {
         TimeSpan? connectTimeout = cli.ConnectTimeout is null ? null : GrpcChannelFactory.ParseDuration(cli.ConnectTimeout);
+
         int? maxMsgSize = cli.MaxMessageSize is null ? null : GrpcChannelFactory.ParseSize(cli.MaxMessageSize);
 
         return new GrpcChannelFactory.ChannelOptions
@@ -432,36 +444,67 @@ internal static class QueryCommandHandler
     {
         public required string Address { get; init; }
         public string? QueryInline { get; init; }
+
         public string? QueryFile { get; init; }
+
         public string? OperationName { get; init; }
+
         public IReadOnlyList<string> Variables { get; init; } = [];
+
         public string? VariablesFile { get; init; }
+
         public IReadOnlyList<string> Protosets { get; init; } = [];
+
         public string? ProtosetOut { get; init; }
+
         public bool Force { get; init; }
+
         public bool Plaintext { get; init; }
+
         public bool Insecure { get; init; }
+
         public string? CaCert { get; init; }
+
         public string? Cert { get; init; }
+
         public string? Key { get; init; }
+
         public string? CertPassword { get; init; }
+
         public string? Authority { get; init; }
+
         public string? ServerName { get; init; }
+
         public string? UserAgent { get; init; }
+
         public string? ConnectTimeout { get; init; }
+
         public string? MaxTime { get; init; }
+
         public string? MaxMessageSize { get; init; }
+
         public IReadOnlyList<string> Headers { get; init; } = [];
+
         public IReadOnlyList<string> ReflectHeaders { get; init; } = [];
+
         public IReadOnlyList<string> RpcHeaders { get; init; } = [];
+
         public string? MappingPath { get; init; }
+
         public string? DefaultService { get; init; }
+
         public bool EmitDefaults { get; init; }
+
         public bool AllowUnknownFields { get; init; } = true;
+
         public bool StrictSelection { get; init; }
+
         public bool Raw { get; init; }
+
         public bool Introspection { get; init; } = true;
+
         public bool Verbose { get; init; }
+
         public bool VeryVerbose { get; init; }
     }
 }

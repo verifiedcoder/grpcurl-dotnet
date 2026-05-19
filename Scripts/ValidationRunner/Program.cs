@@ -118,42 +118,45 @@ internal static class Program
         new("list-services", ["list", "--plaintext", $"localhost:{plaintextPort}"], output =>
         {
             output.ShouldContain("testing.TestService");
+
             return true;
         }),
         new("list-methods", ["list", "--plaintext", $"localhost:{plaintextPort}", "testing.TestService"], output =>
         {
             output.ShouldContain("UnaryCall");
+
             return true;
         }),
         new("describe-service", ["describe", "--plaintext", $"localhost:{plaintextPort}", "testing.TestService"], output =>
         {
             output.ShouldContain("rpc UnaryCall");
+
             return true;
         }),
         new("invoke-empty", ["invoke", "--plaintext", "--max-time", "10s", "-d", "{}", $"localhost:{plaintextPort}", "testing.TestService/EmptyCall"], output =>
         {
             output.ShouldContain("{}");
+
             return true;
         }),
         new("invoke-unary", ["invoke", "--plaintext", "--max-time", "10s", "-d", "{\"responseSize\": 32}", $"localhost:{plaintextPort}", "testing.TestService/UnaryCall"], output =>
         {
             output.ShouldContain("payload");
+
             return true;
         }),
-        new("invoke-server-streaming", ["invoke", "--plaintext", "--max-time", "10s", "-d", "{\"responseParameters\":[{\"size\":4},{\"size\":4}]}", $"localhost:{plaintextPort}", "testing.TestService/StreamingOutputCall"], output =>
-        {
-            // Expect at least two response objects in the output.
-            return output.Split("payload", StringSplitOptions.None).Length >= 3;
-        }),
+        new("invoke-server-streaming", ["invoke", "--plaintext", "--max-time", "10s", "-d", "{\"responseParameters\":[{\"size\":4},{\"size\":4}]}", $"localhost:{plaintextPort}", "testing.TestService/StreamingOutputCall"], output => output.Split("payload").Length >= 3),
         new("invoke-json-envelope", ["invoke", "--plaintext", "--output", "json", "--max-time", "10s", "-d", "{}", $"localhost:{plaintextPort}", "testing.TestService/EmptyCall"], output =>
         {
             output.ShouldContain("\"kind\":\"message\"");
+
             return true;
         }),
         new("invoke-bin-metadata", ["invoke", "--plaintext", "--max-time", "10s", "-H", "trace-bin: AQIDBA==", "-d", "{}", $"localhost:{plaintextPort}", "testing.TestService/EmptyCall"], output => output.Length > 0),
         new("dropin-list", ["-plaintext", $"localhost:{plaintextPort}"], output =>
         {
             output.ShouldContain("testing.TestService");
+
             return true;
         })
     ];
@@ -281,7 +284,9 @@ internal static class Program
             try
             {
                 using var client = new TcpClient();
+
                 await client.ConnectAsync(host, port).ConfigureAwait(false);
+
                 return true;
             }
             catch (SocketException)
@@ -328,11 +333,13 @@ internal static class Program
 
         try
         {
-            if (!process.HasExited)
+            if (process.HasExited)
             {
-                process.Kill(entireProcessTree: true);
-                process.WaitForExit(5000);
+                return;
             }
+
+            process.Kill(entireProcessTree: true);
+            process.WaitForExit(5000);
         }
         catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
         {

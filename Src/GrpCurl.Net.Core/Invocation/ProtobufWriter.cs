@@ -160,6 +160,7 @@ internal static class ProtobufWriter
                     break;
 
                 default:
+
                     throw new InvalidOperationException($"Invalid field type: {field.FieldType}");
             }
         }
@@ -170,147 +171,148 @@ internal static class ProtobufWriter
             // Check if field should use packed encoding.
             // Packed encoding is only for primitive types (proto3 default for numeric/bool/enum)
             var isPackable = field.FieldType is FieldType.Int32 or FieldType.Int64 or FieldType.UInt32 or FieldType.UInt64
-                or FieldType.SInt32 or FieldType.SInt64 or FieldType.Fixed32 or FieldType.Fixed64
-                or FieldType.SFixed32 or FieldType.SFixed64 or FieldType.Float or FieldType.Double
-                or FieldType.Bool or FieldType.Enum;
+                                                or FieldType.SInt32 or FieldType.SInt64 or FieldType.Fixed32 or FieldType.Fixed64
+                                                or FieldType.SFixed32 or FieldType.SFixed64 or FieldType.Float or FieldType.Double
+                                                or FieldType.Bool or FieldType.Enum;
 
             if (isPackable && field.IsPacked)
             {
                 // Packed encoding: tag + length + values (no tags for individual values)
                 // First, calculate the total size of all values
                 var packedSize = values.OfType<object>()
-                    .Sum(value => field.FieldType switch
-                    {
-                        // Integer types - ComputeSize returns the actual value size
-                        FieldType.Int32 => CodedOutputStream.ComputeInt32Size((int)value),
-                        FieldType.Int64 => CodedOutputStream.ComputeInt64Size((long)value),
-                        FieldType.UInt32 => CodedOutputStream.ComputeUInt32Size((uint)value),
-                        FieldType.UInt64 => CodedOutputStream.ComputeUInt64Size((ulong)value),
-                        FieldType.SInt32 => CodedOutputStream.ComputeSInt32Size((int)value),
-                        FieldType.SInt64 => CodedOutputStream.ComputeSInt64Size((long)value),
-                        FieldType.Fixed32 => 4, // Fixed32 is always 4 bytes
-                        FieldType.Fixed64 => 8, // Fixed64 is always 8 bytes
-                        FieldType.SFixed32 => 4, // SFixed32 is always 4 bytes
-                        FieldType.SFixed64 => 8, // SFixed64 is always 8 bytes
-                        FieldType.Bool => 1, // Bool is always 1 byte
-                        FieldType.Float => 4, // Float is always 4 bytes
-                        FieldType.Double => 8, // Double is always 8 bytes
-                        FieldType.Enum => CodedOutputStream.ComputeEnumSize((int)value), // Enums are encoded as ints
-                        _ => 0
-                    });
+                                       .Sum(value => field.FieldType switch
+                                       {
+                                           // Integer types - ComputeSize returns the actual value size
+                                           FieldType.Int32    => CodedOutputStream.ComputeInt32Size((int)value),
+                                           FieldType.Int64    => CodedOutputStream.ComputeInt64Size((long)value),
+                                           FieldType.UInt32   => CodedOutputStream.ComputeUInt32Size((uint)value),
+                                           FieldType.UInt64   => CodedOutputStream.ComputeUInt64Size((ulong)value),
+                                           FieldType.SInt32   => CodedOutputStream.ComputeSInt32Size((int)value),
+                                           FieldType.SInt64   => CodedOutputStream.ComputeSInt64Size((long)value),
+                                           FieldType.Fixed32  => 4,                                             // Fixed32 is always 4 bytes
+                                           FieldType.Fixed64  => 8,                                             // Fixed64 is always 8 bytes
+                                           FieldType.SFixed32 => 4,                                             // SFixed32 is always 4 bytes
+                                           FieldType.SFixed64 => 8,                                             // SFixed64 is always 8 bytes
+                                           FieldType.Bool     => 1,                                             // Bool is always 1 byte
+                                           FieldType.Float    => 4,                                             // Float is always 4 bytes
+                                           FieldType.Double   => 8,                                             // Double is always 8 bytes
+                                           FieldType.Enum     => CodedOutputStream.ComputeEnumSize((int)value), // Enums are encoded as ints
+                                           _                  => 0
+                                       });
 
                 switch (packedSize)
                 {
                     // Write the packed field if it has any values
                     case > 0:
+
+                    {
+                        output.WriteTag(field.FieldNumber, WireFormat.WireType.LengthDelimited);
+                        output.WriteLength(packedSize);
+
+                        // Write all values without tags
+                        foreach (var value in values.OfType<object>())
                         {
-                            output.WriteTag(field.FieldNumber, WireFormat.WireType.LengthDelimited);
-                            output.WriteLength(packedSize);
-
-                            // Write all values without tags
-                            foreach (var value in values.OfType<object>())
+                            switch (field.FieldType)
                             {
-                                switch (field.FieldType)
-                                {
-                                    case FieldType.Int32:
+                                case FieldType.Int32:
 
-                                        output.WriteInt32((int)value);
+                                    output.WriteInt32((int)value);
 
-                                        break;
+                                    break;
 
-                                    case FieldType.SInt32:
+                                case FieldType.SInt32:
 
-                                        output.WriteSInt32((int)value);
+                                    output.WriteSInt32((int)value);
 
-                                        break;
+                                    break;
 
-                                    case FieldType.SFixed32:
+                                case FieldType.SFixed32:
 
-                                        output.WriteSFixed32((int)value);
+                                    output.WriteSFixed32((int)value);
 
-                                        break;
+                                    break;
 
-                                    case FieldType.Int64:
+                                case FieldType.Int64:
 
-                                        output.WriteInt64((long)value);
+                                    output.WriteInt64((long)value);
 
-                                        break;
+                                    break;
 
-                                    case FieldType.SInt64:
+                                case FieldType.SInt64:
 
-                                        output.WriteSInt64((long)value);
+                                    output.WriteSInt64((long)value);
 
-                                        break;
+                                    break;
 
-                                    case FieldType.SFixed64:
+                                case FieldType.SFixed64:
 
-                                        output.WriteSFixed64((long)value);
+                                    output.WriteSFixed64((long)value);
 
-                                        break;
+                                    break;
 
-                                    case FieldType.UInt32:
+                                case FieldType.UInt32:
 
-                                        output.WriteUInt32((uint)value);
+                                    output.WriteUInt32((uint)value);
 
-                                        break;
+                                    break;
 
-                                    case FieldType.Fixed32:
+                                case FieldType.Fixed32:
 
-                                        output.WriteFixed32((uint)value);
+                                    output.WriteFixed32((uint)value);
 
-                                        break;
+                                    break;
 
-                                    case FieldType.UInt64:
+                                case FieldType.UInt64:
 
-                                        output.WriteUInt64((ulong)value);
+                                    output.WriteUInt64((ulong)value);
 
-                                        break;
+                                    break;
 
-                                    case FieldType.Fixed64:
+                                case FieldType.Fixed64:
 
-                                        output.WriteFixed64((ulong)value);
+                                    output.WriteFixed64((ulong)value);
 
-                                        break;
+                                    break;
 
-                                    case FieldType.Bool:
+                                case FieldType.Bool:
 
-                                        output.WriteBool((bool)value);
+                                    output.WriteBool((bool)value);
 
-                                        break;
+                                    break;
 
-                                    case FieldType.Float:
+                                case FieldType.Float:
 
-                                        output.WriteFloat((float)value);
+                                    output.WriteFloat((float)value);
 
-                                        break;
+                                    break;
 
-                                    case FieldType.Double:
+                                case FieldType.Double:
 
-                                        output.WriteDouble((double)value);
+                                    output.WriteDouble((double)value);
 
-                                        break;
+                                    break;
 
-                                    case FieldType.Enum:
+                                case FieldType.Enum:
 
-                                        output.WriteEnum((int)value);
+                                    output.WriteEnum((int)value);
 
-                                        break;
+                                    break;
 
-                                    case FieldType.String:
-                                    case FieldType.Group:
-                                    case FieldType.Message:
-                                    case FieldType.Bytes:
+                                case FieldType.String:
+                                case FieldType.Group:
+                                case FieldType.Message:
+                                case FieldType.Bytes:
 
-                                        break;
+                                    break;
 
-                                    default:
+                                default:
 
-                                        throw new InvalidOperationException("Invalid Field Type");
-                                }
+                                    throw new InvalidOperationException("Invalid Field Type");
                             }
-
-                            break;
                         }
+
+                        break;
+                    }
                 }
             }
             else
@@ -456,6 +458,7 @@ internal static class ProtobufWriter
                             break;
 
                         default:
+
                             throw new InvalidOperationException($"Invalid field type: {field.FieldType}");
                     }
                 }
@@ -511,22 +514,22 @@ internal static class ProtobufWriter
             size += CodedOutputStream.ComputeTagSize(field.FieldNumber);
             size += field.FieldType switch
             {
-                FieldType.String => CodedOutputStream.ComputeStringSize((string)value),
-                FieldType.Int32 => CodedOutputStream.ComputeInt32Size((int)value),
-                FieldType.SInt32 => CodedOutputStream.ComputeSInt32Size((int)value),
+                FieldType.String   => CodedOutputStream.ComputeStringSize((string)value),
+                FieldType.Int32    => CodedOutputStream.ComputeInt32Size((int)value),
+                FieldType.SInt32   => CodedOutputStream.ComputeSInt32Size((int)value),
                 FieldType.SFixed32 => CodedOutputStream.ComputeSFixed32Size((int)value),
-                FieldType.Int64 => CodedOutputStream.ComputeInt64Size((long)value),
-                FieldType.SInt64 => CodedOutputStream.ComputeSInt64Size((long)value),
+                FieldType.Int64    => CodedOutputStream.ComputeInt64Size((long)value),
+                FieldType.SInt64   => CodedOutputStream.ComputeSInt64Size((long)value),
                 FieldType.SFixed64 => CodedOutputStream.ComputeSFixed64Size((long)value),
-                FieldType.UInt32 => CodedOutputStream.ComputeUInt32Size((uint)value),
-                FieldType.Fixed32 => CodedOutputStream.ComputeFixed32Size((uint)value),
-                FieldType.UInt64 => CodedOutputStream.ComputeUInt64Size((ulong)value),
-                FieldType.Fixed64 => CodedOutputStream.ComputeFixed64Size((ulong)value),
-                FieldType.Bool => CodedOutputStream.ComputeBoolSize((bool)value),
-                FieldType.Float => CodedOutputStream.ComputeFloatSize((float)value),
-                FieldType.Double => CodedOutputStream.ComputeDoubleSize((double)value),
-                FieldType.Bytes => CodedOutputStream.ComputeBytesSize((ByteString)value),
-                FieldType.Enum => CodedOutputStream.ComputeEnumSize((int)value),
+                FieldType.UInt32   => CodedOutputStream.ComputeUInt32Size((uint)value),
+                FieldType.Fixed32  => CodedOutputStream.ComputeFixed32Size((uint)value),
+                FieldType.UInt64   => CodedOutputStream.ComputeUInt64Size((ulong)value),
+                FieldType.Fixed64  => CodedOutputStream.ComputeFixed64Size((ulong)value),
+                FieldType.Bool     => CodedOutputStream.ComputeBoolSize((bool)value),
+                FieldType.Float    => CodedOutputStream.ComputeFloatSize((float)value),
+                FieldType.Double   => CodedOutputStream.ComputeDoubleSize((double)value),
+                FieldType.Bytes    => CodedOutputStream.ComputeBytesSize((ByteString)value),
+                FieldType.Enum     => CodedOutputStream.ComputeEnumSize((int)value),
                 FieldType.Message => value is SimpleDynamicMessage msg
                     ? CodedOutputStream.ComputeLengthSize(CalculateSize(msg)) + CalculateSize(msg)
                     : 0,
@@ -545,33 +548,33 @@ internal static class ProtobufWriter
         {
             // Check if field should use packed encoding
             var isPackable = field.FieldType is FieldType.Int32 or FieldType.Int64 or FieldType.UInt32 or FieldType.UInt64
-                or FieldType.SInt32 or FieldType.SInt64 or FieldType.Fixed32 or FieldType.Fixed64
-                or FieldType.SFixed32 or FieldType.SFixed64 or FieldType.Float or FieldType.Double
-                or FieldType.Bool or FieldType.Enum;
+                                                or FieldType.SInt32 or FieldType.SInt64 or FieldType.Fixed32 or FieldType.Fixed64
+                                                or FieldType.SFixed32 or FieldType.SFixed64 or FieldType.Float or FieldType.Double
+                                                or FieldType.Bool or FieldType.Enum;
 
             if (isPackable && field.IsPacked)
             {
                 // Packed encoding: calculate total size of values without tags
                 var packedSize = values.OfType<object>()
-                    .Sum(value => field.FieldType switch
-                    {
-                        // Integer types - ComputeSize returns the actual value size
-                        FieldType.Int32 => CodedOutputStream.ComputeInt32Size((int)value),
-                        FieldType.Int64 => CodedOutputStream.ComputeInt64Size((long)value),
-                        FieldType.UInt32 => CodedOutputStream.ComputeUInt32Size((uint)value),
-                        FieldType.UInt64 => CodedOutputStream.ComputeUInt64Size((ulong)value),
-                        FieldType.SInt32 => CodedOutputStream.ComputeSInt32Size((int)value),
-                        FieldType.SInt64 => CodedOutputStream.ComputeSInt64Size((long)value),
-                        FieldType.Fixed32 => 4, // Fixed32 is always 4 bytes
-                        FieldType.Fixed64 => 8, // Fixed64 is always 8 bytes
-                        FieldType.SFixed32 => 4, // SFixed32 is always 4 bytes
-                        FieldType.SFixed64 => 8, // SFixed64 is always 8 bytes
-                        FieldType.Bool => 1, // Bool is always 1 byte
-                        FieldType.Float => 4, // Float is always 4 bytes
-                        FieldType.Double => 8, // Double is always 8 bytes
-                        FieldType.Enum => CodedOutputStream.ComputeEnumSize((int)value), // Enums are encoded as ints
-                        _ => 0
-                    });
+                                       .Sum(value => field.FieldType switch
+                                       {
+                                           // Integer types - ComputeSize returns the actual value size
+                                           FieldType.Int32    => CodedOutputStream.ComputeInt32Size((int)value),
+                                           FieldType.Int64    => CodedOutputStream.ComputeInt64Size((long)value),
+                                           FieldType.UInt32   => CodedOutputStream.ComputeUInt32Size((uint)value),
+                                           FieldType.UInt64   => CodedOutputStream.ComputeUInt64Size((ulong)value),
+                                           FieldType.SInt32   => CodedOutputStream.ComputeSInt32Size((int)value),
+                                           FieldType.SInt64   => CodedOutputStream.ComputeSInt64Size((long)value),
+                                           FieldType.Fixed32  => 4,                                             // Fixed32 is always 4 bytes
+                                           FieldType.Fixed64  => 8,                                             // Fixed64 is always 8 bytes
+                                           FieldType.SFixed32 => 4,                                             // SFixed32 is always 4 bytes
+                                           FieldType.SFixed64 => 8,                                             // SFixed64 is always 8 bytes
+                                           FieldType.Bool     => 1,                                             // Bool is always 1 byte
+                                           FieldType.Float    => 4,                                             // Float is always 4 bytes
+                                           FieldType.Double   => 8,                                             // Double is always 8 bytes
+                                           FieldType.Enum     => CodedOutputStream.ComputeEnumSize((int)value), // Enums are encoded as ints
+                                           _                  => 0
+                                       });
 
                 // Add size for tag + length + packed values
                 if (packedSize <= 0)
@@ -591,22 +594,22 @@ internal static class ProtobufWriter
                     size += CodedOutputStream.ComputeTagSize(field.FieldNumber);
                     size += field.FieldType switch
                     {
-                        FieldType.String => CodedOutputStream.ComputeStringSize((string)value),
-                        FieldType.Int32 => CodedOutputStream.ComputeInt32Size((int)value),
-                        FieldType.SInt32 => CodedOutputStream.ComputeSInt32Size((int)value),
+                        FieldType.String   => CodedOutputStream.ComputeStringSize((string)value),
+                        FieldType.Int32    => CodedOutputStream.ComputeInt32Size((int)value),
+                        FieldType.SInt32   => CodedOutputStream.ComputeSInt32Size((int)value),
                         FieldType.SFixed32 => CodedOutputStream.ComputeSFixed32Size((int)value),
-                        FieldType.Int64 => CodedOutputStream.ComputeInt64Size((long)value),
-                        FieldType.SInt64 => CodedOutputStream.ComputeSInt64Size((long)value),
+                        FieldType.Int64    => CodedOutputStream.ComputeInt64Size((long)value),
+                        FieldType.SInt64   => CodedOutputStream.ComputeSInt64Size((long)value),
                         FieldType.SFixed64 => CodedOutputStream.ComputeSFixed64Size((long)value),
-                        FieldType.UInt32 => CodedOutputStream.ComputeUInt32Size((uint)value),
-                        FieldType.Fixed32 => CodedOutputStream.ComputeFixed32Size((uint)value),
-                        FieldType.UInt64 => CodedOutputStream.ComputeUInt64Size((ulong)value),
-                        FieldType.Fixed64 => CodedOutputStream.ComputeFixed64Size((ulong)value),
-                        FieldType.Bool => CodedOutputStream.ComputeBoolSize((bool)value),
-                        FieldType.Float => CodedOutputStream.ComputeFloatSize((float)value),
-                        FieldType.Double => CodedOutputStream.ComputeDoubleSize((double)value),
-                        FieldType.Bytes => CodedOutputStream.ComputeBytesSize((ByteString)value),
-                        FieldType.Enum => CodedOutputStream.ComputeEnumSize((int)value),
+                        FieldType.UInt32   => CodedOutputStream.ComputeUInt32Size((uint)value),
+                        FieldType.Fixed32  => CodedOutputStream.ComputeFixed32Size((uint)value),
+                        FieldType.UInt64   => CodedOutputStream.ComputeUInt64Size((ulong)value),
+                        FieldType.Fixed64  => CodedOutputStream.ComputeFixed64Size((ulong)value),
+                        FieldType.Bool     => CodedOutputStream.ComputeBoolSize((bool)value),
+                        FieldType.Float    => CodedOutputStream.ComputeFloatSize((float)value),
+                        FieldType.Double   => CodedOutputStream.ComputeDoubleSize((double)value),
+                        FieldType.Bytes    => CodedOutputStream.ComputeBytesSize((ByteString)value),
+                        FieldType.Enum     => CodedOutputStream.ComputeEnumSize((int)value),
                         FieldType.Message => value is SimpleDynamicMessage msg
                             ? CodedOutputStream.ComputeLengthSize(CalculateSize(msg)) + CalculateSize(msg)
                             : 0,

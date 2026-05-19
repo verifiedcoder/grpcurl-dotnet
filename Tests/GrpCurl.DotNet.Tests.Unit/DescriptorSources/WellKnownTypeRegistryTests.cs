@@ -10,6 +10,8 @@ public sealed class WellKnownTypeRegistryTests
     [Fact]
     public void Descriptors_ShouldNotBeNull()
     {
+        // Arrange
+
         // Act
         var descriptors = WellKnownTypeRegistry.Descriptors;
 
@@ -20,6 +22,8 @@ public sealed class WellKnownTypeRegistryTests
     [Fact]
     public void Descriptors_ShouldNotBeEmpty()
     {
+        // Arrange
+
         // Act
         var descriptors = WellKnownTypeRegistry.Descriptors;
 
@@ -40,6 +44,8 @@ public sealed class WellKnownTypeRegistryTests
     [InlineData("google/protobuf/type.proto")]
     public void Descriptors_ContainsExpectedWellKnownType(string protoFileName)
     {
+        // Arrange
+
         // Act
         var descriptors = WellKnownTypeRegistry.Descriptors;
 
@@ -50,6 +56,8 @@ public sealed class WellKnownTypeRegistryTests
     [Fact]
     public void Descriptors_ContainsDescriptorProto()
     {
+        // Arrange
+
         // Act - the "meta" proto that describes all protos
         var descriptors = WellKnownTypeRegistry.Descriptors;
 
@@ -63,6 +71,8 @@ public sealed class WellKnownTypeRegistryTests
     [InlineData("google/protobuf/empty.proto")]
     public void Descriptors_ValuesAreValidFileDescriptors(string protoFileName)
     {
+        // Arrange
+
         // Act
         var descriptors = WellKnownTypeRegistry.Descriptors;
         var descriptor = descriptors[protoFileName];
@@ -88,6 +98,8 @@ public sealed class WellKnownTypeRegistryTests
     [InlineData("google/protobuf/descriptor.proto")]
     public void TryGetDescriptor_KnownType_ReturnsTrue(string protoFileName)
     {
+        // Arrange
+
         // Act
         var result = WellKnownTypeRegistry.TryGetDescriptor(protoFileName, out var descriptor);
 
@@ -103,6 +115,8 @@ public sealed class WellKnownTypeRegistryTests
     [InlineData("google/protobuf/empty.proto")]
     public void TryGetDescriptor_KnownType_ReturnsCorrectDescriptor(string protoFileName)
     {
+        // Arrange
+
         // Act
         WellKnownTypeRegistry.TryGetDescriptor(protoFileName, out var descriptor);
 
@@ -118,6 +132,8 @@ public sealed class WellKnownTypeRegistryTests
     [Fact]
     public void TryGetDescriptor_UnknownType_ReturnsFalse()
     {
+        // Arrange
+
         // Act
         var result = WellKnownTypeRegistry.TryGetDescriptor("nonexistent/type.proto", out var descriptor);
 
@@ -134,6 +150,8 @@ public sealed class WellKnownTypeRegistryTests
     [InlineData("my/custom/service.proto")]
     public void TryGetDescriptor_VariousUnknownTypes_ReturnsFalse(string protoFileName)
     {
+        // Arrange
+
         // Act
         var result = WellKnownTypeRegistry.TryGetDescriptor(protoFileName, out var descriptor);
 
@@ -146,6 +164,8 @@ public sealed class WellKnownTypeRegistryTests
     [Fact]
     public void TryGetDescriptor_CaseSensitive_ReturnsFalseForWrongCase()
     {
+        // Arrange
+
         // Act - proto file names are case-sensitive
         var result = WellKnownTypeRegistry.TryGetDescriptor("Google/Protobuf/Timestamp.proto", out var descriptor);
 
@@ -163,6 +183,7 @@ public sealed class WellKnownTypeRegistryTests
     public void Descriptors_TimestampHasExpectedMessages()
     {
         // Arrange
+        // Act
         WellKnownTypeRegistry.TryGetDescriptor("google/protobuf/timestamp.proto", out var descriptor);
 
         // Assert
@@ -175,6 +196,7 @@ public sealed class WellKnownTypeRegistryTests
     public void Descriptors_DurationHasExpectedMessages()
     {
         // Arrange
+        // Act
         WellKnownTypeRegistry.TryGetDescriptor("google/protobuf/duration.proto", out var descriptor);
 
         // Assert
@@ -187,6 +209,7 @@ public sealed class WellKnownTypeRegistryTests
     public void Descriptors_EmptyHasExpectedMessages()
     {
         // Arrange
+        // Act
         WellKnownTypeRegistry.TryGetDescriptor("google/protobuf/empty.proto", out var descriptor);
 
         // Assert
@@ -199,6 +222,7 @@ public sealed class WellKnownTypeRegistryTests
     public void Descriptors_WrappersHasExpectedMessages()
     {
         // Arrange
+        // Act
         WellKnownTypeRegistry.TryGetDescriptor("google/protobuf/wrappers.proto", out var descriptor);
 
         // Assert
@@ -219,6 +243,7 @@ public sealed class WellKnownTypeRegistryTests
     public void Descriptors_AnyHasExpectedMessages()
     {
         // Arrange
+        // Act
         WellKnownTypeRegistry.TryGetDescriptor("google/protobuf/any.proto", out var descriptor);
 
         // Assert
@@ -231,6 +256,7 @@ public sealed class WellKnownTypeRegistryTests
     public void Descriptors_StructHasExpectedMessages()
     {
         // Arrange
+        // Act
         WellKnownTypeRegistry.TryGetDescriptor("google/protobuf/struct.proto", out var descriptor);
 
         // Assert
@@ -245,6 +271,7 @@ public sealed class WellKnownTypeRegistryTests
     public void Descriptors_FieldMaskHasExpectedMessages()
     {
         // Arrange
+        // Act
         WellKnownTypeRegistry.TryGetDescriptor("google/protobuf/field_mask.proto", out var descriptor);
 
         // Assert
@@ -260,6 +287,8 @@ public sealed class WellKnownTypeRegistryTests
     [Fact]
     public void Descriptors_MultipleCalls_ReturnSameInstance()
     {
+        // Arrange
+
         // Act
         var descriptors1 = WellKnownTypeRegistry.Descriptors;
         var descriptors2 = WellKnownTypeRegistry.Descriptors;
@@ -289,14 +318,16 @@ public sealed class WellKnownTypeRegistryTests
         {
             result.ShouldBeTrue();
             descriptor.ShouldNotBeNull();
-            descriptor!.Name.ShouldBe("google/protobuf/timestamp.proto");
+            descriptor.Name.ShouldBe("google/protobuf/timestamp.proto");
         }
     }
 
     [Fact]
     public async Task Descriptors_ConcurrentAccess_AllReturnSameInstance()
     {
-        // Arrange & Act
+        // Arrange
+
+        // Act
         var tasks = Enumerable.Range(0, 20)
                               .Select(_ => Task.Run(() => WellKnownTypeRegistry.Descriptors))
                               .ToArray();
@@ -319,6 +350,8 @@ public sealed class WellKnownTypeRegistryTests
     [Fact]
     public void Descriptors_IncludesDependenciesOfRegisteredTypes()
     {
+        // Arrange
+
         // Act - types like api.proto depend on source_context.proto and type.proto
         // which in turn may depend on any.proto. All should be registered.
         var descriptors = WellKnownTypeRegistry.Descriptors;

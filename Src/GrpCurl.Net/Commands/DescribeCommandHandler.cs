@@ -234,14 +234,15 @@ internal static class DescribeCommandHandler
 
             // Warn about incompatible option combinations
             case > 0 when !string.IsNullOrEmpty(address):
-                {
-                    if (verbose)
-                    {
-                        Diagnostics.Markup("[yellow]Warning:[/] Both --protoset and address specified. Using protoset files (server reflection will be ignored).");
-                    }
 
-                    break;
+            {
+                if (verbose)
+                {
+                    Diagnostics.Markup("[yellow]Warning:[/] Both --protoset and address specified. Using protoset files (server reflection will be ignored).");
                 }
+
+                break;
+            }
         }
 
         // Warn about TLS-specific options used with --plaintext
@@ -346,13 +347,19 @@ internal static class DescribeCommandHandler
 
             var descriptorSource = session.Source;
 
-            if (verbose && protosets.Length > 0)
+            switch (verbose)
             {
-                Diagnostics.Markup("[dim]Protoset files loaded successfully[/]");
-            }
-            else if (verbose)
-            {
-                Diagnostics.Markup("[dim]Connected successfully, querying server reflection...[/]");
+                case true when protosets.Length > 0:
+
+                    Diagnostics.Markup("[dim]Protoset files loaded successfully[/]");
+
+                    break;
+
+                case true:
+
+                    Diagnostics.Markup("[dim]Connected successfully, querying server reflection...[/]");
+
+                    break;
             }
 
             timing?.StartPhase("Schema Discovery");
@@ -567,7 +574,7 @@ internal static class DescribeCommandHandler
 
             ErrorRenderer.Render(envelope, output);
 
-            throw new GrpcCommandException(envelope.Message, envelope.ExitCode, silent: true) { Envelope = envelope };
+            throw new GrpcCommandException(envelope.Message, envelope.ExitCode, true) { Envelope = envelope };
         }
 
         if (verbose)
@@ -576,8 +583,8 @@ internal static class DescribeCommandHandler
             {
                 ServiceDescriptor => "Service",
                 MessageDescriptor => "Message",
-                EnumDescriptor => "Enum",
-                _ => "Symbol"
+                EnumDescriptor    => "Enum",
+                _                 => "Symbol"
             };
 
             Diagnostics.Markup($"[dim]Found {descriptorType}: {descriptor.FullName}[/]");
@@ -594,7 +601,7 @@ internal static class DescribeCommandHandler
         // If --msg-template is specified, print proto definition then JSON template for message types
         if (msgTemplate && descriptor is MessageDescriptor msgTmplDesc)
         {
-            PrintMessageDefinition(msgTmplDesc, indent: "");
+            PrintMessageDefinition(msgTmplDesc, "");
 
             Console.WriteLine();
             Console.WriteLine("Message template:");
@@ -609,50 +616,56 @@ internal static class DescribeCommandHandler
         switch (descriptor)
         {
             case ServiceDescriptor svc:
-                {
-                    Console.WriteLine($"{svc.FullName} is a service:");
-                    Console.WriteLine($"service {svc.Name} {{");
 
-                    foreach (var method in svc.Methods.OrderBy(m => m.Name))
-                    {
-                        var inputStream = method.IsClientStreaming ? "stream " : "";
-                        var outputStream = method.IsServerStreaming ? "stream " : "";
+            {
+                Console.WriteLine($"{svc.FullName} is a service:");
+                Console.WriteLine($"service {svc.Name} {{");
 
-                        Console.WriteLine($"  rpc {method.Name} ( {inputStream}.{method.InputType.FullName} ) returns ( {outputStream}.{method.OutputType.FullName} );");
-                    }
-
-                    Console.WriteLine("}");
-
-                    break;
-                }
-
-            case MethodDescriptor method:
+                foreach (var method in svc.Methods.OrderBy(m => m.Name))
                 {
                     var inputStream = method.IsClientStreaming ? "stream " : "";
                     var outputStream = method.IsServerStreaming ? "stream " : "";
 
-                    Console.WriteLine($"{method.FullName} is a method:");
                     Console.WriteLine($"  rpc {method.Name} ( {inputStream}.{method.InputType.FullName} ) returns ( {outputStream}.{method.OutputType.FullName} );");
-
-                    break;
                 }
+
+                Console.WriteLine("}");
+
+                break;
+            }
+
+            case MethodDescriptor method:
+
+            {
+                var inputStream = method.IsClientStreaming ? "stream " : "";
+                var outputStream = method.IsServerStreaming ? "stream " : "";
+
+                Console.WriteLine($"{method.FullName} is a method:");
+                Console.WriteLine($"  rpc {method.Name} ( {inputStream}.{method.InputType.FullName} ) returns ( {outputStream}.{method.OutputType.FullName} );");
+
+                break;
+            }
 
             case MessageDescriptor msg:
-                {
-                    PrintMessageDefinition(msg, indent: "");
 
-                    break;
-                }
+            {
+                PrintMessageDefinition(msg, "");
+
+                break;
+            }
 
             case EnumDescriptor enm:
-                {
-                    PrintEnumDefinition(enm, indent: "");
 
-                    break;
-                }
+            {
+                PrintEnumDefinition(enm, "");
+
+                break;
+            }
 
             default:
+
                 Console.WriteLine($"{descriptor.FullName} is a {descriptor.GetType().Name}");
+
                 break;
         }
     }
@@ -683,19 +696,21 @@ internal static class DescribeCommandHandler
                 // Print the oneof block once when we encounter its first field
                 var oneof = field.ContainingOneof;
 
-                if (printedOneofs.Add(oneof.Name))
+                if (!printedOneofs.Add(oneof.Name))
                 {
-                    Console.WriteLine($"{indent}  oneof {oneof.Name} {{");
-
-                    foreach (var oneofField in oneof.Fields)
-                    {
-                        var typeName = GetProtoTypeName(oneofField);
-
-                        Console.WriteLine($"{indent}    {typeName} {oneofField.Name} = {oneofField.FieldNumber};");
-                    }
-
-                    Console.WriteLine($"{indent}  }}");
+                    continue;
                 }
+
+                Console.WriteLine($"{indent}  oneof {oneof.Name} {{");
+
+                foreach (var oneofField in oneof.Fields)
+                {
+                    var typeName = GetProtoTypeName(oneofField);
+
+                    Console.WriteLine($"{indent}    {typeName} {oneofField.Name} = {oneofField.FieldNumber};");
+                }
+
+                Console.WriteLine($"{indent}  }}");
             }
             else
             {
@@ -760,44 +775,44 @@ internal static class DescribeCommandHandler
 
     internal static string GetProtoTypeName(FieldDescriptor field)
     {
-        if (field.IsMap)
+        if (!field.IsMap)
         {
-            var mapDescriptor = field.MessageType;
-            var keyField = mapDescriptor.FindFieldByNumber(1);
-            var valueField = mapDescriptor.FindFieldByNumber(2);
-
-            return $"map<{GetScalarTypeName(keyField)}, {GetScalarTypeName(valueField)}>";
+            return field.FieldType switch
+            {
+                FieldType.Message => $".{field.MessageType.FullName}",
+                FieldType.Enum    => $".{field.EnumType.FullName}",
+                _                 => GetScalarTypeName(field)
+            };
         }
 
-        return field.FieldType switch
-        {
-            FieldType.Message => $".{field.MessageType.FullName}",
-            FieldType.Enum => $".{field.EnumType.FullName}",
-            _ => GetScalarTypeName(field)
-        };
+        var mapDescriptor = field.MessageType;
+        var keyField = mapDescriptor.FindFieldByNumber(1);
+        var valueField = mapDescriptor.FindFieldByNumber(2);
+
+        return $"map<{GetScalarTypeName(keyField)}, {GetScalarTypeName(valueField)}>";
     }
 
     internal static string GetScalarTypeName(FieldDescriptor field)
         => field.FieldType switch
         {
-            FieldType.Double => "double",
-            FieldType.Float => "float",
-            FieldType.Int64 => "int64",
-            FieldType.UInt64 => "uint64",
-            FieldType.Int32 => "int32",
-            FieldType.Fixed64 => "fixed64",
-            FieldType.Fixed32 => "fixed32",
-            FieldType.Bool => "bool",
-            FieldType.String => "string",
-            FieldType.Bytes => "bytes",
-            FieldType.UInt32 => "uint32",
+            FieldType.Double   => "double",
+            FieldType.Float    => "float",
+            FieldType.Int64    => "int64",
+            FieldType.UInt64   => "uint64",
+            FieldType.Int32    => "int32",
+            FieldType.Fixed64  => "fixed64",
+            FieldType.Fixed32  => "fixed32",
+            FieldType.Bool     => "bool",
+            FieldType.String   => "string",
+            FieldType.Bytes    => "bytes",
+            FieldType.UInt32   => "uint32",
             FieldType.SFixed32 => "sfixed32",
             FieldType.SFixed64 => "sfixed64",
-            FieldType.SInt32 => "sint32",
-            FieldType.SInt64 => "sint64",
-            FieldType.Enum => $".{field.EnumType.FullName}",
-            FieldType.Message => $".{field.MessageType.FullName}",
-            _ => field.FieldType.ToString().ToLowerInvariant()
+            FieldType.SInt32   => "sint32",
+            FieldType.SInt64   => "sint64",
+            FieldType.Enum     => $".{field.EnumType.FullName}",
+            FieldType.Message  => $".{field.MessageType.FullName}",
+            _                  => field.FieldType.ToString().ToLowerInvariant()
         };
 
     /// <summary>
@@ -841,8 +856,8 @@ internal static class DescribeCommandHandler
             return field.FieldType switch
             {
                 FieldType.Message => HandleWellKnownType(field.MessageType, visitedTypes),
-                FieldType.Enum => GetEnumDefault(field.EnumType),
-                _ => GetScalarDefault(field)
+                FieldType.Enum    => GetEnumDefault(field.EnumType),
+                _                 => GetScalarDefault(field)
             };
         }
 
@@ -851,15 +866,15 @@ internal static class DescribeCommandHandler
         if (field.IsMap)
         {
             var mapTemplate = new Dictionary<string, object?>();
-            var mapKeyField = field.MessageType.Fields[1]; // Key field in map entry
+            var mapKeyField = field.MessageType.Fields[1];   // Key field in map entry
             var mapValueField = field.MessageType.Fields[2]; // Value field in map entry
             var keyDefault = GetMapKeyDefault(mapKeyField);
 
             mapTemplate[keyDefault] = mapValueField.FieldType switch
             {
                 FieldType.Message => HandleWellKnownType(mapValueField.MessageType, visitedTypes),
-                FieldType.Enum => GetEnumDefault(mapValueField.EnumType),
-                _ => GetScalarDefault(mapValueField)
+                FieldType.Enum    => GetEnumDefault(mapValueField.EnumType),
+                _                 => GetScalarDefault(mapValueField)
             };
 
             return mapTemplate;
@@ -870,8 +885,8 @@ internal static class DescribeCommandHandler
         var elementValue = field.FieldType switch
         {
             FieldType.Message => CreateMessageTemplate(field.MessageType, visitedTypes),
-            FieldType.Enum => GetEnumDefault(field.EnumType),
-            _ => GetScalarDefault(field)
+            FieldType.Enum    => GetEnumDefault(field.EnumType),
+            _                 => GetScalarDefault(field)
         };
 
         arrayTemplate.Add(elementValue);
@@ -887,24 +902,24 @@ internal static class DescribeCommandHandler
         // Check for well-known types and provide appropriate defaults
         return messageDescriptor.FullName switch
         {
-            "google.protobuf.Timestamp" => "1970-01-01T00:00:00Z",
-            "google.protobuf.Duration" => "0s",
-            "google.protobuf.Int32Value" => 0,
-            "google.protobuf.Int64Value" => "0",
+            "google.protobuf.Timestamp"   => "1970-01-01T00:00:00Z",
+            "google.protobuf.Duration"    => "0s",
+            "google.protobuf.Int32Value"  => 0,
+            "google.protobuf.Int64Value"  => "0",
             "google.protobuf.UInt32Value" => 0,
             "google.protobuf.UInt64Value" => "0",
-            "google.protobuf.FloatValue" => 0,
+            "google.protobuf.FloatValue"  => 0,
             "google.protobuf.DoubleValue" => 0,
-            "google.protobuf.BoolValue" => false,
+            "google.protobuf.BoolValue"   => false,
             "google.protobuf.StringValue" => "",
-            "google.protobuf.BytesValue" => (object?)null,
-            "google.protobuf.Empty" => new Dictionary<string, object?>(),
-            "google.protobuf.Struct" => new Dictionary<string, object?> { ["google.protobuf.Struct"] = "supports arbitrary JSON objects" },
-            "google.protobuf.Value" => new Dictionary<string, object?> { ["google.protobuf.Value"] = "supports arbitrary JSON" },
-            "google.protobuf.ListValue" => new List<object?> { new Dictionary<string, object?> { ["google.protobuf.ListValue"] = "is an array of arbitrary JSON values" } },
-            "google.protobuf.Any" => new Dictionary<string, object?> { ["@type"] = "type.googleapis.com/google.protobuf.Empty", ["value"] = new Dictionary<string, object?>() },
-            "google.protobuf.FieldMask" => new Dictionary<string, object?> { ["paths"] = new List<object?> { "" } },
-            _ => CreateMessageTemplate(messageDescriptor, visitedTypes)
+            "google.protobuf.BytesValue"  => null,
+            "google.protobuf.Empty"       => new Dictionary<string, object?>(),
+            "google.protobuf.Struct"      => new Dictionary<string, object?> { ["google.protobuf.Struct"] = "supports arbitrary JSON objects" },
+            "google.protobuf.Value"       => new Dictionary<string, object?> { ["google.protobuf.Value"] = "supports arbitrary JSON" },
+            "google.protobuf.ListValue"   => new List<object?> { new Dictionary<string, object?> { ["google.protobuf.ListValue"] = "is an array of arbitrary JSON values" } },
+            "google.protobuf.Any"         => new Dictionary<string, object?> { ["@type"] = "type.googleapis.com/google.protobuf.Empty", ["value"] = new Dictionary<string, object?>() },
+            "google.protobuf.FieldMask"   => new Dictionary<string, object?> { ["paths"] = new List<object?> { "" } },
+            _                             => CreateMessageTemplate(messageDescriptor, visitedTypes)
         };
     }
 
@@ -921,22 +936,22 @@ internal static class DescribeCommandHandler
     internal static object? GetScalarDefault(FieldDescriptor field)
         => field.FieldType switch
         {
-            FieldType.Double => 0,
-            FieldType.Float => 0,
-            FieldType.Int32 => 0,
-            FieldType.Int64 => "0",
-            FieldType.UInt32 => 0,
-            FieldType.UInt64 => "0",
-            FieldType.SInt32 => 0,
-            FieldType.SInt64 => "0",
-            FieldType.Fixed32 => 0,
-            FieldType.Fixed64 => "0",
+            FieldType.Double   => 0,
+            FieldType.Float    => 0,
+            FieldType.Int32    => 0,
+            FieldType.Int64    => "0",
+            FieldType.UInt32   => 0,
+            FieldType.UInt64   => "0",
+            FieldType.SInt32   => 0,
+            FieldType.SInt64   => "0",
+            FieldType.Fixed32  => 0,
+            FieldType.Fixed64  => "0",
             FieldType.SFixed32 => 0,
             FieldType.SFixed64 => "0",
-            FieldType.Bool => false,
-            FieldType.String => "",
-            FieldType.Bytes => "",
-            _ => null
+            FieldType.Bool     => false,
+            FieldType.String   => "",
+            FieldType.Bytes    => "",
+            _                  => null
         };
 
     /// <summary>
@@ -945,13 +960,13 @@ internal static class DescribeCommandHandler
     internal static string GetMapKeyDefault(FieldDescriptor keyField)
         => keyField.FieldType switch
         {
-            FieldType.String => "",
-            FieldType.Bool => "false",
+            FieldType.String                                          => "",
+            FieldType.Bool                                            => "false",
             FieldType.Int32 or FieldType.SInt32 or FieldType.SFixed32 => "0",
             FieldType.Int64 or FieldType.SInt64 or FieldType.SFixed64 => "0",
-            FieldType.UInt32 or FieldType.Fixed32 => "0",
-            FieldType.UInt64 or FieldType.Fixed64 => "0",
-            _ => ""
+            FieldType.UInt32 or FieldType.Fixed32                     => "0",
+            FieldType.UInt64 or FieldType.Fixed64                     => "0",
+            _                                                         => ""
         };
 
     private static string? BuildTimeoutHint(string? connectTimeout, bool verbose, string exceptionMessage)

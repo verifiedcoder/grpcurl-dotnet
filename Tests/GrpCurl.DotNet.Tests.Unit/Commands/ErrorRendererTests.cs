@@ -9,6 +9,7 @@ public sealed class ErrorRendererTests
     [Fact]
     public void Render_RpcCategory_Json_EmitsExpectedShape()
     {
+        // Arrange
         var envelope = new ErrorEnvelope
         {
             Category = ErrorCategory.Rpc,
@@ -27,8 +28,10 @@ public sealed class ErrorRendererTests
 
         var (stderr, _) = CaptureStreams(w => ErrorRenderer.Render(envelope, OutputFormat.Json, w));
 
+        // Act
         var line = stderr.Trim();
 
+        // Assert
         line.ShouldStartWith("{");
         line.ShouldEndWith("}");
 
@@ -53,6 +56,7 @@ public sealed class ErrorRendererTests
     [Fact]
     public void Render_UsageCategory_Json_OmitsNullFields()
     {
+        // Arrange
         var envelope = new ErrorEnvelope
         {
             Category = ErrorCategory.Usage,
@@ -65,8 +69,11 @@ public sealed class ErrorRendererTests
         var line = stderr.Trim();
 
         using var doc = JsonDocument.Parse(line);
+
+        // Act
         var root = doc.RootElement;
 
+        // Assert
         root.GetProperty("category").GetString().ShouldBe("usage");
         root.GetProperty("exitCode").GetInt32().ShouldBe(2);
         root.TryGetProperty("address", out _).ShouldBeFalse();
@@ -83,6 +90,7 @@ public sealed class ErrorRendererTests
     [InlineData("Internal", "internal")]
     public void Render_AllCategories_SerializeAsLowerCase(string categoryName, string expected)
     {
+        // Arrange
         var category = Enum.Parse<ErrorCategory>(categoryName);
         var envelope = new ErrorEnvelope
         {
@@ -93,14 +101,17 @@ public sealed class ErrorRendererTests
 
         var (stderr, _) = CaptureStreams(w => ErrorRenderer.Render(envelope, OutputFormat.Json, w));
 
+        // Act
         using var doc = JsonDocument.Parse(stderr.Trim());
 
+        // Assert
         doc.RootElement.GetProperty("category").GetString().ShouldBe(expected);
     }
 
     [Fact]
     public void Render_SpecialCharactersInMessage_AreProperlyEscapedInJson()
     {
+        // Arrange
         var envelope = new ErrorEnvelope
         {
             Category = ErrorCategory.Rpc,
@@ -120,8 +131,11 @@ public sealed class ErrorRendererTests
 
         // Must round-trip through System.Text.Json without errors.
         using var doc = JsonDocument.Parse(line);
+
+        // Act
         var message = doc.RootElement.GetProperty("message").GetString()!;
 
+        // Assert
         message.ShouldContain("\"quotes\"");
         message.ShouldContain("\\backslash");
         message.ShouldContain("\n");
@@ -130,6 +144,7 @@ public sealed class ErrorRendererTests
     [Fact]
     public void Render_TextMode_GoesToStderr_NotStdout()
     {
+        // Arrange
         var envelope = new ErrorEnvelope
         {
             Category = ErrorCategory.Network,
@@ -137,8 +152,10 @@ public sealed class ErrorRendererTests
             Message = "Failed to connect to localhost:65535"
         };
 
+        // Act
         var (stderr, stdout) = CaptureStreams(w => ErrorRenderer.Render(envelope, OutputFormat.Text, w));
 
+        // Assert
         stdout.ShouldBeEmpty();
         stderr.ShouldContain("Connection Error");
         stderr.ShouldContain("Failed to connect to localhost:65535");
@@ -147,6 +164,7 @@ public sealed class ErrorRendererTests
     [Fact]
     public void Render_JsonMode_GoesToStderr_NotStdout()
     {
+        // Arrange
         var envelope = new ErrorEnvelope
         {
             Category = ErrorCategory.Network,
@@ -154,8 +172,10 @@ public sealed class ErrorRendererTests
             Message = "Failed to connect to localhost:65535"
         };
 
+        // Act
         var (stderr, stdout) = CaptureStreams(w => ErrorRenderer.Render(envelope, OutputFormat.Json, w));
 
+        // Assert
         stdout.ShouldBeEmpty();
         stderr.ShouldStartWith("{");
     }

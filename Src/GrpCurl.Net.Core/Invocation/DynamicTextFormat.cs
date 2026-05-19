@@ -1,12 +1,12 @@
-using System.Globalization;
-using System.Text;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
+using System.Globalization;
+using System.Text;
 
 namespace GrpCurl.Net.Invocation;
 
 /// <summary>
-///     Minimal protobuf text-format reader and writer for <see cref="SimpleDynamicMessage"/>.
+///     Minimal protobuf text-format reader and writer for <see cref="SimpleDynamicMessage" />.
 ///     Implemented because Google.Protobuf for .NET does not ship a TextFormat parser. The
 ///     subset covered is enough for grpcurl parity (CODE-REVIEW.md P2 "Protobuf Text Format
 ///     Is Missing"): scalars (numbers, bools, strings, bytes, enums), nested messages,
@@ -18,7 +18,7 @@ internal static class DynamicTextFormat
     {
         var sb = new StringBuilder();
 
-        Print(message, sb, indent: 0);
+        Print(message, sb, 0);
 
         return sb.ToString();
     }
@@ -105,34 +105,48 @@ internal static class DynamicTextFormat
         switch (field.FieldType)
         {
             case FieldType.String:
+
                 sb.Append('"').Append(EscapeString((string)(value ?? ""))).Append('"');
+
                 break;
 
             case FieldType.Bytes:
+
                 var bytes = value as ByteString ?? ByteString.Empty;
                 sb.Append('"').Append(EscapeBytes(bytes)).Append('"');
+
                 break;
 
             case FieldType.Bool:
+
                 sb.Append((bool)(value ?? false) ? "true" : "false");
+
                 break;
 
             case FieldType.Enum:
+
                 var enumNumber = Convert.ToInt32(value ?? 0);
                 var enumValue = field.EnumType?.FindValueByNumber(enumNumber);
                 sb.Append(enumValue?.Name ?? enumNumber.ToString(CultureInfo.InvariantCulture));
+
                 break;
 
             case FieldType.Float:
+
                 sb.Append(((float)(value ?? 0f)).ToString("R", CultureInfo.InvariantCulture));
+
                 break;
 
             case FieldType.Double:
+
                 sb.Append(((double)(value ?? 0d)).ToString("R", CultureInfo.InvariantCulture));
+
                 break;
 
             default:
+
                 sb.Append(Convert.ToString(value ?? 0, CultureInfo.InvariantCulture));
+
                 break;
         }
     }
@@ -146,11 +160,17 @@ internal static class DynamicTextFormat
             switch (c)
             {
                 case '\\': sb.Append("\\\\"); break;
+
                 case '"': sb.Append("\\\""); break;
+
                 case '\n': sb.Append("\\n"); break;
+
                 case '\r': sb.Append("\\r"); break;
+
                 case '\t': sb.Append("\\t"); break;
+
                 default:
+
                     if (c < 0x20 || c == 0x7f)
                     {
                         sb.Append($"\\x{(int)c:x2}");
@@ -159,6 +179,7 @@ internal static class DynamicTextFormat
                     {
                         sb.Append(c);
                     }
+
                     break;
             }
         }
@@ -172,7 +193,7 @@ internal static class DynamicTextFormat
 
         foreach (var b in bytes)
         {
-            if (b >= 0x20 && b < 0x7f && b != '\\' && b != '"')
+            if (b is >= 0x20 and < 0x7f && b != '\\' && b != '"')
             {
                 sb.Append((char)b);
             }
@@ -192,12 +213,9 @@ internal static class DynamicTextFormat
 
         ParseFields(lexer, message);
 
-        if (lexer.Peek() is not null)
-        {
-            throw new FormatException($"Unexpected trailing token in text-format input: '{lexer.Peek()}'.");
-        }
-
-        return message;
+        return lexer.Peek() is not null
+            ? throw new FormatException($"Unexpected trailing token in text-format input: '{lexer.Peek()}'.")
+            : message;
     }
 
     private static void ParseFields(Lexer lexer, SimpleDynamicMessage message)
@@ -206,7 +224,7 @@ internal static class DynamicTextFormat
         {
             var fieldName = lexer.Peek();
 
-            if (fieldName is null || fieldName == "}")
+            if (fieldName is null or "}")
             {
                 return;
             }
@@ -214,42 +232,49 @@ internal static class DynamicTextFormat
             lexer.Read();
 
             var field = message.Descriptor.Fields.InDeclarationOrder()
-                .FirstOrDefault(f => string.Equals(f.Name, fieldName, StringComparison.Ordinal)
-                                  || string.Equals(f.JsonName, fieldName, StringComparison.Ordinal)) ?? throw new FormatException($"Unknown field '{fieldName}' on {message.Descriptor.FullName}.");
+                               .FirstOrDefault(f => string.Equals(f.Name, fieldName, StringComparison.Ordinal)
+                                                    || string.Equals(f.JsonName, fieldName, StringComparison.Ordinal)) ?? throw new FormatException($"Unknown field '{fieldName}' on {message.Descriptor.FullName}.");
             var separator = lexer.Read();
 
             object? value;
 
-            if (separator == ":")
+            switch (separator)
             {
-                value = ParseScalar(lexer, field);
-            }
-            else if (separator == "{")
-            {
-                if (field.FieldType != FieldType.Message)
-                {
+                case ":":
+
+                    value = ParseScalar(lexer, field);
+
+                    break;
+
+                case "{" when field.FieldType != FieldType.Message:
+
                     throw new FormatException($"Field '{field.Name}' is not a message; got brace.");
-                }
 
-                var nested = new SimpleDynamicMessage(field.MessageType);
+                case "{":
 
-                ParseFields(lexer, nested);
-
-                var close = lexer.Read();
-
-                if (close != "}")
                 {
-                    throw new FormatException($"Expected '}}' to close message '{field.Name}', got '{close}'.");
+                    var nested = new SimpleDynamicMessage(field.MessageType);
+
+                    ParseFields(lexer, nested);
+
+                    var close = lexer.Read();
+
+                    if (close != "}")
+                    {
+                        throw new FormatException($"Expected '}}' to close message '{field.Name}', got '{close}'.");
+                    }
+
+                    value = nested;
+
+                    break;
                 }
 
-                value = nested;
-            }
-            else
-            {
-                throw new FormatException($"Expected ':' or '{{' after field '{field.Name}', got '{separator}'.");
+                default:
+
+                    throw new FormatException($"Expected ':' or '{{' after field '{field.Name}', got '{separator}'.");
             }
 
-            if (field.IsRepeated && !field.IsMap)
+            if (field is { IsRepeated: true, IsMap: false })
             {
                 if (!message.RepeatedFields.TryGetValue(field, out var list))
                 {
@@ -277,9 +302,9 @@ internal static class DynamicTextFormat
         return field.FieldType switch
         {
             FieldType.String => UnescapeString(StripQuotes(token)),
-            FieldType.Bytes => ByteString.CopyFrom(UnescapeBytes(StripQuotes(token))),
-            FieldType.Bool => bool.Parse(token),
-            FieldType.Enum => ParseEnumOrNumber(token, field),
+            FieldType.Bytes  => ByteString.CopyFrom(UnescapeBytes(StripQuotes(token))),
+            FieldType.Bool   => bool.Parse(token),
+            FieldType.Enum   => ParseEnumOrNumber(token, field),
             FieldType.Int32 or FieldType.SInt32 or FieldType.SFixed32
                 => int.Parse(token, CultureInfo.InvariantCulture),
             FieldType.UInt32 or FieldType.Fixed32
@@ -288,25 +313,23 @@ internal static class DynamicTextFormat
                 => long.Parse(token, CultureInfo.InvariantCulture),
             FieldType.UInt64 or FieldType.Fixed64
                 => ulong.Parse(token, CultureInfo.InvariantCulture),
-            FieldType.Float => float.Parse(token, CultureInfo.InvariantCulture),
+            FieldType.Float  => float.Parse(token, CultureInfo.InvariantCulture),
             FieldType.Double => double.Parse(token, CultureInfo.InvariantCulture),
-            _ => ParseEnumOrNumber(token, field)
+            _                => ParseEnumOrNumber(token, field)
         };
     }
 
     private static int ParseEnumOrNumber(string token, FieldDescriptor field)
     {
-        if (field.FieldType == FieldType.Enum && field.EnumType is { } enumType)
+        if (field is not { FieldType: FieldType.Enum, EnumType: { } enumType })
         {
-            var enumValue = enumType.FindValueByName(token);
-
-            if (enumValue is not null)
-            {
-                return enumValue.Number;
-            }
+            return int.Parse(token, CultureInfo.InvariantCulture);
         }
 
-        return int.Parse(token, CultureInfo.InvariantCulture);
+        var enumValue = enumType.FindValueByName(token);
+
+        return enumValue?.Number
+               ?? int.Parse(token, CultureInfo.InvariantCulture);
     }
 
     private static string StripQuotes(string token)
@@ -332,6 +355,7 @@ internal static class DynamicTextFormat
             {
                 firstHexDigit = ch;
                 waitingForFirstHexDigit = false;
+
                 continue;
             }
 
@@ -339,6 +363,7 @@ internal static class DynamicTextFormat
             {
                 sb.Append((char)ParseHexByte(highHex, ch));
                 firstHexDigit = null;
+
                 continue;
             }
 
@@ -361,12 +386,19 @@ internal static class DynamicTextFormat
             switch (ch)
             {
                 case 'n': sb.Append('\n'); break;
+
                 case 'r': sb.Append('\r'); break;
+
                 case 't': sb.Append('\t'); break;
+
                 case '\\': sb.Append('\\'); break;
+
                 case '"': sb.Append('"'); break;
+
                 case '\'': sb.Append('\''); break;
+
                 case 'x': waitingForFirstHexDigit = true; break;
+
                 default: sb.Append(ch); break;
             }
         }
@@ -397,6 +429,7 @@ internal static class DynamicTextFormat
             {
                 firstHexDigit = ch;
                 waitingForFirstHexDigit = false;
+
                 continue;
             }
 
@@ -404,6 +437,7 @@ internal static class DynamicTextFormat
             {
                 bytes.Add(ParseHexByte(highHex, ch));
                 firstHexDigit = null;
+
                 continue;
             }
 
@@ -426,11 +460,17 @@ internal static class DynamicTextFormat
             switch (ch)
             {
                 case 'n': bytes.Add(0x0a); break;
+
                 case 'r': bytes.Add(0x0d); break;
+
                 case 't': bytes.Add(0x09); break;
+
                 case '\\': bytes.Add(0x5c); break;
+
                 case '"': bytes.Add(0x22); break;
+
                 case 'x': waitingForFirstHexDigit = true; break;
+
                 default: bytes.Add((byte)ch); break;
             }
         }
@@ -448,15 +488,17 @@ internal static class DynamicTextFormat
         return [.. bytes];
     }
 
-    private static byte ParseHexByte(char high, char low) => (byte)((HexValue(high) << 4) + HexValue(low));
+    private static byte ParseHexByte(char high, char low)
+        => (byte)((HexValue(high) << 4) + HexValue(low));
 
-    private static int HexValue(char ch) => ch switch
-    {
-        >= '0' and <= '9' => ch - '0',
-        >= 'a' and <= 'f' => ch - 'a' + 10,
-        >= 'A' and <= 'F' => ch - 'A' + 10,
-        _ => throw new FormatException($"Invalid hex digit '{ch}'.")
-    };
+    private static int HexValue(char ch)
+        => ch switch
+        {
+            >= '0' and <= '9' => ch - '0',
+            >= 'a' and <= 'f' => ch - 'a' + 10,
+            >= 'A' and <= 'F' => ch - 'A' + 10,
+            _                 => throw new FormatException($"Invalid hex digit '{ch}'.")
+        };
 
     /// <summary>
     ///     Minimal lexer that yields field names, ':', '{', '}', quoted strings, and bare
@@ -464,9 +506,8 @@ internal static class DynamicTextFormat
     /// </summary>
     private sealed class Lexer(string text)
     {
-        private readonly string _text = text;
-        private int _pos = 0;
         private string? _peeked;
+        private int _pos;
 
         public string? Peek()
         {
@@ -482,41 +523,46 @@ internal static class DynamicTextFormat
 
         public string? Read()
         {
-            if (_peeked is not null)
+            if (_peeked is null)
             {
-                var p = _peeked;
-
-                _peeked = null;
-
-                return p;
+                return ReadNext();
             }
 
-            return ReadNext();
+            var p = _peeked;
+
+            _peeked = null;
+
+            return p;
         }
 
         private string? ReadNext()
         {
             SkipWhitespaceAndComments();
 
-            if (_pos >= _text.Length)
+            if (_pos >= text.Length)
             {
                 return null;
             }
 
-            var c = _text[_pos];
+            var c = text[_pos];
 
-            if (c is ':' or '{' or '}' or ',' or ';' or '[' or ']')
+            switch (c)
             {
-                _pos++;
-                return c.ToString();
-            }
+                case ':' or '{' or '}' or ',' or ';' or '[' or ']':
 
-            if (c == '"' || c == '\'')
-            {
-                return ReadQuoted(c);
-            }
+                    _pos++;
 
-            return ReadIdentifierOrNumber();
+                    return c.ToString();
+
+                case '"':
+                case '\'':
+
+                    return ReadQuoted(c);
+
+                default:
+
+                    return ReadIdentifierOrNumber();
+            }
         }
 
         private string ReadQuoted(char quote)
@@ -525,9 +571,9 @@ internal static class DynamicTextFormat
 
             _pos++;
 
-            while (_pos < _text.Length && _text[_pos] != quote)
+            while (_pos < text.Length && text[_pos] != quote)
             {
-                if (_text[_pos] == '\\' && _pos + 1 < _text.Length)
+                if (text[_pos] == '\\' && _pos + 1 < text.Length)
                 {
                     _pos++;
                 }
@@ -535,49 +581,42 @@ internal static class DynamicTextFormat
                 _pos++;
             }
 
-            if (_pos >= _text.Length)
+            if (_pos >= text.Length)
             {
                 throw new FormatException("Unterminated quoted string in text-format input.");
             }
 
             _pos++;
 
-            return _text[start.._pos];
+            return text[start.._pos];
         }
 
         private string ReadIdentifierOrNumber()
         {
             var start = _pos;
 
-            while (_pos < _text.Length && !char.IsWhiteSpace(_text[_pos]) &&
-                   _text[_pos] is not ':' and not '{' and not '}' and not ',' and not ';' and not '[' and not ']')
-            {
+            while (_pos < text.Length && !char.IsWhiteSpace(text[_pos]) &&
+                   text[_pos] is not ':' and not '{' and not '}' and not ',' and not ';' and not '[' and not ']')
                 _pos++;
-            }
 
-            return _text[start.._pos];
+            return text[start.._pos];
         }
 
         private void SkipWhitespaceAndComments()
         {
-            while (_pos < _text.Length)
-            {
-                if (char.IsWhiteSpace(_text[_pos]))
+            while (_pos < text.Length)
+                if (char.IsWhiteSpace(text[_pos]))
                 {
                     _pos++;
                 }
-                else if (_text[_pos] == '#')
+                else if (text[_pos] == '#')
                 {
-                    while (_pos < _text.Length && _text[_pos] != '\n')
-                    {
-                        _pos++;
-                    }
+                    while (_pos < text.Length && text[_pos] != '\n') _pos++;
                 }
                 else
                 {
                     return;
                 }
-            }
         }
     }
 }

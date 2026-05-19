@@ -1,4 +1,3 @@
-using Google.Protobuf;
 using Grpc.Core;
 using GrpCurl.Net.Invocation;
 using GrpCurl.Net.Tests.Unit.Fixtures;

@@ -1,5 +1,4 @@
 using GrpCurl.Net.Commands;
-using GrpCurl.Net.Exceptions;
 using GrpCurl.Net.Tests.Integration.Fixtures;
 
 namespace GrpCurl.Net.Tests.Integration.Commands;
@@ -17,12 +16,16 @@ public sealed class InvokeMTlsTests(MTlsGrpcTestFixture fixture)
     [Fact]
     public async Task InvokeWithCaAndClientCert_ReflectionAndRpcBothSucceed()
     {
+        // Arrange
         var output = new StringWriter();
         var originalOut = Console.Out;
 
         Console.SetOut(output);
 
+        // Act
         try
+
+        // Assert
         {
             await InvokeCommandHandler.ExecuteAsync(
                 address: fixture.Address,
@@ -64,12 +67,16 @@ public sealed class InvokeMTlsTests(MTlsGrpcTestFixture fixture)
     [Fact]
     public async Task InvokeWithoutClientCert_RejectedByServer()
     {
+        // Arrange
         var output = new StringWriter();
         var originalOut = Console.Out;
 
         Console.SetOut(output);
 
+        // Act
         try
+
+        // Assert
         {
             var act = async () => await InvokeCommandHandler.ExecuteAsync(
                 address: fixture.Address,
@@ -111,6 +118,7 @@ public sealed class InvokeMTlsTests(MTlsGrpcTestFixture fixture)
     [Fact]
     public async Task InvokeWithProtosetAndClientCert_RpcStillUsesClientCert()
     {
+        // Arrange
         // The schema comes from a protoset (no reflection traffic), but the RPC
         // channel must still present the client certificate. Before the P0 fix,
         // channelOptions2 dropped the cert material and this would have failed.
@@ -119,7 +127,10 @@ public sealed class InvokeMTlsTests(MTlsGrpcTestFixture fixture)
 
         Console.SetOut(output);
 
+        // Act
         try
+
+        // Assert
         {
             var protosetPath = Path.Combine(
                 Path.GetDirectoryName(typeof(InvokeMTlsTests).Assembly.Location)!,

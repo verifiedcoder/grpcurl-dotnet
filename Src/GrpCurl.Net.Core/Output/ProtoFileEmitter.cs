@@ -1,11 +1,11 @@
-using System.Text;
 using Google.Protobuf.Reflection;
 using GrpCurl.Net.DescriptorSources;
+using System.Text;
 
 namespace GrpCurl.Net.Output;
 
 /// <summary>
-///     Reconstructs <c>.proto</c> source files from a <see cref="FileDescriptorProto"/>
+///     Reconstructs <c>.proto</c> source files from a <see cref="FileDescriptorProto" />
 ///     graph and writes them to a target directory. Implements upstream grpcurl's
 ///     <c>-proto-out-dir</c> feature (CODE-REVIEW.md P2). The output is not a byte-for-byte
 ///     round-trip of the original source — comments and original whitespace are gone — but
@@ -80,9 +80,9 @@ internal static class ProtoFileEmitter
         // Edition / syntax pragma: stick with the legacy 'syntax' keyword that grpcurl
         // and most consumers expect. FileDescriptor.Syntax is marked obsolete in newer
         // Google.Protobuf but it's still the most reliable signal of proto2 vs proto3.
-#pragma warning disable CS0618
+        #pragma warning disable CS0618
         sb.Append("syntax = \"").Append(file.Syntax.ToString().ToLowerInvariant()).AppendLine("\";");
-#pragma warning restore CS0618
+        #pragma warning restore CS0618
         sb.AppendLine();
 
         if (!string.IsNullOrEmpty(file.Package))
@@ -103,13 +103,13 @@ internal static class ProtoFileEmitter
 
         foreach (var enm in file.EnumTypes)
         {
-            EmitEnum(enm, sb, indent: 0);
+            EmitEnum(enm, sb, 0);
             sb.AppendLine();
         }
 
         foreach (var msg in file.MessageTypes)
         {
-            EmitMessage(msg, sb, indent: 0);
+            EmitMessage(msg, sb, 0);
             sb.AppendLine();
         }
 
@@ -226,43 +226,44 @@ internal static class ProtoFileEmitter
 
     private static string FormatType(FieldDescriptor field)
     {
-        if (field.IsMap)
+        if (!field.IsMap)
         {
-            var mapDescriptor = field.MessageType;
-            var keyField = mapDescriptor.FindFieldByNumber(1)!;
-            var valueField = mapDescriptor.FindFieldByNumber(2)!;
-
-            return $"map<{ScalarTypeName(keyField)}, {FormatType(valueField)}>";
+            return field.FieldType switch
+            {
+                FieldType.Message => $".{field.MessageType.FullName}",
+                FieldType.Enum    => $".{field.EnumType.FullName}",
+                _                 => ScalarTypeName(field)
+            };
         }
 
-        return field.FieldType switch
-        {
-            FieldType.Message => $".{field.MessageType.FullName}",
-            FieldType.Enum => $".{field.EnumType.FullName}",
-            _ => ScalarTypeName(field)
-        };
+        var mapDescriptor = field.MessageType;
+        var keyField = mapDescriptor.FindFieldByNumber(1)!;
+        var valueField = mapDescriptor.FindFieldByNumber(2)!;
+
+        return $"map<{ScalarTypeName(keyField)}, {FormatType(valueField)}>";
     }
 
-    private static string ScalarTypeName(FieldDescriptor field) => field.FieldType switch
-    {
-        FieldType.Double => "double",
-        FieldType.Float => "float",
-        FieldType.Int64 => "int64",
-        FieldType.UInt64 => "uint64",
-        FieldType.Int32 => "int32",
-        FieldType.Fixed64 => "fixed64",
-        FieldType.Fixed32 => "fixed32",
-        FieldType.Bool => "bool",
-        FieldType.String => "string",
-        FieldType.Group => "group",
-        FieldType.Message => $".{field.MessageType.FullName}",
-        FieldType.Bytes => "bytes",
-        FieldType.UInt32 => "uint32",
-        FieldType.Enum => $".{field.EnumType.FullName}",
-        FieldType.SFixed32 => "sfixed32",
-        FieldType.SFixed64 => "sfixed64",
-        FieldType.SInt32 => "sint32",
-        FieldType.SInt64 => "sint64",
-        _ => "bytes"
-    };
+    private static string ScalarTypeName(FieldDescriptor field)
+        => field.FieldType switch
+        {
+            FieldType.Double   => "double",
+            FieldType.Float    => "float",
+            FieldType.Int64    => "int64",
+            FieldType.UInt64   => "uint64",
+            FieldType.Int32    => "int32",
+            FieldType.Fixed64  => "fixed64",
+            FieldType.Fixed32  => "fixed32",
+            FieldType.Bool     => "bool",
+            FieldType.String   => "string",
+            FieldType.Group    => "group",
+            FieldType.Message  => $".{field.MessageType.FullName}",
+            FieldType.Bytes    => "bytes",
+            FieldType.UInt32   => "uint32",
+            FieldType.Enum     => $".{field.EnumType.FullName}",
+            FieldType.SFixed32 => "sfixed32",
+            FieldType.SFixed64 => "sfixed64",
+            FieldType.SInt32   => "sint32",
+            FieldType.SInt64   => "sint64",
+            _                  => "bytes"
+        };
 }

@@ -1,5 +1,3 @@
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
 using GrpCurl.Net.TestServer.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -7,6 +5,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Security.Cryptography.X509Certificates;
 
 namespace GrpCurl.Net.Tests.Integration.Fixtures;
 
@@ -20,6 +19,7 @@ public class MTlsGrpcServerCollection : ICollectionFixture<MTlsGrpcTestFixture>;
 ///     same TLS/mTLS-equipped channel. The server presents <c>server.crt</c>/<c>server.key</c>
 ///     and validates client certs against <c>ca.crt</c>.
 /// </summary>
+// ReSharper disable once ClassNeverInstantiated.Global
 public sealed class MTlsGrpcTestFixture : IAsyncLifetime
 {
     private WebApplication? _app;
@@ -73,7 +73,7 @@ public sealed class MTlsGrpcTestFixture : IAsyncLifetime
                     httpsOptions.ServerCertificate = serverCert;
                     httpsOptions.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
                     httpsOptions.AllowAnyClientCertificate();
-                    httpsOptions.ClientCertificateValidation = (cert, chain, errors) =>
+                    httpsOptions.ClientCertificateValidation = (cert, _, _) =>
                         ValidateClient(cert, _trustedClientCa);
                 });
             });

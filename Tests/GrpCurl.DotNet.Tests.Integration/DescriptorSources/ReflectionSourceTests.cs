@@ -88,7 +88,8 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
 
         await cts.CancelAsync();
 
-        // Act & Assert
+        // Act
+        // Assert
         await Should.ThrowAsync<OperationCanceledException>(() =>
             source.ListServicesAsync(cts.Token));
     }
@@ -262,7 +263,8 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
             "testing.SimpleResponse"
         };
 
-        // Act & Assert
+        // Act
+        // Assert
         foreach (var name in messageNames)
         {
             var symbol = await source.FindSymbolAsync(name, TestContext.Current.CancellationToken);
@@ -357,7 +359,8 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
 
         var source = new ReflectionSource(channel);
 
-        // Act & Assert
+        // Act
+        // Assert
         for (var i = 0; i < 3; i++)
         {
             var result = await source.FindSymbolAsync("testing.TestService", TestContext.Current.CancellationToken);
@@ -374,7 +377,8 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
 
         var source = new ReflectionSource(channel);
 
-        // Act & Assert
+        // Act
+        // Assert
         for (var i = 0; i < 3; i++)
         {
             var result = await source.ListServicesAsync(TestContext.Current.CancellationToken);
@@ -420,7 +424,8 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
         var channel = GrpcChannel.ForAddress($"http://{fixture.Address}", new GrpcChannelOptions());
         var source = new ReflectionSource(channel, ownsChannel: true);
 
-        // Act & Assert
+        // Act
+        // Assert
         Should.NotThrow(() => source.Dispose());
     }
 
@@ -455,7 +460,8 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
 
         await cts.CancelAsync();
 
-        // Act & Assert
+        // Act
+        // Assert
         await Should.ThrowAsync<OperationCanceledException>(() =>
             source.FindSymbolAsync("testing.TestService", cts.Token));
     }

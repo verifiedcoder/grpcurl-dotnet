@@ -1,5 +1,6 @@
 using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
+using Type = Google.Protobuf.WellKnownTypes.Type;
 
 namespace GrpCurl.Net.DescriptorSources;
 
@@ -44,7 +45,7 @@ public static class WellKnownTypeRegistry
         RegisterDescriptor(registry, SourceContext.Descriptor.File);
         RegisterDescriptor(registry, Struct.Descriptor.File);
         RegisterDescriptor(registry, Timestamp.Descriptor.File);
-        RegisterDescriptor(registry, Google.Protobuf.WellKnownTypes.Type.Descriptor.File);
+        RegisterDescriptor(registry, Type.Descriptor.File);
 
         // Wrappers (DoubleValue, FloatValue, Int64Value, etc.)
         RegisterDescriptor(registry, DoubleValue.Descriptor.File);

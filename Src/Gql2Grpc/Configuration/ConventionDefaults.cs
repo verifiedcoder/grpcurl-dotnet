@@ -1,8 +1,10 @@
+using System.Text;
+
 namespace Gql2Grpc.Configuration;
 
 /// <summary>
-/// Default convention helpers: Relay-style argument aliases and the PascalCase naming rule that
-/// turns <c>activeResponses</c> into <c>ActiveResponses</c> for method-name fallback.
+///     Default convention helpers: Relay-style argument aliases and the PascalCase naming rule that
+///     turns <c>activeResponses</c> into <c>ActiveResponses</c> for method-name fallback.
 /// </summary>
 internal static class ConventionDefaults
 {
@@ -20,12 +22,7 @@ internal static class ConventionDefaults
     /// <summary>Converts a camelCase identifier to PascalCase. Leaves empty/null strings unchanged.</summary>
     public static string ToPascalCase(string input)
     {
-        if (string.IsNullOrEmpty(input))
-        {
-            return input;
-        }
-
-        if (char.IsUpper(input[0]))
+        if (string.IsNullOrEmpty(input) || char.IsUpper(input[0]))
         {
             return input;
         }
@@ -41,7 +38,7 @@ internal static class ConventionDefaults
             return input;
         }
 
-        var builder = new System.Text.StringBuilder(input.Length + 8);
+        var builder = new StringBuilder(input.Length + 8);
 
         for (var i = 0; i < input.Length; i++)
         {
@@ -66,8 +63,7 @@ internal static class ConventionDefaults
     }
 
     /// <summary>Merges the built-in Relay argument aliases with a user-supplied map, user map wins.</summary>
-    public static IReadOnlyDictionary<string, string> MergeArgumentAliases(
-        IReadOnlyDictionary<string, string> userAliases)
+    public static IReadOnlyDictionary<string, string> MergeArgumentAliases(IReadOnlyDictionary<string, string> userAliases)
     {
         if (userAliases.Count == 0)
         {

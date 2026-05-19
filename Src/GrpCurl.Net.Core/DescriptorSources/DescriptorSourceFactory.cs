@@ -5,9 +5,9 @@ using GrpCurl.Net.Utilities;
 namespace GrpCurl.Net.DescriptorSources;
 
 /// <summary>
-///     Creates the <see cref="IDescriptorSource"/> used for a single CLI invocation along
-///     with the optional <see cref="GrpcChannel"/> reused by both descriptor discovery and
-///     the business RPC call. The returned session is <see cref="IAsyncDisposable"/>; it
+///     Creates the <see cref="IDescriptorSource" /> used for a single CLI invocation along
+///     with the optional <see cref="GrpcChannel" /> reused by both descriptor discovery and
+///     the business RPC call. The returned session is <see cref="IAsyncDisposable" />; it
 ///     owns the channel and the descriptor source, and disposes both in reverse order.
 ///     This is the canonical entry point that <c>list</c>, <c>describe</c>, <c>invoke</c>,
 ///     and the Gql2Grpc query path all use so that TLS/mTLS material, deadlines, and
@@ -15,18 +15,30 @@ namespace GrpCurl.Net.DescriptorSources;
 /// </summary>
 internal sealed class DescriptorSourceFactory : IAsyncDisposable
 {
-    private readonly GrpcChannel? _channel;
-    private readonly IDescriptorSource _source;
-
     private DescriptorSourceFactory(GrpcChannel? channel, IDescriptorSource source)
     {
-        _channel = channel;
-        _source = source;
+        Channel = channel;
+        Source = source;
     }
 
-    public GrpcChannel? Channel => _channel;
+    public GrpcChannel? Channel { get; }
 
-    public IDescriptorSource Source => _source;
+    public IDescriptorSource Source { get; }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (Source is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
+
+        if (Channel is not null)
+        {
+            await Channel.ShutdownAsync().ConfigureAwait(false);
+
+            Channel.Dispose();
+        }
+    }
 
     public static Task<DescriptorSourceFactory> CreateAsync(
         string? address,
@@ -76,23 +88,9 @@ internal sealed class DescriptorSourceFactory : IAsyncDisposable
         }
         else
         {
-            source = new ReflectionSource(channel!, reflectionMetadata, ownsChannel: false);
+            source = new ReflectionSource(channel!, reflectionMetadata);
         }
 
         return new DescriptorSourceFactory(channel, source);
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (_source is IDisposable disposable)
-        {
-            disposable.Dispose();
-        }
-
-        if (_channel is not null)
-        {
-            await _channel.ShutdownAsync().ConfigureAwait(false);
-            _channel.Dispose();
-        }
     }
 }

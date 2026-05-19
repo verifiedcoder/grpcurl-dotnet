@@ -10,7 +10,7 @@ namespace Gql2Grpc.Tests.Fixtures;
 [CollectionDefinition("GrpcServer")]
 public class GrpcServerCollection : ICollectionFixture<GrpcTestFixture>;
 
-public sealed class GrpcTestFixture : IAsyncLifetime
+public abstract class GrpcTestFixture : IAsyncLifetime
 {
     private WebApplication? _app;
 
@@ -50,14 +50,20 @@ public sealed class GrpcTestFixture : IAsyncLifetime
             await _app.StopAsync();
             await _app.DisposeAsync();
         }
+
+        GC.SuppressFinalize(this);
     }
 
     private static int GetAvailablePort()
     {
         using var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+
         listener.Start();
+
         var port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+
         listener.Stop();
+
         return port;
     }
 }

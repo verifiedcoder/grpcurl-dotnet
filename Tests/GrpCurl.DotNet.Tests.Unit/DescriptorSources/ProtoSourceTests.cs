@@ -60,6 +60,7 @@ public sealed class ProtoSourceTests
     [Fact]
     public async Task LoadFromProtoFilesAsync_ResolvesService_FromProtoFile()
     {
+        // Arrange
         if (!ProtocAvailable)
         {
             return;
@@ -73,20 +74,26 @@ public sealed class ProtoSourceTests
             [importRoot],
             TestContext.Current.CancellationToken);
 
+        // Act
         var symbol = await source.FindSymbolAsync("testing.TestService", TestContext.Current.CancellationToken);
 
+        // Assert
         symbol.ShouldBeOfType<ServiceDescriptor>();
-        ((ServiceDescriptor)symbol!).FullName.ShouldBe("testing.TestService");
+        ((ServiceDescriptor)symbol).FullName.ShouldBe("testing.TestService");
     }
 
     [Fact]
     public async Task LoadFromProtoFilesAsync_MissingFile_ThrowsWithProtocStderr()
     {
+        // Arrange
         if (!ProtocAvailable)
+
+        // Act
         {
             return;
         }
 
+        // Assert
         var ex = await Should.ThrowAsync<InvalidOperationException>(async () =>
         {
             await ProtoSource.LoadFromProtoFilesAsync(
@@ -101,6 +108,11 @@ public sealed class ProtoSourceTests
     [Fact]
     public async Task LoadFromProtoFilesAsync_EmptyFiles_Throws()
     {
+        // Arrange
+
+        // Assert
+
+        // Act
         await Should.ThrowAsync<ArgumentException>(async () =>
         {
             await ProtoSource.LoadFromProtoFilesAsync(

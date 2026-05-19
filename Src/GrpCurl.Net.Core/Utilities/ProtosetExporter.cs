@@ -11,18 +11,19 @@ internal static class ProtosetExporter
 {
     /// <summary>
     ///     Writes a FileDescriptorSet to a file, including transitive dependencies.
-    ///     Refuses to overwrite an existing file (use <see cref="WriteProtosetAsync(IDescriptorSource, string?, bool, string[])"/>
+    ///     Refuses to overwrite an existing file (use
+    ///     <see cref="WriteProtosetAsync(IDescriptorSource, string?, bool, string[])" />
     ///     with <c>force: true</c> to overwrite).
     /// </summary>
     public static Task WriteProtosetAsync(
         IDescriptorSource descriptorSource,
         string? outputPath,
         params string[] symbols)
-        => WriteProtosetAsync(descriptorSource, outputPath, force: false, symbols);
+        => WriteProtosetAsync(descriptorSource, outputPath, false, symbols);
 
     /// <summary>
-    ///     Writes a FileDescriptorSet to a file. Throws <see cref="IOException"/> if the
-    ///     output path already exists and <paramref name="force"/> is <c>false</c>.
+    ///     Writes a FileDescriptorSet to a file. Throws <see cref="IOException" /> if the
+    ///     output path already exists and <paramref name="force" /> is <c>false</c>.
     /// </summary>
     public static async Task WriteProtosetAsync(
         IDescriptorSource descriptorSource,
@@ -44,6 +45,7 @@ internal static class ProtosetExporter
 
         // Serialize FileDescriptorSet to bytes using protobuf WriteTo
         using var stream = new MemoryStream();
+
         using (var output = new CodedOutputStream(stream, true))
         {
             fileDescriptorSet.WriteTo(output);

@@ -356,7 +356,8 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
 
         try
         {
-            // Act & Assert
+            // Act
+            // Assert
             var exception = await Should.ThrowAsync<GrpcCommandException>(() =>
                 InvokeCommandHandler.ExecuteAsync(
                     address: Address,
@@ -403,7 +404,8 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
 
         try
         {
-            // Act & Assert
+            // Act
+            // Assert
             var exception = await Should.ThrowAsync<GrpcCommandException>(() =>
                 InvokeCommandHandler.ExecuteAsync(
                     address: Address,
@@ -450,7 +452,8 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
 
         try
         {
-            // Act & Assert
+            // Act
+            // Assert
             var exception = await Should.ThrowAsync<GrpcCommandException>(() =>
                 InvokeCommandHandler.ExecuteAsync(
                     address: Address,
@@ -497,7 +500,8 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
 
         try
         {
-            // Act & Assert
+            // Act
+            // Assert
             var exception = await Should.ThrowAsync<GrpcCommandException>(() =>
                 InvokeCommandHandler.ExecuteAsync(
                     address: Address,
@@ -544,7 +548,8 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
 
         try
         {
-            // Act & Assert - a non-existent protoset file should throw GrpcCommandException
+            // Act
+            // Assert
             // (wrapping FileNotFoundException)
             var exception = await Should.ThrowAsync<GrpcCommandException>(() =>
                 InvokeCommandHandler.ExecuteAsync(
@@ -584,6 +589,7 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
     [Fact]
     public async Task ExecuteAsync_OutputJson_OnRpcError_EmitsErrorEnvelopeOnStderr()
     {
+        // Arrange
         // Use the fail-early metadata header to trigger a server-side RpcException (StatusCode 13 = Internal).
         var stdout = new StringWriter();
         var stderr = new StringWriter();
@@ -593,7 +599,10 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
         Console.SetOut(stdout);
         Console.SetError(stderr);
 
+        // Act
         try
+
+        // Assert
         {
             var exception = await Should.ThrowAsync<GrpcCommandException>(() =>
                 InvokeCommandHandler.ExecuteAsync(

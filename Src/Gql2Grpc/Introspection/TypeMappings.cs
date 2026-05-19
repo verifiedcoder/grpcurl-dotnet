@@ -3,8 +3,8 @@ using Google.Protobuf.Reflection;
 namespace Gql2Grpc.Introspection;
 
 /// <summary>
-/// Proto → GraphQL type-name rules. These are deterministic so that both the schema builder and
-/// the request/response pipelines can agree on what a proto type is called in GraphQL.
+///     Proto → GraphQL type-name rules. These are deterministic so that both the schema builder and
+///     the request/response pipelines can agree on what a proto type is called in GraphQL.
 /// </summary>
 internal static class TypeMappings
 {
@@ -42,47 +42,37 @@ internal static class TypeMappings
         ["google.protobuf.ListValue"] = "JsonScalar"
     };
 
-    public static bool TryGetWellKnownScalar(string fullyQualifiedMessageName, out string scalarName)
-    {
-        return WellKnownMessageTypes.TryGetValue(fullyQualifiedMessageName, out scalarName!);
-    }
+    public static bool TryGetWellKnownScalar(string fullyQualifiedMessageName, out string scalarName) => WellKnownMessageTypes.TryGetValue(fullyQualifiedMessageName, out scalarName!);
 
     /// <summary>Canonical GraphQL scalar for a primitive proto field type.</summary>
     public static string ScalarFor(FieldType fieldType) => fieldType switch
     {
-        FieldType.String => StringTypeName,
-        FieldType.Bool => BooleanTypeName,
+        FieldType.String                                          => StringTypeName,
+        FieldType.Bool                                            => BooleanTypeName,
         FieldType.Int32 or FieldType.SInt32 or FieldType.SFixed32 => IntTypeName,
-        FieldType.UInt32 or FieldType.Fixed32 => StringTypeName,
+        FieldType.UInt32 or FieldType.Fixed32                     => StringTypeName,
         FieldType.Int64 or FieldType.SInt64 or FieldType.SFixed64 => StringTypeName,
-        FieldType.UInt64 or FieldType.Fixed64 => StringTypeName,
-        FieldType.Float or FieldType.Double => FloatTypeName,
-        FieldType.Bytes => StringTypeName,
-        _ => StringTypeName
+        FieldType.UInt64 or FieldType.Fixed64                     => StringTypeName,
+        FieldType.Float or FieldType.Double                       => FloatTypeName,
+        _                                                         => StringTypeName
     };
 
     /// <summary>Converts a proto message's simple name to the GraphQL ObjectType name, honouring overrides.</summary>
+    // ReSharper disable once UnusedMember.Global
+    // ReSharper disable once InconsistentNaming
     public static string GraphQLObjectName(
         MessageDescriptor descriptor,
         IReadOnlyDictionary<string, string> typeOverrides)
-    {
-        if (typeOverrides.TryGetValue(descriptor.FullName, out var overridden))
-        {
-            return overridden;
-        }
+        => typeOverrides.TryGetValue(descriptor.FullName, out var overridden)
+            ? overridden
+            : descriptor.Name;
 
-        return descriptor.Name;
-    }
-
+    // ReSharper disable once UnusedMember.Global
+    // ReSharper disable once InconsistentNaming
     public static string GraphQLEnumName(
         EnumDescriptor descriptor,
         IReadOnlyDictionary<string, string> typeOverrides)
-    {
-        if (typeOverrides.TryGetValue(descriptor.FullName, out var overridden))
-        {
-            return overridden;
-        }
-
-        return descriptor.Name;
-    }
+        => typeOverrides.TryGetValue(descriptor.FullName, out var overridden)
+            ? overridden
+            : descriptor.Name;
 }

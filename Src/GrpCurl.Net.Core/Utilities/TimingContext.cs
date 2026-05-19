@@ -1,5 +1,5 @@
-using System.Diagnostics;
 using Spectre.Console;
+using System.Diagnostics;
 
 namespace GrpCurl.Net.Utilities;
 
@@ -9,9 +9,9 @@ namespace GrpCurl.Net.Utilities;
 /// </summary>
 /// <remarks>
 ///     The output sink is captured at construction time so that tests can inject a
-///     <see cref="StringWriter"/>-backed <see cref="IAnsiConsole"/> without touching the
-///     process-wide <see cref="Console.Error"/> stream. Production callers should pass
-///     <see cref="Diagnostics.CreateStderr"/> at the moment the context is created.
+///     <see cref="StringWriter" />-backed <see cref="IAnsiConsole" /> without touching the
+///     process-wide <see cref="Console.Error" /> stream. Production callers should pass
+///     <see cref="Diagnostics.CreateStderr" /> at the moment the context is created.
 /// </remarks>
 internal sealed class TimingContext
 {
@@ -125,8 +125,8 @@ internal sealed class TimingContext
     internal static string FormatBytes(long bytes)
         => bytes switch
         {
-            < 1024 => $"[yellow]{bytes}[/] bytes",
+            < 1024        => $"[yellow]{bytes}[/] bytes",
             < 1024 * 1024 => $"[yellow]{bytes / 1024.0:F2}[/] KB [dim]({bytes:N0} bytes)[/]",
-            _ => $"[yellow]{bytes / (1024.0 * 1024):F2}[/] MB [dim]({bytes:N0} bytes)[/]"
+            _             => $"[yellow]{bytes / (1024.0 * 1024):F2}[/] MB [dim]({bytes:N0} bytes)[/]"
         };
 }

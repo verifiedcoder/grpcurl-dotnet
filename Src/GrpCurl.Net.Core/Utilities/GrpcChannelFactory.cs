@@ -152,9 +152,10 @@ internal static partial class GrpcChannelFactory
         // behaviour in Docs/articles/authentication.md and replaces the previous
         // extension-based check that misled callers who used extensionless filenames.
         // Default storage is ephemeral on platforms whose TLS stack supports it. Windows
-        // SslStream client authentication cannot use ephemeral private keys, so Windows
-        // falls back to a non-exportable user key set; opt in to Exportable only when the
-        // operator explicitly asks via --exportable-key.
+        // SslStream client authentication cannot use ephemeral private keys, and macOS
+        // requires keychain-backed PFX imports, so those platforms use non-exportable
+        // platform storage; opt in to Exportable only when the operator explicitly asks
+        // via --exportable-key.
         if (options.ClientCertPath is not null)
         {
             X509Certificate2 clientCert;
@@ -499,15 +500,20 @@ internal static partial class GrpcChannelFactory
         return (int)bytes;
     }
 
-    private static X509KeyStorageFlags GetClientCertificateStorageFlags(bool exportableClientKey)
+    internal static X509KeyStorageFlags GetClientCertificateStorageFlags(bool exportableClientKey)
     {
         if (exportableClientKey)
         {
             return X509KeyStorageFlags.Exportable;
         }
 
-        return OperatingSystem.IsWindows()
-            ? X509KeyStorageFlags.UserKeySet
+        if (OperatingSystem.IsWindows())
+        {
+            return X509KeyStorageFlags.UserKeySet;
+        }
+
+        return OperatingSystem.IsMacOS()
+            ? X509KeyStorageFlags.DefaultKeySet
             : X509KeyStorageFlags.EphemeralKeySet;
     }
 
@@ -555,10 +561,11 @@ internal static partial class GrpcChannelFactory
 
         /// <summary>
         ///     If <see langword="true" />, PKCS12 client keys are loaded with
-        ///     <see cref="X509KeyStorageFlags.Exportable" />. Default is ephemeral on
-        ///     TLS stacks that support it; Windows uses a non-exportable user key set
-        ///     because SslStream client authentication cannot use ephemeral private keys
-        ///     there. Opt in only when an upstream operation needs to re-export the private key.
+        ///     <see cref="X509KeyStorageFlags.Exportable" />. Linux defaults to ephemeral
+        ///     storage, macOS uses platform default keychain handling, and Windows uses a
+        ///     non-exportable user key set because SslStream client authentication cannot
+        ///     use ephemeral private keys there. Opt in only when an upstream operation
+        ///     needs to re-export the private key.
         /// </summary>
         public bool ExportableClientKey { get; init; }
     }

@@ -23,7 +23,7 @@ These options are available for all commands:
 | `--key <path>` | Client private key file (PEM) for mutual TLS. Omit for PKCS12 (key inside the bundle). |
 | `--cert-password <password>` | Password for an encrypted PKCS12 (.p12/.pfx) client certificate. |
 | `--revocation-mode <online\|offline\|nocheck>` | Certificate revocation policy when `--cacert` is set. Default: `online`. Use `nocheck` only against self-signed test fixtures with no CRL distribution point. |
-| `--exportable-key` | Load PKCS12 client keys with `X509KeyStorageFlags.Exportable`. By default, Linux/macOS use `EphemeralKeySet`; Windows uses non-exportable `UserKeySet` because Schannel-backed mTLS cannot use ephemeral client private keys. |
+| `--exportable-key` | Load PKCS12 client keys with `X509KeyStorageFlags.Exportable`. By default, Linux uses `EphemeralKeySet`, macOS uses platform default keychain handling, and Windows uses non-exportable `UserKeySet` because Schannel-backed mTLS cannot use ephemeral client private keys. |
 | `--connect-timeout <duration>` | Per-attempt TCP/TLS connection timeout (e.g. `10s`, `1m`, `500ms`). Honoured on both plaintext and TLS. |
 | `--max-time <duration>` | Maximum total operation time. For `list` and `describe`, this bounds descriptor loading and discovery. For `invoke` and `gql2grpc`, it also sets the RPC deadline. Always set this for unattended use; there is no built-in default. |
 | `--keepalive-time <duration>` | HTTP/2 keepalive ping interval (default `60s`). |

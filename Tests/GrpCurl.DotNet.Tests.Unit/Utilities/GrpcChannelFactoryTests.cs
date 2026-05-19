@@ -526,6 +526,32 @@ public sealed class GrpcChannelFactoryTests
         channel.Target.ShouldContain("localhost");
     }
 
+    [Fact]
+    public void GetClientCertificateStorageFlags_WithExportableClientKey_ReturnsExportable()
+    {
+        // Arrange
+        const bool exportableClientKey = true;
+
+        // Act
+        var result = GrpcChannelFactory.GetClientCertificateStorageFlags(exportableClientKey);
+
+        // Assert
+        result.ShouldBe(X509KeyStorageFlags.Exportable);
+    }
+
+    [Fact]
+    public void GetClientCertificateStorageFlags_WithoutExportableClientKey_ReturnsPlatformCompatibleDefault()
+    {
+        // Arrange
+        var expected = GetExpectedDefaultClientCertificateStorageFlags();
+
+        // Act
+        var result = GrpcChannelFactory.GetClientCertificateStorageFlags(exportableClientKey: false);
+
+        // Assert
+        result.ShouldBe(expected);
+    }
+
     private static string EnsureClientPfx()
     {
         var certsDir = Path.Combine(AppContext.BaseDirectory, "TestCertificates");
@@ -543,6 +569,18 @@ public sealed class GrpcChannelFactoryTests
         var bytes = pem.Export(X509ContentType.Pkcs12, "testpassword");
         File.WriteAllBytes(pfxPath, bytes);
         return pfxPath;
+    }
+
+    private static X509KeyStorageFlags GetExpectedDefaultClientCertificateStorageFlags()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return X509KeyStorageFlags.UserKeySet;
+        }
+
+        return OperatingSystem.IsMacOS()
+            ? X509KeyStorageFlags.DefaultKeySet
+            : X509KeyStorageFlags.EphemeralKeySet;
     }
 
     [Fact]

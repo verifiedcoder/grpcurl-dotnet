@@ -22,7 +22,7 @@ GrpCurl.Net is a .NET re-implementation of [fullstorydev/grpcurl](https://github
 | `--max-msg-sz` | Supported | Applied to both send and receive. |
 | `--keepalive-time`, `--keepalive-timeout` | Supported | Map to `SocketsHttpHandler.KeepAlivePingDelay`/`Timeout`. |
 | `--revocation-mode online\|offline\|nocheck` | Supported | Default `Online` when a custom CA is supplied. |
-| `--exportable-key` | Supported | Off by default. Linux/macOS default to `EphemeralKeySet`; Windows defaults to non-exportable `UserKeySet` for Schannel mTLS compatibility. |
+| `--exportable-key` | Supported | Off by default. Linux defaults to `EphemeralKeySet`; macOS uses platform default keychain handling; Windows defaults to non-exportable `UserKeySet` for Schannel mTLS compatibility. |
 | `--unsafe-show-secrets` | Supported | Off by default. Verbose metadata is redacted (authorization, cookie, `*-token`, `*-secret`, `*-bin`, etc.). |
 | Unix domain sockets (`unix:///path`) | Supported on Linux/macOS | Windows fast-fails with a clear error message. |
 | JSON request/response format | Supported | Dynamic message serialisation via `SimpleDynamicMessage`. |

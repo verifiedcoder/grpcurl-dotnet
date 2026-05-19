@@ -170,7 +170,8 @@ internal static class InvokeCommandHandler
         var exportableKeyOpt = new Option<bool>("--exportable-key")
         {
             Description = "Load client private keys with X509KeyStorageFlags.Exportable. " +
-                          "Default is EphemeralKeySet on Linux/macOS and non-exportable UserKeySet on Windows."
+                          "Default is EphemeralKeySet on Linux, platform default on macOS, " +
+                          "and non-exportable UserKeySet on Windows."
         };
 
         var keepaliveTimeOpt = new Option<string?>("--keepalive-time")

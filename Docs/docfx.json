@@ -6,6 +6,7 @@
         {
           "src": "../",
           "files": [
+            "Src/GrpCurl.Net.Core/GrpCurl.Net.Core.csproj",
             "Src/GrpCurl.Net/GrpCurl.Net.csproj",
             "Src/Gql2Grpc/Gql2Grpc.csproj"
           ]

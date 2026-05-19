@@ -113,4 +113,60 @@ public sealed class InvokeCommandHandlerTests
         // Assert
         command.Options.Count.ShouldBeGreaterThanOrEqualTo(15);
     }
+
+    [Fact]
+    public void Create_HasMaxStdinBytesOption()
+    {
+        // Arrange
+
+        // Act
+        var command = InvokeCommandHandler.Create();
+
+        // Assert
+        HasOption(command, "--max-stdin-bytes").ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ResolveMaxStdinBytes_Null_ReturnsDefault()
+    {
+        // Arrange
+
+        // Act
+        var result = InvokeCommandHandler.ResolveMaxStdinBytes(null);
+
+        // Assert
+        result.ShouldBe(InvokeCommandHandler.DefaultMaxStdinBytes);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(1024)]
+    public void ResolveMaxStdinBytes_PositiveValue_ReturnsValue(long value)
+    {
+        // Arrange
+
+        // Act
+        var result = InvokeCommandHandler.ResolveMaxStdinBytes(value);
+
+        // Assert
+        result.ShouldBe(value);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void ResolveMaxStdinBytes_NonPositiveValue_ThrowsArgumentException(long value)
+    {
+        // Arrange
+
+        // Act
+        var exception = Should.Throw<ArgumentException>(() =>
+            InvokeCommandHandler.ResolveMaxStdinBytes(value));
+
+        // Assert
+        exception.Message.ShouldContain("--max-stdin-bytes");
+    }
+
+    private static bool HasOption(Command command, string name)
+        => command.Options.Any(option => option.Name == name || option.Name == name.TrimStart('-'));
 }

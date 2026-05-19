@@ -14,11 +14,12 @@ SERVER="localhost:9090"
 echo "=== gql2grpc: Schema introspection ==="
 echo ""
 echo "The schema is synthesised from the reflected FileDescriptorSet, answered entirely client-side."
+echo "Uses --max-time to bound reflection discovery before introspection runs."
 echo ""
-echo "Command: gql2grpc --plaintext --default-service testing.TestService $SERVER 'query { __schema { queryType { name } types { kind name } } }'"
+echo "Command: gql2grpc --plaintext --max-time 10s --default-service testing.TestService $SERVER 'query { __schema { queryType { name } types { kind name } } }'"
 echo ""
 
-gql2grpc_cli --plaintext --default-service testing.TestService $SERVER \
+gql2grpc_cli --plaintext --max-time 10s --default-service testing.TestService $SERVER \
     'query { __schema { queryType { name } types { kind name } } }' | head -c 2000
 echo ""
 echo "...(output truncated for readability)"

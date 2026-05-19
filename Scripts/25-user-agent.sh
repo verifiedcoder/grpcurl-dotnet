@@ -18,15 +18,15 @@ echo "Useful for identifying client applications in server logs."
 echo ""
 
 echo "--- Default User-Agent ---"
-echo "Command: grpcurl.net invoke --plaintext -v $SERVER testing.TestService/EmptyCall"
+echo "Command: grpcurl.net invoke --plaintext --max-time 10s -v $SERVER testing.TestService/EmptyCall"
 echo ""
-grpcurl_net invoke --plaintext -v $SERVER testing.TestService/EmptyCall 2>&1 | head -20
+grpcurl_net invoke --plaintext --max-time 10s -v $SERVER testing.TestService/EmptyCall 2>&1 | head -20
 
 echo ""
 echo "--- Custom User-Agent ---"
-echo "Command: grpcurl.net invoke --plaintext --user-agent 'MyApp/1.0 (Demo Script)' -v $SERVER testing.TestService/EmptyCall"
+echo "Command: grpcurl.net invoke --plaintext --max-time 10s --user-agent 'MyApp/1.0 (Demo Script)' -v $SERVER testing.TestService/EmptyCall"
 echo ""
-grpcurl_net invoke --plaintext --user-agent "MyApp/1.0 (Demo Script)" -v $SERVER testing.TestService/EmptyCall 2>&1 | head -20
+grpcurl_net invoke --plaintext --max-time 10s --user-agent "MyApp/1.0 (Demo Script)" -v $SERVER testing.TestService/EmptyCall 2>&1 | head -20
 
 echo ""
 echo "=== Done ==="

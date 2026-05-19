@@ -29,10 +29,11 @@ echo "Sending 3 requests, each requesting a response of different size:"
 echo "$REQUESTS"
 echo ""
 
-echo "Command: echo '<requests>' | grpcurl.net invoke --plaintext -d @ $SERVER testing.TestService/FullDuplexCall"
+echo "Command: echo '<requests>' | grpcurl.net invoke --plaintext --max-time 10s --max-stdin-bytes 1048576 -d @ $SERVER testing.TestService/FullDuplexCall"
+echo "Uses --max-stdin-bytes to make the stdin budget explicit for scripts."
 echo ""
 
-echo "$REQUESTS" | grpcurl_net invoke --plaintext -d @ $SERVER testing.TestService/FullDuplexCall
+echo "$REQUESTS" | grpcurl_net invoke --plaintext --max-time 10s --max-stdin-bytes 1048576 -d @ $SERVER testing.TestService/FullDuplexCall
 
 echo ""
 echo "=== Done ==="

@@ -1,4 +1,5 @@
 using Grpc.Core;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace GrpCurl.Net.Utilities;
@@ -76,7 +77,7 @@ internal static partial class SecretRedactor
     ///     is true or the header is not sensitive, otherwise <see cref="Placeholder" />.
     /// </summary>
     public static string FormatValue(string headerName, string value, bool unsafeShowSecrets)
-        => unsafeShowSecrets || !ShouldRedact(headerName) ? value : Placeholder;
+        => unsafeShowSecrets || !ShouldRedact(headerName) ? EscapeControlCharacters(value) : Placeholder;
 
     /// <summary>
     ///     Renders <paramref name="metadata" /> as a sequence of <c>name: value</c> lines with
@@ -88,4 +89,34 @@ internal static partial class SecretRedactor
                ? Convert.ToBase64String(entry.ValueBytes)
                : entry.Value
            select $"{entry.Key}: {FormatValue(entry.Key, value, unsafeShowSecrets)}";
+
+    private static string EscapeControlCharacters(string value)
+    {
+        StringBuilder? builder = null;
+
+        for (var i = 0; i < value.Length; i++)
+        {
+            var ch = value[i];
+            var replacement = ch switch
+            {
+                '\r' => "\\r",
+                '\n' => "\\n",
+                '\t' => "\\t",
+                _ when char.IsControl(ch) => $"\\u{(int)ch:X4}",
+                _ => null
+            };
+
+            if (replacement is null)
+            {
+                builder?.Append(ch);
+
+                continue;
+            }
+
+            builder ??= new StringBuilder(value[..i]);
+            builder.Append(replacement);
+        }
+
+        return builder?.ToString() ?? value;
+    }
 }

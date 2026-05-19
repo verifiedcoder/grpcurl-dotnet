@@ -18,15 +18,15 @@ echo "Use --emit-defaults to include all fields, even those with default values.
 echo ""
 
 echo "--- Without --emit-defaults ---"
-echo "Command: grpcurl.net invoke --plaintext $SERVER testing.TestService/UnaryCall"
+echo "Command: grpcurl.net invoke --plaintext --max-time 10s $SERVER testing.TestService/UnaryCall"
 echo ""
-grpcurl_net invoke --plaintext $SERVER testing.TestService/UnaryCall
+grpcurl_net invoke --plaintext --max-time 10s $SERVER testing.TestService/UnaryCall
 
 echo ""
 echo "--- With --emit-defaults ---"
-echo "Command: grpcurl.net invoke --plaintext --emit-defaults $SERVER testing.TestService/UnaryCall"
+echo "Command: grpcurl.net invoke --plaintext --max-time 10s --emit-defaults $SERVER testing.TestService/UnaryCall"
 echo ""
-grpcurl_net invoke --plaintext --emit-defaults $SERVER testing.TestService/UnaryCall
+grpcurl_net invoke --plaintext --max-time 10s --emit-defaults $SERVER testing.TestService/UnaryCall
 
 echo ""
 echo "Notice the additional fields shown when --emit-defaults is used."

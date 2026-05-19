@@ -62,7 +62,7 @@ internal static class Program
                 await Console.Out.WriteLineAsync($"\n== {scenario.Name}");
                 await Console.Out.WriteLineAsync($"   $ grpcurl.net {string.Join(' ', scenario.Args)}");
 
-                var (exitCode, stdout, stderr) = await RunPublishedCli(publishedCli, scenario.Args).ConfigureAwait(false);
+                var (exitCode, stdout, stderr) = await RunPublishedCli(publishedCli, scenario.Args, scenario.Stdin).ConfigureAwait(false);
 
                 if (exitCode != 0)
                 {
@@ -146,6 +146,17 @@ internal static class Program
             return true;
         }),
         new("invoke-server-streaming", ["invoke", "--plaintext", "--max-time", "10s", "-d", "{\"responseParameters\":[{\"size\":4},{\"size\":4}]}", $"localhost:{plaintextPort}", "testing.TestService/StreamingOutputCall"], output => output.Split("payload").Length >= 3),
+        new(
+            "invoke-client-streaming-stdin",
+            ["invoke", "--plaintext", "--max-time", "10s", "--max-stdin-bytes", "1048576", "-d", "@", $"localhost:{plaintextPort}", "testing.TestService/StreamingInputCall"],
+            output =>
+            {
+                output.ShouldContain("aggregated");
+                output.ShouldContain("6");
+
+                return true;
+            },
+            "{\"payload\":{\"body\":\"YQ==\"}}\n{\"payload\":{\"body\":\"YmI=\"}}\n{\"payload\":{\"body\":\"Y2Nj\"}}\n"),
         new("invoke-json-envelope", ["invoke", "--plaintext", "--output", "json", "--max-time", "10s", "-d", "{}", $"localhost:{plaintextPort}", "testing.TestService/EmptyCall"], output =>
         {
             output.ShouldContain("\"kind\":\"message\"");
@@ -169,12 +180,13 @@ internal static class Program
         }
     }
 
-    private static async Task<(int ExitCode, string StdOut, string StdErr)> RunPublishedCli(string cliDll, IReadOnlyList<string> args)
+    private static async Task<(int ExitCode, string StdOut, string StdErr)> RunPublishedCli(string cliDll, IReadOnlyList<string> args, string? stdin)
     {
         var psi = new ProcessStartInfo("dotnet")
         {
             RedirectStandardOutput = true,
             RedirectStandardError = true,
+            RedirectStandardInput = stdin is not null,
             UseShellExecute = false,
             CreateNoWindow = true
         };
@@ -190,6 +202,12 @@ internal static class Program
 
         var stdoutTask = process.StandardOutput.ReadToEndAsync();
         var stderrTask = process.StandardError.ReadToEndAsync();
+
+        if (stdin is not null)
+        {
+            await process.StandardInput.WriteAsync(stdin).ConfigureAwait(false);
+            process.StandardInput.Close();
+        }
 
         await process.WaitForExitAsync().ConfigureAwait(false);
 
@@ -369,7 +387,7 @@ internal static class Program
     }
 }
 
-internal sealed record Scenario(string Name, IReadOnlyList<string> Args, Func<string, bool> Validator);
+internal sealed record Scenario(string Name, IReadOnlyList<string> Args, Func<string, bool> Validator, string? Stdin = null);
 
 internal static class StringAssert
 {

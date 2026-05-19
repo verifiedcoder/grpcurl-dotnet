@@ -250,7 +250,12 @@ public sealed class ProtosetExporterTests : IDisposable
 
         await File.WriteAllTextAsync(outputPath, "initial content", TestContext.Current.CancellationToken);
 
-        await ProtosetExporter.WriteProtosetAsync(source, outputPath, force: true, []);
+        await ProtosetExporter.WriteProtosetAsync(
+            source,
+            outputPath,
+            force: true,
+            [],
+            TestContext.Current.CancellationToken);
 
         var fileBytes = await File.ReadAllBytesAsync(outputPath, TestContext.Current.CancellationToken);
 

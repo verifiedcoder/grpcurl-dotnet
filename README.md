@@ -63,8 +63,8 @@ GrpCurl.Net is designed to be driven by AI agents and shell scripts without huma
 - **JSON output**: Pass `--output json`. `list`/`describe` emit one JSON envelope per call. `invoke` emits NDJSON: one `{"kind":"message","index":N,"message":{...}}` line per response.
 - **Errors on stderr**: All errors and progress chatter go to **stderr**. **stdout** carries only data. In `--output json` mode errors are a single JSON line on stderr (`{"kind":"error","category":"rpc|network|timeout|usage|schema|cancelled|internal", "exitCode":N, "message":"...", ...}`).
 - **Exit codes**: `0` success, `1` internal, `2` usage, `3` schema/file, `4` network, `5` timeout, `64+gRPC status` for RPC errors, `130` for Ctrl+C.
-- **Always set `--max-time`** on `invoke`. There is no built-in default deadline; without it a hung server can block forever.
-- **stdin**: `--data @` reads JSON from stdin. The CLI **refuses** to read from a TTY — pipe input or use inline `--data '{...}'`. For client/bidi streaming, supply a JSON array (`--data '[{...},{...}]'`) or concatenated objects.
+- **Always set `--max-time`** on reflection-backed `list`/`describe`, `invoke`, and `gql2grpc` in unattended scripts. There is no built-in default deadline; without it a hung server can block forever.
+- **stdin**: `--data @` reads JSON from stdin. The CLI **refuses** to read from a TTY — pipe input or use inline `--data '{...}'`. Stdin reads are capped at 16 MiB by default; use `--max-stdin-bytes <bytes>` to set an explicit numeric byte limit. For client/bidi streaming, supply a JSON array (`--data '[{...},{...}]'`) or concatenated objects.
 - **Headers**: `-H 'name: value'` may be repeated. Text values support `${VAR}` environment-variable expansion. Header names ending in `-bin` are base64-decoded and sent as binary metadata.
 - **Idempotent file outputs**: `--protoset-out` refuses to overwrite an existing file unless `--force` is set.
 

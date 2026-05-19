@@ -27,13 +27,15 @@ EOF
 
 echo "=== gql2grpc: Mapping file with nested request spread ==="
 echo ""
+echo "Mapping files are capped at 4 MiB before parsing."
+echo ""
 echo "Mapping file:"
 sed 's/^/    /' "$MAPPING"
 echo ""
-echo "Command: gql2grpc --plaintext --mapping $MAPPING $SERVER 'query { unaryCall(input: { payload: { body: \"aGVsbG8=\" } }) { payload { body } } }'"
+echo "Command: gql2grpc --plaintext --max-time 10s --mapping $MAPPING $SERVER 'query { unaryCall(input: { payload: { body: \"aGVsbG8=\" } }) { payload { body } } }'"
 echo ""
 
-gql2grpc_cli --plaintext --mapping "$MAPPING" $SERVER 'query { unaryCall(input: { payload: { body: "aGVsbG8=" } }) { payload { body } } }'
+gql2grpc_cli --plaintext --max-time 10s --mapping "$MAPPING" $SERVER 'query { unaryCall(input: { payload: { body: "aGVsbG8=" } }) { payload { body } } }'
 
 echo ""
 echo "=== Done ==="

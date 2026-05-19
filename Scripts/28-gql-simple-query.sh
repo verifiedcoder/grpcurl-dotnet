@@ -14,11 +14,12 @@ SERVER="localhost:9090"
 echo "=== gql2grpc: Simple reflection-based query ==="
 echo ""
 echo "No mapping file, no protoset. Convention resolves 'EmptyCall' -> testing.TestService/EmptyCall."
+echo "Uses --max-time to bound reflection discovery and the RPC in scripts."
 echo ""
-echo "Command: gql2grpc --plaintext --default-service testing.TestService $SERVER 'query { EmptyCall }'"
+echo "Command: gql2grpc --plaintext --max-time 10s --default-service testing.TestService $SERVER 'query { EmptyCall }'"
 echo ""
 
-gql2grpc_cli --plaintext --default-service testing.TestService $SERVER 'query { EmptyCall }'
+gql2grpc_cli --plaintext --max-time 10s --default-service testing.TestService $SERVER 'query { EmptyCall }'
 
 echo ""
 echo "=== Done ==="

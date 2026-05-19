@@ -19,7 +19,9 @@ internal static class ProtoFileEmitter
         bool force,
         CancellationToken cancellationToken)
     {
-        Directory.CreateDirectory(outputDirectory);
+        var outputRoot = Path.GetFullPath(outputDirectory);
+
+        Directory.CreateDirectory(outputRoot);
 
         var emittedFiles = new HashSet<string>(StringComparer.Ordinal);
 
@@ -33,7 +35,7 @@ internal static class ProtoFileEmitter
                 continue;
             }
 
-            await EmitFileAndDependenciesAsync(service.File, outputDirectory, force, emittedFiles, cancellationToken).ConfigureAwait(false);
+            await EmitFileAndDependenciesAsync(service.File, outputRoot, force, emittedFiles, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -54,7 +56,7 @@ internal static class ProtoFileEmitter
             await EmitFileAndDependenciesAsync(dep, outputDirectory, force, emitted, cancellationToken).ConfigureAwait(false);
         }
 
-        var targetPath = Path.Combine(outputDirectory, file.Name);
+        var targetPath = ResolveContainedPath(outputDirectory, file.Name);
         var targetDir = Path.GetDirectoryName(targetPath);
 
         if (!string.IsNullOrEmpty(targetDir))
@@ -62,7 +64,7 @@ internal static class ProtoFileEmitter
             Directory.CreateDirectory(targetDir);
         }
 
-        if (File.Exists(targetPath) && !force)
+        if (!force && File.Exists(targetPath))
         {
             throw new IOException(
                 $"Refusing to overwrite '{targetPath}'. Pass --force to allow overwriting.");
@@ -70,8 +72,62 @@ internal static class ProtoFileEmitter
 
         var content = EmitFile(file);
 
-        await File.WriteAllTextAsync(targetPath, content, cancellationToken).ConfigureAwait(false);
+        var mode = force ? FileMode.Create : FileMode.CreateNew;
+
+        await using var stream = new FileStream(targetPath, mode, FileAccess.Write, FileShare.None, 4096, useAsync: true);
+        await using var writer = new StreamWriter(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+        await writer.WriteAsync(content.AsMemory(), cancellationToken).ConfigureAwait(false);
     }
+
+    internal static string ResolveContainedPath(string outputDirectory, string descriptorName)
+    {
+        if (string.IsNullOrWhiteSpace(descriptorName))
+        {
+            throw new InvalidDataException("Descriptor file name cannot be empty.");
+        }
+
+        if (IsRootedOrDriveQualified(descriptorName))
+        {
+            throw new InvalidDataException($"Descriptor file name '{descriptorName}' must be relative.");
+        }
+
+        var segments = descriptorName.Split(['/', '\\'], StringSplitOptions.None);
+
+        if (segments.Any(segment => string.IsNullOrEmpty(segment) || segment is "." or ".."))
+        {
+            throw new InvalidDataException($"Descriptor file name '{descriptorName}' contains an unsafe path segment.");
+        }
+
+        if (segments.Any(segment => segment.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0))
+        {
+            throw new InvalidDataException($"Descriptor file name '{descriptorName}' contains invalid path characters.");
+        }
+
+        var root = Path.GetFullPath(outputDirectory);
+        var targetPath = segments.Aggregate(root, Path.Combine);
+        var fullTargetPath = Path.GetFullPath(targetPath);
+        var rootWithSeparator = EnsureTrailingSeparator(root);
+        var comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+
+        if (!fullTargetPath.StartsWith(rootWithSeparator, comparison))
+        {
+            throw new InvalidDataException($"Descriptor file name '{descriptorName}' resolves outside the output directory.");
+        }
+
+        return fullTargetPath;
+    }
+
+    private static bool IsRootedOrDriveQualified(string descriptorName)
+        => Path.IsPathRooted(descriptorName)
+           || descriptorName.StartsWith('/')
+           || descriptorName.StartsWith('\\')
+           || (descriptorName.Length >= 2 && char.IsAsciiLetter(descriptorName[0]) && descriptorName[1] == ':');
+
+    private static string EnsureTrailingSeparator(string path)
+        => Path.EndsInDirectorySeparator(path) ? path : path + Path.DirectorySeparatorChar;
 
     internal static string EmitFile(FileDescriptor file)
     {

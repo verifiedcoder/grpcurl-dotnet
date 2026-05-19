@@ -158,13 +158,12 @@ public sealed class InvokeCommandHandlerHelperTests
 
         Console.SetError(writer);
 
-        // Act
         try
-
-        // Assert
         {
+            // Act
             InvokeCommandHandler.WriteVerboseMethodInfo(unaryMethod, metadata, unsafeShowSecrets: true);
 
+            // Assert
             var output = writer.ToString();
 
             output.ShouldContain("authorization: Bearer token123");
@@ -309,6 +308,73 @@ public sealed class InvokeCommandHandlerHelperTests
         }
     }
 
+    [Fact]
+    public void WriteVerboseResponseHeaders_SensitiveMetadata_RedactsByDefault()
+    {
+        // Arrange
+        var headers = new Metadata
+        {
+            { "set-cookie", "session=secret" },
+            { "x-request-id", "abc-123" }
+        };
+
+        var originalError = Console.Error;
+
+        using var writer = new StringWriter();
+
+        Console.SetError(writer);
+
+        try
+        {
+            // Act
+            InvokeCommandHandler.WriteVerboseResponseHeaders(headers);
+
+            // Assert
+            var output = writer.ToString();
+
+            output.ShouldContain("Response headers received:");
+            output.ShouldContain("set-cookie: [REDACTED]");
+            output.ShouldContain("x-request-id: abc-123");
+            output.ShouldNotContain("session=secret");
+        }
+        finally
+        {
+            Console.SetError(originalError);
+        }
+    }
+
+    [Fact]
+    public void WriteVerboseResponseHeaders_WithUnsafeShowSecrets_RevealsSensitiveMetadata()
+    {
+        // Arrange
+        var headers = new Metadata
+        {
+            { "set-cookie", "session=secret" }
+        };
+
+        var originalError = Console.Error;
+
+        using var writer = new StringWriter();
+
+        Console.SetError(writer);
+
+        try
+        {
+            // Act
+            InvokeCommandHandler.WriteVerboseResponseHeaders(headers, unsafeShowSecrets: true);
+
+            // Assert
+            var output = writer.ToString();
+
+            output.ShouldContain("set-cookie: session=secret");
+            output.ShouldNotContain("[REDACTED]");
+        }
+        finally
+        {
+            Console.SetError(originalError);
+        }
+    }
+
     #endregion
 
     #region WriteVerboseResponseTrailers Tests
@@ -367,6 +433,41 @@ public sealed class InvokeCommandHandlerHelperTests
             output.ShouldContain("Response trailers received:");
             output.ShouldContain("grpc-status: 0");
             output.ShouldContain("grpc-message: OK");
+        }
+        finally
+        {
+            Console.SetError(originalError);
+        }
+    }
+
+    [Fact]
+    public void WriteVerboseResponseTrailers_SensitiveMetadata_RedactsByDefault()
+    {
+        // Arrange
+        var trailers = new Metadata
+        {
+            { "x-auth-token", "secret-token" },
+            { "grpc-status", "0" }
+        };
+
+        var originalError = Console.Error;
+
+        using var writer = new StringWriter();
+
+        Console.SetError(writer);
+
+        try
+        {
+            // Act
+            InvokeCommandHandler.WriteVerboseResponseTrailers(trailers);
+
+            // Assert
+            var output = writer.ToString();
+
+            output.ShouldContain("Response trailers received:");
+            output.ShouldContain("x-auth-token: [REDACTED]");
+            output.ShouldContain("grpc-status: 0");
+            output.ShouldNotContain("secret-token");
         }
         finally
         {

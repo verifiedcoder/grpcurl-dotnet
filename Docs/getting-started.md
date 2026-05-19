@@ -138,7 +138,7 @@ PowerShell handles quotes in native command arguments differently from Bash. If 
 ```powershell
 @'
 {"payload": {"body": "SGVsbG8gV29ybGQ="}}
-'@ | grpcurl.net invoke --plaintext -d '@' localhost:9090 testing.TestService/UnaryCall
+'@ | grpcurl.net invoke --plaintext --max-stdin-bytes 1048576 -d '@' localhost:9090 testing.TestService/UnaryCall
 ```
 
 ## Common Options
@@ -153,13 +153,16 @@ PowerShell handles quotes in native command arguments differently from Bash. If 
 | `--cert <path>` | Client certificate for mTLS |
 | `--key <path>` | Client private key for mTLS |
 | `--cert-password <password>` | Password for PKCS12 client certificate |
+| `--connect-timeout <duration>` | Per-attempt TCP/TLS connection timeout |
+| `--max-time <duration>` | Maximum total operation time. Use this for unattended `list`, `describe`, `invoke`, and `gql2grpc` calls. |
 
 ### Output Options
 
 | Option | Description |
 |--------|-------------|
-| `-v`, `--verbose` | Show verbose output |
+| `-v`, `--verbose` | Show verbose output. Sensitive metadata is redacted by default. |
 | `--vv`, `--very-verbose` | Show detailed timing information |
+| `--unsafe-show-secrets` | Disable verbose metadata redaction. Use only for trusted terminals or logs. |
 | `--emit-defaults` | Include default values in JSON output |
 
 ### Request Options
@@ -167,7 +170,8 @@ PowerShell handles quotes in native command arguments differently from Bash. If 
 | Option | Description |
 |--------|-------------|
 | `-d <json>` | Request data as JSON |
-| `-d @` | Read request data from stdin |
+| `-d @` | Read request data from stdin. Default maximum: 16 MiB. |
+| `--max-stdin-bytes <bytes>` | Maximum bytes accepted from stdin when using `-d @`; use a numeric byte count such as `1048576`. |
 | `-H <header>` | Add custom header (format: `name: value`) |
 
 ### GraphQL bridge (gql2grpc)

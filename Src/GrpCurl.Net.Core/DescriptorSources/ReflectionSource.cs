@@ -14,11 +14,17 @@ namespace GrpCurl.Net.DescriptorSources;
 /// <param name="channel">The gRPC channel to use for server reflection.</param>
 /// <param name="metadata">Optional metadata to send with reflection requests.</param>
 /// <param name="ownsChannel">If true, the channel will be disposed when this object is disposed. Default is false.</param>
-public sealed class ReflectionSource(GrpcChannel channel, Metadata? metadata = null, bool ownsChannel = false)
+/// <param name="options">Optional descriptor resource limits.</param>
+public sealed class ReflectionSource(
+    GrpcChannel channel,
+    Metadata? metadata = null,
+    bool ownsChannel = false,
+    DescriptorSourceOptions? options = null)
     : IDescriptorSource, IDisposable
 {
     private readonly GrpcChannel _channel = channel ?? throw new ArgumentNullException(nameof(channel));
     private readonly ServerReflection.ServerReflectionClient _client = new(channel);
+    private readonly DescriptorSourceOptions _options = ValidateOptions(options ?? DescriptorSourceOptions.Default);
     private readonly ConcurrentDictionary<string, FileDescriptor> _fileDescriptors = new();
     private readonly ConcurrentDictionary<string, IDescriptor> _symbolCache = new();
     private bool _servicesLoaded;
@@ -232,20 +238,36 @@ public sealed class ReflectionSource(GrpcChannel channel, Metadata? metadata = n
 
         // Process file descriptors (includes dependencies)
         var unresolved = new Dictionary<string, FileDescriptorProto>();
+        long totalDescriptorBytes = 0;
 
         foreach (var fileDescriptorBytes in response.FileDescriptorResponse.FileDescriptorProto)
         {
+            totalDescriptorBytes += fileDescriptorBytes.Length;
+
+            if (totalDescriptorBytes > _options.MaxReflectionDescriptorBytes)
+            {
+                throw new InvalidDataException(
+                    $"Reflection descriptor payload exceeded the maximum of {_options.MaxReflectionDescriptorBytes:N0} bytes.");
+            }
+
             var fileProto = FileDescriptorProto.Parser.ParseFrom(fileDescriptorBytes);
 
             unresolved[fileProto.Name] = fileProto;
         }
+
+        var totalFileDescriptors = _fileDescriptors.Keys
+            .Concat(unresolved.Keys)
+            .Distinct(StringComparer.Ordinal)
+            .Count();
+
+        EnsureFileDescriptorCount(totalFileDescriptors);
 
         // Resolve all file descriptors
         var resolved = new Dictionary<string, FileDescriptor>();
 
         foreach (var fileProto in unresolved.Values.Where(fileProto => !_fileDescriptors.ContainsKey(fileProto.Name)))
         {
-            ResolveFileDescriptor(fileProto.Name, unresolved, resolved);
+            ResolveFileDescriptor(fileProto.Name, unresolved, resolved, []);
         }
 
         // Cache newly resolved descriptors
@@ -272,7 +294,8 @@ public sealed class ReflectionSource(GrpcChannel channel, Metadata? metadata = n
     private FileDescriptor ResolveFileDescriptor(
         string fileName,
         Dictionary<string, FileDescriptorProto> unresolved,
-        Dictionary<string, FileDescriptor> resolved)
+        Dictionary<string, FileDescriptor> resolved,
+        HashSet<string> visitedInCurrentPath)
     {
         // Check if already resolved in this session
         if (resolved.TryGetValue(fileName, out var existing))
@@ -288,6 +311,19 @@ public sealed class ReflectionSource(GrpcChannel channel, Metadata? metadata = n
             return cached;
         }
 
+        if (visitedInCurrentPath.Contains(fileName))
+        {
+            var cycle = string.Join(" -> ", visitedInCurrentPath) + " -> " + fileName;
+
+            throw new InvalidOperationException($"Circular dependency detected: {cycle}");
+        }
+
+        if (visitedInCurrentPath.Count >= _options.MaxDependencyDepth)
+        {
+            throw new InvalidDataException(
+                $"Descriptor dependency depth exceeded the maximum of {_options.MaxDependencyDepth} while resolving '{fileName}'.");
+        }
+
         if (!unresolved.TryGetValue(fileName, out var fileProto))
         {
             // Try well-known types as fallback - server reflection often doesn't include these
@@ -301,55 +337,64 @@ public sealed class ReflectionSource(GrpcChannel channel, Metadata? metadata = n
             return wellKnownDescriptor;
         }
 
-        // Resolve dependencies first
-        var dependencies = fileProto.Dependency.Select(dependency => ResolveFileDescriptor(dependency, unresolved, resolved)).ToList();
+        visitedInCurrentPath.Add(fileName);
 
-        // Collect ALL transitive dependency ByteStrings in dependency order
-        // BuildFromByteStrings needs all dependencies present, not just direct ones
-        var byteStrings = new List<ByteString>();
-        var included = new HashSet<string>();
-
-        foreach (var dep in dependencies)
+        try
         {
-            AddDependencyBytes(dep);
+            // Resolve dependencies first
+            var dependencies = fileProto.Dependency.Select(dependency => ResolveFileDescriptor(dependency, unresolved, resolved, visitedInCurrentPath)).ToList();
+
+            // Collect ALL transitive dependency ByteStrings in dependency order
+            // BuildFromByteStrings needs all dependencies present, not just direct ones
+            var byteStrings = new List<ByteString>();
+            var included = new HashSet<string>();
+
+            foreach (var dep in dependencies)
+            {
+                AddDependencyBytes(dep);
+            }
+
+            // Add current file bytes
+            using (var stream = new MemoryStream())
+            {
+                using (var output = new CodedOutputStream(stream, true))
+                {
+                    fileProto.WriteTo(output);
+                }
+
+                byteStrings.Add(ByteString.CopyFrom(stream.ToArray()));
+            }
+
+            // BuildFromByteStrings returns all descriptors; we want the last one (our file)
+            var results = FileDescriptor.BuildFromByteStrings(byteStrings);
+            var fileDescriptor = results[^1];
+
+            resolved[fileName] = fileDescriptor;
+
+            return fileDescriptor;
+
+            void AddDependencyBytes(FileDescriptor dep)
+            {
+                if (included.Contains(dep.Name))
+                {
+                    return;
+                }
+
+                // Add transitive dependencies first (depth-first)
+                foreach (var transitiveDep in dep.Dependencies)
+                {
+                    AddDependencyBytes(transitiveDep);
+                }
+
+                // Then add this dependency
+                byteStrings.Add(dep.SerializedData);
+
+                included.Add(dep.Name);
+            }
         }
-
-        // Add current file bytes
-        using (var stream = new MemoryStream())
+        finally
         {
-            using (var output = new CodedOutputStream(stream, true))
-            {
-                fileProto.WriteTo(output);
-            }
-
-            byteStrings.Add(ByteString.CopyFrom(stream.ToArray()));
-        }
-
-        // BuildFromByteStrings returns all descriptors; we want the last one (our file)
-        var results = FileDescriptor.BuildFromByteStrings(byteStrings);
-        var fileDescriptor = results[^1];
-
-        resolved[fileName] = fileDescriptor;
-
-        return fileDescriptor;
-
-        void AddDependencyBytes(FileDescriptor dep)
-        {
-            if (included.Contains(dep.Name))
-            {
-                return;
-            }
-
-            // Add transitive dependencies first (depth-first)
-            foreach (var transitiveDep in dep.Dependencies)
-            {
-                AddDependencyBytes(transitiveDep);
-            }
-
-            // Then add this dependency
-            byteStrings.Add(dep.SerializedData);
-
-            included.Add(dep.Name);
+            visitedInCurrentPath.Remove(fileName);
         }
     }
 
@@ -362,10 +407,14 @@ public sealed class ReflectionSource(GrpcChannel channel, Metadata? metadata = n
         {
             _symbolCache[service.FullName] = service;
 
+            EnsureSymbolCount();
+
             // Cache methods
             foreach (var method in service.Methods)
             {
                 _symbolCache[method.FullName] = method;
+
+                EnsureSymbolCount();
             }
         }
 
@@ -383,6 +432,8 @@ public sealed class ReflectionSource(GrpcChannel channel, Metadata? metadata = n
             foreach (var value in enumType.Values)
             {
                 _symbolCache[value.FullName] = value;
+
+                EnsureSymbolCount();
             }
         }
     }
@@ -390,6 +441,8 @@ public sealed class ReflectionSource(GrpcChannel channel, Metadata? metadata = n
     private void CacheMessageTypeRecursive(MessageDescriptor messageType)
     {
         _symbolCache[messageType.FullName] = messageType;
+
+        EnsureSymbolCount();
 
         foreach (var nested in messageType.NestedTypes)
         {
@@ -400,20 +453,53 @@ public sealed class ReflectionSource(GrpcChannel channel, Metadata? metadata = n
         {
             _symbolCache[enumType.FullName] = enumType;
 
+            EnsureSymbolCount();
+
             foreach (var value in enumType.Values)
             {
                 _symbolCache[value.FullName] = value;
+
+                EnsureSymbolCount();
             }
         }
 
         foreach (var field in messageType.Fields.InDeclarationOrder())
         {
             _symbolCache[field.FullName] = field;
+
+            EnsureSymbolCount();
         }
 
         foreach (var oneof in messageType.Oneofs)
         {
             _symbolCache[oneof.FullName] = oneof;
+
+            EnsureSymbolCount();
         }
+    }
+
+    private void EnsureFileDescriptorCount(int count)
+    {
+        if (count > _options.MaxFileDescriptors)
+        {
+            throw new InvalidDataException(
+                $"File descriptor count {count:N0} exceeds the maximum of {_options.MaxFileDescriptors:N0}.");
+        }
+    }
+
+    private void EnsureSymbolCount()
+    {
+        if (_symbolCache.Count > _options.MaxSymbols)
+        {
+            throw new InvalidDataException(
+                $"Descriptor symbol count exceeded the maximum of {_options.MaxSymbols}.");
+        }
+    }
+
+    private static DescriptorSourceOptions ValidateOptions(DescriptorSourceOptions options)
+    {
+        options.ThrowIfInvalid();
+
+        return options;
     }
 }

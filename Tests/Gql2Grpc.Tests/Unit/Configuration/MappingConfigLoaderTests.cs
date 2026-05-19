@@ -1,5 +1,6 @@
 using Gql2Grpc.Configuration;
 using Gql2Grpc.GraphQL;
+using GrpCurl.Net.Utilities;
 
 namespace Gql2Grpc.Tests.Unit.Configuration;
 
@@ -130,6 +131,29 @@ operations:
 
         // Assert
         config.ShouldBeSameAs(MappingConfig.Empty);
+    }
+
+    [Fact]
+    public async Task Oversized_mapping_file_is_rejected()
+    {
+        // Arrange
+        var contents = new string('a', (int)InputFileGuard.MaxMappingConfigBytes + 1);
+        var path = WriteTemp(contents, ".yaml");
+
+        try
+        {
+            // Act
+            var exception = await Should.ThrowAsync<InvalidDataException>(async () =>
+                await MappingConfigLoader.LoadAsync(path, TestContext.Current.CancellationToken));
+
+            // Assert
+            exception.Message.ShouldContain("Mapping configuration file");
+            exception.Message.ShouldContain("maximum allowed");
+        }
+        finally
+        {
+            File.Delete(path);
+        }
     }
 
     private static string WriteTemp(string contents, string ext)

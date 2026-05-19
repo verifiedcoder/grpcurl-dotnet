@@ -15,15 +15,27 @@ echo "=== Timeout Options ==="
 echo ""
 echo "GrpCurl.Net supports two timeout options:"
 echo "  --connect-timeout : Maximum time to establish connection (default: 10s)"
-echo "  --max-time        : Maximum total operation time (sets gRPC deadline)"
+echo "  --max-time        : Maximum total operation time for list, describe, invoke, and gql2grpc"
 echo ""
 echo "Supported formats: '10s', '500ms', '1m', '1h'"
 echo ""
 
-echo "--- Connect timeout (5 seconds) ---"
-echo "Command: grpcurl.net invoke --plaintext --connect-timeout 5s $SERVER testing.TestService/EmptyCall"
+echo "--- Discovery timeout for reflection-backed list (10 seconds) ---"
+echo "Command: grpcurl.net list --plaintext --max-time 10s $SERVER"
 echo ""
-grpcurl_net invoke --plaintext --connect-timeout 5s $SERVER testing.TestService/EmptyCall
+grpcurl_net list --plaintext --max-time 10s $SERVER
+
+echo ""
+echo "--- Discovery timeout for describe (10 seconds) ---"
+echo "Command: grpcurl.net describe --plaintext --max-time 10s $SERVER testing.TestService"
+echo ""
+grpcurl_net describe --plaintext --max-time 10s $SERVER testing.TestService
+
+echo ""
+echo "--- Connect timeout (5 seconds) ---"
+echo "Command: grpcurl.net invoke --plaintext --connect-timeout 5s --max-time 30s $SERVER testing.TestService/EmptyCall"
+echo ""
+grpcurl_net invoke --plaintext --connect-timeout 5s --max-time 30s $SERVER testing.TestService/EmptyCall
 
 echo ""
 echo "--- Max operation time (30 seconds) ---"

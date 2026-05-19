@@ -10,6 +10,12 @@ This page provides practical examples for common GrpCurl.Net use cases.
 grpcurl.net list --plaintext localhost:9090
 ```
 
+For unattended scripts, bound reflection-backed discovery:
+
+```bash
+grpcurl.net list --plaintext --max-time 10s localhost:9090
+```
+
 ### List Services with Verbose Output
 
 ```bash
@@ -137,7 +143,7 @@ Send multiple messages, receive one response:
 echo '{"payload": {"body": "AAAA"}}
 {"payload": {"body": "BBBB"}}
 {"payload": {"body": "CCCC"}}' | \
-grpcurl.net invoke --plaintext -d @ localhost:9090 testing.TestService/StreamingInputCall
+grpcurl.net invoke --plaintext --max-stdin-bytes 1048576 -d @ localhost:9090 testing.TestService/StreamingInputCall
 ```
 
 ### Client Streaming with Concatenated JSON
@@ -159,7 +165,7 @@ Send and receive multiple messages:
 ```bash
 echo '{"response_parameters": [{"size": 10}]}
 {"response_parameters": [{"size": 20}]}' | \
-grpcurl.net invoke --plaintext -d @ localhost:9090 testing.TestService/FullDuplexCall
+grpcurl.net invoke --plaintext --max-stdin-bytes 1048576 -d @ localhost:9090 testing.TestService/FullDuplexCall
 ```
 
 ---
@@ -214,8 +220,10 @@ protoc --descriptor_set_out=service.protoset \
 
 Or export from a running server:
 ```bash
-grpcurl.net list --plaintext --protoset-out service.protoset localhost:9090
+grpcurl.net list --plaintext --max-time 10s --protoset-out service.protoset localhost:9090
 ```
+
+Local protoset files are capped at 64 MiB each before they are read. Reflection descriptor responses are capped at 16 MiB by default, and `--protoset-out` refuses to overwrite an existing file unless you pass `--force`.
 
 ### List Services from Protoset (Offline)
 
@@ -240,16 +248,18 @@ grpcurl.net invoke --plaintext \
 
 ```bash
 grpcurl.net invoke --plaintext -v \
+  -H "Authorization: Bearer demo-token" \
   -d '{"payload": {"body": "SGVsbG8="}}' \
   localhost:9090 testing.TestService/UnaryCall
 ```
 
-Verbose output includes method descriptor, request metadata, response headers/trailers:
+Verbose output includes method descriptor, request metadata, response headers/trailers. Sensitive metadata values such as `authorization`, cookies, token-like headers, and `*-bin` headers are redacted by default; use `--unsafe-show-secrets` only when the terminal or log destination is trusted:
 ```
 Resolved method descriptor:
 rpc UnaryCall ( .testing.SimpleRequest ) returns ( .testing.SimpleResponse );
 
 Request metadata to send:
+authorization: [REDACTED]
 user-agent: grpcurl-dotnet/1.0.0
 
 Response headers received:
@@ -353,6 +363,25 @@ grpcurl.net invoke --plaintext \
   -d '{}' \
   localhost:9090 testing.TestService/LongRunningOperation
 ```
+
+`--max-time` also bounds reflection-backed `list` and `describe` operations:
+
+```bash
+grpcurl.net list --plaintext --max-time 10s localhost:9090
+grpcurl.net describe --plaintext --max-time 10s localhost:9090 testing.TestService
+```
+
+### Stdin Size Limit
+
+```bash
+echo '{"payload": {"body": "AAAA"}}' | \
+grpcurl.net invoke --plaintext \
+  --max-stdin-bytes 1048576 \
+  -d @ \
+  localhost:9090 testing.TestService/StreamingInputCall
+```
+
+`-d @` reads at most 16 MiB from stdin by default. Use `--max-stdin-bytes <bytes>` to set a smaller or explicitly documented numeric byte budget for scripts.
 
 ### Message Size Limits
 

@@ -29,7 +29,7 @@ scenario, asserts on exit code + stdout/stderr, and tears down the test server. 
 exits non-zero if any scenario fails. CI invokes it on every OS in the matrix.
 
 Scenarios cover: `list` services and methods, `describe`, unary/server-streaming/JSON
-envelope `invoke`, binary `-bin` metadata, and the drop-in upstream-grpcurl flag shape.
+envelope `invoke`, binary `-bin` metadata, bounded stdin, and the drop-in upstream-grpcurl flag shape.
 The numbered Bash demos below are broader teaching examples for manual exploration.
 
 ## Bash feature demos
@@ -76,7 +76,7 @@ bash Scripts/08-invoke-unary-call.sh
 | 17-reflect-vs-rpc-headers.sh | Differentiate reflection vs RPC headers |
 | 18-using-protoset.sh | Use protoset file instead of reflection |
 | 19-export-protoset.sh | Export FileDescriptorSet to file |
-| 20-timeout-options.sh | Connection and operation timeouts |
+| 20-timeout-options.sh | Connection and operation timeouts for discovery and invocation |
 | 21-message-size-limits.sh | Control max message sizes |
 | 22-error-handling.sh | Handle gRPC errors gracefully |
 | 23-allow-unknown-fields.sh | Handle unknown fields in JSON |
@@ -84,7 +84,7 @@ bash Scripts/08-invoke-unary-call.sh
 | 25-user-agent.sh | Set custom User-Agent header |
 | **Comprehensive** | |
 | 26-all-features-demo.sh | Combined demo of multiple features |
-| 27-concatenated-json.sh | Concatenated JSON input for streaming methods |
+| 27-concatenated-json.sh | Concatenated JSON and bounded stdin input for streaming methods |
 | **Gql2Grpc (GraphQL bridge)** | |
 | 28-gql-simple-query.sh | Simple reflection-based GraphQL query |
 | 29-gql-mapping-file.sh | Query with a mapping file (nested request shape) |
@@ -131,3 +131,7 @@ prefer the cross-platform ValidationRunner.
 
 **protoc not found** - Some demos use `--proto` which needs `protoc` on PATH. Install
 via `apt install protobuf-compiler`, `brew install protobuf`, or `choco install protoc`.
+
+**Scripts reading stdin** - `grpcurl.net invoke -d @` accepts up to 16 MiB by default.
+Use `--max-stdin-bytes <bytes>` in automation when you want a smaller or explicitly
+documented numeric byte budget.

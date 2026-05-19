@@ -1,3 +1,4 @@
+using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using GrpCurl.Net.DescriptorSources;
 
@@ -86,6 +87,72 @@ public sealed class ProtosetSourceTests
         // Assert
         await Should.ThrowAsync<TaskCanceledException>(() =>
             ProtosetSource.LoadFromFileAsync(_testProtosetPath, cts.Token));
+    }
+
+    [Fact]
+    public async Task LoadFromFileAsync_FileExceedsConfiguredLimit_ThrowsInvalidDataException()
+    {
+        // Arrange
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".protoset");
+
+        await File.WriteAllBytesAsync(path, [1, 2], TestContext.Current.CancellationToken);
+
+        var options = DescriptorSourceOptions.Default with
+        {
+            MaxProtosetFileBytes = 1
+        };
+
+        try
+        {
+            // Act
+            var exception = await Should.ThrowAsync<InvalidDataException>(() =>
+                ProtosetSource.LoadFromFileAsync(path, options, TestContext.Current.CancellationToken));
+
+            // Assert
+            exception.Message.ShouldContain("Protoset file");
+            exception.Message.ShouldContain("maximum allowed");
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
+    public async Task LoadFromFileAsync_FileDescriptorCountExceedsConfiguredLimit_ThrowsInvalidDataException()
+    {
+        // Arrange
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".protoset");
+        var descriptorSet = new FileDescriptorSet
+        {
+            File =
+            {
+                new FileDescriptorProto { Name = "a.proto" },
+                new FileDescriptorProto { Name = "b.proto" }
+            }
+        };
+
+        await File.WriteAllBytesAsync(path, descriptorSet.ToByteArray(), TestContext.Current.CancellationToken);
+
+        var options = DescriptorSourceOptions.Default with
+        {
+            MaxFileDescriptors = 1
+        };
+
+        try
+        {
+            // Act
+            var exception = await Should.ThrowAsync<InvalidDataException>(() =>
+                ProtosetSource.LoadFromFileAsync(path, options, TestContext.Current.CancellationToken));
+
+            // Assert
+            exception.Message.ShouldContain("File descriptor count");
+            exception.Message.ShouldContain("exceeds");
+        }
+        finally
+        {
+            File.Delete(path);
+        }
     }
 
     #endregion

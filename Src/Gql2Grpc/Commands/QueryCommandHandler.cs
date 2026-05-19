@@ -231,7 +231,12 @@ internal static class QueryCommandHandler
 
         var variablesFile = cli.VariablesFile is null
             ? null
-            : VariableCoercer.ParseVariablesFile(await File.ReadAllTextAsync(cli.VariablesFile, operationToken).ConfigureAwait(false));
+            : VariableCoercer.ParseVariablesFile(
+                await InputFileGuard.ReadAllTextAsync(
+                    cli.VariablesFile,
+                    InputFileGuard.MaxGraphQlVariablesBytes,
+                    "GraphQL variables file",
+                    operationToken).ConfigureAwait(false));
 
         var cliVars = ParseCliVariables(cli.Variables);
         var coercedVariables = VariableCoercer.Coerce(operation.VariableDefinitions, cliVars, variablesFile);
@@ -308,7 +313,7 @@ internal static class QueryCommandHandler
         await ProtosetExporter.WriteProtosetAsync(
             descriptorBundle.Source,
             cli.ProtosetOut,
-            cli.Force, []).ConfigureAwait(false);
+            cli.Force, [], operationToken).ConfigureAwait(false);
 
         logger.Verbose($"Wrote FileDescriptorSet to {cli.ProtosetOut}");
 
@@ -383,7 +388,11 @@ internal static class QueryCommandHandler
     {
         if (!string.IsNullOrEmpty(cli.QueryFile))
         {
-            return await File.ReadAllTextAsync(cli.QueryFile, cancellationToken).ConfigureAwait(false);
+            return await InputFileGuard.ReadAllTextAsync(
+                cli.QueryFile,
+                InputFileGuard.MaxGraphQlDocumentBytes,
+                "GraphQL document file",
+                cancellationToken).ConfigureAwait(false);
         }
 
         return !string.IsNullOrEmpty(cli.QueryInline)

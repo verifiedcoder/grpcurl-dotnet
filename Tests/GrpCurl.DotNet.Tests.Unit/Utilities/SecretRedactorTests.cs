@@ -18,17 +18,6 @@ public sealed class SecretRedactorTests
     [InlineData("x-access-token")]
     [InlineData("x-csrf-token")]
     [InlineData("x-amz-security-token")]
-    public void ShouldRedact_AlwaysSensitiveHeaders_ReturnsTrue(string headerName)
-    {
-        // Arrange
-
-        // Assert
-
-        // Act
-        SecretRedactor.ShouldRedact(headerName).ShouldBeTrue();
-    }
-
-    [Theory]
     [InlineData("x-tenant-secret")]
     [InlineData("custom-api-key")]
     [InlineData("X-Service-Token")]
@@ -38,28 +27,18 @@ public sealed class SecretRedactorTests
     [InlineData("oauth-nonce")]
     [InlineData("user-jwt")]
     [InlineData("user-password")]
-    public void ShouldRedact_SensitiveSuffix_ReturnsTrue(string headerName)
-    {
-        // Arrange
-
-        // Assert
-
-        // Act
-        SecretRedactor.ShouldRedact(headerName).ShouldBeTrue();
-    }
-
-    [Theory]
     [InlineData("trace-context-bin")]
     [InlineData("grpc-status-details-bin")]
     [InlineData("custom-metadata-bin")]
-    public void ShouldRedact_BinaryMetadata_ReturnsTrue(string headerName)
+    public void ShouldRedact_SensitiveHeaders_ReturnsTrue(string headerName)
     {
         // Arrange
 
-        // Assert
-
         // Act
-        SecretRedactor.ShouldRedact(headerName).ShouldBeTrue();
+        var result = SecretRedactor.ShouldRedact(headerName);
+
+        // Assert
+        result.ShouldBeTrue();
     }
 
     [Theory]
@@ -74,10 +53,11 @@ public sealed class SecretRedactorTests
     {
         // Arrange
 
-        // Assert
-
         // Act
-        SecretRedactor.ShouldRedact(headerName).ShouldBeFalse();
+        var result = SecretRedactor.ShouldRedact(headerName);
+
+        // Assert
+        result.ShouldBeFalse();
     }
 
     [Fact]
@@ -85,11 +65,13 @@ public sealed class SecretRedactorTests
     {
         // Arrange
 
-        // Assert
-
         // Act
-        SecretRedactor.ShouldRedact(null!).ShouldBeFalse();
-        SecretRedactor.ShouldRedact(string.Empty).ShouldBeFalse();
+        var nullResult = SecretRedactor.ShouldRedact(null!);
+        var emptyResult = SecretRedactor.ShouldRedact(string.Empty);
+
+        // Assert
+        nullResult.ShouldBeFalse();
+        emptyResult.ShouldBeFalse();
     }
 
     [Fact]
@@ -126,6 +108,32 @@ public sealed class SecretRedactorTests
 
         // Assert
         result.ShouldBe("grpcurl.net/1.0");
+    }
+
+    [Fact]
+    public void FormatValue_NonSensitiveHeaderWithControlCharacters_ReturnsEscapedValue()
+    {
+        // Arrange
+        const string value = "line1\r\nline2\t\u001B";
+
+        // Act
+        var result = SecretRedactor.FormatValue("x-debug", value, unsafeShowSecrets: false);
+
+        // Assert
+        result.ShouldBe("line1\\r\\nline2\\t\\u001B");
+    }
+
+    [Fact]
+    public void FormatValue_SensitiveHeaderWithUnsafeShowSecrets_ReturnsEscapedValue()
+    {
+        // Arrange
+        const string value = "secret\nsecond-line";
+
+        // Act
+        var result = SecretRedactor.FormatValue("authorization", value, unsafeShowSecrets: true);
+
+        // Assert
+        result.ShouldBe("secret\\nsecond-line");
     }
 
     [Fact]

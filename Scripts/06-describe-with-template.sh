@@ -18,15 +18,15 @@ echo "initialized to their default values. Useful for creating request payloads.
 echo ""
 
 echo "--- testing.SimpleRequest Template ---"
-echo "Command: grpcurl.net describe --plaintext --msg-template $SERVER testing.SimpleRequest"
+echo "Command: grpcurl.net describe --plaintext --max-time 10s --msg-template $SERVER testing.SimpleRequest"
 echo ""
-grpcurl_net describe --plaintext --msg-template $SERVER testing.SimpleRequest
+grpcurl_net describe --plaintext --max-time 10s --msg-template $SERVER testing.SimpleRequest
 
 echo ""
 echo "--- testing.StreamingOutputCallRequest Template ---"
-echo "Command: grpcurl.net describe --plaintext --msg-template $SERVER testing.StreamingOutputCallRequest"
+echo "Command: grpcurl.net describe --plaintext --max-time 10s --msg-template $SERVER testing.StreamingOutputCallRequest"
 echo ""
-grpcurl_net describe --plaintext --msg-template $SERVER testing.StreamingOutputCallRequest
+grpcurl_net describe --plaintext --max-time 10s --msg-template $SERVER testing.StreamingOutputCallRequest
 
 echo ""
 echo "=== Done ==="

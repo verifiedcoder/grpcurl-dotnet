@@ -8,6 +8,7 @@ using GrpCurl.Net.Output;
 using GrpCurl.Net.Utilities;
 using Spectre.Console;
 using System.CommandLine;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
@@ -16,6 +17,8 @@ namespace GrpCurl.Net.Commands;
 
 internal static class InvokeCommandHandler
 {
+    internal const long DefaultMaxStdinBytes = 16L * 1024 * 1024;
+
     public static Command Create()
     {
         var addressArg = new Argument<string>("address")
@@ -289,6 +292,7 @@ internal static class InvokeCommandHandler
             var importPaths = parseResult.GetValue(importPathOpt);
             var requestFormat = parseResult.GetValue(requestFormatOpt);
             var protoOutDir = parseResult.GetValue(protoOutDirOpt);
+            var maxStdinBytes = parseResult.GetValue(maxStdinBytesOpt);
 
             try
             {
@@ -327,7 +331,8 @@ internal static class InvokeCommandHandler
                     protoFiles,
                     importPaths,
                     requestFormat,
-                    protoOutDir);
+                    protoOutDir,
+                    maxStdinBytes);
 
                 return 0;
             }
@@ -402,6 +407,21 @@ internal static class InvokeCommandHandler
         }
     }
 
+    internal static long ResolveMaxStdinBytes(long? maxStdinBytes)
+    {
+        if (maxStdinBytes is null)
+        {
+            return DefaultMaxStdinBytes;
+        }
+
+        if (maxStdinBytes <= 0)
+        {
+            throw new ArgumentException("--max-stdin-bytes must be a positive number.", nameof(maxStdinBytes));
+        }
+
+        return maxStdinBytes.Value;
+    }
+
     internal static async Task ExecuteAsync(
         string address,
         string methodName,
@@ -437,10 +457,29 @@ internal static class InvokeCommandHandler
         string[]? protoFiles = null,
         string[]? importPaths = null,
         string? requestFormat = null,
-        string? protoOutDir = null)
+        string? protoOutDir = null,
+        long? maxStdinBytes = null)
     {
         // Validate options before proceeding
         ValidateOptions(plaintext, insecure, serverName, maxMsgSz, verbose);
+
+        long effectiveMaxStdinBytes;
+
+        try
+        {
+            effectiveMaxStdinBytes = ResolveMaxStdinBytes(maxStdinBytes);
+        }
+        catch (ArgumentException ex)
+        {
+            ErrorRenderer.RenderAndThrow(new ErrorEnvelope
+            {
+                Category = ErrorCategory.Usage,
+                ExitCode = 2,
+                Message = ex.Message
+            }, output);
+
+            throw;
+        }
 
         var parsedRevocationMode = ParseRevocationMode(revocationMode);
 
@@ -625,9 +664,7 @@ internal static class InvokeCommandHandler
             // For unary/server-streaming, read all stdin upfront
             if (data == "@" && !methodDescriptor.IsClientStreaming)
             {
-                using var reader = new StreamReader(Console.OpenStandardInput());
-
-                requestJson = await reader.ReadToEndAsync(operationToken);
+                requestJson = await ReadStdinBoundedAsync(effectiveMaxStdinBytes, operationToken);
             }
             else
             {
@@ -672,20 +709,20 @@ internal static class InvokeCommandHandler
 
                 case false when methodDescriptor.IsServerStreaming:
 
-                    await InvokeServerStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, rpcDeadline, timing, output, useTextFormat, operationToken);
+                    await InvokeServerStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, rpcDeadline, timing, output, unsafeShowSecrets, useTextFormat, operationToken);
 
                     break;
 
                 case true when !methodDescriptor.IsServerStreaming:
 
-                    await InvokeClientStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, rpcDeadline, timing, output, useTextFormat, operationToken);
+                    await InvokeClientStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, rpcDeadline, timing, output, unsafeShowSecrets, useTextFormat, effectiveMaxStdinBytes, operationToken);
 
                     break;
 
                 default:
 
                     // Bidirectional streaming
-                    await InvokeBidirectionalStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, rpcDeadline, timing, output, useTextFormat, operationToken);
+                    await InvokeBidirectionalStreamingAsync(invoker, methodDescriptor, requestJson, metadata, verbose, emitDefaults, allowUnknownFields, rpcDeadline, timing, output, unsafeShowSecrets, useTextFormat, effectiveMaxStdinBytes, operationToken);
 
                     break;
             }
@@ -693,7 +730,7 @@ internal static class InvokeCommandHandler
             // Export protoset if --protoset-out specified
             if (!string.IsNullOrEmpty(protosetOut))
             {
-                await ProtosetExporter.WriteProtosetAsync(descriptorSource, protosetOut, force, [serviceName]);
+                await ProtosetExporter.WriteProtosetAsync(descriptorSource, protosetOut, force, [serviceName], operationToken);
 
                 if (verbose)
                 {
@@ -968,7 +1005,7 @@ internal static class InvokeCommandHandler
 
         if (verbose)
         {
-            WriteVerboseResponseHeaders(result.ResponseHeaders);
+            WriteVerboseResponseHeaders(result.ResponseHeaders, unsafeShowSecrets);
             await Console.Error.WriteLineAsync("Response contents:");
         }
 
@@ -976,7 +1013,7 @@ internal static class InvokeCommandHandler
 
         if (verbose)
         {
-            WriteVerboseResponseTrailers(result.ResponseTrailers);
+            WriteVerboseResponseTrailers(result.ResponseTrailers, unsafeShowSecrets);
 
             await Console.Error.WriteLineAsync("Sent 1 request and received 1 response");
         }
@@ -1003,6 +1040,7 @@ internal static class InvokeCommandHandler
         DateTime? deadline,
         TimingContext? timing,
         OutputFormat output,
+        bool unsafeShowSecrets,
         bool useTextFormat,
         CancellationToken cancellationToken)
     {
@@ -1035,7 +1073,7 @@ internal static class InvokeCommandHandler
             // headers as soon as the server flushes them.
             var headers = await streamingResult.ResponseHeadersAsync;
 
-            WriteVerboseResponseHeaders(headers);
+            WriteVerboseResponseHeaders(headers, unsafeShowSecrets);
             await Console.Error.WriteLineAsync("Response stream:");
         }
 
@@ -1062,7 +1100,7 @@ internal static class InvokeCommandHandler
 
         if (verbose)
         {
-            WriteVerboseResponseTrailers(streamingResult.GetTrailers());
+            WriteVerboseResponseTrailers(streamingResult.GetTrailers(), unsafeShowSecrets);
             Diagnostics.Markup($"[dim]Server streaming completed, received {responseCount} response(s)[/]");
         }
     }
@@ -1078,7 +1116,9 @@ internal static class InvokeCommandHandler
         DateTime? deadline,
         TimingContext? timing,
         OutputFormat output,
+        bool unsafeShowSecrets,
         bool useTextFormat,
+        long maxStdinBytes,
         CancellationToken cancellationToken)
     {
         if (verbose)
@@ -1104,7 +1144,7 @@ internal static class InvokeCommandHandler
 
         if (verbose)
         {
-            WriteVerboseResponseHeaders(await clientResult.ResponseHeadersAsync);
+            WriteVerboseResponseHeaders(await clientResult.ResponseHeadersAsync, unsafeShowSecrets);
 
             await Console.Error.WriteLineAsync("Response contents:");
         }
@@ -1116,7 +1156,7 @@ internal static class InvokeCommandHandler
             return;
         }
 
-        WriteVerboseResponseTrailers(clientResult.GetTrailers());
+        WriteVerboseResponseTrailers(clientResult.GetTrailers(), unsafeShowSecrets);
 
         Diagnostics.Markup($"[dim]Client streaming completed, sent {sentCount} message(s)[/]");
 
@@ -1124,7 +1164,7 @@ internal static class InvokeCommandHandler
 
         async IAsyncEnumerable<IMessage> TrackRequests()
         {
-            await foreach (var msg in GenerateRequests(requestJson, methodDescriptor.InputType, verbose, allowUnknownFields).WithCancellation(cancellationToken))
+            await foreach (var msg in GenerateRequests(requestJson, methodDescriptor.InputType, verbose, allowUnknownFields, maxStdinBytes, cancellationToken).WithCancellation(cancellationToken))
             {
                 if (sentCount == 0)
                 {
@@ -1150,7 +1190,9 @@ internal static class InvokeCommandHandler
         DateTime? deadline,
         TimingContext? timing,
         OutputFormat output,
+        bool unsafeShowSecrets,
         bool useTextFormat,
+        long maxStdinBytes,
         CancellationToken cancellationToken)
     {
         if (verbose)
@@ -1169,7 +1211,7 @@ internal static class InvokeCommandHandler
 
         if (verbose)
         {
-            WriteVerboseResponseHeaders(await duplexResult.ResponseHeadersAsync);
+            WriteVerboseResponseHeaders(await duplexResult.ResponseHeadersAsync, unsafeShowSecrets);
             await Console.Error.WriteLineAsync("Response stream:");
         }
 
@@ -1188,7 +1230,7 @@ internal static class InvokeCommandHandler
 
         if (verbose)
         {
-            WriteVerboseResponseTrailers(duplexResult.GetTrailers());
+            WriteVerboseResponseTrailers(duplexResult.GetTrailers(), unsafeShowSecrets);
         }
 
         if (timing is not null)
@@ -1207,7 +1249,7 @@ internal static class InvokeCommandHandler
 
         async IAsyncEnumerable<IMessage> TrackRequests()
         {
-            await foreach (var msg in GenerateRequests(requestJson, methodDescriptor.InputType, verbose, allowUnknownFields).WithCancellation(cancellationToken))
+            await foreach (var msg in GenerateRequests(requestJson, methodDescriptor.InputType, verbose, allowUnknownFields, maxStdinBytes, cancellationToken).WithCancellation(cancellationToken))
             {
                 if (sentCount == 0)
                 {
@@ -1250,7 +1292,7 @@ internal static class InvokeCommandHandler
         Console.Error.WriteLine();
     }
 
-    internal static void WriteVerboseResponseHeaders(Metadata? headers)
+    internal static void WriteVerboseResponseHeaders(Metadata? headers, bool unsafeShowSecrets = false)
     {
         Console.Error.WriteLine("Response headers received:");
 
@@ -1260,19 +1302,16 @@ internal static class InvokeCommandHandler
         }
         else
         {
-            foreach (var entry in headers)
+            foreach (var line in SecretRedactor.FormatLines(headers, unsafeShowSecrets))
             {
-                if (!entry.IsBinary)
-                {
-                    Console.Error.WriteLine($"{entry.Key}: {entry.Value}");
-                }
+                Console.Error.WriteLine(line);
             }
         }
 
         Console.Error.WriteLine();
     }
 
-    internal static void WriteVerboseResponseTrailers(Metadata? trailers)
+    internal static void WriteVerboseResponseTrailers(Metadata? trailers, bool unsafeShowSecrets = false)
     {
         Console.Error.WriteLine("Response trailers received:");
 
@@ -1282,12 +1321,9 @@ internal static class InvokeCommandHandler
         }
         else
         {
-            foreach (var entry in trailers)
+            foreach (var line in SecretRedactor.FormatLines(trailers, unsafeShowSecrets))
             {
-                if (!entry.IsBinary)
-                {
-                    Console.Error.WriteLine($"{entry.Key}: {entry.Value}");
-                }
+                Console.Error.WriteLine(line);
             }
         }
     }
@@ -1306,7 +1342,8 @@ internal static class InvokeCommandHandler
         MessageDescriptor inputType,
         bool verbose,
         bool allowUnknownFields,
-        long maxStdinBytes = 16L * 1024 * 1024)
+        long maxStdinBytes = DefaultMaxStdinBytes,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (requestJson is null)
         {
@@ -1322,7 +1359,7 @@ internal static class InvokeCommandHandler
                 Diagnostics.Markup("[dim]Reading request messages from stdin (JSON array, concatenated objects, or pretty-printed JSON until EOF)...[/]");
             }
 
-            body = await ReadStdinBoundedAsync(maxStdinBytes);
+            body = await ReadStdinBoundedAsync(maxStdinBytes, cancellationToken);
         }
         else
         {
@@ -1381,7 +1418,7 @@ internal static class InvokeCommandHandler
     ///     <paramref name="maxBytes" /> so a wedged or hostile producer can't drive the
     ///     CLI into memory pressure. Returns immediately on EOF.
     /// </summary>
-    private static async Task<string> ReadStdinBoundedAsync(long maxBytes)
+    private static async Task<string> ReadStdinBoundedAsync(long maxBytes, CancellationToken cancellationToken = default)
     {
         await using var stdin = Console.OpenStandardInput();
         await using var buffer = new MemoryStream();
@@ -1390,7 +1427,7 @@ internal static class InvokeCommandHandler
         long total = 0;
         int n;
 
-        while ((n = await stdin.ReadAsync(read.AsMemory(0, read.Length))) > 0)
+        while ((n = await stdin.ReadAsync(read.AsMemory(0, read.Length), cancellationToken)) > 0)
         {
             total += n;
 
@@ -1401,7 +1438,7 @@ internal static class InvokeCommandHandler
                     "Increase --max-stdin-bytes or split the payload.");
             }
 
-            await buffer.WriteAsync(read.AsMemory(0, n));
+            await buffer.WriteAsync(read.AsMemory(0, n), cancellationToken);
         }
 
         return Encoding.UTF8.GetString(buffer.GetBuffer(), 0, (int)buffer.Length);

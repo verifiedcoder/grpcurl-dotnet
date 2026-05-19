@@ -29,11 +29,12 @@ EOF
 echo "=== gql2grpc: Subscription -> server-streaming RPC (NDJSON) ==="
 echo ""
 echo "Each line of stdout is a self-contained GraphQL envelope."
+echo "Uses --max-time to bound reflection discovery, mapping loading, and the stream."
 echo ""
-echo "Command: gql2grpc --plaintext --mapping <file> $SERVER 'subscription { streamingOutput(input: { responseParameters: [{ size: 1 }, { size: 2 }, { size: 3 }] }) { payload { body } } }'"
+echo "Command: gql2grpc --plaintext --max-time 10s --mapping <file> $SERVER 'subscription { streamingOutput(input: { responseParameters: [{ size: 1 }, { size: 2 }, { size: 3 }] }) { payload { body } } }'"
 echo ""
 
-gql2grpc_cli --plaintext --mapping "$MAPPING" $SERVER \
+gql2grpc_cli --plaintext --max-time 10s --mapping "$MAPPING" $SERVER \
     'subscription { streamingOutput(input: { responseParameters: [{ size: 1 }, { size: 2 }, { size: 3 }] }) { payload { body } } }'
 
 echo ""

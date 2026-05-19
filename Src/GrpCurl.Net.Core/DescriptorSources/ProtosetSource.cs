@@ -1,5 +1,6 @@
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
+using GrpCurl.Net.Utilities;
 
 namespace GrpCurl.Net.DescriptorSources;
 
@@ -11,6 +12,13 @@ public sealed class ProtosetSource : IDescriptorSource
 {
     private readonly Dictionary<string, FileDescriptor> _fileDescriptors = [];
     private readonly Dictionary<string, IDescriptor> _symbolCache = [];
+    private readonly DescriptorSourceOptions _options;
+
+    private ProtosetSource(DescriptorSourceOptions? options = null)
+    {
+        _options = options ?? DescriptorSourceOptions.Default;
+        _options.ThrowIfInvalid();
+    }
 
     /// <inheritdoc />
     public FileDescriptorSet? FileDescriptorSet { get; private set; }
@@ -42,8 +50,14 @@ public sealed class ProtosetSource : IDescriptorSource
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A new ProtosetSource instance with the loaded descriptors.</returns>
     public static async Task<ProtosetSource> LoadFromFileAsync(string filePath, CancellationToken cancellationToken = default)
+        => await LoadFromFileAsync(filePath, DescriptorSourceOptions.Default, cancellationToken).ConfigureAwait(false);
+
+    internal static async Task<ProtosetSource> LoadFromFileAsync(
+        string filePath,
+        DescriptorSourceOptions options,
+        CancellationToken cancellationToken = default)
     {
-        var source = new ProtosetSource();
+        var source = new ProtosetSource(options);
 
         await source.LoadProtosetAsync(filePath, cancellationToken);
 
@@ -57,8 +71,14 @@ public sealed class ProtosetSource : IDescriptorSource
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A new ProtosetSource instance with the loaded descriptors.</returns>
     public static async Task<ProtosetSource> LoadFromFilesAsync(IEnumerable<string> filePaths, CancellationToken cancellationToken = default)
+        => await LoadFromFilesAsync(filePaths, DescriptorSourceOptions.Default, cancellationToken).ConfigureAwait(false);
+
+    internal static async Task<ProtosetSource> LoadFromFilesAsync(
+        IEnumerable<string> filePaths,
+        DescriptorSourceOptions options,
+        CancellationToken cancellationToken = default)
     {
-        var source = new ProtosetSource();
+        var source = new ProtosetSource(options);
 
         foreach (var filePath in filePaths)
         {
@@ -70,8 +90,15 @@ public sealed class ProtosetSource : IDescriptorSource
 
     private async Task LoadProtosetAsync(string filePath, CancellationToken cancellationToken)
     {
-        var bytes = await File.ReadAllBytesAsync(filePath, cancellationToken);
+        var bytes = await InputFileGuard.ReadAllBytesAsync(
+            filePath,
+            _options.MaxProtosetFileBytes,
+            "Protoset file",
+            cancellationToken).ConfigureAwait(false);
+
         var fileDescriptorSet = FileDescriptorSet.Parser.ParseFrom(bytes);
+
+        EnsureFileDescriptorCount(fileDescriptorSet.File.Count);
 
         // Merge into existing FileDescriptorSet instead of replacing
         if (FileDescriptorSet is null)
@@ -94,6 +121,8 @@ public sealed class ProtosetSource : IDescriptorSource
                     FileDescriptorSet.File.Add(file);
                 }
             }
+
+            EnsureFileDescriptorCount(FileDescriptorSet.File.Count);
         }
 
         // Build file descriptors from the set
@@ -102,7 +131,7 @@ public sealed class ProtosetSource : IDescriptorSource
 
         foreach (var fileProto in fileDescriptorSet.File)
         {
-            ResolveFileDescriptor(fileProto.Name, unresolved, resolved, []);
+            ResolveFileDescriptor(fileProto.Name, unresolved, resolved, [], _options);
         }
 
         // Cache file descriptors, detecting conflicts
@@ -124,7 +153,8 @@ public sealed class ProtosetSource : IDescriptorSource
         string fileName,
         Dictionary<string, FileDescriptorProto> unresolved,
         Dictionary<string, FileDescriptor> resolved,
-        HashSet<string> visitedInCurrentPath)
+        HashSet<string> visitedInCurrentPath,
+        DescriptorSourceOptions options)
     {
         if (resolved.TryGetValue(fileName, out var existing))
         {
@@ -137,6 +167,12 @@ public sealed class ProtosetSource : IDescriptorSource
             var cycle = string.Join(" -> ", visitedInCurrentPath) + " -> " + fileName;
 
             throw new InvalidOperationException($"Circular dependency detected: {cycle}");
+        }
+
+        if (visitedInCurrentPath.Count >= options.MaxDependencyDepth)
+        {
+            throw new InvalidDataException(
+                $"Descriptor dependency depth exceeded the maximum of {options.MaxDependencyDepth} while resolving '{fileName}'.");
         }
 
         if (!unresolved.TryGetValue(fileName, out var fileProto))
@@ -159,7 +195,7 @@ public sealed class ProtosetSource : IDescriptorSource
         {
             // Resolve dependencies first
             var dependencies = fileProto.Dependency
-                                        .Select(dependency => ResolveFileDescriptor(dependency, unresolved, resolved, visitedInCurrentPath))
+                                        .Select(dependency => ResolveFileDescriptor(dependency, unresolved, resolved, visitedInCurrentPath, options))
                                         .ToList();
 
             // Collect ALL transitive dependency ByteStrings in dependency order
@@ -261,6 +297,12 @@ public sealed class ProtosetSource : IDescriptorSource
         }
 
         _symbolCache[fullName] = descriptor;
+
+        if (_symbolCache.Count > _options.MaxSymbols)
+        {
+            throw new InvalidDataException(
+                $"Descriptor symbol count exceeded the maximum of {_options.MaxSymbols} while loading '{sourceFile}'.");
+        }
     }
 
     private void CacheMessageTypeRecursive(MessageDescriptor messageType, string sourceFile)
@@ -294,6 +336,15 @@ public sealed class ProtosetSource : IDescriptorSource
         foreach (var oneof in messageType.Oneofs)
         {
             CacheSymbolWithConflictCheck(oneof.FullName, oneof, sourceFile);
+        }
+    }
+
+    private void EnsureFileDescriptorCount(int count)
+    {
+        if (count > _options.MaxFileDescriptors)
+        {
+            throw new InvalidDataException(
+                $"File descriptor count {count:N0} exceeds the maximum of {_options.MaxFileDescriptors:N0}.");
         }
     }
 }

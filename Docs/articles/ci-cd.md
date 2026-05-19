@@ -50,11 +50,11 @@ fi
 The `describe --msg-template` output is a JSON template for a message type. Pipe it directly into `invoke -d @` to send a default payload — useful for smoke tests:
 
 ```bash
-grpcurl.net describe --plaintext --msg-template localhost:9090 my.pkg.MyRequest \
-  | grpcurl.net invoke --plaintext -d @ localhost:9090 my.pkg.MyService/DoThing
+grpcurl.net describe --plaintext --max-time 10s --msg-template localhost:9090 my.pkg.MyRequest \
+  | grpcurl.net invoke --plaintext --max-time 10s --max-stdin-bytes 1048576 -d @ localhost:9090 my.pkg.MyService/DoThing
 ```
 
-`-d @` reads JSON from stdin. For streaming methods, `@` reads one JSON object per line; for unary, the full stdin is treated as a single document.
+`-d @` reads JSON from stdin. For streaming methods, `@` reads one JSON object per line; for unary, the full stdin is treated as a single document. Stdin is capped at 16 MiB by default; set `--max-stdin-bytes <bytes>` when a pipeline should document a smaller numeric byte budget.
 
 ## Structured failure parsing
 
@@ -62,6 +62,7 @@ For production pipelines where you want to alert on specific gRPC statuses:
 
 ```bash
 envelope=$(gql2grpc --mapping gql2grpc.yaml \
+  --max-time 30s \
   -H "authorization: Bearer ${TOKEN}" \
   api.example.com:443 \
   'query { activeResponses(first: 10) { id } }' ) || true
@@ -113,7 +114,7 @@ dotnet run --project Scripts/ValidationRunner/ValidationRunner.csproj --configur
 
 Do not pass MSBuild-only switches such as `/nr:false` to `dotnet test`; with Microsoft.Testing.Platform those switches can be forwarded to the generated test executables and cause the test host to exit before running tests.
 
-The validation runner is also part of the full test procedure even though it is not an xUnit project. It is the cross-platform published-artifact smoke test: it publishes `GrpCurl.Net` and `GrpCurl.Net.TestServer` to a temporary directory, starts the published test server, and exercises the CLI through list, describe, unary invocation, server-streaming invocation, JSON envelope output, binary metadata, and grpcurl drop-in command paths. It should finish with `9 scenarios passed`.
+The validation runner is also part of the full test procedure even though it is not an xUnit project. It is the cross-platform published-artifact smoke test: it publishes `GrpCurl.Net` and `GrpCurl.Net.TestServer` to a temporary directory, starts the published test server, and exercises the CLI through list, describe, unary invocation, server-streaming invocation, bounded client-streaming stdin, JSON envelope output, binary metadata, and grpcurl drop-in command paths. It should finish with `10 scenarios passed`.
 
 When adding a new test project or a new non-xUnit validation harness, include it in `GrpCurl.Net.slnx` or add it to this sequence so the documented "all tests" procedure remains complete.
 

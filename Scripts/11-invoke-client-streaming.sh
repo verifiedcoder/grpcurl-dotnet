@@ -34,10 +34,11 @@ echo "Requests being sent:"
 echo "$REQUESTS"
 echo ""
 
-echo "Command: echo '<requests>' | grpcurl.net invoke --plaintext -d @ $SERVER testing.TestService/StreamingInputCall"
+echo "Command: echo '<requests>' | grpcurl.net invoke --plaintext --max-time 10s --max-stdin-bytes 1048576 -d @ $SERVER testing.TestService/StreamingInputCall"
+echo "Uses --max-stdin-bytes to make the stdin budget explicit for scripts."
 echo ""
 
-echo "$REQUESTS" | grpcurl_net invoke --plaintext -d @ $SERVER testing.TestService/StreamingInputCall
+echo "$REQUESTS" | grpcurl_net invoke --plaintext --max-time 10s --max-stdin-bytes 1048576 -d @ $SERVER testing.TestService/StreamingInputCall
 
 echo ""
 echo "Expected: aggregated_payload_size should be 6 (1+2+3 bytes)"

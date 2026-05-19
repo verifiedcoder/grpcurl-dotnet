@@ -13,10 +13,10 @@ SERVER="localhost:9090"
 
 echo "=== Describe testing.TestService ==="
 echo ""
-echo "Command: grpcurl.net describe --plaintext $SERVER testing.TestService"
+echo "Command: grpcurl.net describe --plaintext --max-time 10s $SERVER testing.TestService"
 echo ""
 
-grpcurl_net describe --plaintext $SERVER testing.TestService
+grpcurl_net describe --plaintext --max-time 10s $SERVER testing.TestService
 
 echo ""
 echo "=== Done ==="

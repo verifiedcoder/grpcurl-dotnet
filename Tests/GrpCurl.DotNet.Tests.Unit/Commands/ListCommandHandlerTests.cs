@@ -113,4 +113,19 @@ public sealed class ListCommandHandlerTests
         // Assert
         command.Options.Count.ShouldBeGreaterThanOrEqualTo(10);
     }
+
+    [Fact]
+    public void Create_HasMaxTimeOption()
+    {
+        // Arrange
+
+        // Act
+        var command = ListCommandHandler.Create();
+
+        // Assert
+        HasOption(command, "--max-time").ShouldBeTrue();
+    }
+
+    private static bool HasOption(Command command, string name)
+        => command.Options.Any(option => option.Name == name || option.Name == name.TrimStart('-'));
 }

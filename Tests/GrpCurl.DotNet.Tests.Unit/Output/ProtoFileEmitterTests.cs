@@ -18,13 +18,12 @@ public sealed class ProtoFileEmitterTests
         var source = await ProtosetSource.LoadFromFilesAsync([TestProtosetPath], TestContext.Current.CancellationToken);
         var outDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
-        // Act
         try
-
-        // Assert
         {
+            // Act
             await ProtoFileEmitter.WriteAsync(source, outDir, force: true, TestContext.Current.CancellationToken);
 
+            // Assert
             var protoFiles = Directory.EnumerateFiles(outDir, "*.proto", SearchOption.AllDirectories).ToList();
 
             protoFiles.ShouldNotBeEmpty();
@@ -47,13 +46,12 @@ public sealed class ProtoFileEmitterTests
         var source = await ProtosetSource.LoadFromFilesAsync([TestProtosetPath], TestContext.Current.CancellationToken);
         var outDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
-        // Act
         try
-
-        // Assert
         {
+            // Act
             await ProtoFileEmitter.WriteAsync(source, outDir, force: false, TestContext.Current.CancellationToken);
 
+            // Assert
             await Should.ThrowAsync<IOException>(async () =>
             {
                 await ProtoFileEmitter.WriteAsync(source, outDir, force: false, TestContext.Current.CancellationToken);
@@ -63,6 +61,39 @@ public sealed class ProtoFileEmitterTests
         {
             DeleteDirectory(outDir);
         }
+    }
+
+    [Fact]
+    public void ResolveContainedPath_SafeNestedDescriptorName_ReturnsPathUnderOutputDirectory()
+    {
+        // Arrange
+        var outDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        var expected = Path.GetFullPath(Path.Combine(outDir, "pkg", "test.proto"));
+
+        // Act
+        var result = ProtoFileEmitter.ResolveContainedPath(outDir, "pkg/test.proto");
+
+        // Assert
+        result.ShouldBe(expected);
+    }
+
+    [Theory]
+    [InlineData("../escape.proto")]
+    [InlineData("pkg/../../escape.proto")]
+    [InlineData("/tmp/escape.proto")]
+    [InlineData("C:\\temp\\escape.proto")]
+    [InlineData("\\\\server\\share\\escape.proto")]
+    public void ResolveContainedPath_UnsafeDescriptorName_ThrowsInvalidDataException(string descriptorName)
+    {
+        // Arrange
+        var outDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+        // Act
+        var exception = Should.Throw<InvalidDataException>(() =>
+            ProtoFileEmitter.ResolveContainedPath(outDir, descriptorName));
+
+        // Assert
+        exception.Message.ShouldContain("Descriptor file name");
     }
 
     private static void DeleteDirectory(string path)

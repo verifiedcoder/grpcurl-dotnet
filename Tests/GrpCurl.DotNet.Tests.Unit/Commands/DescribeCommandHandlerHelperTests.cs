@@ -546,7 +546,12 @@ public sealed class DescribeCommandHandlerHelperTests
         try
         {
             // Act
-            await DescribeCommandHandler.DescribeSymbolAsync(source, "testing.TestService", verbose: false, msgTemplate: false);
+            await DescribeCommandHandler.DescribeSymbolAsync(
+                source,
+                "testing.TestService",
+                verbose: false,
+                msgTemplate: false,
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
             var output = writer.ToString();
@@ -581,7 +586,12 @@ public sealed class DescribeCommandHandlerHelperTests
         try
         {
             // Act
-            await DescribeCommandHandler.DescribeSymbolAsync(source, "testing.SimpleRequest", verbose: false, msgTemplate: false);
+            await DescribeCommandHandler.DescribeSymbolAsync(
+                source,
+                "testing.SimpleRequest",
+                verbose: false,
+                msgTemplate: false,
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
             var output = writer.ToString();
@@ -616,7 +626,12 @@ public sealed class DescribeCommandHandlerHelperTests
         try
         {
             // Act
-            await DescribeCommandHandler.DescribeSymbolAsync(source, "testing.PayloadType", verbose: false, msgTemplate: false);
+            await DescribeCommandHandler.DescribeSymbolAsync(
+                source,
+                "testing.PayloadType",
+                verbose: false,
+                msgTemplate: false,
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
             var output = writer.ToString();
@@ -652,7 +667,12 @@ public sealed class DescribeCommandHandlerHelperTests
         try
         {
             // Act
-            await DescribeCommandHandler.DescribeSymbolAsync(source, "testing.SimpleRequest", verbose: false, msgTemplate: true);
+            await DescribeCommandHandler.DescribeSymbolAsync(
+                source,
+                "testing.SimpleRequest",
+                verbose: false,
+                msgTemplate: true,
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert - msg-template outputs proto definition + blank line + "Message template:" + JSON template
             var output = writer.ToString();
@@ -693,7 +713,12 @@ public sealed class DescribeCommandHandlerHelperTests
         try
         {
             // Act
-            await DescribeCommandHandler.DescribeSymbolAsync(source, "testing.OneofMessage", verbose: false, msgTemplate: false);
+            await DescribeCommandHandler.DescribeSymbolAsync(
+                source,
+                "testing.OneofMessage",
+                verbose: false,
+                msgTemplate: false,
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
             var output = writer.ToString();
@@ -740,7 +765,12 @@ public sealed class DescribeCommandHandlerHelperTests
         try
         {
             // Act
-            await DescribeCommandHandler.DescribeSymbolAsync(source, "wkttesting.WellKnownTypesMessage", verbose: false, msgTemplate: true);
+            await DescribeCommandHandler.DescribeSymbolAsync(
+                source,
+                "wkttesting.WellKnownTypesMessage",
+                verbose: false,
+                msgTemplate: true,
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert - msg-template outputs proto definition + header + JSON template
             var output = writer.ToString();
@@ -784,7 +814,12 @@ public sealed class DescribeCommandHandlerHelperTests
         try
         {
             // Act
-            await DescribeCommandHandler.DescribeSymbolAsync(source, "testing.MapFieldsMessage", verbose: false, msgTemplate: true);
+            await DescribeCommandHandler.DescribeSymbolAsync(
+                source,
+                "testing.MapFieldsMessage",
+                verbose: false,
+                msgTemplate: true,
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert - msg-template outputs proto definition + header + JSON template
             var output = writer.ToString();
@@ -834,7 +869,12 @@ public sealed class DescribeCommandHandlerHelperTests
         try
         {
             // Act
-            await DescribeCommandHandler.DescribeSymbolAsync(source, "testing.NestedTypesMessage", verbose: false, msgTemplate: false);
+            await DescribeCommandHandler.DescribeSymbolAsync(
+                source,
+                "testing.NestedTypesMessage",
+                verbose: false,
+                msgTemplate: false,
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
             var output = writer.ToString();
@@ -883,7 +923,12 @@ public sealed class DescribeCommandHandlerHelperTests
         try
         {
             // Act
-            await DescribeCommandHandler.DescribeSymbolAsync(source, "testing.MapFieldsMessage", verbose: false, msgTemplate: false);
+            await DescribeCommandHandler.DescribeSymbolAsync(
+                source,
+                "testing.MapFieldsMessage",
+                verbose: false,
+                msgTemplate: false,
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
             var output = writer.ToString();
@@ -981,7 +1026,12 @@ public sealed class DescribeCommandHandlerHelperTests
         try
         {
             // Act
-            await DescribeCommandHandler.DescribeSymbolAsync(source, "testing.NestedTypesMessage", verbose: false, msgTemplate: false);
+            await DescribeCommandHandler.DescribeSymbolAsync(
+                source,
+                "testing.NestedTypesMessage",
+                verbose: false,
+                msgTemplate: false,
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert - Fields should appear before nested types in the output
             var output = writer.ToString();
@@ -1030,7 +1080,12 @@ public sealed class DescribeCommandHandlerHelperTests
         try
         {
             // Act
-            await DescribeCommandHandler.DescribeSymbolAsync(source, "testing.TestService.EmptyCall", verbose: false, msgTemplate: false);
+            await DescribeCommandHandler.DescribeSymbolAsync(
+                source,
+                "testing.TestService.EmptyCall",
+                verbose: false,
+                msgTemplate: false,
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
             var output = writer.ToString();
@@ -1064,7 +1119,12 @@ public sealed class DescribeCommandHandlerHelperTests
         try
         {
             // Act
-            await DescribeCommandHandler.DescribeSymbolAsync(source, "testing.TestService.StreamingOutputCall", verbose: false, msgTemplate: false);
+            await DescribeCommandHandler.DescribeSymbolAsync(
+                source,
+                "testing.TestService.StreamingOutputCall",
+                verbose: false,
+                msgTemplate: false,
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
             var output = writer.ToString();
@@ -1098,7 +1158,12 @@ public sealed class DescribeCommandHandlerHelperTests
         try
         {
             // Act
-            await DescribeCommandHandler.DescribeSymbolAsync(source, "testing.TestService.StreamingInputCall", verbose: false, msgTemplate: false);
+            await DescribeCommandHandler.DescribeSymbolAsync(
+                source,
+                "testing.TestService.StreamingInputCall",
+                verbose: false,
+                msgTemplate: false,
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
             var output = writer.ToString();
@@ -1132,7 +1197,12 @@ public sealed class DescribeCommandHandlerHelperTests
         try
         {
             // Act
-            await DescribeCommandHandler.DescribeSymbolAsync(source, "testing.TestService.FullDuplexCall", verbose: false, msgTemplate: false);
+            await DescribeCommandHandler.DescribeSymbolAsync(
+                source,
+                "testing.TestService.FullDuplexCall",
+                verbose: false,
+                msgTemplate: false,
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
             var output = writer.ToString();
@@ -1166,7 +1236,12 @@ public sealed class DescribeCommandHandlerHelperTests
         try
         {
             // Act
-            await DescribeCommandHandler.DescribeSymbolAsync(source, "testing.TestService", verbose: false, msgTemplate: false);
+            await DescribeCommandHandler.DescribeSymbolAsync(
+                source,
+                "testing.TestService",
+                verbose: false,
+                msgTemplate: false,
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert - Methods should be sorted alphabetically
             var output = writer.ToString();

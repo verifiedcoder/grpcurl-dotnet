@@ -16,10 +16,10 @@ echo ""
 echo "The 'fail-early' header tells the TestServer to fail immediately with the given code."
 echo "We force InvalidArgument (3). Exit code should be 64 + 3 = 67."
 echo ""
-echo "Command: gql2grpc --plaintext --default-service testing.TestService -H 'fail-early: 3' $SERVER 'query { EmptyCall }'"
+echo "Command: gql2grpc --plaintext --max-time 10s --default-service testing.TestService -H 'fail-early: 3' $SERVER 'query { EmptyCall }'"
 echo ""
 
-gql2grpc_cli --plaintext --default-service testing.TestService -H "fail-early: 3" $SERVER 'query { EmptyCall }'
+gql2grpc_cli --plaintext --max-time 10s --default-service testing.TestService -H "fail-early: 3" $SERVER 'query { EmptyCall }'
 STATUS=$?
 
 echo ""

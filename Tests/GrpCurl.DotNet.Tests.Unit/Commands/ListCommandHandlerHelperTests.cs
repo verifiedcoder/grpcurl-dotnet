@@ -30,7 +30,10 @@ public sealed class ListCommandHandlerHelperTests
         try
         {
             // Act
-            await ListCommandHandler.ListServicesAsync(source, verbose: false);
+            await ListCommandHandler.ListServicesAsync(
+                source,
+                verbose: false,
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
             var output = writer.ToString();
@@ -73,7 +76,11 @@ public sealed class ListCommandHandlerHelperTests
         try
         {
             // Act
-            await ListCommandHandler.ListMethodsAsync(source, "testing.TestService", verbose: false);
+            await ListCommandHandler.ListMethodsAsync(
+                source,
+                "testing.TestService",
+                verbose: false,
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
             var output = writer.ToString();
@@ -105,7 +112,11 @@ public sealed class ListCommandHandlerHelperTests
         // Act
         // Assert
         var exception = await Should.ThrowAsync<GrpcCommandException>(
-            () => ListCommandHandler.ListMethodsAsync(source, "testing.SimpleRequest", verbose: false));
+            () => ListCommandHandler.ListMethodsAsync(
+                source,
+                "testing.SimpleRequest",
+                verbose: false,
+                cancellationToken: TestContext.Current.CancellationToken));
 
         exception.ShouldNotBeNull();
     }

@@ -10,7 +10,7 @@ namespace Gql2Grpc.Tests.Fixtures;
 [CollectionDefinition("GrpcServer")]
 public class GrpcServerCollection : ICollectionFixture<GrpcTestFixture>;
 
-public abstract class GrpcTestFixture : IAsyncLifetime
+public sealed class GrpcTestFixture : IAsyncLifetime
 {
     private WebApplication? _app;
 

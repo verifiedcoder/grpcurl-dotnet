@@ -13,10 +13,10 @@ SERVER="localhost:9090"
 
 echo "=== List Methods for testing.TestService ==="
 echo ""
-echo "Command: grpcurl.net list --plaintext $SERVER testing.TestService"
+echo "Command: grpcurl.net list --plaintext --max-time 10s $SERVER testing.TestService"
 echo ""
 
-grpcurl_net list --plaintext $SERVER testing.TestService
+grpcurl_net list --plaintext --max-time 10s $SERVER testing.TestService
 
 echo ""
 echo "=== Done ==="

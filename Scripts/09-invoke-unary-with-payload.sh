@@ -21,7 +21,7 @@ echo ""
 PAYLOAD_BODY="SGVsbG8sIFdvcmxkIQ=="
 
 echo "--- Request with payload body (base64: 'Hello, World!') ---"
-echo "Command: grpcurl.net invoke --plaintext -d '{...}' $SERVER testing.TestService/UnaryCall"
+echo "Command: grpcurl.net invoke --plaintext --max-time 10s -d '{...}' $SERVER testing.TestService/UnaryCall"
 echo ""
 
 REQUEST=$(cat <<EOF
@@ -42,7 +42,7 @@ echo "Request JSON:"
 echo "$REQUEST" | head -10
 echo ""
 
-grpcurl_net invoke --plaintext -d "$REQUEST" $SERVER testing.TestService/UnaryCall
+grpcurl_net invoke --plaintext --max-time 10s -d "$REQUEST" $SERVER testing.TestService/UnaryCall
 
 echo ""
 echo "=== Done ==="

@@ -71,6 +71,11 @@ internal static class DescribeCommandHandler
             Description = "Connection timeout (e.g., '10s', '1m', '500ms'). Default: 10s"
         };
 
+        var maxTimeOpt = new Option<string?>("--max-time")
+        {
+            Description = "Maximum time for the whole describe operation (e.g., '30s', '5m')."
+        };
+
         var authorityOpt = new Option<string?>("--authority")
         {
             Description = "Value to use for :authority header and TLS server name"
@@ -137,6 +142,7 @@ internal static class DescribeCommandHandler
             keyOpt,
             certPasswordOpt,
             connectTimeoutOpt,
+            maxTimeOpt,
             authorityOpt,
             serverNameOpt,
             verboseOpt,
@@ -163,6 +169,7 @@ internal static class DescribeCommandHandler
             var key = parseResult.GetValue(keyOpt);
             var certPassword = parseResult.GetValue(certPasswordOpt);
             var connectTimeout = parseResult.GetValue(connectTimeoutOpt);
+            var maxTime = parseResult.GetValue(maxTimeOpt);
             var authority = parseResult.GetValue(authorityOpt);
             var serverName = parseResult.GetValue(serverNameOpt);
             var verbose = parseResult.GetValue(verboseOpt);
@@ -198,7 +205,8 @@ internal static class DescribeCommandHandler
                     msgTemplate,
                     protosetOut,
                     output,
-                    force);
+                    force,
+                    maxTime);
 
                 return 0;
             }
@@ -279,9 +287,17 @@ internal static class DescribeCommandHandler
         bool msgTemplate,
         string? protosetOut,
         OutputFormat output = OutputFormat.Text,
-        bool force = false)
+        bool force = false,
+        string? maxTime = null)
     {
         var startTime = DateTime.UtcNow;
+        var maxTimeSpan = maxTime is not null ? GrpcChannelFactory.ParseDuration(maxTime) : (TimeSpan?)null;
+
+        using var deadlineCts = maxTimeSpan is not null
+            ? new CancellationTokenSource(maxTimeSpan.Value)
+            : new CancellationTokenSource();
+
+        var operationToken = deadlineCts.Token;
 
         // When using protosets without a server, the first positional arg (address) is actually the symbol
         if (protosets.Length > 0 && !string.IsNullOrEmpty(address) && string.IsNullOrEmpty(symbol))
@@ -328,6 +344,11 @@ internal static class DescribeCommandHandler
                 Diagnostics.Markup($"[dim]Connection timeout: {connectTimeout}[/]");
             }
 
+            if (maxTime is not null)
+            {
+                Diagnostics.Markup($"[dim]Operation timeout: {maxTime}[/]");
+            }
+
             if (authority is not null)
             {
                 Diagnostics.Markup($"[dim]Authority: {authority}[/]");
@@ -343,7 +364,7 @@ internal static class DescribeCommandHandler
                 protosets,
                 channelOptions,
                 reflectionMetadata,
-                CancellationToken.None);
+                operationToken);
 
             var descriptorSource = session.Source;
 
@@ -371,7 +392,7 @@ internal static class DescribeCommandHandler
                     Diagnostics.Markup("[dim]Describing all services...[/]");
                 }
 
-                var services = await descriptorSource.ListServicesAsync();
+                var services = await descriptorSource.ListServicesAsync(operationToken);
 
                 if (verbose)
                 {
@@ -380,7 +401,7 @@ internal static class DescribeCommandHandler
 
                 foreach (var svc in services)
                 {
-                    await DescribeSymbolAsync(descriptorSource, svc, verbose, msgTemplate, output);
+                    await DescribeSymbolAsync(descriptorSource, svc, verbose, msgTemplate, output, operationToken);
 
                     // Blank separator between services in text mode; NDJSON in json mode needs no separator.
                     if (output == OutputFormat.Text)
@@ -392,7 +413,7 @@ internal static class DescribeCommandHandler
                 // Export all services if --protoset-out specified
                 if (!string.IsNullOrEmpty(protosetOut))
                 {
-                    await ProtosetExporter.WriteProtosetAsync(descriptorSource, protosetOut, force, [.. services]);
+                    await ProtosetExporter.WriteProtosetAsync(descriptorSource, protosetOut, force, [.. services], operationToken);
 
                     if (verbose)
                     {
@@ -407,12 +428,12 @@ internal static class DescribeCommandHandler
                     Diagnostics.Markup($"[dim]Describing symbol '{symbol}'...[/]");
                 }
 
-                await DescribeSymbolAsync(descriptorSource, symbol, verbose, msgTemplate, output);
+                await DescribeSymbolAsync(descriptorSource, symbol, verbose, msgTemplate, output, operationToken);
 
                 // Export the specific symbol if --protoset-out specified
                 if (!string.IsNullOrEmpty(protosetOut))
                 {
-                    await ProtosetExporter.WriteProtosetAsync(descriptorSource, protosetOut, force, [symbol]);
+                    await ProtosetExporter.WriteProtosetAsync(descriptorSource, protosetOut, force, [symbol], operationToken);
 
                     if (verbose)
                     {
@@ -524,6 +545,22 @@ internal static class DescribeCommandHandler
                 ]
             }, output);
         }
+        catch (OperationCanceledException ex) when (maxTime is not null && deadlineCts.IsCancellationRequested)
+        {
+            ErrorRenderer.RenderAndThrow(new ErrorEnvelope
+            {
+                Category = ErrorCategory.Timeout,
+                ExitCode = 5,
+                Message = $"Operation exceeded --max-time ({maxTime})",
+                Address = address,
+                Hint = verbose ? ex.Message : null,
+                Suggestions =
+                [
+                    "Increase --max-time for large schemas or slow reflection services",
+                    "Use --protoset for offline schema discovery when possible"
+                ]
+            }, output);
+        }
         catch (InvalidDataException ex)
         {
             ErrorRenderer.RenderAndThrow(new ErrorEnvelope
@@ -559,9 +596,15 @@ internal static class DescribeCommandHandler
         }
     }
 
-    internal static async Task DescribeSymbolAsync(IDescriptorSource descriptorSource, string symbolName, bool verbose, bool msgTemplate, OutputFormat output = OutputFormat.Text)
+    internal static async Task DescribeSymbolAsync(
+        IDescriptorSource descriptorSource,
+        string symbolName,
+        bool verbose,
+        bool msgTemplate,
+        OutputFormat output = OutputFormat.Text,
+        CancellationToken cancellationToken = default)
     {
-        var descriptor = await descriptorSource.FindSymbolAsync(symbolName);
+        var descriptor = await descriptorSource.FindSymbolAsync(symbolName, cancellationToken);
 
         if (descriptor is null)
         {

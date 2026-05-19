@@ -12,7 +12,7 @@ internal static class ProtosetExporter
     /// <summary>
     ///     Writes a FileDescriptorSet to a file, including transitive dependencies.
     ///     Refuses to overwrite an existing file (use
-    ///     <see cref="WriteProtosetAsync(IDescriptorSource, string?, bool, string[])" />
+    ///     <see cref="WriteProtosetAsync(IDescriptorSource, string?, bool, string[], CancellationToken)" />
     ///     with <c>force: true</c> to overwrite).
     /// </summary>
     public static Task WriteProtosetAsync(
@@ -29,7 +29,8 @@ internal static class ProtosetExporter
         IDescriptorSource descriptorSource,
         string? outputPath,
         bool force,
-        string[] symbols)
+        string[] symbols,
+        CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(outputPath))
         {
@@ -41,7 +42,7 @@ internal static class ProtosetExporter
             throw new IOException($"Refusing to overwrite existing file '{outputPath}'. Pass --force to overwrite.");
         }
 
-        var fileDescriptorSet = await BuildFileDescriptorSetAsync(descriptorSource, symbols);
+        var fileDescriptorSet = await BuildFileDescriptorSetAsync(descriptorSource, symbols, cancellationToken);
 
         // Serialize FileDescriptorSet to bytes using protobuf WriteTo
         using var stream = new MemoryStream();
@@ -51,7 +52,7 @@ internal static class ProtosetExporter
             fileDescriptorSet.WriteTo(output);
         }
 
-        await File.WriteAllBytesAsync(outputPath, stream.ToArray());
+        await File.WriteAllBytesAsync(outputPath, stream.ToArray(), cancellationToken);
     }
 
     /// <summary>
@@ -59,10 +60,12 @@ internal static class ProtosetExporter
     /// </summary>
     /// <param name="descriptorSource">Source of descriptors</param>
     /// <param name="symbols">Symbols to include</param>
+    /// <param name="cancellationToken">Token used to cancel descriptor lookups</param>
     /// <returns>FileDescriptorSet with all files in topological order</returns>
     private static async Task<FileDescriptorSet> BuildFileDescriptorSetAsync(
         IDescriptorSource descriptorSource,
-        string[] symbols)
+        string[] symbols,
+        CancellationToken cancellationToken)
     {
         var fds = new FileDescriptorSet();
 
@@ -79,7 +82,7 @@ internal static class ProtosetExporter
         // For each symbol, find its descriptor and add its file with dependencies
         foreach (var symbol in symbols)
         {
-            var descriptor = await descriptorSource.FindSymbolAsync(symbol);
+            var descriptor = await descriptorSource.FindSymbolAsync(symbol, cancellationToken);
 
             if (descriptor is not null)
             {

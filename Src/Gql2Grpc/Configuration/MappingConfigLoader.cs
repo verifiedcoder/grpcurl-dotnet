@@ -34,7 +34,11 @@ public static class MappingConfigLoader
             throw new FileNotFoundException($"Mapping file not found: {path}", path);
         }
 
-        var text = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
+        var text = await InputFileGuard.ReadAllTextAsync(
+            path,
+            InputFileGuard.MaxMappingConfigBytes,
+            "Mapping configuration file",
+            cancellationToken).ConfigureAwait(false);
         var extension = Path.GetExtension(path).ToLowerInvariant();
 
         var root = extension switch

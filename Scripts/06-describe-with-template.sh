@@ -8,7 +8,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GRPCURL="$SCRIPT_DIR/../Src/GrpCurl.Net/bin/Debug/net10.0/GrpCurl.Net"
+. "$SCRIPT_DIR/common.sh"
 SERVER="localhost:9090"
 
 echo "=== Generate JSON Templates ==="
@@ -18,15 +18,15 @@ echo "initialized to their default values. Useful for creating request payloads.
 echo ""
 
 echo "--- testing.SimpleRequest Template ---"
-echo "Command: grpcurl.net describe --plaintext --msg-template $SERVER testing.SimpleRequest"
+echo "Command: grpcurl.net describe --plaintext --max-time 10s --msg-template $SERVER testing.SimpleRequest"
 echo ""
-$GRPCURL describe --plaintext --msg-template $SERVER testing.SimpleRequest
+grpcurl_net describe --plaintext --max-time 10s --msg-template $SERVER testing.SimpleRequest
 
 echo ""
 echo "--- testing.StreamingOutputCallRequest Template ---"
-echo "Command: grpcurl.net describe --plaintext --msg-template $SERVER testing.StreamingOutputCallRequest"
+echo "Command: grpcurl.net describe --plaintext --max-time 10s --msg-template $SERVER testing.StreamingOutputCallRequest"
 echo ""
-$GRPCURL describe --plaintext --msg-template $SERVER testing.StreamingOutputCallRequest
+grpcurl_net describe --plaintext --max-time 10s --msg-template $SERVER testing.StreamingOutputCallRequest
 
 echo ""
 echo "=== Done ==="

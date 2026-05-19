@@ -18,8 +18,8 @@ internal static class CommandDescriptions
         "  gql2grpc --plaintext --mapping schema.yaml --max-time 30s localhost:9090 \\\n" +
         "    'query Hello($n: Int!) { unaryCall(input: { responseSize: $n }) { payload { body } } }' \\\n" +
         "    --var n=10\n" +
-        "  gql2grpc --plaintext --file query.graphql --variables-file vars.json localhost:9090\n" +
-        "  gql2grpc --plaintext -H 'authorization: Bearer ${TOKEN}' localhost:9090 'query { me { id } }'\n" +
-        "  gql2grpc --protoset api.protoset --default-service my.pkg.Service \\\n" +
+        "  gql2grpc --plaintext --max-time 30s --file query.graphql --variables-file vars.json localhost:9090\n" +
+        "  gql2grpc --plaintext --max-time 30s -H 'authorization: Bearer ${TOKEN}' localhost:9090 'query { me { id } }'\n" +
+        "  gql2grpc --protoset api.protoset --max-time 30s --default-service my.pkg.Service \\\n" +
         "    localhost:9090 'subscription { stream { value } }'";
 }

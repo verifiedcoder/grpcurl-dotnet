@@ -1,6 +1,7 @@
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using GrpCurl.Net.Invocation;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -18,7 +19,7 @@ internal static class OutputRenderer
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         WriteIndented = false
     };
 
@@ -82,7 +83,7 @@ internal static class OutputRenderer
 
     /// <summary>
     ///     Emits a `describe` envelope as JSON. Text-mode rendering for describe stays in
-    ///     <see cref="DescribeCommandHandler"/> (proto-syntax printers).
+    ///     <see cref="DescribeCommandHandler" /> (proto-syntax printers).
     /// </summary>
     public static void WriteDescribeJson(IDescriptor descriptor, bool msgTemplate, TextWriter? writer = null)
     {
@@ -154,13 +155,16 @@ internal static class OutputRenderer
     }
 
     /// <summary>Emits a single response message during invoke.</summary>
-    public static void WriteInvokeMessage(IMessage message, int index, bool emitDefaults, OutputFormat format, TextWriter? writer = null)
+    public static void WriteInvokeMessage(IMessage message, int index, bool emitDefaults, OutputFormat format, TextWriter? writer = null, bool textFormat = false)
     {
         var w = writer ?? Console.Out;
 
         if (format == OutputFormat.Json)
         {
-            var rawMessage = DynamicInvoker.MessageToJson(message, emitDefaults, indent: false);
+            // JSON envelope mode wraps responses regardless of --format. Even when the
+            // request was parsed from text format, the envelope still emits JSON so the
+            // NDJSON contract is preserved for callers piping to jq.
+            var rawMessage = DynamicInvoker.MessageToJson(message, emitDefaults, false);
             var inner = JsonNode.Parse(rawMessage);
 
             var envelope = new
@@ -171,6 +175,16 @@ internal static class OutputRenderer
             };
 
             w.WriteLine(JsonSerializer.Serialize(envelope, CompactJsonOptions));
+
+            return;
+        }
+
+        if (textFormat && message is SimpleDynamicMessage dyn)
+        {
+            // Pretty protobuf text-format output for parity with upstream grpcurl's
+            // -format text. Falls back to JSON when the message isn't a dynamic message
+            // (the well-known-type pipeline returns concrete types for some shapes).
+            w.WriteLine(DynamicTextFormat.Print(dyn));
 
             return;
         }
@@ -211,24 +225,24 @@ internal static class OutputRenderer
         }
 
         var fields = msg.Fields.InDeclarationOrder()
-            .Where(f => !oneofFieldSet.Contains(f))
-            .Select(BuildFieldDescriptorJson)
-            .ToList();
+                        .Where(f => !oneofFieldSet.Contains(f))
+                        .Select(BuildFieldDescriptorJson)
+                        .ToList();
 
         var oneofs = msg.Oneofs
-            .Where(o => !o.IsSynthetic)
-            .Select(o => new
-            {
-                name = o.Name,
-                fields = o.Fields.Select(f => f.Name).ToList()
-            })
-            .ToList();
+                        .Where(o => !o.IsSynthetic)
+                        .Select(o => new
+                        {
+                            name = o.Name,
+                            fields = o.Fields.Select(f => f.Name).ToList()
+                        })
+                        .ToList();
 
         // Skip synthetic map-entry types.
         var nestedTypes = msg.NestedTypes
-            .Where(n => n.GetOptions()?.MapEntry != true)
-            .Select(BuildMessageEnvelope)
-            .ToList();
+                             .Where(n => n.GetOptions()?.MapEntry != true)
+                             .Select(BuildMessageEnvelope)
+                             .ToList();
 
         var nestedEnums = msg.EnumTypes.Select(BuildEnumEnvelope).ToList();
 
@@ -263,9 +277,9 @@ internal static class OutputRenderer
     {
         var label = field switch
         {
-            { IsMap: true } => "map",
+            { IsMap: true }      => "map",
             { IsRepeated: true } => "repeated",
-            _ => "optional"
+            _                    => "optional"
         };
 
         return new

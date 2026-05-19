@@ -98,13 +98,46 @@ grpcurl.net invoke \
 
 ### Generating test certificates
 
-The repo ships `Scripts/generate-certs.sh`, which uses `openssl` to produce a self-signed CA, server cert, client cert, and matching `.p12` bundles for integration testing. Run once:
+The repo ships `Tests/TestCertificates/generate-certs.sh` (and a PowerShell sibling `generate-certs.ps1`), which uses `openssl` to produce a self-signed CA, server cert, client cert, and matching `.p12` bundles for integration testing. Run once:
 
 ```bash
-bash Scripts/generate-certs.sh
+# Linux / macOS / WSL
+bash Tests/TestCertificates/generate-certs.sh
+
+# Windows (PowerShell 7+)
+pwsh Tests/TestCertificates/generate-certs.ps1
 ```
 
 The test suite regenerates `client.pfx` on demand from the checked-in PEM pair (see `Tests/GrpCurl.DotNet.Tests.Unit/Utilities/GrpcChannelFactoryTests.EnsureClientPfx`), so you don't need `openssl` locally to run unit tests.
+
+### TLS hardening defaults
+
+GrpCurl.Net applies these defaults whenever `--cacert` or `--cert` is supplied:
+
+| Setting | Default | Override |
+|---|---|---|
+| Revocation policy | `Online` (fetches CRL / OCSP) | `--revocation-mode offline\|nocheck` |
+| PKCS12 private-key storage | `EphemeralKeySet` on Linux; platform default keychain handling on macOS; non-exportable `UserKeySet` on Windows for Schannel mTLS compatibility | `--exportable-key` |
+| Cert format detection | Content-based — PKCS12 is tried first, PEM fallback if it fails | (none) |
+
+Use `--revocation-mode nocheck` only against self-signed fixtures that lack a CRL distribution point. Production deployments should leave the default `Online` so revoked certs are rejected.
+
+On Windows, .NET's Schannel-backed TLS stack requires the client certificate private key to be available from a key set for mTLS handshakes, so GrpCurl.Net uses non-exportable `UserKeySet` there. Linux keeps the safer ephemeral behavior. macOS does not support `EphemeralKeySet` for PFX private keys because .NET needs keychain-backed storage, so GrpCurl.Net uses platform default keychain handling on macOS. Use `--exportable-key` only when a workflow explicitly needs exportable private key material.
+
+### Verbose output and secrets
+
+When `--verbose` (`-v`) prints request metadata it redacts sensitive header values by default:
+
+```text
+authorization: [REDACTED]
+x-api-key: [REDACTED]
+cookie: [REDACTED]
+trace-bin: [REDACTED]
+```
+
+Patterns that always redact: `authorization`, `cookie`, `set-cookie`, `proxy-authorization`, `x-api-key`, `x-auth-token`, `x-access-token`, `x-csrf-token`, `x-amz-security-token`, and any header whose final segment is `-token`, `-secret`, `-password`, `-credential`, `-signature`/`-sig`, `-nonce`, `-jwt`, `-api-key`/`-api_key`. All `*-bin` metadata is redacted too because the base64 payload is opaque.
+
+Pass `--unsafe-show-secrets` to opt out of redaction (e.g. when piping `-v` output through a sanitiser of your own).
 
 ## OAuth2 / service-account flow
 

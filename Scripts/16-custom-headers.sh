@@ -8,7 +8,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GRPCURL="$SCRIPT_DIR/../Src/GrpCurl.Net/bin/Debug/net10.0/GrpCurl.Net"
+. "$SCRIPT_DIR/common.sh"
 SERVER="localhost:9090"
 
 echo "=== Custom Headers ==="
@@ -18,15 +18,15 @@ echo "Multiple headers can be specified by repeating the option."
 echo ""
 
 echo "--- Single custom header ---"
-echo "Command: grpcurl.net invoke --plaintext -H 'Authorization: Bearer token123' -v $SERVER testing.TestService/EmptyCall"
+echo "Command: grpcurl.net invoke --plaintext --max-time 10s -H 'Authorization: Bearer token123' -v $SERVER testing.TestService/EmptyCall"
 echo ""
-$GRPCURL invoke --plaintext -H "Authorization: Bearer token123" -v $SERVER testing.TestService/EmptyCall
+grpcurl_net invoke --plaintext --max-time 10s -H "Authorization: Bearer token123" -v $SERVER testing.TestService/EmptyCall
 
 echo ""
 echo "--- Multiple custom headers ---"
-echo "Command: grpcurl.net invoke --plaintext -H 'X-Request-Id: 12345' -H 'X-Custom-Header: value' -v $SERVER testing.TestService/EmptyCall"
+echo "Command: grpcurl.net invoke --plaintext --max-time 10s -H 'X-Request-Id: 12345' -H 'X-Custom-Header: value' -v $SERVER testing.TestService/EmptyCall"
 echo ""
-$GRPCURL invoke --plaintext -H "X-Request-Id: 12345" -H "X-Custom-Header: value" -v $SERVER testing.TestService/EmptyCall
+grpcurl_net invoke --plaintext --max-time 10s -H "X-Request-Id: 12345" -H "X-Custom-Header: value" -v $SERVER testing.TestService/EmptyCall
 
 echo ""
 echo "=== Done ==="

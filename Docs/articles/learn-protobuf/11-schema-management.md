@@ -52,7 +52,7 @@ When investigating a production issue, having the exact schema from the time of 
 The `--protoset-out` flag tells GrpCurl.Net to save the schema it discovers via server reflection to a file:
 
 ```bash
-grpcurl.net list --plaintext --protoset-out service.protoset localhost:9090
+grpcurl.net list --plaintext --max-time 10s --protoset-out service.protoset localhost:9090
 ```
 
 This command does two things:
@@ -61,6 +61,8 @@ This command does two things:
 2. Saves the complete schema to `service.protoset`
 
 The exported file contains all services, messages, enums, and their dependencies -- everything needed to work with the server's API offline.
+
+`--protoset-out` refuses to overwrite an existing file unless you pass `--force`. When exporting from reflection in scripts, pair it with `--max-time` so discovery has an explicit total deadline.
 
 ### Verifying the Export
 
@@ -166,13 +168,13 @@ grpcurl.net invoke --plaintext --protoset service.protoset \
 echo '{"payload":{"body":"YQ=="}}
 {"payload":{"body":"YmI="}}' | \
 grpcurl.net invoke --plaintext --protoset service.protoset \
-  -d @ localhost:9090 testing.TestService/StreamingInputCall
+  --max-stdin-bytes 1048576 -d @ localhost:9090 testing.TestService/StreamingInputCall
 
 # Bidirectional streaming
 echo '{"responseParameters": [{"size": 10}]}
 {"responseParameters": [{"size": 20}]}' | \
 grpcurl.net invoke --plaintext --protoset service.protoset \
-  -d @ localhost:9090 testing.TestService/FullDuplexCall
+  --max-stdin-bytes 1048576 -d @ localhost:9090 testing.TestService/FullDuplexCall
 ```
 
 ## Working with Multiple Protoset Files
@@ -210,7 +212,7 @@ Protoset files fit naturally into version control workflows. Because they are bi
 **Step 1: Export the schema from your staging environment**
 
 ```bash
-grpcurl.net list --plaintext --protoset-out schemas/v1.0.0.protoset staging-server:9090
+grpcurl.net list --plaintext --max-time 10s --protoset-out schemas/v1.0.0.protoset staging-server:9090
 ```
 
 **Step 2: Commit to version control**
@@ -258,7 +260,7 @@ Let us walk through a complete workflow that demonstrates the practical value of
 Start by capturing the schema from the running TestServer:
 
 ```bash
-grpcurl.net list --plaintext --protoset-out testserver.protoset localhost:9090
+grpcurl.net list --plaintext --max-time 10s --protoset-out testserver.protoset localhost:9090
 ```
 
 ### 2. Inspect the Schema Offline
@@ -314,6 +316,12 @@ The protoset file can now be:
 | Quick debugging during development | Server reflection |
 
 Both approaches use the same underlying schema information. The choice is about where that information comes from: the network (reflection) or a file (protoset).
+
+## Safety Limits and Generated Files
+
+GrpCurl.Net treats descriptor input as untrusted. Local protoset files are capped at 64 MiB each before they are read, and reflection descriptor responses are capped at 16 MiB by default. Descriptor loading also limits the retained graph to 2,048 files, 65,536 symbols, and an import dependency depth of 128.
+
+When you export schemas, `--protoset-out` creates the file only if it does not already exist; use `--force` for intentional replacement. If you reconstruct `.proto` files with `--proto-out-dir`, descriptor file names must be relative and must stay inside the chosen output directory. Rooted paths and `..` traversal are rejected.
 
 ## Series Conclusion
 

@@ -8,7 +8,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GRPCURL="$SCRIPT_DIR/../Src/GrpCurl.Net/bin/Debug/net10.0/GrpCurl.Net"
+. "$SCRIPT_DIR/common.sh"
 SERVER="localhost:9090"
 
 echo "=== Half Duplex Bidirectional Streaming ==="
@@ -29,10 +29,11 @@ echo "Sending 3 requests (server buffers all, then responds):"
 echo "$REQUESTS"
 echo ""
 
-echo "Command: echo '<requests>' | grpcurl.net invoke --plaintext -d @ $SERVER testing.TestService/HalfDuplexCall"
+echo "Command: echo '<requests>' | grpcurl.net invoke --plaintext --max-time 10s --max-stdin-bytes 1048576 -d @ $SERVER testing.TestService/HalfDuplexCall"
+echo "Uses --max-stdin-bytes to make the stdin budget explicit for scripts."
 echo ""
 
-echo "$REQUESTS" | $GRPCURL invoke --plaintext -d @ $SERVER testing.TestService/HalfDuplexCall
+echo "$REQUESTS" | grpcurl_net invoke --plaintext --max-time 10s --max-stdin-bytes 1048576 -d @ $SERVER testing.TestService/HalfDuplexCall
 
 echo ""
 echo "=== Done ==="

@@ -244,13 +244,13 @@ The codebase has three test projects, all using xUnit v3 with Shouldly assertion
 
 ```bash
 # Entire solution
-dotnet build GrpCurl.Net.slnx
-dotnet run --project Tests/GrpCurl.DotNet.Tests.Unit        --no-build
-dotnet run --project Tests/GrpCurl.DotNet.Tests.Integration --no-build
-dotnet run --project Tests/Gql2Grpc.Tests                   --no-build
+dotnet restore GrpCurl.Net.slnx --locked-mode
+dotnet build GrpCurl.Net.slnx --configuration Release --no-restore /nr:false
+dotnet test GrpCurl.Net.slnx --configuration Release --no-build
+dotnet run --project Scripts/ValidationRunner/ValidationRunner.csproj --configuration Release --no-restore -- --ci
 
 # Single test by fully-qualified name
-dotnet run --project Tests/Gql2Grpc.Tests --no-build -- -method "*EndToEndTests*"
+dotnet test Tests/Gql2Grpc.Tests/Gql2Grpc.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~EndToEndTests"
 ```
 
 Test fixtures are reused across projects via a linked `GrpcTestFixture.cs` compile item in `Tests/Gql2Grpc.Tests/Fixtures/` — one fixture definition, consumed by both assemblies.

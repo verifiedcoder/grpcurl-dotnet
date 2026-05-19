@@ -2,13 +2,14 @@ using GrpCurl.Net.Exceptions;
 using GrpCurl.Net.Utilities;
 using Spectre.Console;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace GrpCurl.Net.Commands;
 
 /// <summary>
-///     Renders an <see cref="ErrorEnvelope"/> to stderr. Text mode emits Spectre.Console
+///     Renders an <see cref="ErrorEnvelope" /> to stderr. Text mode emits Spectre.Console
 ///     markup (matching the previous catch-block UX); JSON mode emits a single-line JSON
 ///     envelope suitable for agent consumption.
 /// </summary>
@@ -22,7 +23,7 @@ internal static class ErrorRenderer
         {
             new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
         },
-        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         WriteIndented = false
     };
 
@@ -41,7 +42,7 @@ internal static class ErrorRenderer
     }
 
     /// <summary>
-    ///     Renders the envelope and throws a silent <see cref="GrpcCommandException"/>
+    ///     Renders the envelope and throws a silent <see cref="GrpcCommandException" />
     ///     carrying it. The outer <c>SetAction</c> will return the envelope's exit code
     ///     without further rendering.
     /// </summary>
@@ -50,7 +51,7 @@ internal static class ErrorRenderer
     {
         Render(envelope, format, writer);
 
-        throw new GrpcCommandException(envelope.Message, envelope.ExitCode, silent: true)
+        throw new GrpcCommandException(envelope.Message, envelope.ExitCode, true)
         {
             Envelope = envelope
         };
@@ -109,14 +110,13 @@ internal static class ErrorRenderer
     private static string HeadlineFor(ErrorEnvelope envelope)
         => envelope.Category switch
         {
-            ErrorCategory.Usage => "Error",
-            ErrorCategory.Schema => "Error",
-            ErrorCategory.Network => "Connection Error",
-            ErrorCategory.Timeout => "Timeout Error",
+            ErrorCategory.Usage                                                => "Error",
+            ErrorCategory.Schema                                               => "Error",
+            ErrorCategory.Network                                              => "Connection Error",
+            ErrorCategory.Timeout                                              => "Timeout Error",
             ErrorCategory.Rpc when envelope.Grpc?.Status == "DeadlineExceeded" => "Deadline Exceeded",
-            ErrorCategory.Rpc => "RPC Error",
-            ErrorCategory.Cancelled => "Cancelled",
-            ErrorCategory.Internal => "Error",
-            _ => "Error"
+            ErrorCategory.Rpc                                                  => "RPC Error",
+            ErrorCategory.Cancelled                                            => "Cancelled",
+            _                                                                  => "Error"
         };
 }

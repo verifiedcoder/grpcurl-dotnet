@@ -1,19 +1,23 @@
 # GrpCurl.Net
 
-A .NET implementation of grpcurl - a command-line tool for interacting with gRPC servers.
+A .NET implementation of grpcurl — a command-line tool for interacting with gRPC servers, plus a reusable .NET library (`GrpCurl.Net.Core`) that backs both the CLI and the `Gql2Grpc` GraphQL-to-gRPC proxy.
 
 ## Overview
 
-GrpCurl.Net allows you to interact with gRPC servers using JSON requests instead of binary protocol buffers. It supports server reflection, protoset files, and dynamic method invocation for all four gRPC method types.
+GrpCurl.Net lets you call gRPC servers with JSON instead of binary protobuf. It supports server reflection, protoset files, dynamic invocation for all four gRPC method types, mTLS, Unix domain sockets, and HTTP/2 `:authority` override.
 
 ## Key Features
 
-- **Server Reflection** - Discover services and methods at runtime
-- **Protoset Support** - Use pre-compiled descriptor files for offline operation
-- **All Streaming Types** - Unary, server-streaming, client-streaming, and bidirectional
-- **Rich CLI** - Verbose output, timing information, and colored terminal display
-- **TLS/mTLS** - Full support for secure connections and mutual authentication
-- **Cross-Platform** - Runs on Windows, Linux, and macOS
+- **Server Reflection** — Discover services and methods at runtime over `grpc.reflection.v1alpha`.
+- **Protoset Support** — Use pre-compiled `FileDescriptorSet` files for offline operation.
+- **All Streaming Types** — Unary, server-streaming, client-streaming, and bidirectional.
+- **TLS / mTLS** — Custom CA, PEM and PKCS12 client certs, content-based format detection, configurable revocation policy, ephemeral key storage by default.
+- **HTTP/2 `:authority`** — True per-request authority override via a delegating handler; `--servername` still controls SNI / cert validation.
+- **Unix domain sockets** — `unix:///path/to/sock` addresses on Linux and macOS.
+- **Binary metadata** — `-H "trace-bin: <base64>"` is decoded and sent as `byte[]` metadata.
+- **Whole-operation `--max-time`** — Bounds the entire flow (protoset load, reflection, stdin reads, RPC), not just the gRPC deadline.
+- **Secret redaction** — `--verbose` redacts sensitive metadata (authorization, cookies, `*-token`, `*-secret`, `*-bin`, etc.). `--unsafe-show-secrets` opts out.
+- **Cross-platform** — Build, test, and publish on Windows, Linux, and macOS. CI runs the full suite on all three.
 
 ## Quick Start
 
@@ -25,19 +29,43 @@ grpcurl.net list --plaintext localhost:9090
 grpcurl.net describe --plaintext localhost:9090 my.package.Service
 
 # Invoke a method
-grpcurl.net invoke --plaintext -d '{"name": "World"}' localhost:9090 my.package.Service/SayHello
+grpcurl.net invoke --plaintext --max-time 30s \
+  -d '{"name": "World"}' localhost:9090 my.package.Service/SayHello
+
+# mTLS with custom CA + client cert
+grpcurl.net invoke --max-time 30s \
+  --cacert ca.pem --cert client.crt --key client.key \
+  -d '{}' my-service.internal:443 my.package.Service/Status
+
+# Unix-domain socket (Linux / macOS)
+grpcurl.net invoke --plaintext --max-time 30s \
+  unix:///var/run/grpc.sock my.package.Service/Status -d '{}'
 ```
+
+## Install
+
+GrpCurl.Net packages as a [.NET global tool](https://learn.microsoft.com/dotnet/core/tools/global-tools):
+
+```bash
+dotnet pack Src/GrpCurl.Net -c Release
+dotnet tool install -g GrpCurl.Net --add-source Src/GrpCurl.Net/bin/Release
+grpcurl.net --version
+```
+
+A published NuGet feed will land once we cut a release; until then, build from source as above.
+
+The `Gql2Grpc` GraphQL proxy ships as a separate tool (`gql2grpc`) and the reusable core ships as `GrpCurl.Net.Core`.
 
 ## Agent / Script Usage
 
 GrpCurl.Net is designed to be driven by AI agents and shell scripts without human input.
 
-- **JSON output**: Pass `--output json` to any subcommand. `list`/`describe` emit a single JSON envelope per call; `invoke` emits one NDJSON envelope per response message (`{"kind":"message","index":N,"message":{...}}`).
+- **JSON output**: Pass `--output json`. `list`/`describe` emit one JSON envelope per call. `invoke` emits NDJSON: one `{"kind":"message","index":N,"message":{...}}` line per response.
 - **Errors on stderr**: All errors and progress chatter go to **stderr**. **stdout** carries only data. In `--output json` mode errors are a single JSON line on stderr (`{"kind":"error","category":"rpc|network|timeout|usage|schema|cancelled|internal", "exitCode":N, "message":"...", ...}`).
 - **Exit codes**: `0` success, `1` internal, `2` usage, `3` schema/file, `4` network, `5` timeout, `64+gRPC status` for RPC errors, `130` for Ctrl+C.
-- **Always set `--max-time`** on `invoke`. There is no built-in default deadline; without it a hung server can block forever.
-- **stdin**: `--data @` reads JSON from stdin. The CLI **refuses** to read from a TTY (it would block) — pipe input or use inline `--data '{...}'`. For client/bidi streaming, supply a JSON array (`--data '[{...},{...}]'`) or concatenated objects.
-- **Headers**: `-H 'name: value'` may be repeated. Values support `${VAR}` environment-variable expansion.
+- **Always set `--max-time`** on reflection-backed `list`/`describe`, `invoke`, and `gql2grpc` in unattended scripts. There is no built-in default deadline; without it a hung server can block forever.
+- **stdin**: `--data @` reads JSON from stdin. The CLI **refuses** to read from a TTY — pipe input or use inline `--data '{...}'`. Stdin reads are capped at 16 MiB by default; use `--max-stdin-bytes <bytes>` to set an explicit numeric byte limit. For client/bidi streaming, supply a JSON array (`--data '[{...},{...}]'`) or concatenated objects.
+- **Headers**: `-H 'name: value'` may be repeated. Text values support `${VAR}` environment-variable expansion. Header names ending in `-bin` are base64-decoded and sent as binary metadata.
 - **Idempotent file outputs**: `--protoset-out` refuses to overwrite an existing file unless `--force` is set.
 
 ```bash
@@ -58,15 +86,34 @@ grpcurl.net invoke --plaintext --output json --max-time 5s \
 
 The documentation is a [DocFx](https://github.com/dotnet/docfx) project, so you can serve a self-contained local documentation site.
 
-- [Introduction](Docs/introduction.md) - Learn about GrpCurl.Net and its capabilities
-- [Getting Started](Docs/getting-started.md) - Installation and first steps
-- [CLI Reference](Docs/articles/cli-reference.md) - Complete command reference
-- [Examples](Docs/articles/examples.md) - Usage examples for common scenarios
-- [Architecture](Docs/articles/architecture.md) - Internal design and extensibility
-- [Learn Protobuf](Docs/articles/learn-protobuf/index.md) - Tutorial series: learn protobuf from scratch
-- [API Reference](Docs/api/GrpCurl.Net.DescriptorSources.yml) - Public API documentation
+- [Introduction](Docs/introduction.md) — Learn about GrpCurl.Net and its capabilities
+- [Getting Started](Docs/getting-started.md) — Installation and first steps
+- [CLI Reference](Docs/articles/cli-reference.md) — Complete command reference
+- [Examples](Docs/articles/examples.md) — Usage examples for common scenarios
+- [Architecture](Docs/articles/architecture.md) — Internal design and extensibility (now split into `GrpCurl.Net.Core` + CLI)
+- [Authentication](Docs/articles/authentication.md) — TLS, mTLS, hardening defaults, secret redaction
+- [Learn Protobuf](Docs/articles/learn-protobuf/index.md) — Tutorial series
+- [API Reference](Docs/api-reference.md) — Public API documentation
 
 ## Requirements
 
 - .NET 10.0 or later
 - Target gRPC server with reflection enabled (or protoset files)
+
+## Repository Layout
+
+```
+Src/
+  GrpCurl.Net.Core/     # Reusable library — descriptor sources, channel factory, invocation
+  GrpCurl.Net/          # CLI shell — references GrpCurl.Net.Core
+  Gql2Grpc/             # GraphQL-to-gRPC proxy — references GrpCurl.Net.Core
+Tests/
+  GrpCurl.DotNet.Tests.Unit/
+  GrpCurl.DotNet.Tests.Integration/
+  GrpCurl.Net.TestServer/
+  Gql2Grpc.Tests/
+  TestCertificates/     # Test CA + server/client/expired/wrong-CA cert fixtures
+  TestProtosets/
+Docs/                   # DocFX site
+Scripts/                # Feature demonstration scripts (Unix/WSL/Git-Bash)
+```

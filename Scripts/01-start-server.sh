@@ -8,7 +8,8 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_DIR="$SCRIPT_DIR/.."
+. "$SCRIPT_DIR/common.sh"
+PROJECT_FILE="$(grpcurl_dotnet_path "${GRPCURL_DOTNET_REPO_ROOT}/Tests/GrpCurl.Net.TestServer/GrpCurl.Net.TestServer.csproj")"
 
 echo "=== Starting GrpCurl.Net TestServer ==="
 echo ""
@@ -16,5 +17,5 @@ echo "Server will start on localhost:9090"
 echo "Press Ctrl+C to stop the server"
 echo ""
 
-cd "$PROJECT_DIR"
-dotnet run --project Tests/GrpCurl.Net.TestServer
+cd "$GRPCURL_DOTNET_REPO_ROOT"
+exec "${GRPCURL_DOTNET_DOTNET}" run --project "$PROJECT_FILE"

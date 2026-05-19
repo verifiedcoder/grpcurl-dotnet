@@ -189,7 +189,7 @@ When sending multiple messages to a client-streaming or bidirectional RPC, you p
 echo '{"payload":{"body":"YQ=="}}
 {"payload":{"body":"YmI="}}
 {"payload":{"body":"Y2Nj"}}' | \
-grpcurl.net invoke --plaintext -d @ localhost:9090 testing.TestService/StreamingInputCall
+grpcurl.net invoke --plaintext --max-stdin-bytes 1048576 -d @ localhost:9090 testing.TestService/StreamingInputCall
 ```
 
 Expected output:
@@ -201,6 +201,8 @@ Expected output:
 ```
 
 The server received three payloads (`YQ==` decodes to "a" at 1 byte, `YmI=` decodes to "bb" at 2 bytes, `Y2Nj` decodes to "ccc" at 3 bytes) and returned the total size: 6 bytes.
+
+`-d @` reads at most 16 MiB from stdin by default. In scripts, `--max-stdin-bytes 1048576` makes the input budget explicit and fails before parsing if the pipe grows beyond that limit.
 
 #### Hands-On: Client Streaming via Concatenated JSON
 
@@ -266,7 +268,7 @@ Send multiple requests and observe the server responding to each one:
 echo '{"responseParameters": [{"size": 10}]}
 {"responseParameters": [{"size": 20}]}
 {"responseParameters": [{"size": 30}]}' | \
-grpcurl.net invoke --plaintext -d @ localhost:9090 testing.TestService/FullDuplexCall
+grpcurl.net invoke --plaintext --max-stdin-bytes 1048576 -d @ localhost:9090 testing.TestService/FullDuplexCall
 ```
 
 Expected output:
@@ -298,7 +300,7 @@ HalfDuplexCall echoes back each request's payload. The server buffers all reques
 ```bash
 echo '{"payload":{"body":"SGVsbG8="}}
 {"payload":{"body":"V29ybGQ="}}' | \
-grpcurl.net invoke --plaintext -d @ localhost:9090 testing.TestService/HalfDuplexCall
+grpcurl.net invoke --plaintext --max-stdin-bytes 1048576 -d @ localhost:9090 testing.TestService/HalfDuplexCall
 ```
 
 Expected output:
@@ -344,22 +346,22 @@ GrpCurl.Net's `list` and `describe` commands are your primary tools for understa
 
 ```bash
 # List all services on a server
-grpcurl.net list --plaintext localhost:9090
+grpcurl.net list --plaintext --max-time 10s localhost:9090
 
 # List all methods on a specific service
-grpcurl.net list --plaintext localhost:9090 testing.TestService
+grpcurl.net list --plaintext --max-time 10s localhost:9090 testing.TestService
 
 # Describe a service (shows all method signatures)
-grpcurl.net describe --plaintext localhost:9090 testing.TestService
+grpcurl.net describe --plaintext --max-time 10s localhost:9090 testing.TestService
 
 # Describe a specific method
-grpcurl.net describe --plaintext localhost:9090 testing.TestService.UnaryCall
+grpcurl.net describe --plaintext --max-time 10s localhost:9090 testing.TestService.UnaryCall
 
 # Describe a request message with a template
-grpcurl.net describe --plaintext --msg-template localhost:9090 testing.StreamingOutputCallRequest
+grpcurl.net describe --plaintext --max-time 10s --msg-template localhost:9090 testing.StreamingOutputCallRequest
 ```
 
-These commands work through **server reflection** -- the server describes its own API at runtime. This means you can explore any reflection-enabled gRPC server without having its `.proto` files on hand.
+These commands work through **server reflection** -- the server describes its own API at runtime. This means you can explore any reflection-enabled gRPC server without having its `.proto` files on hand. In unattended runs, add `--max-time` so reflection discovery cannot wait forever on a slow or blocked server.
 
 ## Recap
 
@@ -372,7 +374,7 @@ In this chapter you learned:
 - **Server streaming** delivers multiple responses from a single request
 - **Client streaming** sends multiple requests and receives a single aggregated response
 - **Bidirectional streaming** allows both sides to send multiple messages, with full duplex (immediate) and half duplex (buffered) being implementation choices
-- GrpCurl.Net supports all four patterns, using **`-d @`** with stdin or **concatenated JSON** to send multiple messages
+- GrpCurl.Net supports all four patterns, using **`-d @`** with bounded stdin or **concatenated JSON** to send multiple messages
 
 ## What's Next
 

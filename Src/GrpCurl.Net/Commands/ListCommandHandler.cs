@@ -3,7 +3,6 @@ using Grpc.Core;
 using GrpCurl.Net.DescriptorSources;
 using GrpCurl.Net.Exceptions;
 using GrpCurl.Net.Utilities;
-using Spectre.Console;
 using System.CommandLine;
 
 namespace GrpCurl.Net.Commands;
@@ -63,6 +62,11 @@ internal static class ListCommandHandler
         var connectTimeoutOpt = new Option<string?>("--connect-timeout")
         {
             Description = "Connection timeout (e.g., '10s', '1m', '500ms'). Default: 10s"
+        };
+
+        var maxTimeOpt = new Option<string?>("--max-time")
+        {
+            Description = "Maximum time for the whole list operation (e.g., '30s', '5m')."
         };
 
         var authorityOpt = new Option<string?>("--authority")
@@ -126,6 +130,7 @@ internal static class ListCommandHandler
             keyOpt,
             certPasswordOpt,
             connectTimeoutOpt,
+            maxTimeOpt,
             authorityOpt,
             serverNameOpt,
             verboseOpt,
@@ -151,6 +156,7 @@ internal static class ListCommandHandler
             var key = parseResult.GetValue(keyOpt);
             var certPassword = parseResult.GetValue(certPasswordOpt);
             var connectTimeout = parseResult.GetValue(connectTimeoutOpt);
+            var maxTime = parseResult.GetValue(maxTimeOpt);
             var authority = parseResult.GetValue(authorityOpt);
             var serverName = parseResult.GetValue(serverNameOpt);
             var verbose = parseResult.GetValue(verboseOpt);
@@ -184,7 +190,8 @@ internal static class ListCommandHandler
                     reflectHeaders,
                     protosetOut,
                     output,
-                    force);
+                    force,
+                    maxTime);
 
                 return 0;
             }
@@ -220,14 +227,15 @@ internal static class ListCommandHandler
 
             // Warn about incompatible option combinations
             case > 0 when !string.IsNullOrEmpty(address):
-                {
-                    if (verbose)
-                    {
-                        Diagnostics.Markup("[yellow]Warning:[/] Both --protoset and address specified. Using protoset files (server reflection will be ignored).");
-                    }
 
-                    break;
+            {
+                if (verbose)
+                {
+                    Diagnostics.Markup("[yellow]Warning:[/] Both --protoset and address specified. Using protoset files (server reflection will be ignored).");
                 }
+
+                break;
+            }
         }
 
         // Warn about TLS-specific options used with --plaintext
@@ -263,9 +271,17 @@ internal static class ListCommandHandler
         string[] reflectHeaders,
         string? protosetOut,
         OutputFormat output = OutputFormat.Text,
-        bool force = false)
+        bool force = false,
+        string? maxTime = null)
     {
         var startTime = DateTime.UtcNow;
+        var maxTimeSpan = maxTime is not null ? GrpcChannelFactory.ParseDuration(maxTime) : (TimeSpan?)null;
+
+        using var deadlineCts = maxTimeSpan is not null
+            ? new CancellationTokenSource(maxTimeSpan.Value)
+            : new CancellationTokenSource();
+
+        var operationToken = deadlineCts.Token;
 
         // When using protosets without a server, the first positional arg (address) is actually the service
         if (protosets.Length > 0 && !string.IsNullOrEmpty(address) && string.IsNullOrEmpty(service))
@@ -280,95 +296,92 @@ internal static class ListCommandHandler
         // Create timing context if very verbose mode is enabled
         var timing = veryVerbose ? new TimingContext() : null;
 
+        // Single ConnectionOptions bundle covers reflection. List has no business RPC, but
+        // we still build it through DescriptorSourceFactory so that channel lifetime and
+        // TLS material are handled the same way as invoke/describe/Gql2Grpc.
+        var channelOptions = new GrpcChannelFactory.ChannelOptions
+        {
+            Plaintext = plaintext,
+            InsecureSkipVerify = insecure,
+            CaCertPath = cacert,
+            ClientCertPath = cert,
+            ClientKeyPath = key,
+            ClientCertPassword = certPassword,
+            ConnectTimeout = connectTimeout is not null ? GrpcChannelFactory.ParseDuration(connectTimeout) : null,
+            Authority = authority,
+            ServerName = serverName
+        };
+
+        var reflectionMetadata = GrpcChannelFactory.CreateMetadata(
+            headers.Concat(reflectHeaders),
+            userAgent);
+
+        if (verbose && !string.IsNullOrEmpty(address) && protosets.Length == 0)
+        {
+            Diagnostics.Markup($"[dim]Connecting to {address}...[/]");
+            Diagnostics.Markup($"[dim]Protocol: {(plaintext ? "HTTP/2 (plaintext)" : "HTTP/2 (TLS)")}[/]");
+
+            if (insecure)
+            {
+                Diagnostics.Markup("[dim]TLS verification: Disabled (--insecure)[/]");
+            }
+
+            if (connectTimeout is not null)
+            {
+                Diagnostics.Markup($"[dim]Connection timeout: {connectTimeout}[/]");
+            }
+
+            if (maxTime is not null)
+            {
+                Diagnostics.Markup($"[dim]Operation timeout: {maxTime}[/]");
+            }
+
+            if (authority is not null)
+            {
+                Diagnostics.Markup($"[dim]Authority: {authority}[/]");
+            }
+        }
+
         try
         {
-            IDescriptorSource descriptorSource;
+            timing?.StartPhase(protosets.Length > 0 ? "Protoset Loading" : "Connection Establishment");
 
-            if (protosets.Length > 0)
+            await using var session = await DescriptorSourceFactory.CreateAsync(
+                address,
+                protosets,
+                channelOptions,
+                reflectionMetadata,
+                operationToken);
+
+            var descriptorSource = session.Source;
+
+            switch (verbose)
             {
-                if (verbose)
-                {
-                    Diagnostics.Markup($"[dim]Loading {protosets.Length} protoset file(s)...[/]");
-                }
+                case true when protosets.Length == 0:
 
-                timing?.StartPhase("Protoset Loading");
-                descriptorSource = await ProtosetSource.LoadFromFilesAsync(protosets);
-
-                if (verbose)
-                {
-                    Diagnostics.Markup("[dim]Protoset files loaded successfully[/]");
-                }
-            }
-            else if (!string.IsNullOrEmpty(address))
-            {
-                if (verbose)
-                {
-                    Diagnostics.Markup($"[dim]Connecting to {address}...[/]");
-                    Diagnostics.Markup($"[dim]Protocol: {(plaintext ? "HTTP/2 (plaintext)" : "HTTP/2 (TLS)")}[/]");
-
-                    if (insecure)
-                    {
-                        Diagnostics.Markup("[dim]TLS verification: Disabled (--insecure)[/]");
-                    }
-
-                    if (connectTimeout is not null)
-                    {
-                        Diagnostics.Markup($"[dim]Connection timeout: {connectTimeout}[/]");
-                    }
-
-                    if (authority is not null)
-                    {
-                        Diagnostics.Markup($"[dim]Authority: {authority}[/]");
-                    }
-                }
-
-                timing?.StartPhase("Connection Establishment");
-
-                var channelOptions = new GrpcChannelFactory.ChannelOptions
-                {
-                    Plaintext = plaintext,
-                    InsecureSkipVerify = insecure,
-                    CaCertPath = cacert,
-                    ClientCertPath = cert,
-                    ClientKeyPath = key,
-                    ClientCertPassword = certPassword,
-                    ConnectTimeout = connectTimeout is not null ? GrpcChannelFactory.ParseDuration(connectTimeout) : null,
-                    Authority = authority,
-                    ServerName = serverName
-                };
-
-                var channel = GrpcChannelFactory.Create(address, channelOptions);
-
-                // Merge -H headers with --reflect-header
-                var metadata = GrpcChannelFactory.CreateMetadata(
-                    headers.Concat(reflectHeaders),
-                    userAgent);
-
-                descriptorSource = new ReflectionSource(channel, metadata, true);
-
-                if (verbose)
-                {
                     Diagnostics.Markup("[dim]Connected successfully, querying server reflection...[/]");
-                }
-            }
-            else
-            {
-                // This should never happen due to ValidateOptions, but keep as fallback
-                throw new InvalidOperationException("Must specify either --protoset files or server address");
+
+                    break;
+
+                case true when protosets.Length > 0:
+
+                    Diagnostics.Markup("[dim]Protoset files loaded successfully[/]");
+
+                    break;
             }
 
             timing?.StartPhase("Schema Discovery");
 
             if (string.IsNullOrEmpty(service))
             {
-                await ListServicesAsync(descriptorSource, verbose, output);
+                await ListServicesAsync(descriptorSource, verbose, output, operationToken);
 
                 // Export all services if --protoset-out specified
                 if (!string.IsNullOrEmpty(protosetOut))
                 {
-                    var services = await descriptorSource.ListServicesAsync();
+                    var services = await descriptorSource.ListServicesAsync(operationToken);
 
-                    await ProtosetExporter.WriteProtosetAsync(descriptorSource, protosetOut, force, [.. services]);
+                    await ProtosetExporter.WriteProtosetAsync(descriptorSource, protosetOut, force, [.. services], operationToken);
 
                     if (verbose)
                     {
@@ -378,12 +391,12 @@ internal static class ListCommandHandler
             }
             else
             {
-                await ListMethodsAsync(descriptorSource, service, verbose, output);
+                await ListMethodsAsync(descriptorSource, service, verbose, output, operationToken);
 
                 // Export the specific service if --protoset-out specified
                 if (!string.IsNullOrEmpty(protosetOut))
                 {
-                    await ProtosetExporter.WriteProtosetAsync(descriptorSource, protosetOut, force, [service]);
+                    await ProtosetExporter.WriteProtosetAsync(descriptorSource, protosetOut, force, [service], operationToken);
 
                     if (verbose)
                     {
@@ -432,12 +445,12 @@ internal static class ListCommandHandler
                     "Check firewall settings",
                     "Verify the address and port are correct"
                 },
-                StatusCode.Unimplemented => new[]
-                {
+                StatusCode.Unimplemented =>
+                [
                     "Server does not support reflection",
                     "Use --protoset to provide schema files instead",
                     "Ask server admin to enable grpc-reflection"
-                },
+                ],
                 _ => []
             };
 
@@ -480,14 +493,28 @@ internal static class ListCommandHandler
                 ExitCode = 5,
                 Message = $"Connection to {address ?? string.Empty} timed out",
                 Address = address,
-                Hint = connectTimeout is not null
-                    ? $"Connection timeout was set to: {connectTimeout}"
-                    : verbose ? ex.Message : null,
+                Hint = BuildTimeoutHint(connectTimeout, verbose, ex.Message),
                 Suggestions =
                 [
                     "Increase timeout with --connect-timeout (e.g., --connect-timeout 30s)",
                     "Check network connectivity",
                     "Verify server address is correct"
+                ]
+            }, output);
+        }
+        catch (OperationCanceledException ex) when (maxTime is not null && deadlineCts.IsCancellationRequested)
+        {
+            ErrorRenderer.RenderAndThrow(new ErrorEnvelope
+            {
+                Category = ErrorCategory.Timeout,
+                ExitCode = 5,
+                Message = $"Operation exceeded --max-time ({maxTime})",
+                Address = address,
+                Hint = verbose ? ex.Message : null,
+                Suggestions =
+                [
+                    "Increase --max-time for large schemas or slow reflection services",
+                    "Use --protoset for offline schema discovery when possible"
                 ]
             }, output);
         }
@@ -526,14 +553,18 @@ internal static class ListCommandHandler
         }
     }
 
-    internal static async Task ListServicesAsync(IDescriptorSource descriptorSource, bool verbose, OutputFormat output = OutputFormat.Text)
+    internal static async Task ListServicesAsync(
+        IDescriptorSource descriptorSource,
+        bool verbose,
+        OutputFormat output = OutputFormat.Text,
+        CancellationToken cancellationToken = default)
     {
         if (verbose)
         {
             Diagnostics.Markup("[dim]Listing services...[/]");
         }
 
-        var services = await descriptorSource.ListServicesAsync();
+        var services = await descriptorSource.ListServicesAsync(cancellationToken);
 
         if (services.Count == 0 && output == OutputFormat.Text)
         {
@@ -545,14 +576,19 @@ internal static class ListCommandHandler
         OutputRenderer.WriteListServices(services, output);
     }
 
-    internal static async Task ListMethodsAsync(IDescriptorSource descriptorSource, string serviceName, bool verbose, OutputFormat output = OutputFormat.Text)
+    internal static async Task ListMethodsAsync(
+        IDescriptorSource descriptorSource,
+        string serviceName,
+        bool verbose,
+        OutputFormat output = OutputFormat.Text,
+        CancellationToken cancellationToken = default)
     {
         if (verbose)
         {
             Diagnostics.Markup($"[dim]Finding service '{serviceName}'...[/]");
         }
 
-        var descriptor = await descriptorSource.FindSymbolAsync(serviceName);
+        var descriptor = await descriptorSource.FindSymbolAsync(serviceName, cancellationToken);
 
         if (descriptor is not ServiceDescriptor serviceDescriptor)
         {
@@ -565,7 +601,7 @@ internal static class ListCommandHandler
 
             ErrorRenderer.Render(envelope, output);
 
-            throw new GrpcCommandException(envelope.Message, envelope.ExitCode, silent: true) { Envelope = envelope };
+            throw new GrpcCommandException(envelope.Message, envelope.ExitCode, true) { Envelope = envelope };
         }
 
         if (verbose)
@@ -581,5 +617,15 @@ internal static class ListCommandHandler
         }
 
         OutputRenderer.WriteListMethods(serviceName, serviceDescriptor, output);
+    }
+
+    private static string? BuildTimeoutHint(string? connectTimeout, bool verbose, string exceptionMessage)
+    {
+        if (connectTimeout is not null)
+        {
+            return $"Connection timeout was set to: {connectTimeout}";
+        }
+
+        return verbose ? exceptionMessage : null;
     }
 }

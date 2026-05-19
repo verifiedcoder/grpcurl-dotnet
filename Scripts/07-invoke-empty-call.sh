@@ -8,7 +8,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GRPCURL="$SCRIPT_DIR/../Src/GrpCurl.Net/bin/Debug/net10.0/GrpCurl.Net"
+. "$SCRIPT_DIR/common.sh"
 SERVER="localhost:9090"
 
 echo "=== Invoke EmptyCall (Simplest Unary RPC) ==="
@@ -16,10 +16,10 @@ echo ""
 echo "EmptyCall takes an empty request and returns an empty response."
 echo "This is the simplest possible gRPC invocation."
 echo ""
-echo "Command: grpcurl.net invoke --plaintext $SERVER testing.TestService/EmptyCall"
+echo "Command: grpcurl.net invoke --plaintext --max-time 10s $SERVER testing.TestService/EmptyCall"
 echo ""
 
-$GRPCURL invoke --plaintext $SERVER testing.TestService/EmptyCall
+grpcurl_net invoke --plaintext --max-time 10s $SERVER testing.TestService/EmptyCall
 
 echo ""
 echo "=== Done ==="

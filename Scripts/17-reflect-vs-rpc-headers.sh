@@ -8,7 +8,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GRPCURL="$SCRIPT_DIR/../Src/GrpCurl.Net/bin/Debug/net10.0/GrpCurl.Net"
+. "$SCRIPT_DIR/common.sh"
 SERVER="localhost:9090"
 
 echo "=== Header Types ==="
@@ -20,22 +20,22 @@ echo "  --rpc-header        : Sent ONLY with RPC calls"
 echo ""
 
 echo "--- Using -H (sent to both reflection and RPC) ---"
-echo "Command: grpcurl.net invoke --plaintext -H 'X-All: both' -v $SERVER testing.TestService/EmptyCall"
+echo "Command: grpcurl.net invoke --plaintext --max-time 10s -H 'X-All: both' -v $SERVER testing.TestService/EmptyCall"
 echo ""
-$GRPCURL invoke --plaintext -H "X-All: both" -v $SERVER testing.TestService/EmptyCall
+grpcurl_net invoke --plaintext --max-time 10s -H "X-All: both" -v $SERVER testing.TestService/EmptyCall
 
 echo ""
 echo "--- Using --rpc-header (sent only to RPC, not reflection) ---"
-echo "Command: grpcurl.net invoke --plaintext --rpc-header 'X-RPC-Only: value' -v $SERVER testing.TestService/EmptyCall"
+echo "Command: grpcurl.net invoke --plaintext --max-time 10s --rpc-header 'X-RPC-Only: value' -v $SERVER testing.TestService/EmptyCall"
 echo ""
-$GRPCURL invoke --plaintext --rpc-header "X-RPC-Only: value" -v $SERVER testing.TestService/EmptyCall
+grpcurl_net invoke --plaintext --max-time 10s --rpc-header "X-RPC-Only: value" -v $SERVER testing.TestService/EmptyCall
 
 echo ""
 echo "--- Using --reflect-header (sent only to reflection) ---"
 echo "This is useful when the reflection endpoint requires different authentication."
-echo "Command: grpcurl.net list --plaintext --reflect-header 'X-Reflect-Auth: secret' $SERVER"
+echo "Command: grpcurl.net list --plaintext --max-time 10s --reflect-header 'X-Reflect-Auth: secret' $SERVER"
 echo ""
-$GRPCURL list --plaintext --reflect-header "X-Reflect-Auth: secret" $SERVER
+grpcurl_net list --plaintext --max-time 10s --reflect-header "X-Reflect-Auth: secret" $SERVER
 
 echo ""
 echo "=== Done ==="

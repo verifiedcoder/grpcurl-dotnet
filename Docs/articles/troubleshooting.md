@@ -34,6 +34,12 @@ The target server does not expose the reflection service.
 - If you can't modify the server, supply a pre-compiled descriptor via `--protoset <path>`. Generate one from the `.proto` files with `protoc --descriptor_set_out=service.protoset --include_imports ./service.proto`.
 - Export on-the-fly from a server you *can* reach with reflection, using `--protoset-out service.protoset`, then point at the production server using `--protoset service.protoset`.
 
+Local protoset files are capped at 64 MiB each before they are read. Reflection descriptor responses are capped at 16 MiB by default, and the retained descriptor graph is bounded to avoid pathological schemas. If a legitimate schema hits one of these limits, prefer a smaller service-specific protoset or split the schema into focused protosets.
+
+### `--proto-out-dir` rejects descriptor file names
+
+When reconstructing `.proto` files, descriptor names are treated as untrusted input. Rooted paths, `..` path traversal, invalid path characters, and names that resolve outside the requested output directory are rejected instead of being written.
+
 ### `StatusCode.Unavailable` or connection refused
 
 - Confirm the server is actually listening: `ss -tln | grep <port>` (Linux) or `netstat -an` (Windows).
@@ -51,6 +57,15 @@ grpcurl.net invoke --vv --max-time 30s ...
 ```
 
 The `--vv` output breaks down connection, schema discovery, serialisation, and the RPC itself. If "RPC" dominates, the server is slow; if "Schema Discovery" dominates, consider a protoset to skip reflection.
+
+### Reflection-backed discovery hangs
+
+`list`, `describe`, and `--protoset-out` can all use server reflection. Add `--max-time` to bound the whole discovery operation:
+
+```bash
+grpcurl.net list --plaintext --max-time 10s localhost:9090
+grpcurl.net describe --plaintext --max-time 10s localhost:9090 my.pkg.Service
+```
 
 ### Connection hangs before status arrives
 
@@ -83,6 +98,14 @@ The JSON you supplied with `-d` contains a field the request message doesn't dec
 - Shell escaping trips up inline JSON. Prefer `-d @` (read from stdin) or `-d @file.json` (read from a file).
 - Protobuf JSON accepts both camelCase (`responseSize`) and snake_case (`response_size`) field names — you don't need to match the proto declaration exactly.
 
+### "Stdin exceeded the maximum allowed size"
+
+`grpcurl.net invoke -d @` accepts up to 16 MiB from stdin by default. For scripts, either split the payload or set an explicit numeric byte limit:
+
+```bash
+grpcurl.net invoke --plaintext --max-stdin-bytes 1048576 -d @ localhost:9090 my.pkg.Service/Call
+```
+
 ## Cancellation
 
 ### Ctrl+C mid-stream
@@ -111,6 +134,8 @@ Server-side streams can terminate for legitimate reasons (server-side `OnComplet
 ### "Required variable '$x' was not supplied"
 
 `VariableCoercer` requires every non-null operation variable to be supplied. Pass it via `--var x=value` or via `--variables-file vars.json`. Variables with `NonNullType` and no default value are always required.
+
+GraphQL document files, variables files, and YAML/JSON mapping files are capped at 4 MiB each before parsing. If a file exceeds that limit, reduce the input, split the mapping, or move large payload data into the underlying gRPC request rather than the GraphQL document.
 
 ### Unexpected `payload: null` in response
 

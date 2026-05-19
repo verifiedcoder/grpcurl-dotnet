@@ -3,9 +3,9 @@ using Gql2Grpc.Response;
 namespace Gql2Grpc.Execution;
 
 /// <summary>
-/// Runs per-root-field work in parallel with bounded concurrency while preserving document order
-/// in the final result array. Concurrency caps at four parallel fields to keep upstream pressure
-/// reasonable; tune via <see cref="DefaultMaxDegreeOfParallelism"/> if needed.
+///     Runs per-root-field work in parallel with bounded concurrency while preserving document order
+///     in the final result array. Concurrency caps at four parallel fields to keep upstream pressure
+///     reasonable; tune via <see cref="DefaultMaxDegreeOfParallelism" /> if needed.
 /// </summary>
 public static class ParallelFieldScheduler
 {
@@ -13,26 +13,27 @@ public static class ParallelFieldScheduler
     public const int DefaultMaxDegreeOfParallelism = 4;
 
     /// <summary>
-    /// Runs <paramref name="worker"/> over each item in <paramref name="contexts"/> with bounded
-    /// parallelism, returning results in the same order as the input.
+    ///     Runs <paramref name="worker" /> over each item in <paramref name="contexts" /> with bounded
+    ///     parallelism, returning results in the same order as the input.
     /// </summary>
-    /// <typeparam name="TContext">Per-field context shape passed to <paramref name="worker"/>.</typeparam>
+    /// <typeparam name="TContext">Per-field context shape passed to <paramref name="worker" />.</typeparam>
     /// <param name="contexts">Per-root-field input contexts.</param>
-    /// <param name="worker">Async function producing one <see cref="RootFieldResult"/> per context.</param>
+    /// <param name="worker">Async function producing one <see cref="RootFieldResult" /> per context.</param>
     /// <param name="cancellationToken">Cancels in-flight workers on request.</param>
     public static async Task<IReadOnlyList<RootFieldResult>> RunAsync<TContext>(
         IReadOnlyList<TContext> contexts,
         Func<TContext, CancellationToken, Task<RootFieldResult>> worker,
         CancellationToken cancellationToken)
     {
-        if (contexts.Count == 0)
+        switch (contexts.Count)
         {
-            return Array.Empty<RootFieldResult>();
-        }
+            case 0:
 
-        if (contexts.Count == 1)
-        {
-            return new[] { await worker(contexts[0], cancellationToken).ConfigureAwait(false) };
+                return [];
+
+            case 1:
+
+                return [await worker(contexts[0], cancellationToken).ConfigureAwait(false)];
         }
 
         var results = new RootFieldResult?[contexts.Count];
@@ -46,11 +47,8 @@ public static class ParallelFieldScheduler
         await Parallel.ForEachAsync(
             Enumerable.Range(0, contexts.Count),
             options,
-            async (index, ct) =>
-            {
-                results[index] = await worker(contexts[index], ct).ConfigureAwait(false);
-            }).ConfigureAwait(false);
+            async (index, ct) => { results[index] = await worker(contexts[index], ct).ConfigureAwait(false); }).ConfigureAwait(false);
 
-        return results.Cast<RootFieldResult>().ToList();
+        return [.. results.Cast<RootFieldResult>()];
     }
 }

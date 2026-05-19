@@ -16,24 +16,46 @@ These options are available for all commands:
 
 | Option | Description |
 |--------|-------------|
-| `--plaintext` | Use plaintext HTTP/2 (no TLS) |
-| `--insecure` | Skip TLS certificate verification |
-| `--cacert <path>` | CA certificate file for server validation |
-| `--cert <path>` | Client certificate file for mutual TLS |
-| `--key <path>` | Client private key file for mutual TLS |
-| `--cert-password <password>` | Password for PKCS12 (.p12/.pfx) client certificate |
-| `--connect-timeout <duration>` | Connection timeout (e.g., `10s`, `1m`, `500ms`) |
-| `--authority <value>` | Value for `:authority` header and TLS server name |
-| `--servername <value>` | Override TLS server name for certificate validation |
-| `--user-agent <value>` | Custom User-Agent header value |
-| `-v`, `--verbose` | Enable verbose output |
-| `--vv`, `--very-verbose` | Enable very verbose output with timing details |
-| `-H`, `--header <header>` | Add header to all requests (format: `name: value`). Values support `${ENV_VAR}` expansion. |
-| `--reflect-header <header>` | Add header to reflection requests only |
-| `--protoset <path>` | Use protoset file(s) instead of server reflection |
-| `--protoset-out <path>` | Export FileDescriptorSet to file after operation. Refuses to overwrite without `--force`. |
+| `--plaintext` | Use plaintext HTTP/2 (no TLS). |
+| `--insecure` | Skip TLS certificate verification. **Test/diagnostic only.** |
+| `--cacert <path>` | PEM CA certificate for custom server-cert validation. |
+| `--cert <path>` | Client certificate file for mutual TLS. PEM or PKCS12; format detected from file content. |
+| `--key <path>` | Client private key file (PEM) for mutual TLS. Omit for PKCS12 (key inside the bundle). |
+| `--cert-password <password>` | Password for an encrypted PKCS12 (.p12/.pfx) client certificate. |
+| `--revocation-mode <online\|offline\|nocheck>` | Certificate revocation policy when `--cacert` is set. Default: `online`. Use `nocheck` only against self-signed test fixtures with no CRL distribution point. |
+| `--exportable-key` | Load PKCS12 client keys with `X509KeyStorageFlags.Exportable`. By default, Linux uses `EphemeralKeySet`, macOS uses platform default keychain handling, and Windows uses non-exportable `UserKeySet` because Schannel-backed mTLS cannot use ephemeral client private keys. |
+| `--connect-timeout <duration>` | Per-attempt TCP/TLS connection timeout (e.g. `10s`, `1m`, `500ms`). Honoured on both plaintext and TLS. |
+| `--max-time <duration>` | Maximum total operation time. For `list` and `describe`, this bounds descriptor loading and discovery. For `invoke` and `gql2grpc`, it also sets the RPC deadline. Always set this for unattended use; there is no built-in default. |
+| `--keepalive-time <duration>` | HTTP/2 keepalive ping interval (default `60s`). |
+| `--keepalive-timeout <duration>` | HTTP/2 keepalive ping ack timeout (default `30s`). |
+| `--authority <value>` | Rewrites the HTTP/2 `:authority` pseudo-header on every reflection and RPC call. Independent of `--servername`. |
+| `--servername <value>` | Overrides the TLS SNI / `SslOptions.TargetHost` for certificate validation. Does **not** change `:authority`. |
+| `--user-agent <value>` | Custom User-Agent header value. |
+| `-v`, `--verbose` | Verbose output. Metadata values are **redacted by default**; pass `--unsafe-show-secrets` to opt out. |
+| `--vv`, `--very-verbose` | Very verbose output with phase-level timing summary. |
+| `--unsafe-show-secrets` | Disable redaction in verbose output. Use only when you control the destination of the captured output. |
+| `-H`, `--header <header>` | Add header (`name: value`). Repeatable. Text values support `${ENV_VAR}` expansion. Header names ending in `-bin` are **base64-decoded** and sent as binary metadata. |
+| `--reflect-header <header>` | Header for reflection requests only. Repeatable. |
+| `--rpc-header <header>` | Header for the business RPC only. Repeatable. |
+| `--protoset <path>` | Use protoset file(s) instead of server reflection. Repeatable. Each local protoset file is capped at 64 MiB by default before it is read. |
+| `--protoset-out <path>` | Export `FileDescriptorSet` to file after operation. Refuses to overwrite without `--force`. |
 | `--force` | Allow `--protoset-out` to overwrite an existing file. |
-| `--output <text\|json>` | Output format. `text` (default) is human-readable. `json` emits stable line-based envelopes (NDJSON for `invoke` streaming). All errors continue to go to stderr. |
+| `--output <text\|json>` | Output format. `text` (default) is human-readable. `json` emits stable line-based envelopes (NDJSON for `invoke` streaming). Errors always go to stderr. |
+
+### Address forms
+
+- `host:port` — TCP/TLS (default).
+- `unix:///absolute/path` (Linux / macOS) — Unix domain socket. Windows fast-fails with `PlatformNotSupportedException`.
+- The scheme may be omitted; `--plaintext` selects `http://`, otherwise `https://` is inferred.
+
+### Binary metadata example
+
+```bash
+# Send a base64-encoded byte payload as the trace-bin header
+grpcurl.net invoke --plaintext --max-time 30s \
+  -H 'trace-bin: AQIDBA==' \
+  localhost:9090 my.pkg.Service/Echo -d '{}'
+```
 
 ---
 
@@ -59,6 +81,9 @@ grpcurl.net list [options] [address] [service]
 ```bash
 # List all services
 grpcurl.net list --plaintext localhost:9090
+
+# Bound reflection-backed discovery
+grpcurl.net list --plaintext --max-time 10s localhost:9090
 
 # List methods for a service
 grpcurl.net list --plaintext localhost:9090 my.package.Service
@@ -107,8 +132,8 @@ grpcurl.net describe [options] [address] [symbol]
 # Describe all services
 grpcurl.net describe --plaintext localhost:9090
 
-# Describe a specific service
-grpcurl.net describe --plaintext localhost:9090 my.package.Service
+# Describe a specific service with bounded reflection discovery
+grpcurl.net describe --plaintext --max-time 10s localhost:9090 my.package.Service
 
 # Describe a message type
 grpcurl.net describe --plaintext localhost:9090 my.package.MyMessage
@@ -144,14 +169,24 @@ grpcurl.net invoke [options] <address> <method>
 
 | Option | Description |
 |--------|-------------|
-| `-d`, `--data <json>` | Request data as JSON. Use `@` to read from stdin (refused if stdin is a TTY). For streaming methods, supply a JSON array `[{...},{...}]` or concatenated objects `{...}{...}`. |
+| `-d`, `--data <json>` | Request data as JSON. Use `@` to read from stdin (refused if stdin is a TTY). Stdin input is capped by `--max-stdin-bytes` (default 16 MiB). For streaming methods, supply a JSON array `[{...},{...}]` or concatenated objects `{...}{...}`. |
 | `--emit-defaults` | Include default values in JSON output |
 | `--allow-unknown-fields` | Allow unknown fields in JSON input |
 | `--max-msg-sz <size>` | Maximum message size (e.g., `4MB`, `10MB`) |
 | `--max-time <duration>` | Maximum operation time / gRPC deadline. **Always set this for unattended use** — there is no built-in default. |
+| `--max-stdin-bytes <bytes>` | Maximum bytes accepted from stdin when using `-d @`. Default: 16 MiB. Use a plain byte count such as `1048576`. |
 | `--rpc-header <header>` | Add header to RPC requests only |
 
 `--output` and `--force` are inherited from [Global Options](#global-options) and behave identically here. In `--output json` mode, each response message becomes a single NDJSON line (`{"kind":"message","index":N,"message":{...}}`) on stdout; errors render as a one-line `{"kind":"error",...}` envelope on stderr.
+
+> [!TIP]
+> The inline JSON examples in this reference use POSIX shell quoting. In PowerShell, prefer stdin for JSON payloads and quote the literal `@` argument so PowerShell does not treat it as splatting:
+>
+> ```powershell
+> @'
+> {"name": "World"}
+> '@ | grpcurl.net invoke --plaintext --max-stdin-bytes 1048576 -d '@' localhost:9090 my.package.Service/SayHello
+> ```
 
 ### Examples
 
@@ -163,6 +198,7 @@ grpcurl.net invoke --plaintext \
 
 # Invoke with data from stdin
 echo '{"name": "World"}' | grpcurl.net invoke --plaintext \
+  --max-stdin-bytes 1048576 \
   -d @ \
   localhost:9090 my.package.Service/SayHello
 
@@ -188,12 +224,14 @@ grpcurl.net invoke --plaintext \
 echo '{"value": 1}
 {"value": 2}
 {"value": 3}' | grpcurl.net invoke --plaintext \
+  --max-stdin-bytes 1048576 \
   -d @ \
   localhost:9090 my.package.Service/AccumulateValues
 
 # Invoke bidirectional streaming
 echo '{"message": "hello"}
 {"message": "world"}' | grpcurl.net invoke --plaintext \
+  --max-stdin-bytes 1048576 \
   -d @ \
   localhost:9090 my.package.Service/Chat
 
@@ -223,9 +261,11 @@ gql2grpc [OPTIONS] <address> [query]
 
 | Option | Description |
 |---|---|
-| `--protoset <path>` | Protoset file(s). Repeatable. When absent, server reflection is used. |
+| `--protoset <path>` | Protoset file(s). Repeatable. When absent, server reflection is used. Each local protoset file is capped at 64 MiB by default before it is read. |
 | `--protoset-out <path>` | Write the discovered `FileDescriptorSet` to a file after the operation runs. Refuses to overwrite without `--force`. |
 | `--force` | Allow `--protoset-out` to overwrite an existing file. |
+
+Reflection descriptor responses are capped at 16 MiB by default. Descriptor sources also cap the retained descriptor graph at 2,048 files, 65,536 symbols, and an import dependency depth of 128.
 
 ### Transport (identical to `invoke`)
 
@@ -240,6 +280,8 @@ gql2grpc [OPTIONS] <address> [query]
 | `--operation <name>` | Select a named operation when the document declares more than one. |
 | `--var <name=value>` | Supply an operation variable. Repeatable. Values are coerced to the declared variable type (Int, Float, Boolean, String). |
 | `--variables-file <path>` | JSON object of variables. CLI `--var` overrides matching keys. |
+
+GraphQL documents loaded with `--file`, JSON variables loaded with `--variables-file`, and YAML/JSON mapping files are capped at 4 MiB each before parsing.
 
 ### Mapping
 

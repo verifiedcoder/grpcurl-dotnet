@@ -8,7 +8,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GRPCURL="$SCRIPT_DIR/../Src/GrpCurl.Net/bin/Debug/net10.0/GrpCurl.Net"
+. "$SCRIPT_DIR/common.sh"
 SERVER="localhost:9090"
 
 echo "=== Invoke UnaryCall with Complex Payload ==="
@@ -21,7 +21,7 @@ echo ""
 PAYLOAD_BODY="SGVsbG8sIFdvcmxkIQ=="
 
 echo "--- Request with payload body (base64: 'Hello, World!') ---"
-echo "Command: grpcurl.net invoke --plaintext -d '{...}' $SERVER testing.TestService/UnaryCall"
+echo "Command: grpcurl.net invoke --plaintext --max-time 10s -d '{...}' $SERVER testing.TestService/UnaryCall"
 echo ""
 
 REQUEST=$(cat <<EOF
@@ -42,7 +42,7 @@ echo "Request JSON:"
 echo "$REQUEST" | head -10
 echo ""
 
-$GRPCURL invoke --plaintext -d "$REQUEST" $SERVER testing.TestService/UnaryCall
+grpcurl_net invoke --plaintext --max-time 10s -d "$REQUEST" $SERVER testing.TestService/UnaryCall
 
 echo ""
 echo "=== Done ==="

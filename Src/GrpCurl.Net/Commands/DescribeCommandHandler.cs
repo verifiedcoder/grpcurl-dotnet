@@ -71,6 +71,11 @@ internal static class DescribeCommandHandler
             Description = "Connection timeout (e.g., '10s', '1m', '500ms'). Default: 10s"
         };
 
+        var maxTimeOpt = new Option<string?>("--max-time")
+        {
+            Description = "Maximum time for the whole describe operation (e.g., '30s', '5m')."
+        };
+
         var authorityOpt = new Option<string?>("--authority")
         {
             Description = "Value to use for :authority header and TLS server name"
@@ -137,6 +142,7 @@ internal static class DescribeCommandHandler
             keyOpt,
             certPasswordOpt,
             connectTimeoutOpt,
+            maxTimeOpt,
             authorityOpt,
             serverNameOpt,
             verboseOpt,
@@ -163,6 +169,7 @@ internal static class DescribeCommandHandler
             var key = parseResult.GetValue(keyOpt);
             var certPassword = parseResult.GetValue(certPasswordOpt);
             var connectTimeout = parseResult.GetValue(connectTimeoutOpt);
+            var maxTime = parseResult.GetValue(maxTimeOpt);
             var authority = parseResult.GetValue(authorityOpt);
             var serverName = parseResult.GetValue(serverNameOpt);
             var verbose = parseResult.GetValue(verboseOpt);
@@ -198,7 +205,8 @@ internal static class DescribeCommandHandler
                     msgTemplate,
                     protosetOut,
                     output,
-                    force);
+                    force,
+                    maxTime);
 
                 return 0;
             }
@@ -234,14 +242,15 @@ internal static class DescribeCommandHandler
 
             // Warn about incompatible option combinations
             case > 0 when !string.IsNullOrEmpty(address):
-                {
-                    if (verbose)
-                    {
-                        Diagnostics.Markup("[yellow]Warning:[/] Both --protoset and address specified. Using protoset files (server reflection will be ignored).");
-                    }
 
-                    break;
+            {
+                if (verbose)
+                {
+                    Diagnostics.Markup("[yellow]Warning:[/] Both --protoset and address specified. Using protoset files (server reflection will be ignored).");
                 }
+
+                break;
+            }
         }
 
         // Warn about TLS-specific options used with --plaintext
@@ -278,9 +287,17 @@ internal static class DescribeCommandHandler
         bool msgTemplate,
         string? protosetOut,
         OutputFormat output = OutputFormat.Text,
-        bool force = false)
+        bool force = false,
+        string? maxTime = null)
     {
         var startTime = DateTime.UtcNow;
+        var maxTimeSpan = maxTime is not null ? GrpcChannelFactory.ParseDuration(maxTime) : (TimeSpan?)null;
+
+        using var deadlineCts = maxTimeSpan is not null
+            ? new CancellationTokenSource(maxTimeSpan.Value)
+            : new CancellationTokenSource();
+
+        var operationToken = deadlineCts.Token;
 
         // When using protosets without a server, the first positional arg (address) is actually the symbol
         if (protosets.Length > 0 && !string.IsNullOrEmpty(address) && string.IsNullOrEmpty(symbol))
@@ -295,82 +312,75 @@ internal static class DescribeCommandHandler
         // Create timing context if very verbose mode is enabled
         var timing = veryVerbose ? new TimingContext() : null;
 
+        var channelOptions = new GrpcChannelFactory.ChannelOptions
+        {
+            Plaintext = plaintext,
+            InsecureSkipVerify = insecure,
+            CaCertPath = cacert,
+            ClientCertPath = cert,
+            ClientKeyPath = key,
+            ClientCertPassword = certPassword,
+            ConnectTimeout = connectTimeout is not null ? GrpcChannelFactory.ParseDuration(connectTimeout) : null,
+            Authority = authority,
+            ServerName = serverName
+        };
+
+        var reflectionMetadata = GrpcChannelFactory.CreateMetadata(
+            headers.Concat(reflectHeaders),
+            userAgent);
+
+        if (verbose && !string.IsNullOrEmpty(address) && protosets.Length == 0)
+        {
+            Diagnostics.Markup($"[dim]Connecting to {address}...[/]");
+            Diagnostics.Markup($"[dim]Protocol: {(plaintext ? "HTTP/2 (plaintext)" : "HTTP/2 (TLS)")}[/]");
+
+            if (insecure)
+            {
+                Diagnostics.Markup("[dim]TLS verification: Disabled (--insecure)[/]");
+            }
+
+            if (connectTimeout is not null)
+            {
+                Diagnostics.Markup($"[dim]Connection timeout: {connectTimeout}[/]");
+            }
+
+            if (maxTime is not null)
+            {
+                Diagnostics.Markup($"[dim]Operation timeout: {maxTime}[/]");
+            }
+
+            if (authority is not null)
+            {
+                Diagnostics.Markup($"[dim]Authority: {authority}[/]");
+            }
+        }
+
         try
         {
-            IDescriptorSource descriptorSource;
+            timing?.StartPhase(protosets.Length > 0 ? "Protoset Loading" : "Connection Establishment");
 
-            if (protosets.Length > 0)
+            await using var session = await DescriptorSourceFactory.CreateAsync(
+                address,
+                protosets,
+                channelOptions,
+                reflectionMetadata,
+                operationToken);
+
+            var descriptorSource = session.Source;
+
+            switch (verbose)
             {
-                if (verbose)
-                {
-                    Diagnostics.Markup($"[dim]Loading {protosets.Length} protoset file(s)...[/]");
-                }
+                case true when protosets.Length > 0:
 
-                timing?.StartPhase("Protoset Loading");
-
-                descriptorSource = await ProtosetSource.LoadFromFilesAsync(protosets);
-
-                if (verbose)
-                {
                     Diagnostics.Markup("[dim]Protoset files loaded successfully[/]");
-                }
-            }
-            else if (!string.IsNullOrEmpty(address))
-            {
-                if (verbose)
-                {
-                    Diagnostics.Markup($"[dim]Connecting to {address}...[/]");
-                    Diagnostics.Markup($"[dim]Protocol: {(plaintext ? "HTTP/2 (plaintext)" : "HTTP/2 (TLS)")}[/]");
 
-                    if (insecure)
-                    {
-                        Diagnostics.Markup("[dim]TLS verification: Disabled (--insecure)[/]");
-                    }
+                    break;
 
-                    if (connectTimeout is not null)
-                    {
-                        Diagnostics.Markup($"[dim]Connection timeout: {connectTimeout}[/]");
-                    }
+                case true:
 
-                    if (authority is not null)
-                    {
-                        Diagnostics.Markup($"[dim]Authority: {authority}[/]");
-                    }
-                }
-
-                timing?.StartPhase("Connection Establishment");
-
-                var channelOptions = new GrpcChannelFactory.ChannelOptions
-                {
-                    Plaintext = plaintext,
-                    InsecureSkipVerify = insecure,
-                    CaCertPath = cacert,
-                    ClientCertPath = cert,
-                    ClientKeyPath = key,
-                    ClientCertPassword = certPassword,
-                    ConnectTimeout = connectTimeout is not null ? GrpcChannelFactory.ParseDuration(connectTimeout) : null,
-                    Authority = authority,
-                    ServerName = serverName
-                };
-
-                var channel = GrpcChannelFactory.Create(address, channelOptions);
-
-                // Merge -H headers with --reflect-header
-                var metadata = GrpcChannelFactory.CreateMetadata(
-                    headers.Concat(reflectHeaders),
-                    userAgent);
-
-                descriptorSource = new ReflectionSource(channel, metadata, true);
-
-                if (verbose)
-                {
                     Diagnostics.Markup("[dim]Connected successfully, querying server reflection...[/]");
-                }
-            }
-            else
-            {
-                // This should never happen due to ValidateOptions, but keep as fallback
-                throw new InvalidOperationException("Must specify either --protoset or address");
+
+                    break;
             }
 
             timing?.StartPhase("Schema Discovery");
@@ -382,7 +392,7 @@ internal static class DescribeCommandHandler
                     Diagnostics.Markup("[dim]Describing all services...[/]");
                 }
 
-                var services = await descriptorSource.ListServicesAsync();
+                var services = await descriptorSource.ListServicesAsync(operationToken);
 
                 if (verbose)
                 {
@@ -391,7 +401,7 @@ internal static class DescribeCommandHandler
 
                 foreach (var svc in services)
                 {
-                    await DescribeSymbolAsync(descriptorSource, svc, verbose, msgTemplate, output);
+                    await DescribeSymbolAsync(descriptorSource, svc, verbose, msgTemplate, output, operationToken);
 
                     // Blank separator between services in text mode; NDJSON in json mode needs no separator.
                     if (output == OutputFormat.Text)
@@ -403,7 +413,7 @@ internal static class DescribeCommandHandler
                 // Export all services if --protoset-out specified
                 if (!string.IsNullOrEmpty(protosetOut))
                 {
-                    await ProtosetExporter.WriteProtosetAsync(descriptorSource, protosetOut, force, [.. services]);
+                    await ProtosetExporter.WriteProtosetAsync(descriptorSource, protosetOut, force, [.. services], operationToken);
 
                     if (verbose)
                     {
@@ -418,12 +428,12 @@ internal static class DescribeCommandHandler
                     Diagnostics.Markup($"[dim]Describing symbol '{symbol}'...[/]");
                 }
 
-                await DescribeSymbolAsync(descriptorSource, symbol, verbose, msgTemplate, output);
+                await DescribeSymbolAsync(descriptorSource, symbol, verbose, msgTemplate, output, operationToken);
 
                 // Export the specific symbol if --protoset-out specified
                 if (!string.IsNullOrEmpty(protosetOut))
                 {
-                    await ProtosetExporter.WriteProtosetAsync(descriptorSource, protosetOut, force, [symbol]);
+                    await ProtosetExporter.WriteProtosetAsync(descriptorSource, protosetOut, force, [symbol], operationToken);
 
                     if (verbose)
                     {
@@ -472,18 +482,18 @@ internal static class DescribeCommandHandler
                     "Check firewall settings",
                     "Verify the address and port are correct"
                 },
-                StatusCode.Unimplemented => new[]
-                {
+                StatusCode.Unimplemented =>
+                [
                     "Server does not support reflection",
                     "Use --protoset to provide schema files instead",
                     "Ask server admin to enable grpc-reflection"
-                },
-                StatusCode.NotFound => new[]
-                {
+                ],
+                StatusCode.NotFound =>
+                [
                     "Use 'list' command to see available services",
                     "Check the symbol name spelling and case",
                     "Ensure the symbol is fully qualified (e.g., package.Service)"
-                },
+                ],
                 _ => []
             };
 
@@ -526,14 +536,28 @@ internal static class DescribeCommandHandler
                 ExitCode = 5,
                 Message = $"Connection to {address ?? string.Empty} timed out",
                 Address = address,
-                Hint = connectTimeout is not null
-                    ? $"Connection timeout was set to: {connectTimeout}"
-                    : verbose ? ex.Message : null,
+                Hint = BuildTimeoutHint(connectTimeout, verbose, ex.Message),
                 Suggestions =
                 [
                     "Increase timeout with --connect-timeout (e.g., --connect-timeout 30s)",
                     "Check network connectivity",
                     "Verify server address is correct"
+                ]
+            }, output);
+        }
+        catch (OperationCanceledException ex) when (maxTime is not null && deadlineCts.IsCancellationRequested)
+        {
+            ErrorRenderer.RenderAndThrow(new ErrorEnvelope
+            {
+                Category = ErrorCategory.Timeout,
+                ExitCode = 5,
+                Message = $"Operation exceeded --max-time ({maxTime})",
+                Address = address,
+                Hint = verbose ? ex.Message : null,
+                Suggestions =
+                [
+                    "Increase --max-time for large schemas or slow reflection services",
+                    "Use --protoset for offline schema discovery when possible"
                 ]
             }, output);
         }
@@ -572,9 +596,15 @@ internal static class DescribeCommandHandler
         }
     }
 
-    internal static async Task DescribeSymbolAsync(IDescriptorSource descriptorSource, string symbolName, bool verbose, bool msgTemplate, OutputFormat output = OutputFormat.Text)
+    internal static async Task DescribeSymbolAsync(
+        IDescriptorSource descriptorSource,
+        string symbolName,
+        bool verbose,
+        bool msgTemplate,
+        OutputFormat output = OutputFormat.Text,
+        CancellationToken cancellationToken = default)
     {
-        var descriptor = await descriptorSource.FindSymbolAsync(symbolName);
+        var descriptor = await descriptorSource.FindSymbolAsync(symbolName, cancellationToken);
 
         if (descriptor is null)
         {
@@ -587,7 +617,7 @@ internal static class DescribeCommandHandler
 
             ErrorRenderer.Render(envelope, output);
 
-            throw new GrpcCommandException(envelope.Message, envelope.ExitCode, silent: true) { Envelope = envelope };
+            throw new GrpcCommandException(envelope.Message, envelope.ExitCode, true) { Envelope = envelope };
         }
 
         if (verbose)
@@ -596,8 +626,8 @@ internal static class DescribeCommandHandler
             {
                 ServiceDescriptor => "Service",
                 MessageDescriptor => "Message",
-                EnumDescriptor => "Enum",
-                _ => "Symbol"
+                EnumDescriptor    => "Enum",
+                _                 => "Symbol"
             };
 
             Diagnostics.Markup($"[dim]Found {descriptorType}: {descriptor.FullName}[/]");
@@ -614,7 +644,7 @@ internal static class DescribeCommandHandler
         // If --msg-template is specified, print proto definition then JSON template for message types
         if (msgTemplate && descriptor is MessageDescriptor msgTmplDesc)
         {
-            PrintMessageDefinition(msgTmplDesc, indent: "");
+            PrintMessageDefinition(msgTmplDesc, "");
 
             Console.WriteLine();
             Console.WriteLine("Message template:");
@@ -629,50 +659,56 @@ internal static class DescribeCommandHandler
         switch (descriptor)
         {
             case ServiceDescriptor svc:
-                {
-                    Console.WriteLine($"{svc.FullName} is a service:");
-                    Console.WriteLine($"service {svc.Name} {{");
 
-                    foreach (var method in svc.Methods.OrderBy(m => m.Name))
-                    {
-                        var inputStream = method.IsClientStreaming ? "stream " : "";
-                        var outputStream = method.IsServerStreaming ? "stream " : "";
+            {
+                Console.WriteLine($"{svc.FullName} is a service:");
+                Console.WriteLine($"service {svc.Name} {{");
 
-                        Console.WriteLine($"  rpc {method.Name} ( {inputStream}.{method.InputType.FullName} ) returns ( {outputStream}.{method.OutputType.FullName} );");
-                    }
-
-                    Console.WriteLine("}");
-
-                    break;
-                }
-
-            case MethodDescriptor method:
+                foreach (var method in svc.Methods.OrderBy(m => m.Name))
                 {
                     var inputStream = method.IsClientStreaming ? "stream " : "";
                     var outputStream = method.IsServerStreaming ? "stream " : "";
 
-                    Console.WriteLine($"{method.FullName} is a method:");
                     Console.WriteLine($"  rpc {method.Name} ( {inputStream}.{method.InputType.FullName} ) returns ( {outputStream}.{method.OutputType.FullName} );");
-
-                    break;
                 }
+
+                Console.WriteLine("}");
+
+                break;
+            }
+
+            case MethodDescriptor method:
+
+            {
+                var inputStream = method.IsClientStreaming ? "stream " : "";
+                var outputStream = method.IsServerStreaming ? "stream " : "";
+
+                Console.WriteLine($"{method.FullName} is a method:");
+                Console.WriteLine($"  rpc {method.Name} ( {inputStream}.{method.InputType.FullName} ) returns ( {outputStream}.{method.OutputType.FullName} );");
+
+                break;
+            }
 
             case MessageDescriptor msg:
-                {
-                    PrintMessageDefinition(msg, indent: "");
 
-                    break;
-                }
+            {
+                PrintMessageDefinition(msg, "");
+
+                break;
+            }
 
             case EnumDescriptor enm:
-                {
-                    PrintEnumDefinition(enm, indent: "");
 
-                    break;
-                }
+            {
+                PrintEnumDefinition(enm, "");
+
+                break;
+            }
 
             default:
+
                 Console.WriteLine($"{descriptor.FullName} is a {descriptor.GetType().Name}");
+
                 break;
         }
     }
@@ -703,19 +739,21 @@ internal static class DescribeCommandHandler
                 // Print the oneof block once when we encounter its first field
                 var oneof = field.ContainingOneof;
 
-                if (printedOneofs.Add(oneof.Name))
+                if (!printedOneofs.Add(oneof.Name))
                 {
-                    Console.WriteLine($"{indent}  oneof {oneof.Name} {{");
-
-                    foreach (var oneofField in oneof.Fields)
-                    {
-                        var typeName = GetProtoTypeName(oneofField);
-
-                        Console.WriteLine($"{indent}    {typeName} {oneofField.Name} = {oneofField.FieldNumber};");
-                    }
-
-                    Console.WriteLine($"{indent}  }}");
+                    continue;
                 }
+
+                Console.WriteLine($"{indent}  oneof {oneof.Name} {{");
+
+                foreach (var oneofField in oneof.Fields)
+                {
+                    var typeName = GetProtoTypeName(oneofField);
+
+                    Console.WriteLine($"{indent}    {typeName} {oneofField.Name} = {oneofField.FieldNumber};");
+                }
+
+                Console.WriteLine($"{indent}  }}");
             }
             else
             {
@@ -780,44 +818,44 @@ internal static class DescribeCommandHandler
 
     internal static string GetProtoTypeName(FieldDescriptor field)
     {
-        if (field.IsMap)
+        if (!field.IsMap)
         {
-            var mapDescriptor = field.MessageType;
-            var keyField = mapDescriptor.FindFieldByNumber(1);
-            var valueField = mapDescriptor.FindFieldByNumber(2);
-
-            return $"map<{GetScalarTypeName(keyField)}, {GetScalarTypeName(valueField)}>";
+            return field.FieldType switch
+            {
+                FieldType.Message => $".{field.MessageType.FullName}",
+                FieldType.Enum    => $".{field.EnumType.FullName}",
+                _                 => GetScalarTypeName(field)
+            };
         }
 
-        return field.FieldType switch
-        {
-            FieldType.Message => $".{field.MessageType.FullName}",
-            FieldType.Enum => $".{field.EnumType.FullName}",
-            _ => GetScalarTypeName(field)
-        };
+        var mapDescriptor = field.MessageType;
+        var keyField = mapDescriptor.FindFieldByNumber(1);
+        var valueField = mapDescriptor.FindFieldByNumber(2);
+
+        return $"map<{GetScalarTypeName(keyField)}, {GetScalarTypeName(valueField)}>";
     }
 
     internal static string GetScalarTypeName(FieldDescriptor field)
         => field.FieldType switch
         {
-            FieldType.Double => "double",
-            FieldType.Float => "float",
-            FieldType.Int64 => "int64",
-            FieldType.UInt64 => "uint64",
-            FieldType.Int32 => "int32",
-            FieldType.Fixed64 => "fixed64",
-            FieldType.Fixed32 => "fixed32",
-            FieldType.Bool => "bool",
-            FieldType.String => "string",
-            FieldType.Bytes => "bytes",
-            FieldType.UInt32 => "uint32",
+            FieldType.Double   => "double",
+            FieldType.Float    => "float",
+            FieldType.Int64    => "int64",
+            FieldType.UInt64   => "uint64",
+            FieldType.Int32    => "int32",
+            FieldType.Fixed64  => "fixed64",
+            FieldType.Fixed32  => "fixed32",
+            FieldType.Bool     => "bool",
+            FieldType.String   => "string",
+            FieldType.Bytes    => "bytes",
+            FieldType.UInt32   => "uint32",
             FieldType.SFixed32 => "sfixed32",
             FieldType.SFixed64 => "sfixed64",
-            FieldType.SInt32 => "sint32",
-            FieldType.SInt64 => "sint64",
-            FieldType.Enum => $".{field.EnumType.FullName}",
-            FieldType.Message => $".{field.MessageType.FullName}",
-            _ => field.FieldType.ToString().ToLowerInvariant()
+            FieldType.SInt32   => "sint32",
+            FieldType.SInt64   => "sint64",
+            FieldType.Enum     => $".{field.EnumType.FullName}",
+            FieldType.Message  => $".{field.MessageType.FullName}",
+            _                  => field.FieldType.ToString().ToLowerInvariant()
         };
 
     /// <summary>
@@ -861,8 +899,8 @@ internal static class DescribeCommandHandler
             return field.FieldType switch
             {
                 FieldType.Message => HandleWellKnownType(field.MessageType, visitedTypes),
-                FieldType.Enum => GetEnumDefault(field.EnumType),
-                _ => GetScalarDefault(field)
+                FieldType.Enum    => GetEnumDefault(field.EnumType),
+                _                 => GetScalarDefault(field)
             };
         }
 
@@ -871,15 +909,15 @@ internal static class DescribeCommandHandler
         if (field.IsMap)
         {
             var mapTemplate = new Dictionary<string, object?>();
-            var mapKeyField = field.MessageType.Fields[1]; // Key field in map entry
+            var mapKeyField = field.MessageType.Fields[1];   // Key field in map entry
             var mapValueField = field.MessageType.Fields[2]; // Value field in map entry
             var keyDefault = GetMapKeyDefault(mapKeyField);
 
             mapTemplate[keyDefault] = mapValueField.FieldType switch
             {
                 FieldType.Message => HandleWellKnownType(mapValueField.MessageType, visitedTypes),
-                FieldType.Enum => GetEnumDefault(mapValueField.EnumType),
-                _ => GetScalarDefault(mapValueField)
+                FieldType.Enum    => GetEnumDefault(mapValueField.EnumType),
+                _                 => GetScalarDefault(mapValueField)
             };
 
             return mapTemplate;
@@ -890,8 +928,8 @@ internal static class DescribeCommandHandler
         var elementValue = field.FieldType switch
         {
             FieldType.Message => CreateMessageTemplate(field.MessageType, visitedTypes),
-            FieldType.Enum => GetEnumDefault(field.EnumType),
-            _ => GetScalarDefault(field)
+            FieldType.Enum    => GetEnumDefault(field.EnumType),
+            _                 => GetScalarDefault(field)
         };
 
         arrayTemplate.Add(elementValue);
@@ -907,24 +945,24 @@ internal static class DescribeCommandHandler
         // Check for well-known types and provide appropriate defaults
         return messageDescriptor.FullName switch
         {
-            "google.protobuf.Timestamp" => "1970-01-01T00:00:00Z",
-            "google.protobuf.Duration" => "0s",
-            "google.protobuf.Int32Value" => 0,
-            "google.protobuf.Int64Value" => "0",
+            "google.protobuf.Timestamp"   => "1970-01-01T00:00:00Z",
+            "google.protobuf.Duration"    => "0s",
+            "google.protobuf.Int32Value"  => 0,
+            "google.protobuf.Int64Value"  => "0",
             "google.protobuf.UInt32Value" => 0,
             "google.protobuf.UInt64Value" => "0",
-            "google.protobuf.FloatValue" => 0,
+            "google.protobuf.FloatValue"  => 0,
             "google.protobuf.DoubleValue" => 0,
-            "google.protobuf.BoolValue" => false,
+            "google.protobuf.BoolValue"   => false,
             "google.protobuf.StringValue" => "",
-            "google.protobuf.BytesValue" => (object?)null,
-            "google.protobuf.Empty" => new Dictionary<string, object?>(),
-            "google.protobuf.Struct" => new Dictionary<string, object?> { ["google.protobuf.Struct"] = "supports arbitrary JSON objects" },
-            "google.protobuf.Value" => new Dictionary<string, object?> { ["google.protobuf.Value"] = "supports arbitrary JSON" },
-            "google.protobuf.ListValue" => new List<object?> { new Dictionary<string, object?> { ["google.protobuf.ListValue"] = "is an array of arbitrary JSON values" } },
-            "google.protobuf.Any" => new Dictionary<string, object?> { ["@type"] = "type.googleapis.com/google.protobuf.Empty", ["value"] = new Dictionary<string, object?>() },
-            "google.protobuf.FieldMask" => new Dictionary<string, object?> { ["paths"] = new List<object?> { "" } },
-            _ => CreateMessageTemplate(messageDescriptor, visitedTypes)
+            "google.protobuf.BytesValue"  => null,
+            "google.protobuf.Empty"       => new Dictionary<string, object?>(),
+            "google.protobuf.Struct"      => new Dictionary<string, object?> { ["google.protobuf.Struct"] = "supports arbitrary JSON objects" },
+            "google.protobuf.Value"       => new Dictionary<string, object?> { ["google.protobuf.Value"] = "supports arbitrary JSON" },
+            "google.protobuf.ListValue"   => new List<object?> { new Dictionary<string, object?> { ["google.protobuf.ListValue"] = "is an array of arbitrary JSON values" } },
+            "google.protobuf.Any"         => new Dictionary<string, object?> { ["@type"] = "type.googleapis.com/google.protobuf.Empty", ["value"] = new Dictionary<string, object?>() },
+            "google.protobuf.FieldMask"   => new Dictionary<string, object?> { ["paths"] = new List<object?> { "" } },
+            _                             => CreateMessageTemplate(messageDescriptor, visitedTypes)
         };
     }
 
@@ -941,22 +979,22 @@ internal static class DescribeCommandHandler
     internal static object? GetScalarDefault(FieldDescriptor field)
         => field.FieldType switch
         {
-            FieldType.Double => 0,
-            FieldType.Float => 0,
-            FieldType.Int32 => 0,
-            FieldType.Int64 => "0",
-            FieldType.UInt32 => 0,
-            FieldType.UInt64 => "0",
-            FieldType.SInt32 => 0,
-            FieldType.SInt64 => "0",
-            FieldType.Fixed32 => 0,
-            FieldType.Fixed64 => "0",
+            FieldType.Double   => 0,
+            FieldType.Float    => 0,
+            FieldType.Int32    => 0,
+            FieldType.Int64    => "0",
+            FieldType.UInt32   => 0,
+            FieldType.UInt64   => "0",
+            FieldType.SInt32   => 0,
+            FieldType.SInt64   => "0",
+            FieldType.Fixed32  => 0,
+            FieldType.Fixed64  => "0",
             FieldType.SFixed32 => 0,
             FieldType.SFixed64 => "0",
-            FieldType.Bool => false,
-            FieldType.String => "",
-            FieldType.Bytes => "",
-            _ => null
+            FieldType.Bool     => false,
+            FieldType.String   => "",
+            FieldType.Bytes    => "",
+            _                  => null
         };
 
     /// <summary>
@@ -965,12 +1003,22 @@ internal static class DescribeCommandHandler
     internal static string GetMapKeyDefault(FieldDescriptor keyField)
         => keyField.FieldType switch
         {
-            FieldType.String => "",
-            FieldType.Bool => "false",
+            FieldType.String                                          => "",
+            FieldType.Bool                                            => "false",
             FieldType.Int32 or FieldType.SInt32 or FieldType.SFixed32 => "0",
             FieldType.Int64 or FieldType.SInt64 or FieldType.SFixed64 => "0",
-            FieldType.UInt32 or FieldType.Fixed32 => "0",
-            FieldType.UInt64 or FieldType.Fixed64 => "0",
-            _ => ""
+            FieldType.UInt32 or FieldType.Fixed32                     => "0",
+            FieldType.UInt64 or FieldType.Fixed64                     => "0",
+            _                                                         => ""
         };
+
+    private static string? BuildTimeoutHint(string? connectTimeout, bool verbose, string exceptionMessage)
+    {
+        if (connectTimeout is not null)
+        {
+            return $"Connection timeout was set to: {connectTimeout}";
+        }
+
+        return verbose ? exceptionMessage : null;
+    }
 }

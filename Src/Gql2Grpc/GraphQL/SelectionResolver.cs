@@ -1,46 +1,38 @@
-using System.Text.Json.Nodes;
 using GraphQLParser.AST;
+using System.Text.Json.Nodes;
 
 namespace Gql2Grpc.GraphQL;
 
 /// <summary>
-/// Expands a <see cref="GraphQLSelectionSet"/> to a <see cref="ResolvedSelection"/> tree:
-/// fragment spreads and inline fragments are inlined, <c>@include</c>/<c>@skip</c> directives are
-/// evaluated against coerced variables, aliases become the <c>ResponseKey</c>, and variable
-/// references in arguments are substituted. Downstream layers operate only on the resolved tree.
+///     Expands a <see cref="GraphQLSelectionSet" /> to a <see cref="ResolvedSelection" /> tree:
+///     fragment spreads and inline fragments are inlined, <c>@include</c>/<c>@skip</c> directives are
+///     evaluated against coerced variables, aliases become the <c>ResponseKey</c>, and variable
+///     references in arguments are substituted. Downstream layers operate only on the resolved tree.
 /// </summary>
-public sealed class SelectionResolver
+/// <remarks>
+///     Constructs a resolver that uses <paramref name="fragments" /> for spread expansion and
+///     <paramref name="variables" /> to substitute <c>$var</c> references and evaluate
+///     <c>@include</c>/<c>@skip</c> directives.
+/// </remarks>
+public sealed class SelectionResolver(
+    IReadOnlyDictionary<string, GraphQLFragmentDefinition> fragments,
+    IReadOnlyDictionary<string, JsonNode?> variables)
 {
-    private readonly IReadOnlyDictionary<string, GraphQLFragmentDefinition> _fragments;
-    private readonly IReadOnlyDictionary<string, JsonNode?> _variables;
-
     /// <summary>
-    /// Constructs a resolver that uses <paramref name="fragments"/> for spread expansion and
-    /// <paramref name="variables"/> to substitute <c>$var</c> references and evaluate
-    /// <c>@include</c>/<c>@skip</c> directives.
-    /// </summary>
-    public SelectionResolver(
-        IReadOnlyDictionary<string, GraphQLFragmentDefinition> fragments,
-        IReadOnlyDictionary<string, JsonNode?> variables)
-    {
-        _fragments = fragments;
-        _variables = variables;
-    }
-
-    /// <summary>
-    /// Expands a top-level selection set into a flat <see cref="ResolvedSelection"/> tree with
-    /// fragments inlined and directives applied.
+    ///     Expands a top-level selection set into a flat <see cref="ResolvedSelection" /> tree with
+    ///     fragments inlined and directives applied.
     /// </summary>
     /// <exception cref="ArgumentException">
-    /// Thrown if a fragment is referenced but not defined, a fragment cycle is detected, two
-    /// selections share a response key but different field names, or a directive's <c>if</c>
-    /// argument doesn't resolve to a Boolean.
+    ///     Thrown if a fragment is referenced but not defined, a fragment cycle is detected, two
+    ///     selections share a response key but different field names, or a directive's <c>if</c>
+    ///     argument doesn't resolve to a Boolean.
     /// </exception>
     public IReadOnlyList<ResolvedSelection> Resolve(GraphQLSelectionSet selectionSet)
     {
         var buffer = new List<ResolvedSelection>();
         var seenResponseKeys = new Dictionary<string, ResolvedSelection>(StringComparer.Ordinal);
         ResolveInto(selectionSet, buffer, seenResponseKeys, new HashSet<string>(StringComparer.Ordinal));
+
         return buffer;
     }
 
@@ -50,26 +42,27 @@ public sealed class SelectionResolver
         Dictionary<string, ResolvedSelection> seenResponseKeys,
         HashSet<string> fragmentCycleGuard)
     {
-        foreach (var selection in selectionSet.Selections)
+        foreach (var selection in selectionSet.Selections.Where(IncludeSelection))
         {
-            if (!IncludeSelection(selection))
-            {
-                continue;
-            }
-
             switch (selection)
             {
                 case GraphQLField field:
+
                     ResolveField(field, buffer, seenResponseKeys);
+
                     break;
 
                 case GraphQLFragmentSpread spread:
+
                     ResolveSpread(spread, buffer, seenResponseKeys, fragmentCycleGuard);
+
                     break;
 
                 case GraphQLInlineFragment inline:
+
                     // Type condition is advisory for gRPC (no runtime type discriminator).
                     ResolveInto(inline.SelectionSet, buffer, seenResponseKeys, fragmentCycleGuard);
+
                     break;
             }
         }
@@ -98,11 +91,13 @@ public sealed class SelectionResolver
 
         var args = ExtractArguments(field);
         var children = field.SelectionSet is null
-            ? Array.Empty<ResolvedSelection>()
+            ? []
             : Resolve(field.SelectionSet);
 
         var resolved = new ResolvedSelection(responseKey, name, args, children);
+
         buffer.Add(resolved);
+
         seenResponseKeys[responseKey] = resolved;
     }
 
@@ -114,7 +109,7 @@ public sealed class SelectionResolver
     {
         var fragmentName = spread.FragmentName.Name.StringValue;
 
-        if (!_fragments.TryGetValue(fragmentName, out var fragment))
+        if (!fragments.TryGetValue(fragmentName, out var fragment))
         {
             throw new ArgumentException($"Fragment '{fragmentName}' referenced but not defined.");
         }
@@ -134,7 +129,7 @@ public sealed class SelectionResolver
         }
     }
 
-    private IReadOnlyDictionary<string, JsonNode?> ExtractArguments(GraphQLField field)
+    private Dictionary<string, JsonNode?> ExtractArguments(GraphQLField field)
     {
         if (field.Arguments is null || field.Arguments.Count == 0)
         {
@@ -145,7 +140,7 @@ public sealed class SelectionResolver
 
         foreach (var argument in field.Arguments)
         {
-            dict[argument.Name.StringValue] = GraphQLValueCoercer.ToJsonNode(argument.Value, _variables);
+            dict[argument.Name.StringValue] = GraphQLValueCoercer.ToJsonNode(argument.Value, variables);
         }
 
         return dict;
@@ -164,19 +159,14 @@ public sealed class SelectionResolver
         {
             var name = directive.Name.StringValue;
 
-            if (string.Equals(name, "include", StringComparison.Ordinal))
+            if (string.Equals(name, "include", StringComparison.Ordinal) && !DirectiveIfArgument(directive))
             {
-                if (!DirectiveIfArgument(directive))
-                {
-                    return false;
-                }
+                return false;
             }
-            else if (string.Equals(name, "skip", StringComparison.Ordinal))
+
+            if (string.Equals(name, "skip", StringComparison.Ordinal) && DirectiveIfArgument(directive))
             {
-                if (DirectiveIfArgument(directive))
-                {
-                    return false;
-                }
+                return false;
             }
         }
 
@@ -185,30 +175,25 @@ public sealed class SelectionResolver
 
     private static GraphQLDirectives? GetDirectives(ASTNode node) => node switch
     {
-        GraphQLField f => f.Directives,
+        GraphQLField f          => f.Directives,
         GraphQLFragmentSpread s => s.Directives,
         GraphQLInlineFragment i => i.Directives,
-        _ => null
+        _                       => null
     };
 
     private bool DirectiveIfArgument(GraphQLDirective directive)
     {
         var ifArg = directive.Arguments?.FirstOrDefault(a =>
-            string.Equals(a.Name.StringValue, "if", StringComparison.Ordinal));
+                                                            string.Equals(a.Name.StringValue, "if", StringComparison.Ordinal))
+                    ?? throw new ArgumentException($"Directive @{directive.Name.StringValue} requires an 'if' argument.");
 
-        if (ifArg is null)
-        {
-            throw new ArgumentException($"Directive @{directive.Name.StringValue} requires an 'if' argument.");
-        }
-
-        var value = GraphQLValueCoercer.ToJsonNode(ifArg.Value, _variables);
+        var value = GraphQLValueCoercer.ToJsonNode(ifArg.Value, variables);
 
         if (value is JsonValue jv && jv.TryGetValue(out bool b))
         {
             return b;
         }
 
-        throw new ArgumentException(
-            $"Directive @{directive.Name.StringValue}(if: ...) must resolve to a Boolean; got '{value?.ToJsonString() ?? "null"}'.");
+        throw new ArgumentException($"Directive @{directive.Name.StringValue}(if: ...) must resolve to a Boolean; got '{value?.ToJsonString() ?? "null"}'.");
     }
 }

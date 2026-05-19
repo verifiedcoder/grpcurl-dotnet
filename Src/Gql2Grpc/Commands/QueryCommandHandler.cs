@@ -1,5 +1,3 @@
-using System.CommandLine;
-using System.Text.Json.Nodes;
 using Gql2Grpc.Configuration;
 using Gql2Grpc.Diagnostics;
 using Gql2Grpc.Execution;
@@ -7,9 +5,11 @@ using Gql2Grpc.GraphQL;
 using Gql2Grpc.Introspection;
 using Gql2Grpc.Response;
 using Gql2Grpc.Translation;
-using Grpc.Core;
+using GrpCurl.Net.DescriptorSources;
 using GrpCurl.Net.Exceptions;
 using GrpCurl.Net.Utilities;
+using System.CommandLine;
+using System.Text.Json.Nodes;
 
 namespace Gql2Grpc.Commands;
 
@@ -61,7 +61,7 @@ internal static class QueryCommandHandler
         var serverNameOpt = new Option<string?>("--servername") { Description = "Override TLS server name" };
         var userAgentOpt = new Option<string?>("--user-agent")
         {
-            Description = $"Custom User-Agent header (default: {GrpCurl.Net.Utilities.UserAgentProvider.Default})"
+            Description = $"Custom User-Agent header (default: {UserAgentProvider.Default})"
         };
 
         var connectTimeoutOpt = new Option<string?>("--connect-timeout") { Description = "Connection timeout (e.g. '10s')" };
@@ -73,11 +73,13 @@ internal static class QueryCommandHandler
             Description = "Header (name: value); applied to both reflection and RPC",
             Arity = ArgumentArity.ZeroOrMore
         };
+
         var reflectHeaderOpt = new Option<string[]>("--reflect-header")
         {
             Description = "Header sent only on reflection requests",
             Arity = ArgumentArity.ZeroOrMore
         };
+
         var rpcHeaderOpt = new Option<string[]>("--rpc-header")
         {
             Description = "Header sent only on RPC requests",
@@ -91,6 +93,7 @@ internal static class QueryCommandHandler
             Description = "Operation variable (name=value)",
             Arity = ArgumentArity.ZeroOrMore
         };
+
         var variablesFileOpt = new Option<string?>("--variables-file") { Description = "JSON file of operation variables" };
 
         var mappingOpt = new Option<string?>("--mapping") { Description = "Mapping file (YAML or JSON)" };
@@ -102,6 +105,7 @@ internal static class QueryCommandHandler
             Description = "Skip unknown fields in request JSON instead of erroring",
             DefaultValueFactory = _ => true
         };
+
         var strictSelectionOpt = new Option<bool>("--strict-selection") { Description = "Missing response fields raise GraphQL errors instead of null" };
         var rawOpt = new Option<bool>("--raw") { Description = "Emit unshaped gRPC JSON only (bypass selection projection)" };
 
@@ -189,6 +193,7 @@ internal static class QueryCommandHandler
             catch (Exception ex)
             {
                 EmitTopLevelError(ExceptionTranslator.ToTopLevelError(ex));
+
                 return ExceptionTranslator.ExitCodeFor(ex);
             }
         });
@@ -198,16 +203,40 @@ internal static class QueryCommandHandler
 
     private static async Task<int> ExecuteAsync(CliOptions cli, CancellationToken cancellationToken)
     {
-        var verbosity = cli.VeryVerbose ? VerbosityLevel.VeryVerbose : cli.Verbose ? VerbosityLevel.Verbose : VerbosityLevel.Quiet;
+        var verbosity = GetVerbosity(cli);
         var logger = new VerboseLogger(verbosity);
 
-        var queryText = await ResolveQueryAsync(cli, cancellationToken).ConfigureAwait(false);
+        // --max-time bounds the *entire* GraphQL-to-gRPC operation, including query/variables
+        // file reads, mapping load, descriptor source resolution, and the actual gRPC call.
+        // The earlier implementation only enforced it on the gRPC deadline, so slow file
+        // reads or descriptor probes could outlive the budget.
+        TimeSpan? maxTimeSpan = null;
+
+        if (cli.MaxTime is not null)
+        {
+            maxTimeSpan = GrpcChannelFactory.ParseDuration(cli.MaxTime);
+        }
+
+        using var deadlineCts = maxTimeSpan is not null
+            ? new CancellationTokenSource(maxTimeSpan.Value)
+            : new CancellationTokenSource();
+
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(deadlineCts.Token, cancellationToken);
+
+        var operationToken = linkedCts.Token;
+
+        var queryText = await ResolveQueryAsync(cli, operationToken).ConfigureAwait(false);
         var document = GraphQLDocumentParser.Parse(queryText);
         var operation = document.SelectOperation(cli.OperationName);
 
         var variablesFile = cli.VariablesFile is null
             ? null
-            : VariableCoercer.ParseVariablesFile(await File.ReadAllTextAsync(cli.VariablesFile, cancellationToken).ConfigureAwait(false));
+            : VariableCoercer.ParseVariablesFile(
+                await InputFileGuard.ReadAllTextAsync(
+                    cli.VariablesFile,
+                    InputFileGuard.MaxGraphQlVariablesBytes,
+                    "GraphQL variables file",
+                    operationToken).ConfigureAwait(false));
 
         var cliVars = ParseCliVariables(cli.Variables);
         var coercedVariables = VariableCoercer.Coerce(operation.VariableDefinitions, cliVars, variablesFile);
@@ -215,7 +244,7 @@ internal static class QueryCommandHandler
         var resolver = new SelectionResolver(document.Fragments, coercedVariables);
         var rootSelections = resolver.Resolve(operation.SelectionSet);
 
-        var mappingConfig = await MappingConfigLoader.LoadAsync(cli.MappingPath, cancellationToken).ConfigureAwait(false);
+        var mappingConfig = await MappingConfigLoader.LoadAsync(cli.MappingPath, operationToken).ConfigureAwait(false);
         var mappingResolver = new MappingResolver(mappingConfig, cli.DefaultService);
 
         var channelOptions = BuildChannelOptions(cli);
@@ -226,17 +255,26 @@ internal static class QueryCommandHandler
         var rpcMetadata = GrpcChannelFactory.CreateMetadata(rpcHeaders, cli.UserAgent);
 
         await using var descriptorBundle = await DescriptorSourceFactory.CreateAsync(
-            cli.Address, cli.Protosets, channelOptions, reflectionMetadata, cancellationToken).ConfigureAwait(false);
+            cli.Address, cli.Protosets, channelOptions, reflectionMetadata, operationToken).ConfigureAwait(false);
 
-        var transport = new GrpcTransport(descriptorBundle.Channel);
+        /*
+         * Gql2Grpc always invokes RPCs against a live server even when --protoset is used
+         * for offline schema: the GraphQL query still has to be forwarded. Reject the
+         * protoset-only-no-address combination here with a clear message.
+         */
+        var transportChannel = descriptorBundle.Channel ?? throw new GrpcCommandException(
+            "Gql2Grpc requires a target gRPC address; supply <address> or use --address.",
+            exitCode: 2);
+
+        var transport = new GrpcTransport(transportChannel);
         var translator = new JsonRequestTranslator();
         var projector = new SelectionProjector(cli.StrictSelection);
         var schemaBuilder = new GraphQLSchemaBuilder(descriptorBundle.Source, mappingConfig);
         var introspection = new IntrospectionExecutor(schemaBuilder, projector);
 
-        var deadline = cli.MaxTime is null
+        var deadline = maxTimeSpan is null
             ? (DateTime?)null
-            : DateTime.UtcNow + GrpcChannelFactory.ParseDuration(cli.MaxTime);
+            : DateTime.UtcNow + maxTimeSpan.Value;
 
         var executorOptions = new ExecutorOptions
         {
@@ -257,22 +295,27 @@ internal static class QueryCommandHandler
         if (operation.OperationType == GraphQLOperationType.Subscription || AnyFieldIsStreaming(rootSelections, operation.OperationType, mappingResolver))
         {
             var writer = new StreamingResponseWriter(Console.Out);
-            await executor.StreamAsync(operation.OperationType, rootSelections, writer, cancellationToken).ConfigureAwait(false);
+            await executor.StreamAsync(operation.OperationType, rootSelections, writer, operationToken).ConfigureAwait(false);
             exitCode = 0;
         }
         else
         {
-            var envelope = await executor.ExecuteUnaryAsync(operation.OperationType, rootSelections, cancellationToken).ConfigureAwait(false);
+            var envelope = await executor.ExecuteUnaryAsync(operation.OperationType, rootSelections, operationToken).ConfigureAwait(false);
             Console.WriteLine(GraphQLResponseBuilder.Serialize(envelope));
             exitCode = ExitCodeFromEnvelope(envelope);
         }
 
-        if (!string.IsNullOrEmpty(cli.ProtosetOut))
+        if (string.IsNullOrEmpty(cli.ProtosetOut))
         {
-            await GrpCurl.Net.Utilities.ProtosetExporter.WriteProtosetAsync(
-                descriptorBundle.Source, cli.ProtosetOut, cli.Force, []).ConfigureAwait(false);
-            logger.Verbose($"Wrote FileDescriptorSet to {cli.ProtosetOut}");
+            return exitCode;
         }
+
+        await ProtosetExporter.WriteProtosetAsync(
+            descriptorBundle.Source,
+            cli.ProtosetOut,
+            cli.Force, [], operationToken).ConfigureAwait(false);
+
+        logger.Verbose($"Wrote FileDescriptorSet to {cli.ProtosetOut}");
 
         return exitCode;
     }
@@ -280,7 +323,18 @@ internal static class QueryCommandHandler
     private static void EmitTopLevelError(GraphQLError error)
     {
         var envelope = GraphQLResponseBuilder.BuildSingleError(error);
+
         Console.WriteLine(GraphQLResponseBuilder.Serialize(envelope));
+    }
+
+    private static VerbosityLevel GetVerbosity(CliOptions cli)
+    {
+        if (cli.VeryVerbose)
+        {
+            return VerbosityLevel.VeryVerbose;
+        }
+
+        return cli.Verbose ? VerbosityLevel.Verbose : VerbosityLevel.Quiet;
     }
 
     private static int ExitCodeFromEnvelope(JsonObject envelope)
@@ -309,49 +363,44 @@ internal static class QueryCommandHandler
         GraphQLOperationType operationType,
         MappingResolver mappingResolver)
     {
-        foreach (var selection in rootSelections)
+        return rootSelections
+            .Where(selection => !IntrospectionExecutor.IsIntrospectionField(selection.Name))
+            .Select(selection => TryResolveMapping(selection.Name, operationType, mappingResolver))
+            .Any(entry => entry?.Kind == MethodKind.ServerStreaming);
+    }
+
+    private static MappingEntry? TryResolveMapping(
+        string selectionName,
+        GraphQLOperationType operationType,
+        MappingResolver mappingResolver)
+    {
+        try
         {
-            if (IntrospectionExecutor.IsIntrospectionField(selection.Name))
-            {
-                continue;
-            }
-
-            MappingEntry entry;
-
-            try
-            {
-                entry = mappingResolver.Resolve(selection.Name, operationType);
-            }
-            catch
-            {
-                continue;
-            }
-
-            if (entry.Kind == MethodKind.ServerStreaming)
-            {
-                return true;
-            }
+            return mappingResolver.Resolve(selectionName, operationType);
         }
-
-        return false;
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
     }
 
     private static async Task<string> ResolveQueryAsync(CliOptions cli, CancellationToken cancellationToken)
     {
         if (!string.IsNullOrEmpty(cli.QueryFile))
         {
-            return await File.ReadAllTextAsync(cli.QueryFile, cancellationToken).ConfigureAwait(false);
+            return await InputFileGuard.ReadAllTextAsync(
+                cli.QueryFile,
+                InputFileGuard.MaxGraphQlDocumentBytes,
+                "GraphQL document file",
+                cancellationToken).ConfigureAwait(false);
         }
 
-        if (!string.IsNullOrEmpty(cli.QueryInline))
-        {
-            return cli.QueryInline!;
-        }
-
-        throw new GrpcCommandException("No GraphQL document supplied. Pass a positional query string or --file.", exitCode: 2);
+        return !string.IsNullOrEmpty(cli.QueryInline)
+            ? cli.QueryInline!
+            : throw new GrpcCommandException("No GraphQL document supplied. Pass a positional query string or --file.", exitCode: 2);
     }
 
-    private static IReadOnlyDictionary<string, string> ParseCliVariables(IReadOnlyList<string> variables)
+    private static Dictionary<string, string> ParseCliVariables(IReadOnlyList<string> variables)
     {
         var dict = new Dictionary<string, string>(StringComparer.Ordinal);
 
@@ -371,6 +420,7 @@ internal static class QueryCommandHandler
 
             var name = entry[..equals].Trim();
             var value = entry[(equals + 1)..];
+
             dict[name] = value;
         }
 
@@ -380,6 +430,7 @@ internal static class QueryCommandHandler
     private static GrpcChannelFactory.ChannelOptions BuildChannelOptions(CliOptions cli)
     {
         TimeSpan? connectTimeout = cli.ConnectTimeout is null ? null : GrpcChannelFactory.ParseDuration(cli.ConnectTimeout);
+
         int? maxMsgSize = cli.MaxMessageSize is null ? null : GrpcChannelFactory.ParseSize(cli.MaxMessageSize);
 
         return new GrpcChannelFactory.ChannelOptions
@@ -402,36 +453,67 @@ internal static class QueryCommandHandler
     {
         public required string Address { get; init; }
         public string? QueryInline { get; init; }
+
         public string? QueryFile { get; init; }
+
         public string? OperationName { get; init; }
+
         public IReadOnlyList<string> Variables { get; init; } = [];
+
         public string? VariablesFile { get; init; }
+
         public IReadOnlyList<string> Protosets { get; init; } = [];
+
         public string? ProtosetOut { get; init; }
+
         public bool Force { get; init; }
+
         public bool Plaintext { get; init; }
+
         public bool Insecure { get; init; }
+
         public string? CaCert { get; init; }
+
         public string? Cert { get; init; }
+
         public string? Key { get; init; }
+
         public string? CertPassword { get; init; }
+
         public string? Authority { get; init; }
+
         public string? ServerName { get; init; }
+
         public string? UserAgent { get; init; }
+
         public string? ConnectTimeout { get; init; }
+
         public string? MaxTime { get; init; }
+
         public string? MaxMessageSize { get; init; }
+
         public IReadOnlyList<string> Headers { get; init; } = [];
+
         public IReadOnlyList<string> ReflectHeaders { get; init; } = [];
+
         public IReadOnlyList<string> RpcHeaders { get; init; } = [];
+
         public string? MappingPath { get; init; }
+
         public string? DefaultService { get; init; }
+
         public bool EmitDefaults { get; init; }
+
         public bool AllowUnknownFields { get; init; } = true;
+
         public bool StrictSelection { get; init; }
+
         public bool Raw { get; init; }
+
         public bool Introspection { get; init; } = true;
+
         public bool Verbose { get; init; }
+
         public bool VeryVerbose { get; init; }
     }
 }

@@ -150,7 +150,7 @@ Subset of output:
 }
 ```
 
-Use `--introspection off` to disable interception (useful when testing what the upstream actually serves). Demonstrated by `Scripts/32-gql-introspection.sh`.
+Use `--introspection=false` to disable interception (useful when testing what the upstream actually serves). Demonstrated by `Scripts/32-gql-introspection.sh`.
 
 ## 7. Variables, fragments, aliases
 

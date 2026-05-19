@@ -43,7 +43,7 @@ grpcurl.net describe --protoset Tests/TestProtosets/well-known-types.protoset --
 
 > **Note:** The `WellKnownTypesService` is defined in the project's proto files but is not running on the TestServer. We use a **protoset file** (a binary schema snapshot -- covered in detail in [Chapter 11](11-schema-management.md)) to explore its message types offline. The `--protoset` flag tells GrpCurl.Net to read the schema from a file instead of connecting to a server.
 
-This command shows the proto definition followed by a JSON template for the `WellKnownTypesMessage`, revealing how GrpCurl.Net represents each well-known type in its canonical JSON form. For example, `Timestamp` appears as `"1970-01-01T00:00:00Z"`, `Duration` as `"0s"`, `Struct` as `{"google.protobuf.Struct": "supports arbitrary JSON objects"}`, and `FieldMask` as `{"paths": [""]}`. Let us walk through each type individually.
+This command shows the proto definition followed by a JSON template for the `WellKnownTypesMessage`, revealing the shape GrpCurl.Net expects for each well-known type. Scalar-like well-known types use their canonical JSON defaults: `Timestamp` appears as `"1970-01-01T00:00:00Z"` and `Duration` as `"0s"`. Dynamic container types use template placeholders such as `{"google.protobuf.Struct": "supports arbitrary JSON objects"}` so you know where to provide arbitrary JSON. `FieldMask` appears in its expanded message shape in templates, though request JSON normally uses the compact comma-separated string described below.
 
 ## Timestamp
 
@@ -326,7 +326,7 @@ Here is a complete `WellKnownTypesMessage` with every field populated:
   },
   "value_field": "any JSON value here",
   "list_value_field": [1, "two", true, null],
-  "field_mask": "timestamp_field,string_value,struct_field.name"
+  "field_mask": "timestampField,stringValue,structField.name"
 }
 ```
 

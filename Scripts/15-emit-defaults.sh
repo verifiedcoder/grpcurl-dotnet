@@ -8,7 +8,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GRPCURL="$SCRIPT_DIR/../Src/GrpCurl.Net/bin/Debug/net10.0/GrpCurl.Net"
+. "$SCRIPT_DIR/common.sh"
 SERVER="localhost:9090"
 
 echo "=== Emit Default Values ==="
@@ -18,15 +18,15 @@ echo "Use --emit-defaults to include all fields, even those with default values.
 echo ""
 
 echo "--- Without --emit-defaults ---"
-echo "Command: grpcurl.net invoke --plaintext $SERVER testing.TestService/UnaryCall"
+echo "Command: grpcurl.net invoke --plaintext --max-time 10s $SERVER testing.TestService/UnaryCall"
 echo ""
-$GRPCURL invoke --plaintext $SERVER testing.TestService/UnaryCall
+grpcurl_net invoke --plaintext --max-time 10s $SERVER testing.TestService/UnaryCall
 
 echo ""
 echo "--- With --emit-defaults ---"
-echo "Command: grpcurl.net invoke --plaintext --emit-defaults $SERVER testing.TestService/UnaryCall"
+echo "Command: grpcurl.net invoke --plaintext --max-time 10s --emit-defaults $SERVER testing.TestService/UnaryCall"
 echo ""
-$GRPCURL invoke --plaintext --emit-defaults $SERVER testing.TestService/UnaryCall
+grpcurl_net invoke --plaintext --max-time 10s --emit-defaults $SERVER testing.TestService/UnaryCall
 
 echo ""
 echo "Notice the additional fields shown when --emit-defaults is used."

@@ -8,19 +8,20 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GQL2GRPC="$SCRIPT_DIR/../Src/Gql2Grpc/bin/Debug/net10.0/Gql2Grpc"
+. "$SCRIPT_DIR/common.sh"
 SERVER="localhost:9090"
 
 echo "=== gql2grpc: Schema introspection ==="
 echo ""
 echo "The schema is synthesised from the reflected FileDescriptorSet, answered entirely client-side."
+echo "Uses --max-time to bound reflection discovery before introspection runs."
 echo ""
-echo "Command: gql2grpc --plaintext --default-service testing.TestService $SERVER 'query { __schema { queryType { name } types { kind name } } }'"
+echo "Command: gql2grpc --plaintext --max-time 10s --default-service testing.TestService $SERVER 'query { __schema { queryType { name } types { kind name } } }'"
 echo ""
 
-$GQL2GRPC --plaintext --default-service testing.TestService $SERVER \
+gql2grpc_cli --plaintext --max-time 10s --default-service testing.TestService $SERVER \
     'query { __schema { queryType { name } types { kind name } } }' | head -c 2000
 echo ""
-echo "…(output truncated for readability)"
+echo "...(output truncated for readability)"
 echo ""
 echo "=== Done ==="

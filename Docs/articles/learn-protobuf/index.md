@@ -82,10 +82,24 @@ Every chapter includes `grpcurl.net` commands that you can copy and run directly
 grpcurl.net list --plaintext localhost:9090
 ```
 
+If you have not published or installed a `grpcurl.net` executable on your PATH yet, run the same command from the repository checkout with `dotnet run` and place the command arguments after `--`:
+
+```bash
+dotnet run --project Src/GrpCurl.Net -- list --plaintext localhost:9090
+```
+
+Most JSON examples use POSIX shell quoting, such as `-d '{"field": "value"}'`. In PowerShell, use stdin and quote the literal `@` argument:
+
+```powershell
+@'
+{"field": "value"}
+'@ | grpcurl.net invoke --plaintext -d '@' localhost:9090 package.Service/Method
+```
+
 Experiment freely -- modify the JSON payloads, try different flags, and observe how the output changes. Hands-on exploration is the fastest way to internalise protobuf concepts.
 
 > [!NOTE]
-> This series uses `grpcurl.net`, which is the .NET implementation of grpcurl. It is command-compatible with the Go-based `grpcurl` tool but runs on .NET and provides additional features such as detailed timing output. All commands shown throughout this series use `grpcurl.net`.
+> This series uses `grpcurl.net`, which is the .NET implementation of grpcurl. It is command-compatible with the Go-based `grpcurl` tool but runs on .NET and provides additional features such as detailed timing output. All command examples use the installed-tool form; source-tree users can replace `grpcurl.net` with `dotnet run --project Src/GrpCurl.Net --`.
 
 ## Chapter Index
 

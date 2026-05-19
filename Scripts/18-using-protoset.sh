@@ -8,7 +8,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GRPCURL="$SCRIPT_DIR/../Src/GrpCurl.Net/bin/Debug/net10.0/GrpCurl.Net"
+. "$SCRIPT_DIR/common.sh"
 SERVER="localhost:9090"
 PROTOSET="$SCRIPT_DIR/../Tests/TestProtosets/test.protoset"
 
@@ -24,21 +24,21 @@ echo "  - Offline documentation/development"
 echo ""
 
 echo "--- List services from protoset (no server needed for this) ---"
-echo "Command: grpcurl.net list --protoset $PROTOSET"
+echo "Command: grpcurl.net list --max-time 10s --protoset $PROTOSET"
 echo ""
-$GRPCURL list --protoset "$PROTOSET"
+grpcurl_net list --max-time 10s --protoset "$PROTOSET"
 
 echo ""
 echo "--- Describe a message from protoset ---"
-echo "Command: grpcurl.net describe --protoset $PROTOSET testing.SimpleRequest"
+echo "Command: grpcurl.net describe --max-time 10s --protoset $PROTOSET testing.SimpleRequest"
 echo ""
-$GRPCURL describe --protoset "$PROTOSET" testing.SimpleRequest
+grpcurl_net describe --max-time 10s --protoset "$PROTOSET" testing.SimpleRequest
 
 echo ""
 echo "--- Invoke using protoset (still needs server for actual RPC) ---"
-echo "Command: grpcurl.net invoke --plaintext --protoset $PROTOSET $SERVER testing.TestService/EmptyCall"
+echo "Command: grpcurl.net invoke --plaintext --max-time 10s --protoset $PROTOSET $SERVER testing.TestService/EmptyCall"
 echo ""
-$GRPCURL invoke --plaintext --protoset "$PROTOSET" $SERVER testing.TestService/EmptyCall
+grpcurl_net invoke --plaintext --max-time 10s --protoset "$PROTOSET" $SERVER testing.TestService/EmptyCall
 
 echo ""
 echo "=== Done ==="

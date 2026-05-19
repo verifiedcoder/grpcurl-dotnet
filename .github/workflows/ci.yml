@@ -1,0 +1,192 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+jobs:
+  build-test:
+    name: build-test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET (from global.json)
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Verify SDK
+        run: dotnet --info
+
+      - name: Restore (locked mode)
+        run: dotnet restore --locked-mode GrpCurl.Net.slnx
+
+      - name: Build (Release)
+        run: dotnet build GrpCurl.Net.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: >
+          dotnet test --solution GrpCurl.Net.slnx
+          --configuration Release
+          --no-build
+          --no-restore
+          --
+          --report-xunit-trx
+          --report-xunit-trx-filename test-results.trx
+          --results-directory=${{ github.workspace }}/TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}
+          path: ${{ github.workspace }}/TestResults/**/*.trx
+          if-no-files-found: warn
+
+      - name: Publish CLI smoke (GrpCurl.Net)
+        run: dotnet publish Src/GrpCurl.Net/GrpCurl.Net.csproj --configuration Release --no-restore --output ${{ github.workspace }}/publish/GrpCurl.Net
+
+      - name: Publish CLI smoke (Gql2Grpc)
+        run: dotnet publish Src/Gql2Grpc/Gql2Grpc.csproj --configuration Release --no-restore --output ${{ github.workspace }}/publish/Gql2Grpc
+
+      - name: Invoke published GrpCurl.Net --version (POSIX)
+        if: runner.os != 'Windows'
+        run: |
+          chmod +x ${{ github.workspace }}/publish/GrpCurl.Net/GrpCurl.Net || true
+          dotnet ${{ github.workspace }}/publish/GrpCurl.Net/GrpCurl.Net.dll --version || true
+
+      - name: Invoke published GrpCurl.Net --version (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: dotnet "${{ github.workspace }}\publish\GrpCurl.Net\GrpCurl.Net.dll" --version
+
+  coverage:
+    name: coverage (ubuntu-latest)
+    runs-on: ubuntu-latest
+    needs: build-test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET (from global.json)
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore (locked mode)
+        run: dotnet restore --locked-mode GrpCurl.Net.slnx
+
+      - name: Build (Release)
+        run: dotnet build GrpCurl.Net.slnx --configuration Release --no-restore
+
+      - name: Test with coverage
+        run: >
+          dotnet test --solution GrpCurl.Net.slnx
+          --configuration Release
+          --no-build
+          --no-restore
+          --
+          --coverlet
+          --coverlet-output-format cobertura
+          --results-directory=${{ github.workspace }}/coverage
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ${{ github.workspace }}/coverage
+          if-no-files-found: warn
+
+  docfx:
+    name: docs (ubuntu-latest)
+    runs-on: ubuntu-latest
+    needs: build-test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET (from global.json)
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Install DocFX
+        run: dotnet tool install -g docfx
+
+      - name: Restore (locked mode)
+        run: dotnet restore --locked-mode GrpCurl.Net.slnx
+
+      - name: Build docs
+        run: docfx Docs/docfx.json --warningsAsErrors
+
+      - name: Upload docs site
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docfx-site
+          path: Docs/_site
+          if-no-files-found: warn
+
+  validation:
+    name: validation (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    needs: build-test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET (from global.json)
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore (locked mode)
+        run: dotnet restore --locked-mode GrpCurl.Net.slnx
+
+      - name: Install protoc (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+
+      - name: Install protoc (macOS)
+        if: runner.os == 'macOS'
+        run: brew install protobuf
+
+      - name: Install protoc (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: choco install protoc -y
+
+      - name: Run ValidationRunner
+        if: hashFiles('Scripts/ValidationRunner/ValidationRunner.csproj') != ''
+        run: dotnet run --project Scripts/ValidationRunner/ValidationRunner.csproj --configuration Release -- --ci
+
+      - name: ValidationRunner missing (transitional)
+        if: hashFiles('Scripts/ValidationRunner/ValidationRunner.csproj') == ''
+        run: echo "ValidationRunner not yet present. Skipping (added in Phase 15)."

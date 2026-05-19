@@ -8,7 +8,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GRPCURL="$SCRIPT_DIR/../Src/GrpCurl.Net/bin/Debug/net10.0/GrpCurl.Net"
+. "$SCRIPT_DIR/common.sh"
 SERVER="localhost:9090"
 
 echo "=== Server Streaming RPC ==="
@@ -19,10 +19,10 @@ echo ""
 
 echo "--- Request for 3 responses of sizes 10, 20, 30 bytes ---"
 REQUEST='{"response_parameters":[{"size":10},{"size":20},{"size":30}]}'
-echo "Command: grpcurl.net invoke --plaintext -d '$REQUEST' $SERVER testing.TestService/StreamingOutputCall"
+echo "Command: grpcurl.net invoke --plaintext --max-time 10s -d '$REQUEST' $SERVER testing.TestService/StreamingOutputCall"
 echo ""
 
-$GRPCURL invoke --plaintext -d "$REQUEST" $SERVER testing.TestService/StreamingOutputCall
+grpcurl_net invoke --plaintext --max-time 10s -d "$REQUEST" $SERVER testing.TestService/StreamingOutputCall
 
 echo ""
 echo "=== Done ==="

@@ -13,6 +13,7 @@
         <ToolCommandName>gql2grpc</ToolCommandName>
         <IsPackable>true</IsPackable>
         <PackageId>Gql2Grpc</PackageId>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <Description>GraphQL-to-gRPC proxy CLI. Translates GraphQL queries into gRPC calls using a YAML mapping. Built on GrpCurl.Net.Core.</Description>
         <PackageTags>grpc;graphql;cli;dotnet-tool</PackageTags>
     </PropertyGroup>
@@ -26,6 +27,10 @@
         <PackageReference Include="Spectre.Console" />
         <PackageReference Include="System.CommandLine" />
         <PackageReference Include="YamlDotNet" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="README.md" Pack="true" PackagePath="" />
     </ItemGroup>
 
     <ItemGroup>

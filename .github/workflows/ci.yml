@@ -52,7 +52,6 @@ jobs:
           --no-restore
           --
           --report-xunit-trx
-          --report-xunit-trx-filename test-results.trx
           --results-directory=${{ github.workspace }}/TestResults
 
       - name: Upload test results
@@ -69,16 +68,24 @@ jobs:
       - name: Publish CLI smoke (Gql2Grpc)
         run: dotnet publish Src/Gql2Grpc/Gql2Grpc.csproj --configuration Release --no-restore --output ${{ github.workspace }}/publish/Gql2Grpc
 
-      - name: Invoke published GrpCurl.Net --version (POSIX)
+      - name: Pack NuGet tool (GrpCurl.Net)
+        run: dotnet pack Src/GrpCurl.Net/GrpCurl.Net.csproj --configuration Release --no-build --no-restore --output ${{ github.workspace }}/packages
+
+      - name: Pack NuGet tool (Gql2Grpc)
+        run: dotnet pack Src/Gql2Grpc/Gql2Grpc.csproj --configuration Release --no-build --no-restore --output ${{ github.workspace }}/packages
+
+      - name: Invoke published CLIs --version (POSIX)
         if: runner.os != 'Windows'
         run: |
-          chmod +x ${{ github.workspace }}/publish/GrpCurl.Net/GrpCurl.Net || true
-          dotnet ${{ github.workspace }}/publish/GrpCurl.Net/GrpCurl.Net.dll --version || true
+          dotnet ${{ github.workspace }}/publish/GrpCurl.Net/GrpCurl.Net.dll --version
+          dotnet ${{ github.workspace }}/publish/Gql2Grpc/Gql2Grpc.dll --version
 
-      - name: Invoke published GrpCurl.Net --version (Windows)
+      - name: Invoke published CLIs --version (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: dotnet "${{ github.workspace }}\publish\GrpCurl.Net\GrpCurl.Net.dll" --version
+        run: |
+          dotnet "${{ github.workspace }}\publish\GrpCurl.Net\GrpCurl.Net.dll" --version
+          dotnet "${{ github.workspace }}\publish\Gql2Grpc\Gql2Grpc.dll" --version
 
   coverage:
     name: coverage (ubuntu-latest)
@@ -184,9 +191,4 @@ jobs:
         run: choco install protoc -y
 
       - name: Run ValidationRunner
-        if: hashFiles('Scripts/ValidationRunner/ValidationRunner.csproj') != ''
         run: dotnet run --project Scripts/ValidationRunner/ValidationRunner.csproj --configuration Release -- --ci
-
-      - name: ValidationRunner missing (transitional)
-        if: hashFiles('Scripts/ValidationRunner/ValidationRunner.csproj') == ''
-        run: echo "ValidationRunner not yet present. Skipping (added in Phase 15)."

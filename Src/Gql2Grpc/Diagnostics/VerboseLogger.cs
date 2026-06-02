@@ -24,10 +24,12 @@ public sealed class VerboseLogger
     public VerbosityLevel Level { get; }
 
     /// <summary><c>true</c> if <see cref="Verbose(string)" /> calls will be emitted.</summary>
-    public bool IsVerbose => Level >= VerbosityLevel.Verbose;
+    public bool IsVerbose
+        => Level >= VerbosityLevel.Verbose;
 
     /// <summary><c>true</c> if <see cref="VeryVerbose(string)" /> calls will be emitted.</summary>
-    public bool IsVeryVerbose => Level >= VerbosityLevel.VeryVerbose;
+    public bool IsVeryVerbose 
+        => Level >= VerbosityLevel.VeryVerbose;
 
     /// <summary>Writes a dim-styled line to stderr when <see cref="IsVerbose" /> is set.</summary>
     public void Verbose(string message)
@@ -45,11 +47,5 @@ public sealed class VerboseLogger
         {
             _console.MarkupLine($"[dim italic]{Markup.Escape(message)}[/]");
         }
-    }
-
-    /// <summary>Writes a yellow "Warning:" line to stderr regardless of verbosity.</summary>
-    public void Warning(string message)
-    {
-        _console.MarkupLine($"[yellow]Warning:[/] {Markup.Escape(message)}");
     }
 }

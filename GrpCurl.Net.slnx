@@ -1,7 +1,12 @@
 <Solution>
   <Folder Name="/Solution Items/">
+    <File Path=".gitattributes" />
     <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
     <File Path="LICENSE" />
+    <File Path="NuGet.config" />
     <File Path="README.md" />
   </Folder>
   <Folder Name="/Solution Items/Docs/">
@@ -83,7 +88,7 @@
     <Project Path="Scripts/ValidationRunner/ValidationRunner.csproj" />
     <Project Path="Tests/Gql2Grpc.Tests/Gql2Grpc.Tests.csproj" Id="2e3f4a5b-6c7d-8e9f-a0b1-c2d3e4f5a6b7" />
   </Folder>
+  <Project Path="Src/Gql2Grpc/Gql2Grpc.csproj" />
   <Project Path="Src/GrpCurl.Net.Core/GrpCurl.Net.Core.csproj" />
   <Project Path="Src/GrpCurl.Net/GrpCurl.Net.csproj" />
-  <Project Path="Src/Gql2Grpc/Gql2Grpc.csproj" />
 </Solution>

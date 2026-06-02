@@ -8,10 +8,8 @@
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
         <InformationalVersion>1.0.0</InformationalVersion>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <IsPackable>true</IsPackable>
-        <PackageId>GrpCurl.Net.Core</PackageId>
-        <Description>Reusable core library for GrpCurl.Net — descriptor sources, channel factory, dynamic invocation, protoset I/O. Backs both the GrpCurl.Net CLI and the Gql2Grpc proxy.</Description>
-        <PackageTags>grpc;protobuf;reflection;cli;grpcurl</PackageTags>
+        <IsPackable>false</IsPackable>
+        <Description>Shared core project for GrpCurl.Net — descriptor sources, channel factory, dynamic invocation, protoset I/O. Backs both the GrpCurl.Net CLI and the Gql2Grpc proxy.</Description>
     </PropertyGroup>
 
     <ItemGroup>

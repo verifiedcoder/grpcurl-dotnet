@@ -1,6 +1,6 @@
 # GrpCurl.Net
 
-A .NET implementation of grpcurl — a command-line tool for interacting with gRPC servers, plus a reusable .NET library (`GrpCurl.Net.Core`) that backs both the CLI and the `Gql2Grpc` GraphQL-to-gRPC proxy.
+A .NET implementation of grpcurl — a command-line tool for interacting with gRPC servers, plus the `Gql2Grpc` GraphQL-to-gRPC proxy. Both tools are backed by the shared internal `GrpCurl.Net.Core` project.
 
 ## Overview
 
@@ -44,7 +44,21 @@ grpcurl.net invoke --plaintext --max-time 30s \
 
 ## Install
 
-GrpCurl.Net packages as a [.NET global tool](https://learn.microsoft.com/dotnet/core/tools/global-tools):
+GrpCurl.Net ships as a [.NET global tool](https://learn.microsoft.com/dotnet/core/tools/global-tools):
+
+```bash
+dotnet tool install -g GrpCurl.Net
+grpcurl.net --version
+```
+
+The GraphQL bridge ships as a separate tool:
+
+```bash
+dotnet tool install -g Gql2Grpc
+gql2grpc --help
+```
+
+For local development or release-candidate verification, build packages from source:
 
 ```bash
 dotnet pack Src/GrpCurl.Net -c Release
@@ -52,9 +66,7 @@ dotnet tool install -g GrpCurl.Net --add-source Src/GrpCurl.Net/bin/Release
 grpcurl.net --version
 ```
 
-A published NuGet feed will land once we cut a release; until then, build from source as above.
-
-The `Gql2Grpc` GraphQL proxy ships as a separate tool (`gql2grpc`) and the reusable core ships as `GrpCurl.Net.Core`.
+`GrpCurl.Net.Core` is bundled inside the tool packages and is not installed directly.
 
 ## Agent / Script Usage
 
@@ -86,14 +98,14 @@ grpcurl.net invoke --plaintext --output json --max-time 5s \
 
 The documentation is a [DocFx](https://github.com/dotnet/docfx) project, so you can serve a self-contained local documentation site.
 
-- [Introduction](Docs/introduction.md) — Learn about GrpCurl.Net and its capabilities
-- [Getting Started](Docs/getting-started.md) — Installation and first steps
-- [CLI Reference](Docs/articles/cli-reference.md) — Complete command reference
-- [Examples](Docs/articles/examples.md) — Usage examples for common scenarios
-- [Architecture](Docs/articles/architecture.md) — Internal design and extensibility (now split into `GrpCurl.Net.Core` + CLI)
-- [Authentication](Docs/articles/authentication.md) — TLS, mTLS, hardening defaults, secret redaction
-- [Learn Protobuf](Docs/articles/learn-protobuf/index.md) — Tutorial series
-- [API Reference](Docs/api-reference.md) — Public API documentation
+- [Introduction](https://github.com/verifiedcoder/grpcurl-dotnet/blob/main/Docs/introduction.md) - Learn about GrpCurl.Net and its capabilities
+- [Getting Started](https://github.com/verifiedcoder/grpcurl-dotnet/blob/main/Docs/getting-started.md) - Installation and first steps
+- [CLI Reference](https://github.com/verifiedcoder/grpcurl-dotnet/blob/main/Docs/articles/cli-reference.md) - Complete command reference
+- [Examples](https://github.com/verifiedcoder/grpcurl-dotnet/blob/main/Docs/articles/examples.md) - Usage examples for common scenarios
+- [Architecture](https://github.com/verifiedcoder/grpcurl-dotnet/blob/main/Docs/articles/architecture.md) - Internal design and extensibility (now split into `GrpCurl.Net.Core` + CLI)
+- [Authentication](https://github.com/verifiedcoder/grpcurl-dotnet/blob/main/Docs/articles/authentication.md) - TLS, mTLS, hardening defaults, secret redaction
+- [Learn Protobuf](https://github.com/verifiedcoder/grpcurl-dotnet/blob/main/Docs/articles/learn-protobuf/index.md) - Tutorial series
+- [API Reference](https://github.com/verifiedcoder/grpcurl-dotnet/blob/main/Docs/api-reference.md) - Public API documentation
 
 ## Requirements
 
@@ -104,7 +116,7 @@ The documentation is a [DocFx](https://github.com/dotnet/docfx) project, so you 
 
 ```
 Src/
-  GrpCurl.Net.Core/     # Reusable library — descriptor sources, channel factory, invocation
+  GrpCurl.Net.Core/     # Shared dependency project — descriptor sources, channel factory, invocation
   GrpCurl.Net/          # CLI shell — references GrpCurl.Net.Core
   Gql2Grpc/             # GraphQL-to-gRPC proxy — references GrpCurl.Net.Core
 Tests/

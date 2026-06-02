@@ -11,6 +11,7 @@
         <ToolCommandName>grpcurl.net</ToolCommandName>
         <IsPackable>true</IsPackable>
         <PackageId>GrpCurl.Net</PackageId>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <Description>grpcurl-compatible .NET CLI tool for invoking gRPC services with JSON input/output. Supports reflection, protosets, proto source files, TLS/mTLS, drop-in grpcurl flags, and protobuf text format.</Description>
         <PackageTags>grpc;grpcurl;protobuf;cli;dotnet-tool</PackageTags>
     </PropertyGroup>
@@ -22,6 +23,10 @@
     <ItemGroup>
         <PackageReference Include="Spectre.Console" />
         <PackageReference Include="System.CommandLine" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="" Link="README.md" />
     </ItemGroup>
 
     <ItemGroup>

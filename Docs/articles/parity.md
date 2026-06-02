@@ -36,7 +36,7 @@ These are documented choices, not bugs.
 |---|---|---|
 | Header `${VAR}` expansion | Off by default; gated behind `-expand-headers` | Always on |
 | Total deadline scope | `-max-time` bounds the RPC only | `--max-time` bounds the entire operation |
-| Library reuse | C-based, no managed library surface | `GrpCurl.Net.Core` packs as a NuGet library |
+| Library reuse | C-based, no managed library surface | `GrpCurl.Net.Core` is a shared dependency project bundled inside the CLI tool packages |
 | Verbose output | Prints raw metadata values | Sensitive values redacted by default (opt out with `--unsafe-show-secrets`) |
 | CLI shape | Positional invocation: `grpcurl <flags> host:port symbol` | Native shape: `list`/`describe`/`invoke` subcommands. A drop-in compatibility shape is on the roadmap (`grpcurl-compat.md`). |
 

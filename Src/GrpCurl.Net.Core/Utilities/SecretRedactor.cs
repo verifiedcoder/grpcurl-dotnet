@@ -32,7 +32,7 @@ internal static partial class SecretRedactor
         "x-goog-iam-authorization-token"
     };
 
-    [GeneratedRegex(@"(?:^|[-_])(token|secret|password|api[-_]?key|credential|signature|sig|nonce|jwt)$", RegexOptions.IgnoreCase)]
+    [GeneratedRegex("(?:^|[-_])(token|secret|password|api[-_]?key|credential|signature|sig|nonce|jwt)$", RegexOptions.IgnoreCase)]
     private static partial Regex SuffixPattern();
 
     /// <summary>

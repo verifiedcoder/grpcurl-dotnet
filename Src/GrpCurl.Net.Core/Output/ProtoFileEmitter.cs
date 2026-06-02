@@ -221,7 +221,9 @@ internal static class ProtoFileEmitter
             }
             else
             {
-                var label = field.IsRepeated && !field.IsMap ? "repeated " : "";
+                var label = field is { IsRepeated: true, IsMap: false } 
+                    ? "repeated "
+                    : "";
 
                 sb.Append(pad).Append("  ").Append(label)
                   .Append(FormatType(field)).Append(' ')

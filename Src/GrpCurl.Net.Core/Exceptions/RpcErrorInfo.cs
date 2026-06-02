@@ -1,5 +1,7 @@
 namespace GrpCurl.Net.Exceptions;
 
+// Property getters are read by System.Text.Json via reflection in ErrorRenderer.RenderJson.
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 /// <summary>
 ///     RPC-specific error sub-block. Present only when <see cref="ErrorEnvelope.Category" /> is
 ///     <see cref="ErrorCategory.Rpc" />.

@@ -1,21 +1,27 @@
 # Gql2Grpc
 
-A GraphQL-to-gRPC bridge CLI. Parses a GraphQL document, translates each root operation into a gRPC method invocation (in-process, via `GrpCurl.Net`), and emits a spec-compliant GraphQL response envelope — or NDJSON for subscriptions.
+A GraphQL-to-gRPC bridge CLI. Parses a GraphQL document, translates each root operation into a gRPC method invocation, and emits a spec-compliant GraphQL response envelope, or NDJSON for subscriptions.
 
 Full reference documentation lives in the DocFx site:
 
-- **[Mapping file reference](../../Docs/articles/gql2grpc-mapping.md)** — YAML/JSON shape, argument rules, precedence, introspection defaults, FieldMask projection.
-- **[Gql2Grpc cookbook](../../Docs/articles/gql2grpc-cookbook.md)** — worked patterns: queries, mutations, subscriptions, fragments, auth, error envelopes.
-- **[CLI Reference § gql2grpc](../../Docs/articles/cli-reference.md#gql2grpc-command)** — every CLI option.
-- **[Architecture § Gql2Grpc subsystems](../../Docs/articles/architecture.md#gql2grpc-subsystems)** — module layout and dataflow.
-- **[Gql2Grpc future work](../../Docs/articles/gql2grpc-future-work.md)** — deferred backlog.
+- **[Mapping file reference](https://github.com/verifiedcoder/grpcurl-dotnet/blob/main/Docs/articles/gql2grpc-mapping.md)** - YAML/JSON shape, argument rules, precedence, introspection defaults, FieldMask projection.
+- **[Gql2Grpc cookbook](https://github.com/verifiedcoder/grpcurl-dotnet/blob/main/Docs/articles/gql2grpc-cookbook.md)** - worked patterns: queries, mutations, subscriptions, fragments, auth, error envelopes.
+- **[CLI reference: gql2grpc](https://github.com/verifiedcoder/grpcurl-dotnet/blob/main/Docs/articles/cli-reference.md#gql2grpc-command)** - every CLI option.
+- **[Architecture: Gql2Grpc subsystems](https://github.com/verifiedcoder/grpcurl-dotnet/blob/main/Docs/articles/architecture.md#gql2grpc-subsystems)** - module layout and dataflow.
+- **[Gql2Grpc future work](https://github.com/verifiedcoder/grpcurl-dotnet/blob/main/Docs/articles/gql2grpc-future-work.md)** - deferred backlog.
 
 ## Quickstart
+
+Install the tool:
+
+```bash
+dotnet tool install -g Gql2Grpc
+```
 
 Reflection-based (no mapping file, no protoset):
 
 ```bash
-dotnet run --project Src/Gql2Grpc -- \
+gql2grpc \
   --plaintext --default-service testing.TestService \
   localhost:9090 'query { EmptyCall }'
 ```
@@ -24,7 +30,7 @@ With a mapping file and cookie auth:
 
 ```bash
 export SESSION_COOKIE='mySessionCookie'
-dotnet run --project Src/Gql2Grpc -- \
+gql2grpc \
   --mapping ./gql2grpc.yaml \
   -H "cookie: .tmc.ac.session=${SESSION_COOKIE}" \
   api.example.com:443 \
@@ -55,4 +61,4 @@ Failure (envelope + `extensions.grpcStatus`):
 }
 ```
 
-Exit codes follow `grpcurl-dotnet`'s convention: `0` success, `1` generic, `64 + <grpc status code>` for RPC errors (`UNAVAILABLE=14` → `78`), `130` for Ctrl+C.
+Exit codes follow `grpcurl-dotnet`'s convention: `0` success, `1` generic, `64 + <grpc status code>` for RPC errors (`UNAVAILABLE=14` => `78`), `130` for Ctrl+C.

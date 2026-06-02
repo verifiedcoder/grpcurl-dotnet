@@ -39,12 +39,12 @@ internal static class ProtoSource
         }
 
         var protocPath = FindProtoc()
-                         ?? throw new FileNotFoundException(
-                             "protoc not found on PATH. Install Protocol Buffers compiler " +
-                             "(e.g. 'apt install protobuf-compiler', 'brew install protobuf', " +
-                             "or 'choco install protoc') and retry. " +
-                             "Alternative: pre-compile with 'protoc --descriptor_set_out=svc.protoset " +
-                             "--include_imports *.proto' and pass --protoset instead.");
+             ?? throw new FileNotFoundException(
+                 "protoc not found on PATH. Install Protocol Buffers compiler " +
+                 "(e.g. 'apt install protobuf-compiler', 'brew install protobuf', " +
+                 "or 'choco install protoc') and retry. " +
+                 "Alternative: pre-compile with 'protoc --descriptor_set_out=svc.protoset " +
+                 "--include_imports *.proto' and pass --protoset instead.");
 
         // Collect import paths: explicit -I roots + each proto file's directory + cwd.
         var allImportPaths = importPaths
@@ -92,32 +92,39 @@ internal static class ProtoSource
             }
 
             using var process = Process.Start(psi)
-                                ?? throw new InvalidOperationException($"Failed to start protoc at '{protocPath}'.");
+                ?? throw new InvalidOperationException($"Failed to start protoc at '{protocPath}'.");
 
-            await using (cancellationToken.Register(() =>
+            // Pass process as state instead of capturing it; await using (DisposeAsync)
+            // unregisters and awaits any in-flight callback before process is disposed.
+            await using (cancellationToken.Register(static state =>
             {
                 try
                 {
-                    process.Kill(true);
+                    ((Process)state!).Kill(entireProcessTree: true);
                 }
                 catch
                 {
-                    /* race with normal exit */
+                    // already exited / not started: race with normal exit.
                 }
-            }))
+            }, process))
             {
-                var stderr = await process.StandardError.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+                // Both stdout and stderr are redirected, so BOTH must be drained concurrently.
+                var stdoutTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+                var stderrTask = process.StandardError.ReadToEndAsync(cancellationToken);
 
+                await Task.WhenAll(stdoutTask, stderrTask).ConfigureAwait(false);
                 await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
 
-                if (process.ExitCode != 0)
+                if (process.ExitCode == 0)
                 {
-                    throw new InvalidOperationException(
-                        $"protoc failed with exit code {process.ExitCode}:{Environment.NewLine}{stderr}");
+                    return await ProtosetSource.LoadFromFilesAsync([tempProtoset], cancellationToken).ConfigureAwait(false);
                 }
-            }
 
-            return await ProtosetSource.LoadFromFilesAsync([tempProtoset], cancellationToken).ConfigureAwait(false);
+                var stderr = await stderrTask.ConfigureAwait(false);
+                
+                throw new InvalidOperationException(
+                    $"protoc failed with exit code {process.ExitCode}:{Environment.NewLine}{stderr}");
+            }
         }
         finally
         {
@@ -127,7 +134,7 @@ internal static class ProtoSource
             }
             catch
             {
-                /* best effort */
+                // Best effort.
             }
         }
     }

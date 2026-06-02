@@ -11,9 +11,4 @@ namespace Gql2Grpc.GraphQL;
 public sealed record GraphQLError(
     string Message,
     IReadOnlyList<object> Path,
-    IReadOnlyDictionary<string, object?>? Extensions = null)
-{
-    /// <summary>Convenience constructor for an error attached to a single response key.</summary>
-    public static GraphQLError ForField(string responseKey, string message, IReadOnlyDictionary<string, object?>? extensions = null)
-        => new(message, [responseKey], extensions);
-}
+    IReadOnlyDictionary<string, object?>? Extensions = null);

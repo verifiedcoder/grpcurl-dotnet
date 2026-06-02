@@ -9,14 +9,33 @@ This guide will help you install GrpCurl.Net and make your first gRPC calls.
 
 ## Installation
 
-### Option 1: Build from Source
+### Option 1: Install the global tools
+
+Install the main CLI from NuGet:
+
+```bash
+dotnet tool install -g GrpCurl.Net
+grpcurl.net --version
+```
+
+Install the GraphQL bridge when you need GraphQL-to-gRPC translation:
+
+```bash
+dotnet tool install -g Gql2Grpc
+gql2grpc --help
+```
+
+`GrpCurl.Net.Core` is bundled inside the tool packages and is not installed directly.
+
+### Option 2: Build from Source
 
 Clone the repository and build:
 
 ```bash
 git clone https://github.com/verifiedcoder/grpcurl-dotnet.git
 cd grpcurl-dotnet
-dotnet build
+dotnet restore --locked-mode GrpCurl.Net.slnx
+dotnet build GrpCurl.Net.slnx --configuration Release --no-restore
 ```
 
 Run directly with `dotnet run`:
@@ -25,7 +44,7 @@ Run directly with `dotnet run`:
 dotnet run --project Src/GrpCurl.Net -- list --plaintext localhost:9090
 ```
 
-### Option 2: Publish as Single-File Executable
+### Option 3: Publish as Single-File Executable
 
 Create a self-contained single-file executable. Choose the runtime identifier that matches your target platform: `linux-x64`, `linux-arm64`, `win-x64`, `win-arm64`, `osx-x64`, or `osx-arm64` (Apple Silicon).
 

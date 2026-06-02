@@ -1165,7 +1165,7 @@ internal static class InvokeCommandHandler
 
         async IAsyncEnumerable<IMessage> TrackRequests()
         {
-            await foreach (var msg in GenerateRequests(requestJson, methodDescriptor.InputType, verbose, allowUnknownFields, maxStdinBytes, cancellationToken).WithCancellation(cancellationToken))
+            await foreach (var msg in GenerateRequests(requestJson, methodDescriptor.InputType, verbose, allowUnknownFields, maxStdinBytes, cancellationToken))
             {
                 if (sentCount == 0)
                 {
@@ -1250,7 +1250,7 @@ internal static class InvokeCommandHandler
 
         async IAsyncEnumerable<IMessage> TrackRequests()
         {
-            await foreach (var msg in GenerateRequests(requestJson, methodDescriptor.InputType, verbose, allowUnknownFields, maxStdinBytes, cancellationToken).WithCancellation(cancellationToken))
+            await foreach (var msg in GenerateRequests(requestJson, methodDescriptor.InputType, verbose, allowUnknownFields, maxStdinBytes, cancellationToken))
             {
                 if (sentCount == 0)
                 {

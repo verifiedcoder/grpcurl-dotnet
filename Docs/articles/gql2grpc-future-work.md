@@ -121,10 +121,8 @@ This document captures functionality that is deliberately out of scope for the i
 
 ---
 
-## 7. Documentation and packaging follow-ups
+## 7. Observability follow-ups
 
-- Publish `Gql2Grpc` as a standalone `dotnet tool` (`dotnet tool install --global gql2grpc`) once the public API stabilises.
-- Add a "Gql2Grpc cookbook" article with worked examples for the top 10 enterprise patterns (auth headers via cookie, mTLS, reflection vs protoset, mapping file patterns, FieldMask efficiency).
 - Add a Grafana/OpenTelemetry section when the gRPC client gains built-in tracing (GrpCurl.Net doesn't ship tracing today).
 
 ---

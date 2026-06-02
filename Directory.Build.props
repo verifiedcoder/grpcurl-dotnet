@@ -7,6 +7,14 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <DefaultItemExcludes>$(DefaultItemExcludes);bin\**;obj\**;artifacts\**</DefaultItemExcludes>
+    <Authors>verifiedcoder</Authors>
+    <Company>verifiedcoder</Company>
+    <PackageProjectUrl>https://github.com/verifiedcoder/grpcurl-dotnet</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/verifiedcoder/grpcurl-dotnet</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
     <!-- CS1591: don't require XML docs on every public symbol. Consumer-facing
          types are documented by hand via Docs/filterConfig.yml. -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>

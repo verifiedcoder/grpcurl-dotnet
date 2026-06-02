@@ -29,8 +29,4 @@ internal static class Diagnostics
     /// <summary>Writes a Spectre.Console markup line to stderr.</summary>
     public static void Markup(string message)
         => CreateStderr().MarkupLine(message);
-
-    /// <summary>Writes a plain (unformatted) line to stderr.</summary>
-    public static void Plain(string message)
-        => Console.Error.WriteLine(message);
 }

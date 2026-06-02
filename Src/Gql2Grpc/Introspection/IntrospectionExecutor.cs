@@ -50,7 +50,7 @@ public sealed class IntrospectionExecutor(GraphQLSchemaBuilder schemaBuilder, Se
                 case TypeField:
 
                 {
-                    if (!selection.Arguments.TryGetValue("name", out var nameNode) || nameNode is not JsonValue nv || !nv.TryGetValue(out string? typeName) || typeName is null)
+                    if (!selection.Arguments.TryGetValue("name", out var nameNode) || nameNode is not JsonValue nv || !nv.TryGetValue(out string? typeName))
                     {
                         errors.Add(new GraphQLError(
                                        "__type requires a 'name' argument of type String.",

@@ -16,13 +16,6 @@ public sealed class MappingResolver(MappingConfig config, string? cliDefaultServ
 {
     private readonly Dictionary<(string, GraphQLOperationType), MappingEntry> _explicitLookup = BuildLookup(config.Operations);
 
-    /// <summary>
-    ///     Effective argument-name aliases after merging <see cref="MappingDefaults.ArgumentAliases" />
-    ///     with any per-entry overrides. Currently, exposes the defaults snapshot.
-    /// </summary>
-    public IReadOnlyDictionary<string, string> EffectiveArgumentAliases { get; private set; } =
-        new Dictionary<string, string>(StringComparer.Ordinal);
-
     /// <summary>The underlying configuration this resolver was constructed from.</summary>
     public MappingConfig Config { get; } = config;
 

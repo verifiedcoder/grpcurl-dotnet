@@ -39,7 +39,7 @@ internal static class ProtoSource
         }
 
         var protocPath = FindProtoc()
-             ?? throw new FileNotFoundException(
+             ?? throw new ProtocNotFoundException(
                  "protoc not found on PATH. Install Protocol Buffers compiler " +
                  "(e.g. 'apt install protobuf-compiler', 'brew install protobuf', " +
                  "or 'choco install protoc') and retry. " +

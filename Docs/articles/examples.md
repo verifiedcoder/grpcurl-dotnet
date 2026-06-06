@@ -211,11 +211,12 @@ grpcurl.net invoke --plaintext \
 
 ### Generate a Protoset File
 
-Using `protoc`:
+Using `protoc` (shown here against this repository's own TestServer schema; substitute your `.proto` files):
 ```bash
 protoc --descriptor_set_out=service.protoset \
   --include_imports \
-  service.proto
+  --proto_path=Tests/GrpCurl.Net.TestServer/Protos \
+  test.proto
 ```
 
 Or export from a running server:
@@ -358,10 +359,11 @@ grpcurl.net invoke --plaintext \
 ### Operation Timeout (gRPC Deadline)
 
 ```bash
+# Illustrative service/method — substitute your own long-running RPC
 grpcurl.net invoke --plaintext \
   --max-time 30s \
   -d '{}' \
-  localhost:9090 testing.TestService/LongRunningOperation
+  localhost:9090 my.package.Service/LongRunningOperation
 ```
 
 `--max-time` also bounds reflection-backed `list` and `describe` operations:
@@ -386,10 +388,11 @@ grpcurl.net invoke --plaintext \
 ### Message Size Limits
 
 ```bash
+# Illustrative service/method — substitute your own large-payload RPC
 grpcurl.net invoke --plaintext \
   --max-msg-sz 10MB \
   -d '{"large_payload": "..."}' \
-  localhost:9090 testing.TestService/ProcessLargeData
+  localhost:9090 my.package.Service/ProcessLargeData
 ```
 
 ---
@@ -433,9 +436,11 @@ This matches the POSIX convention (`128 + SIGINT=2`). In streaming mode, any mes
 **⚠️ `--insecure` disables certificate validation.** Never use this against production endpoints — a man-in-the-middle can intercept every request.
 
 ```bash
-# Test-only: accept self-signed or mismatched certs during development
+# Test-only: accept self-signed or mismatched certs during development.
+# Targets the TestServer in TLS mode:
+#   dotnet run --project Tests/GrpCurl.Net.TestServer -- --port 9443 --tls
 grpcurl.net invoke --insecure \
-  -d '{}' localhost:9090 testing.TestService/EmptyCall
+  -d '{}' localhost:9443 testing.TestService/EmptyCall
 ```
 
 Prefer `--cacert <ca.crt>` against internal PKIs. See [Troubleshooting](troubleshooting.md) for TLS diagnostics.

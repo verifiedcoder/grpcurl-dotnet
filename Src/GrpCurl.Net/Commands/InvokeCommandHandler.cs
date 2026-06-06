@@ -9,7 +9,6 @@ using GrpCurl.Net.Utilities;
 using Spectre.Console;
 using System.CommandLine;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 
@@ -362,24 +361,6 @@ internal static class InvokeCommandHandler
         return DynamicInvoker.CreateMessageFromJson(inputType, requestText, allowUnknownFields);
     }
 
-    internal static X509RevocationMode? ParseRevocationMode(string? mode)
-    {
-        if (string.IsNullOrEmpty(mode))
-        {
-            return null;
-        }
-
-        return mode.ToLowerInvariant() switch
-        {
-            "online"                          => X509RevocationMode.Online,
-            "offline"                         => X509RevocationMode.Offline,
-            "nocheck" or "no-check" or "none" => X509RevocationMode.NoCheck,
-            _ => throw new ArgumentException(
-                $"Unknown --revocation-mode '{mode}'. Expected: online, offline, nocheck.",
-                nameof(mode))
-        };
-    }
-
     internal static void ValidateOptions(bool plaintext, bool insecure, string? serverName, string? maxMsgSz, bool verbose)
     {
         // Warn about TLS-specific options used with --plaintext
@@ -482,7 +463,7 @@ internal static class InvokeCommandHandler
             throw;
         }
 
-        var parsedRevocationMode = ParseRevocationMode(revocationMode);
+        var parsedRevocationMode = GrpcChannelFactory.ParseRevocationMode(revocationMode);
 
         var parsedKeepaliveTime = keepaliveTime is null
             ? (TimeSpan?)null
@@ -758,13 +739,41 @@ internal static class InvokeCommandHandler
             // Already rendered by ErrorRenderer.RenderAndThrow at the originating site.
             throw;
         }
+        catch (StdinLimitExceededException ex)
+        {
+            ErrorRenderer.RenderAndThrow(new ErrorEnvelope
+            {
+                Category = ErrorCategory.Usage,
+                ExitCode = 2,
+                Message = ex.Message,
+                Suggestions =
+                [
+                    "Increase --max-stdin-bytes (e.g., --max-stdin-bytes 33554432)",
+                    "Split the payload into smaller messages"
+                ]
+            }, output);
+        }
+        catch (ProtocNotFoundException ex)
+        {
+            ErrorRenderer.RenderAndThrow(new ErrorEnvelope
+            {
+                Category = ErrorCategory.Schema,
+                ExitCode = 3,
+                Message = ex.Message,
+                Suggestions =
+                [
+                    "Install protoc and ensure it is on PATH",
+                    "Alternative: pre-compile a protoset and pass --protoset instead of --proto"
+                ]
+            }, output);
+        }
         catch (FileNotFoundException ex)
         {
             ErrorRenderer.RenderAndThrow(new ErrorEnvelope
             {
                 Category = ErrorCategory.Schema,
                 ExitCode = 3,
-                Message = $"Protoset file not found: {ex.FileName ?? string.Empty}",
+                Message = $"Protoset file not found: {ex.FileName ?? ex.Message}",
                 Suggestions =
                 [
                     "Check the file path is correct",
@@ -1421,7 +1430,7 @@ internal static class InvokeCommandHandler
     /// </summary>
     private static async Task<string> ReadStdinBoundedAsync(long maxBytes, CancellationToken cancellationToken = default)
     {
-        await using var stdin = Console.OpenStandardInput();
+        await using var stdin = ConsoleEnvironment.OpenStandardInput();
         await using var buffer = new MemoryStream();
 
         var read = new byte[8192];
@@ -1434,7 +1443,7 @@ internal static class InvokeCommandHandler
 
             if (total > maxBytes)
             {
-                throw new InvalidOperationException(
+                throw new StdinLimitExceededException(
                     $"Stdin exceeded the maximum allowed size of {maxBytes:N0} bytes. " +
                     "Increase --max-stdin-bytes or split the payload.");
             }

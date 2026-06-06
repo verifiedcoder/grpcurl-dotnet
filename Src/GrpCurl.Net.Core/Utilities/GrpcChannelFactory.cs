@@ -500,6 +500,31 @@ internal static partial class GrpcChannelFactory
         return (int)bytes;
     }
 
+    /// <summary>
+    ///     Parses a <c>--revocation-mode</c> CLI value into an <see cref="X509RevocationMode" />.
+    ///     Accepts "online", "offline", and "nocheck" (also "no-check"/"none").
+    ///     Returns <see langword="null" /> for empty input so the channel default applies.
+    /// </summary>
+    /// <param name="mode">Revocation mode string to parse</param>
+    /// <exception cref="ArgumentException">Thrown when the mode is not recognised</exception>
+    public static X509RevocationMode? ParseRevocationMode(string? mode)
+    {
+        if (string.IsNullOrEmpty(mode))
+        {
+            return null;
+        }
+
+        return mode.ToLowerInvariant() switch
+        {
+            "online"                          => X509RevocationMode.Online,
+            "offline"                         => X509RevocationMode.Offline,
+            "nocheck" or "no-check" or "none" => X509RevocationMode.NoCheck,
+            _ => throw new ArgumentException(
+                $"Unknown --revocation-mode '{mode}'. Expected: online, offline, nocheck.",
+                nameof(mode))
+        };
+    }
+
     internal static X509KeyStorageFlags GetClientCertificateStorageFlags(bool exportableClientKey)
     {
         if (exportableClientKey)

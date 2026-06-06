@@ -33,14 +33,17 @@ These options are available for all commands:
 | `--user-agent <value>` | Custom User-Agent header value. |
 | `-v`, `--verbose` | Verbose output. Metadata values are **redacted by default**; pass `--unsafe-show-secrets` to opt out. |
 | `--vv`, `--very-verbose` | Very verbose output with phase-level timing summary. |
-| `--unsafe-show-secrets` | Disable redaction in verbose output. Use only when you control the destination of the captured output. |
+| `--unsafe-show-secrets` | Disable redaction in verbose output. Use only when you control the destination of the captured output. (`invoke` only — `list`/`describe` don't print metadata values.) |
 | `-H`, `--header <header>` | Add header (`name: value`). Repeatable. Text values support `${ENV_VAR}` expansion. Header names ending in `-bin` are **base64-decoded** and sent as binary metadata. |
 | `--reflect-header <header>` | Header for reflection requests only. Repeatable. |
-| `--rpc-header <header>` | Header for the business RPC only. Repeatable. |
+| `--rpc-header <header>` | Header for the business RPC only. Repeatable. (`invoke` and `gql2grpc` only — `list`/`describe` issue no business RPC.) |
 | `--protoset <path>` | Use protoset file(s) instead of server reflection. Repeatable. Each local protoset file is capped at 64 MiB by default before it is read. |
+| `--proto <path>` | Compile `.proto` source file(s) via local `protoc` and use the result instead of server reflection. Repeatable. Requires `protoc` on PATH (alternative: `--protoset`). |
+| `-I`, `--import-path <dir>` | Directory passed to `protoc` as an import root when `--proto` is used. Repeatable. |
 | `--protoset-out <path>` | Export `FileDescriptorSet` to file after operation. Refuses to overwrite without `--force`. |
-| `--force` | Allow `--protoset-out` to overwrite an existing file. |
-| `--output <text\|json>` | Output format. `text` (default) is human-readable. `json` emits stable line-based envelopes (NDJSON for `invoke` streaming). Errors always go to stderr. |
+| `--proto-out-dir <dir>` | Reconstruct `.proto` source files from the active schema and write them to this directory. Refuses to overwrite without `--force`. (`list`/`describe`/`invoke` — not `gql2grpc`.) |
+| `--force` | Allow `--protoset-out` / `--proto-out-dir` to overwrite existing files. |
+| `--output <text\|json>` | Output format. `text` (default) is human-readable. `json` emits stable line-based envelopes (NDJSON for `invoke` streaming). Errors always go to stderr. (`gql2grpc` always emits a GraphQL JSON envelope and does not take `--output`.) |
 
 ### Address forms
 
@@ -73,7 +76,7 @@ grpcurl.net list [options] [address] [service]
 
 | Argument | Description |
 |----------|-------------|
-| `address` | Server address (host:port). Required unless using `--protoset`. |
+| `address` | Server address (host:port). Required unless using `--protoset` or `--proto`. |
 | `service` | Service name to list methods for. If omitted, lists all services. |
 
 ### Examples
@@ -117,7 +120,7 @@ grpcurl.net describe [options] [address] [symbol]
 
 | Argument | Description |
 |----------|-------------|
-| `address` | Server address (host:port). Required unless using `--protoset`. |
+| `address` | Server address (host:port). Required unless using `--protoset` or `--proto`. |
 | `symbol` | Symbol to describe (service, method, or message type). If omitted, describes all services. |
 
 ### Options
@@ -175,6 +178,7 @@ grpcurl.net invoke [options] <address> <method>
 | `--max-msg-sz <size>` | Maximum message size (e.g., `4MB`, `10MB`) |
 | `--max-time <duration>` | Maximum operation time / gRPC deadline. **Always set this for unattended use** — there is no built-in default. |
 | `--max-stdin-bytes <bytes>` | Maximum bytes accepted from stdin when using `-d @`. Default: 16 MiB. Use a plain byte count such as `1048576`. |
+| `--format <json\|text>` | Request data format: `json` (default) or `text` (protobuf text format). |
 | `--rpc-header <header>` | Add header to RPC requests only |
 
 `--output` and `--force` are inherited from [Global Options](#global-options) and behave identically here. In `--output json` mode, each response message becomes a single NDJSON line (`{"kind":"message","index":N,"message":{...}}`) on stdout; errors render as a one-line `{"kind":"error",...}` envelope on stderr.
@@ -262,6 +266,8 @@ gql2grpc [OPTIONS] <address> [query]
 | Option | Description |
 |---|---|
 | `--protoset <path>` | Protoset file(s). Repeatable. When absent, server reflection is used. Each local protoset file is capped at 64 MiB by default before it is read. |
+| `--proto <path>` | Compile `.proto` source file(s) via local `protoc` and use the result instead of server reflection. Repeatable. Requires `protoc` on PATH. |
+| `-I`, `--import-path <dir>` | Directory passed to `protoc` as an import root when `--proto` is used. Repeatable. |
 | `--protoset-out <path>` | Write the discovered `FileDescriptorSet` to a file after the operation runs. Refuses to overwrite without `--force`. |
 | `--force` | Allow `--protoset-out` to overwrite an existing file. |
 
@@ -269,7 +275,7 @@ Reflection descriptor responses are capped at 16 MiB by default. Descriptor sour
 
 ### Transport (identical to `invoke`)
 
-`--plaintext`, `--insecure`, `--cacert`, `--cert`, `--key`, `--cert-password`, `--authority`, `--servername`, `--user-agent`, `--connect-timeout`, `--max-time`, `--max-msg-sz`, `-H` / `--header`, `--reflect-header`, `--rpc-header`. See [Global Options](#global-options) for semantics. `${ENV_VAR}` expansion in `-H` values works the same way.
+`--plaintext`, `--insecure`, `--cacert`, `--cert`, `--key`, `--cert-password`, `--revocation-mode`, `--exportable-key`, `--authority`, `--servername`, `--user-agent`, `--connect-timeout`, `--keepalive-time`, `--keepalive-timeout`, `--max-time`, `--max-msg-sz`, `-H` / `--header`, `--reflect-header`, `--rpc-header`. See [Global Options](#global-options) for semantics. `${ENV_VAR}` expansion in `-H` values works the same way.
 
 ### GraphQL input
 
@@ -313,7 +319,7 @@ GraphQL documents loaded with `--file`, JSON variables loaded with `--variables-
 
 ### Exit codes
 
-`0` on success, `2` for usage/JSON-parse errors, `3` for missing-file/schema errors, `4` for network errors, `5` for timeouts, `64 + grpcStatusCode` when the upstream RPC fails (e.g. `InvalidArgument=3` → `67`), `130` on Ctrl+C, `1` for anything else. Top-level failures (e.g. missing GraphQL document, unreachable address) still produce a parseable `{"data":null,"errors":[...]}` envelope on stdout — there is no out-of-band error format.
+`0` on success, `2` for usage/JSON-parse errors, `3` for missing-file/schema errors, `4` for network errors, `5` for timeouts, `64 + grpcStatusCode` when the upstream RPC fails (e.g. `InvalidArgument=3` → `67`), `130` on Ctrl+C, `1` for anything else. As with `grpcurl.net`, most transport failures surface as `64 + status` (connection refused → `78`) rather than `4`/`5`. Top-level failures (e.g. missing GraphQL document, unreachable address) still produce a parseable `{"data":null,"errors":[...]}` envelope on stdout — there is no out-of-band error format.
 
 ### Examples
 
@@ -380,12 +386,15 @@ Size values accept the following formats:
 | 1 | Internal error (unhandled exception, generic failure) |
 | 2 | Usage error (bad CLI args, JSON parse failure in request data) |
 | 3 | Schema/file error (protoset missing or invalid, symbol not found, output file overwrite refused) |
-| 4 | Network error (connection failure outside the RPC call) |
-| 5 | Timeout (connect or operation deadline exceeded outside the RPC call) |
+| 4 | Network error (connection failure outside the RPC call; rare in practice — see note below) |
+| 5 | Timeout (connect or operation deadline exceeded outside the RPC call; rare in practice — see note below) |
 | 64 + StatusCode | RPC error from the server (e.g. `Unavailable=14` → `78`, `NotFound=5` → `69`) |
 | 130 | Cancelled by user (Ctrl+C) |
 
 Both `grpcurl.net` and `gql2grpc` use the same exit-code mapping. In `--output json` mode every code is accompanied by a structured envelope on stderr (or, for `gql2grpc`, inside the GraphQL response envelope on stdout) that carries the category and any RPC details.
+
+> [!NOTE]
+> Most transport failures surface through the gRPC client as `64 + status`, not as `4`/`5`: a refused connection exits `78` (64 + `Unavailable`(14)) and a `--max-time` deadline hit during connect exits `65` (64 + `Cancelled`(1)). This matches upstream grpcurl. Robust scripts should treat any code `>= 64` as an RPC/transport failure and `1`–`3` as local failures, rather than keying on `4`/`5` specifically.
 
 ## Environment Variables
 

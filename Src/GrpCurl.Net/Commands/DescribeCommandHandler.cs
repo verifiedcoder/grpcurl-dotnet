@@ -2,6 +2,7 @@ using Google.Protobuf.Reflection;
 using Grpc.Core;
 using GrpCurl.Net.DescriptorSources;
 using GrpCurl.Net.Exceptions;
+using GrpCurl.Net.Output;
 using GrpCurl.Net.Utilities;
 using Spectre.Console;
 using System.CommandLine;
@@ -130,6 +131,49 @@ internal static class DescribeCommandHandler
             Description = "Overwrite existing files (e.g., target of --protoset-out) without confirmation"
         };
 
+        var revocationModeOpt = new Option<string?>("--revocation-mode")
+        {
+            Description = "Certificate revocation policy when --cacert is used: " +
+                          "online (default, fetches CRL/OCSP), offline (uses cached CRL only), " +
+                          "nocheck (disables revocation — only safe for self-signed test fixtures)."
+        };
+
+        var exportableKeyOpt = new Option<bool>("--exportable-key")
+        {
+            Description = "Load client private keys with X509KeyStorageFlags.Exportable. " +
+                          "Default is EphemeralKeySet on Linux, platform default on macOS, " +
+                          "and non-exportable UserKeySet on Windows."
+        };
+
+        var keepaliveTimeOpt = new Option<string?>("--keepalive-time")
+        {
+            Description = "HTTP/2 keepalive ping interval (e.g., '30s'). Default: 60s."
+        };
+
+        var keepaliveTimeoutOpt = new Option<string?>("--keepalive-timeout")
+        {
+            Description = "HTTP/2 keepalive ping timeout (e.g., '10s'). Default: 30s."
+        };
+
+        var protoOpt = new Option<string[]>("--proto")
+        {
+            Description = "Path to a .proto source file to compile via protoc. Repeatable. " +
+                          "Requires protoc on PATH (alternative: --protoset).",
+            Arity = ArgumentArity.ZeroOrMore
+        };
+
+        var importPathOpt = new Option<string[]>("--import-path", "-I")
+        {
+            Description = "Directory passed to protoc as an import root. Repeatable.",
+            Arity = ArgumentArity.ZeroOrMore
+        };
+
+        var protoOutDirOpt = new Option<string?>("--proto-out-dir")
+        {
+            Description = "Reconstruct .proto source files from the active schema and write them to this directory. " +
+                          "Refuses to overwrite without --force."
+        };
+
         var command = new Command("describe", CommandDescriptions.Describe)
         {
             addressArg,
@@ -153,7 +197,14 @@ internal static class DescribeCommandHandler
             msgTemplateOpt,
             protosetOutOpt,
             outputOpt,
-            forceOpt
+            forceOpt,
+            revocationModeOpt,
+            exportableKeyOpt,
+            keepaliveTimeOpt,
+            keepaliveTimeoutOpt,
+            protoOpt,
+            importPathOpt,
+            protoOutDirOpt
         };
 
         // Use ParseResult to handle parameters
@@ -181,6 +232,13 @@ internal static class DescribeCommandHandler
             var protosetOut = parseResult.GetValue(protosetOutOpt);
             var output = parseResult.GetValue(outputOpt);
             var force = parseResult.GetValue(forceOpt);
+            var revocationMode = parseResult.GetValue(revocationModeOpt);
+            var exportableKey = parseResult.GetValue(exportableKeyOpt);
+            var keepaliveTime = parseResult.GetValue(keepaliveTimeOpt);
+            var keepaliveTimeout = parseResult.GetValue(keepaliveTimeoutOpt);
+            var protoFiles = parseResult.GetValue(protoOpt) ?? [];
+            var importPaths = parseResult.GetValue(importPathOpt) ?? [];
+            var protoOutDir = parseResult.GetValue(protoOutDirOpt);
 
             try
             {
@@ -206,7 +264,14 @@ internal static class DescribeCommandHandler
                     protosetOut,
                     output,
                     force,
-                    maxTime);
+                    maxTime,
+                    revocationMode,
+                    protoFiles,
+                    importPaths,
+                    protoOutDir,
+                    exportableKey,
+                    keepaliveTime,
+                    keepaliveTimeout);
 
                 return 0;
             }
@@ -219,9 +284,11 @@ internal static class DescribeCommandHandler
         return command;
     }
 
-    internal static void ValidateOptions(string? address, string[] protosets, bool plaintext, bool insecure, string? serverName, bool verbose, OutputFormat output = OutputFormat.Text)
+    internal static void ValidateOptions(string? address, string[] protosets, bool plaintext, bool insecure, string? serverName, bool verbose, OutputFormat output = OutputFormat.Text, string[]? protoFiles = null)
     {
-        switch (protosets.Length)
+        var localSchemaCount = protosets.Length + (protoFiles?.Length ?? 0);
+
+        switch (localSchemaCount)
         {
             // Validate required options
             case 0 when string.IsNullOrEmpty(address):
@@ -230,10 +297,11 @@ internal static class DescribeCommandHandler
                 {
                     Category = ErrorCategory.Usage,
                     ExitCode = 2,
-                    Message = "Must specify either --protoset files or server address",
+                    Message = "Must specify either --protoset files, --proto files, or server address",
                     Suggestions =
                     [
                         "grpcurl-dotnet --protoset file.protoset describe",
+                        "grpcurl-dotnet --proto file.proto describe MyService",
                         "grpcurl-dotnet localhost:9090 describe MyService"
                     ]
                 }, output);
@@ -246,7 +314,7 @@ internal static class DescribeCommandHandler
             {
                 if (verbose)
                 {
-                    Diagnostics.Markup("[yellow]Warning:[/] Both --protoset and address specified. Using protoset files (server reflection will be ignored).");
+                    Diagnostics.Markup("[yellow]Warning:[/] Both local schema files (--protoset/--proto) and address specified. Using local schema (server reflection will be ignored).");
                 }
 
                 break;
@@ -288,7 +356,14 @@ internal static class DescribeCommandHandler
         string? protosetOut,
         OutputFormat output = OutputFormat.Text,
         bool force = false,
-        string? maxTime = null)
+        string? maxTime = null,
+        string? revocationMode = null,
+        string[]? protoFiles = null,
+        string[]? importPaths = null,
+        string? protoOutDir = null,
+        bool exportableKey = false,
+        string? keepaliveTime = null,
+        string? keepaliveTimeout = null)
     {
         var startTime = DateTime.UtcNow;
         var maxTimeSpan = maxTime is not null ? GrpcChannelFactory.ParseDuration(maxTime) : (TimeSpan?)null;
@@ -299,15 +374,20 @@ internal static class DescribeCommandHandler
 
         var operationToken = deadlineCts.Token;
 
-        // When using protosets without a server, the first positional arg (address) is actually the symbol
-        if (protosets.Length > 0 && !string.IsNullOrEmpty(address) && string.IsNullOrEmpty(symbol))
+        protoFiles ??= [];
+        importPaths ??= [];
+
+        var offlineSchema = protosets.Length > 0 || protoFiles.Length > 0;
+
+        // When using local schema files without a server, the first positional arg (address) is actually the symbol
+        if (offlineSchema && !string.IsNullOrEmpty(address) && string.IsNullOrEmpty(symbol))
         {
             symbol = address;
             address = null;
         }
 
         // Validate options before proceeding
-        ValidateOptions(address, protosets, plaintext, insecure, serverName, verbose, output);
+        ValidateOptions(address, protosets, plaintext, insecure, serverName, verbose, output, protoFiles);
 
         // Create timing context if very verbose mode is enabled
         var timing = veryVerbose ? new TimingContext() : null;
@@ -321,15 +401,19 @@ internal static class DescribeCommandHandler
             ClientKeyPath = key,
             ClientCertPassword = certPassword,
             ConnectTimeout = connectTimeout is not null ? GrpcChannelFactory.ParseDuration(connectTimeout) : null,
+            KeepaliveTime = keepaliveTime is not null ? GrpcChannelFactory.ParseDuration(keepaliveTime) : null,
+            KeepaliveTimeout = keepaliveTimeout is not null ? GrpcChannelFactory.ParseDuration(keepaliveTimeout) : null,
             Authority = authority,
-            ServerName = serverName
+            ServerName = serverName,
+            RevocationMode = GrpcChannelFactory.ParseRevocationMode(revocationMode),
+            ExportableClientKey = exportableKey
         };
 
         var reflectionMetadata = GrpcChannelFactory.CreateMetadata(
             headers.Concat(reflectHeaders),
             userAgent);
 
-        if (verbose && !string.IsNullOrEmpty(address) && protosets.Length == 0)
+        if (verbose && !string.IsNullOrEmpty(address) && !offlineSchema)
         {
             Diagnostics.Markup($"[dim]Connecting to {address}...[/]");
             Diagnostics.Markup($"[dim]Protocol: {(plaintext ? "HTTP/2 (plaintext)" : "HTTP/2 (TLS)")}[/]");
@@ -357,11 +441,13 @@ internal static class DescribeCommandHandler
 
         try
         {
-            timing?.StartPhase(protosets.Length > 0 ? "Protoset Loading" : "Connection Establishment");
+            timing?.StartPhase(offlineSchema ? "Schema Loading" : "Connection Establishment");
 
             await using var session = await DescriptorSourceFactory.CreateAsync(
                 address,
                 protosets,
+                protoFiles,
+                importPaths,
                 channelOptions,
                 reflectionMetadata,
                 operationToken);
@@ -370,9 +456,9 @@ internal static class DescribeCommandHandler
 
             switch (verbose)
             {
-                case true when protosets.Length > 0:
+                case true when offlineSchema:
 
-                    Diagnostics.Markup("[dim]Protoset files loaded successfully[/]");
+                    Diagnostics.Markup("[dim]Local schema files loaded successfully[/]");
 
                     break;
 
@@ -442,6 +528,17 @@ internal static class DescribeCommandHandler
                 }
             }
 
+            // Export reconstructed .proto sources if --proto-out-dir specified.
+            if (!string.IsNullOrEmpty(protoOutDir))
+            {
+                await ProtoFileEmitter.WriteAsync(descriptorSource, protoOutDir, force, operationToken);
+
+                if (verbose)
+                {
+                    Diagnostics.Markup($"[dim]Wrote .proto files to {protoOutDir}[/]");
+                }
+            }
+
             // Print timing summary if very verbose mode
             timing?.PrintSummary();
 
@@ -456,13 +553,27 @@ internal static class DescribeCommandHandler
         {
             throw;
         }
+        catch (ProtocNotFoundException ex)
+        {
+            ErrorRenderer.RenderAndThrow(new ErrorEnvelope
+            {
+                Category = ErrorCategory.Schema,
+                ExitCode = 3,
+                Message = ex.Message,
+                Suggestions =
+                [
+                    "Install protoc and ensure it is on PATH",
+                    "Alternative: pre-compile a protoset and pass --protoset instead of --proto"
+                ]
+            }, output);
+        }
         catch (FileNotFoundException ex)
         {
             ErrorRenderer.RenderAndThrow(new ErrorEnvelope
             {
                 Category = ErrorCategory.Schema,
                 ExitCode = 3,
-                Message = $"Protoset file not found: {ex.FileName ?? string.Empty}",
+                Message = $"Protoset file not found: {ex.FileName ?? ex.Message}",
                 Suggestions =
                 [
                     "Check the file path is correct",

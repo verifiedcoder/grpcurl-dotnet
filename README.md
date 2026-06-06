@@ -44,27 +44,23 @@ grpcurl.net invoke --plaintext --max-time 30s \
 
 ## Install
 
-GrpCurl.Net ships as a [.NET global tool](https://learn.microsoft.com/dotnet/core/tools/global-tools):
-
-```bash
-dotnet tool install -g GrpCurl.Net
-grpcurl.net --version
-```
-
-The GraphQL bridge ships as a separate tool:
-
-```bash
-dotnet tool install -g Gql2Grpc
-gql2grpc --help
-```
-
-For local development or release-candidate verification, build packages from source:
+GrpCurl.Net is installed by building the [.NET tool](https://learn.microsoft.com/dotnet/core/tools/global-tools) packages from source. The packages are **not published to NuGet.org**; there is no public-feed install path.
 
 ```bash
 dotnet pack Src/GrpCurl.Net -c Release
 dotnet tool install -g GrpCurl.Net --add-source Src/GrpCurl.Net/bin/Release
 grpcurl.net --version
 ```
+
+The GraphQL bridge is built and installed the same way as a separate tool:
+
+```bash
+dotnet pack Src/Gql2Grpc -c Release
+dotnet tool install -g Gql2Grpc --add-source Src/Gql2Grpc/bin/Release
+gql2grpc --help
+```
+
+For team distribution, push the packed `.nupkg` files to an internal NuGet feed and install with `--add-source <feed-url>`.
 
 `GrpCurl.Net.Core` is bundled inside the tool packages and is not installed directly.
 
@@ -74,7 +70,7 @@ GrpCurl.Net is designed to be driven by AI agents and shell scripts without huma
 
 - **JSON output**: Pass `--output json`. `list`/`describe` emit one JSON envelope per call. `invoke` emits NDJSON: one `{"kind":"message","index":N,"message":{...}}` line per response.
 - **Errors on stderr**: All errors and progress chatter go to **stderr**. **stdout** carries only data. In `--output json` mode errors are a single JSON line on stderr (`{"kind":"error","category":"rpc|network|timeout|usage|schema|cancelled|internal", "exitCode":N, "message":"...", ...}`).
-- **Exit codes**: `0` success, `1` internal, `2` usage, `3` schema/file, `4` network, `5` timeout, `64+gRPC status` for RPC errors, `130` for Ctrl+C.
+- **Exit codes**: `0` success, `1` internal, `2` usage, `3` schema/file, `4` network, `5` timeout, `64+gRPC status` for RPC errors, `130` for Ctrl+C. In practice most transport failures surface through the gRPC layer as `64+status` rather than `4`/`5` — e.g. connection refused exits `78` (64 + Unavailable(14)) and a `--max-time` hit during connect exits `65` (64 + Cancelled(1)), matching upstream grpcurl. Scripts should treat `>=64` as RPC/transport failures and `1`–`3` as local failures.
 - **Always set `--max-time`** on reflection-backed `list`/`describe`, `invoke`, and `gql2grpc` in unattended scripts. There is no built-in default deadline; without it a hung server can block forever.
 - **stdin**: `--data @` reads JSON from stdin. The CLI **refuses** to read from a TTY — pipe input or use inline `--data '{...}'`. Stdin reads are capped at 16 MiB by default; use `--max-stdin-bytes <bytes>` to set an explicit numeric byte limit. For client/bidi streaming, supply a JSON array (`--data '[{...},{...}]'`) or concatenated objects.
 - **Headers**: `-H 'name: value'` may be repeated. Text values support `${VAR}` environment-variable expansion. Header names ending in `-bin` are base64-decoded and sent as binary metadata.
@@ -89,7 +85,7 @@ grpcurl.net invoke --plaintext --output json --max-time 30s \
   localhost:9090 svc/Stream -d '{"n":3}' \
   | jq -c '.message'
 
-# Structured error on stderr (exit code 78 = 64 + Unimplemented(12))
+# Structured error on stderr (exit code 76 = 64 + Unimplemented(12))
 grpcurl.net invoke --plaintext --output json --max-time 5s \
   localhost:9090 svc/Missing -d '{}' 2>error.json ; echo $?
 ```

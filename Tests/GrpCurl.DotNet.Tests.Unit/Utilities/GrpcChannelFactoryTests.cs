@@ -861,4 +861,51 @@ public sealed class GrpcChannelFactoryTests
     }
 
     #endregion
+
+    #region ParseRevocationMode Tests
+
+    [Theory]
+    [InlineData("online", X509RevocationMode.Online)]
+    [InlineData("ONLINE", X509RevocationMode.Online)]
+    [InlineData("offline", X509RevocationMode.Offline)]
+    [InlineData("Offline", X509RevocationMode.Offline)]
+    [InlineData("nocheck", X509RevocationMode.NoCheck)]
+    [InlineData("no-check", X509RevocationMode.NoCheck)]
+    [InlineData("none", X509RevocationMode.NoCheck)]
+    [InlineData("NOCHECK", X509RevocationMode.NoCheck)]
+    public void ParseRevocationMode_ValidMode_ReturnsExpectedMode(string mode, X509RevocationMode expected)
+    {
+        // Act
+        var result = GrpcChannelFactory.ParseRevocationMode(mode);
+
+        // Assert
+        result.ShouldBe(expected);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void ParseRevocationMode_NullOrEmpty_ReturnsNull(string? mode)
+    {
+        // Act
+        var result = GrpcChannelFactory.ParseRevocationMode(mode);
+
+        // Assert
+        result.ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData("always")]
+    [InlineData("off")]
+    [InlineData("10s")]
+    public void ParseRevocationMode_UnknownMode_ThrowsArgumentException(string mode)
+    {
+        // Act & Assert
+        var ex = Should.Throw<ArgumentException>(() => GrpcChannelFactory.ParseRevocationMode(mode));
+
+        ex.Message.ShouldContain("--revocation-mode");
+        ex.Message.ShouldContain(mode);
+    }
+
+    #endregion
 }

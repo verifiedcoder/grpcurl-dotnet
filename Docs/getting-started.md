@@ -9,27 +9,7 @@ This guide will help you install GrpCurl.Net and make your first gRPC calls.
 
 ## Installation
 
-### Option 1: Install the global tools
-
-Install the main CLI from NuGet:
-
-```bash
-dotnet tool install -g GrpCurl.Net
-grpcurl.net --version
-```
-
-Install the GraphQL bridge when you need GraphQL-to-gRPC translation:
-
-```bash
-dotnet tool install -g Gql2Grpc
-gql2grpc --help
-```
-
-`GrpCurl.Net.Core` is bundled inside the tool packages and is not installed directly.
-
-### Option 2: Build from Source
-
-Clone the repository and build:
+The packages are **not published to NuGet.org** — all install paths start from a source checkout:
 
 ```bash
 git clone https://github.com/verifiedcoder/grpcurl-dotnet.git
@@ -38,7 +18,29 @@ dotnet restore --locked-mode GrpCurl.Net.slnx
 dotnet build GrpCurl.Net.slnx --configuration Release --no-restore
 ```
 
-Run directly with `dotnet run`:
+### Option 1: Pack and install the global tools
+
+Pack the tool packages and install them from the local build output:
+
+```bash
+dotnet pack Src/GrpCurl.Net -c Release
+dotnet tool install -g GrpCurl.Net --add-source Src/GrpCurl.Net/bin/Release
+grpcurl.net --version
+```
+
+Install the GraphQL bridge when you need GraphQL-to-gRPC translation:
+
+```bash
+dotnet pack Src/Gql2Grpc -c Release
+dotnet tool install -g Gql2Grpc --add-source Src/Gql2Grpc/bin/Release
+gql2grpc --help
+```
+
+`GrpCurl.Net.Core` is bundled inside the tool packages and is not installed directly. For team distribution, push the packed `.nupkg` files to an internal NuGet feed and install with `--add-source <feed-url>`.
+
+### Option 2: Run from Source
+
+Run directly with `dotnet run` — no install step needed:
 
 ```bash
 dotnet run --project Src/GrpCurl.Net -- list --plaintext localhost:9090
@@ -59,7 +61,7 @@ dotnet publish Src/GrpCurl.Net -c Release -r osx-arm64 --self-contained -p:Publi
 dotnet publish Src/GrpCurl.Net -c Release -r win-x64 --self-contained -p:PublishSingleFile=true
 ```
 
-Replace `Src/GrpCurl.Net` with `Src/Gql2Grpc` to publish the GraphQL bridge instead. The executable lands in `Src/<Project>/bin/Release/<target-framework>/<runtime>/publish/` — the `<target-framework>` folder tracks whatever the `.csproj` declares, so the path stays correct across .NET upgrades.
+Replace `Src/GrpCurl.Net` with `Src/Gql2Grpc` to publish the GraphQL bridge instead. The executable lands in `Src/<Project>/bin/Release/<target-framework>/<runtime>/publish/` and is named after the project (`GrpCurl.Net` / `Gql2Grpc`, plus `.exe` on Windows) — not `grpcurl.net`, which is the dotnet-tool command name. The `<target-framework>` folder tracks whatever the `.csproj` declares, so the path stays correct across .NET upgrades.
 
 ## Basic Usage
 

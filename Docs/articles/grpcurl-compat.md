@@ -66,11 +66,14 @@ These differ from upstream by design — they are not bugs:
 
 ## Falls-through behaviour
 
-An unknown single-dash flag is passed through verbatim so System.CommandLine raises the standard "unknown option" error rather than silently dropping it.
+An unknown single-dash flag is passed through verbatim so the parser raises the standard usage error (exit code 2) rather than silently dropping it:
 
 ```bash
 grpcurl.net -unknown-thing localhost:9090
-# System.CommandLine: Unknown option '-unknown-thing'
+# Required command was not provided.
+# Unrecognized command or argument '-unknown-thing'.
+# Unrecognized command or argument 'localhost:9090'.
+# Run 'grpcurl.net [command] --help' for usage.
 ```
 
 ## Worked examples

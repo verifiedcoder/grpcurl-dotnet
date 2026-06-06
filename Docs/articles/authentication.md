@@ -122,6 +122,8 @@ GrpCurl.Net applies these defaults whenever `--cacert` or `--cert` is supplied:
 
 Use `--revocation-mode nocheck` only against self-signed fixtures that lack a CRL distribution point. Production deployments should leave the default `Online` so revoked certs are rejected.
 
+`--revocation-mode` and `--exportable-key` are accepted by every command — `list`, `describe`, `invoke`, and `gql2grpc` — so discovery against a private CA without CRL/OCSP endpoints works the same way as invocation (e.g. `grpcurl.net list --cacert ca.pem --revocation-mode offline my-service.internal:443`).
+
 On Windows, .NET's Schannel-backed TLS stack requires the client certificate private key to be available from a key set for mTLS handshakes, so GrpCurl.Net uses non-exportable `UserKeySet` there. Linux keeps the safer ephemeral behavior. macOS does not support `EphemeralKeySet` for PFX private keys because .NET needs keychain-backed storage, so GrpCurl.Net uses platform default keychain handling on macOS. Use `--exportable-key` only when a workflow explicitly needs exportable private key material.
 
 ### Verbose output and secrets

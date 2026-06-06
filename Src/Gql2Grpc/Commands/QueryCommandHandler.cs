@@ -19,7 +19,39 @@ internal static class QueryCommandHandler
     {
         var command = Create();
         var parse = command.Parse(args);
+
+        // Parse errors (unknown option, missing required argument) are usage errors: exit 2
+        // per the documented contract, reported once. The default action would return 1.
+        var parseErrorExitCode = TryHandleParseErrors(parse);
+
+        if (parseErrorExitCode is not null)
+        {
+            return parseErrorExitCode.Value;
+        }
+
         return await parse.InvokeAsync().ConfigureAwait(false);
+    }
+
+    /// <summary>
+    ///     Emits parse errors as a single top-level GraphQL error envelope (code <c>USAGE</c>)
+    ///     and returns exit code 2, or returns <see langword="null" /> when the parse produced
+    ///     no errors (including <c>--help</c>/<c>--version</c>, which flow to their actions).
+    /// </summary>
+    internal static int? TryHandleParseErrors(ParseResult parse)
+    {
+        if (parse.Errors.Count == 0)
+        {
+            return null;
+        }
+
+        var message = string.Join(Environment.NewLine, parse.Errors.Select(e => e.Message).Distinct());
+
+        EmitTopLevelError(new GraphQLError(
+            message,
+            [],
+            new Dictionary<string, object?> { ["code"] = "USAGE" }));
+
+        return 2;
     }
 
     public static RootCommand Create()
@@ -41,6 +73,19 @@ internal static class QueryCommandHandler
             Arity = ArgumentArity.ZeroOrMore
         };
 
+        var protoOpt = new Option<string[]>("--proto")
+        {
+            Description = "Path to a .proto source file to compile via protoc. Repeatable. " +
+                          "Requires protoc on PATH (alternative: --protoset).",
+            Arity = ArgumentArity.ZeroOrMore
+        };
+
+        var importPathOpt = new Option<string[]>("--import-path", "-I")
+        {
+            Description = "Directory passed to protoc as an import root. Repeatable.",
+            Arity = ArgumentArity.ZeroOrMore
+        };
+
         var protosetOutOpt = new Option<string?>("--protoset-out")
         {
             Description = "Write discovered FileDescriptorSet to a file."
@@ -59,6 +104,31 @@ internal static class QueryCommandHandler
         var certPasswordOpt = new Option<string?>("--cert-password") { Description = "Password for PKCS12 client certificate" };
         var authorityOpt = new Option<string?>("--authority") { Description = ":authority header / TLS server name" };
         var serverNameOpt = new Option<string?>("--servername") { Description = "Override TLS server name" };
+
+        var revocationModeOpt = new Option<string?>("--revocation-mode")
+        {
+            Description = "Certificate revocation policy when --cacert is used: " +
+                          "online (default, fetches CRL/OCSP), offline (uses cached CRL only), " +
+                          "nocheck (disables revocation — only safe for self-signed test fixtures)."
+        };
+
+        var exportableKeyOpt = new Option<bool>("--exportable-key")
+        {
+            Description = "Load client private keys with X509KeyStorageFlags.Exportable. " +
+                          "Default is EphemeralKeySet on Linux, platform default on macOS, " +
+                          "and non-exportable UserKeySet on Windows."
+        };
+
+        var keepaliveTimeOpt = new Option<string?>("--keepalive-time")
+        {
+            Description = "HTTP/2 keepalive ping interval (e.g., '30s'). Default: 60s."
+        };
+
+        var keepaliveTimeoutOpt = new Option<string?>("--keepalive-timeout")
+        {
+            Description = "HTTP/2 keepalive ping timeout (e.g., '10s'). Default: 30s."
+        };
+
         var userAgentOpt = new Option<string?>("--user-agent")
         {
             Description = $"Custom User-Agent header (default: {UserAgentProvider.Default})"
@@ -122,10 +192,12 @@ internal static class QueryCommandHandler
         {
             addressArg, queryArg,
             protosetOpt,
+            protoOpt, importPathOpt,
             protosetOutOpt,
             forceOpt,
             plaintextOpt, insecureOpt, cacertOpt, certOpt, keyOpt, certPasswordOpt,
-            authorityOpt, serverNameOpt, userAgentOpt,
+            authorityOpt, serverNameOpt, revocationModeOpt, exportableKeyOpt, userAgentOpt,
+            keepaliveTimeOpt, keepaliveTimeoutOpt,
             connectTimeoutOpt, maxTimeOpt, maxMsgSzOpt,
             headerOpt, reflectHeaderOpt, rpcHeaderOpt,
             fileOpt, operationOpt, varOpt, variablesFileOpt,
@@ -146,6 +218,8 @@ internal static class QueryCommandHandler
                 Variables = parseResult.GetValue(varOpt) ?? [],
                 VariablesFile = parseResult.GetValue(variablesFileOpt),
                 Protosets = parseResult.GetValue(protosetOpt) ?? [],
+                ProtoFiles = parseResult.GetValue(protoOpt) ?? [],
+                ImportPaths = parseResult.GetValue(importPathOpt) ?? [],
                 ProtosetOut = parseResult.GetValue(protosetOutOpt),
                 Force = parseResult.GetValue(forceOpt),
                 Plaintext = parseResult.GetValue(plaintextOpt),
@@ -156,6 +230,10 @@ internal static class QueryCommandHandler
                 CertPassword = parseResult.GetValue(certPasswordOpt),
                 Authority = parseResult.GetValue(authorityOpt),
                 ServerName = parseResult.GetValue(serverNameOpt),
+                RevocationMode = parseResult.GetValue(revocationModeOpt),
+                ExportableKey = parseResult.GetValue(exportableKeyOpt),
+                KeepaliveTime = parseResult.GetValue(keepaliveTimeOpt),
+                KeepaliveTimeout = parseResult.GetValue(keepaliveTimeoutOpt),
                 UserAgent = parseResult.GetValue(userAgentOpt),
                 ConnectTimeout = parseResult.GetValue(connectTimeoutOpt),
                 MaxTime = parseResult.GetValue(maxTimeOpt),
@@ -255,7 +333,7 @@ internal static class QueryCommandHandler
         var rpcMetadata = GrpcChannelFactory.CreateMetadata(rpcHeaders, cli.UserAgent);
 
         await using var descriptorBundle = await DescriptorSourceFactory.CreateAsync(
-            cli.Address, cli.Protosets, channelOptions, reflectionMetadata, operationToken).ConfigureAwait(false);
+            cli.Address, cli.Protosets, cli.ProtoFiles, cli.ImportPaths, channelOptions, reflectionMetadata, operationToken).ConfigureAwait(false);
 
         /*
          * Gql2Grpc always invokes RPCs against a live server even when --protoset is used
@@ -442,10 +520,14 @@ internal static class QueryCommandHandler
             ClientKeyPath = cli.Key,
             ClientCertPassword = cli.CertPassword,
             ConnectTimeout = connectTimeout,
+            KeepaliveTime = cli.KeepaliveTime is null ? null : GrpcChannelFactory.ParseDuration(cli.KeepaliveTime),
+            KeepaliveTimeout = cli.KeepaliveTimeout is null ? null : GrpcChannelFactory.ParseDuration(cli.KeepaliveTimeout),
             MaxReceiveMessageSize = maxMsgSize,
             MaxSendMessageSize = maxMsgSize,
             Authority = cli.Authority,
-            ServerName = cli.ServerName
+            ServerName = cli.ServerName,
+            RevocationMode = GrpcChannelFactory.ParseRevocationMode(cli.RevocationMode),
+            ExportableClientKey = cli.ExportableKey
         };
     }
 
@@ -463,6 +545,10 @@ internal static class QueryCommandHandler
         public string? VariablesFile { get; init; }
 
         public IReadOnlyList<string> Protosets { get; init; } = [];
+
+        public IReadOnlyList<string> ProtoFiles { get; init; } = [];
+
+        public IReadOnlyList<string> ImportPaths { get; init; } = [];
 
         public string? ProtosetOut { get; init; }
 
@@ -483,6 +569,14 @@ internal static class QueryCommandHandler
         public string? Authority { get; init; }
 
         public string? ServerName { get; init; }
+
+        public string? RevocationMode { get; init; }
+
+        public bool ExportableKey { get; init; }
+
+        public string? KeepaliveTime { get; init; }
+
+        public string? KeepaliveTimeout { get; init; }
 
         public string? UserAgent { get; init; }
 

@@ -169,13 +169,13 @@ gql2grpc --plaintext --mapping gql2grpc.yaml localhost:9090 \
 ```json
 {
   "data": {
-    "large": { "payload": { "body": "aGVsbG8=" } },
-    "tiny":  { "payload": { "body": "aGk=" } }
+    "large": { "payload": { "body": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+Pw==" } },
+    "tiny":  { "payload": { "body": "AAECAw==" } }
   }
 }
 ```
 
-The two root fields run **concurrently** via `ParallelFieldScheduler` (bounded at 4), but the envelope preserves document order. Switch to `--variables-file vars.json` for complex variables that don't fit into `name=value` form.
+Because the requests set `responseSize`, the TestServer responds with *generated* payloads of the requested length (sequential bytes, base64-encoded) — it does not echo the request body back. The two root fields run **concurrently** via `ParallelFieldScheduler` (bounded at 4), but the envelope preserves document order. Switch to `--variables-file vars.json` for complex variables that don't fit into `name=value` form.
 
 ## 8. Authentication via cookie header
 

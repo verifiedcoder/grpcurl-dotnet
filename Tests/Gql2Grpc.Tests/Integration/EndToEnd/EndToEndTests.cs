@@ -177,6 +177,43 @@ public sealed class EndToEndTests(GrpcTestFixture fixture)
         envelope["data"]!.AsObject().ContainsKey("EmptyCall").ShouldBeTrue();
     }
 
+    [Fact]
+    public async Task Parse_error_unknown_option_emits_usage_envelope_and_exits_2()
+    {
+        // Arrange
+
+        // Act
+        var (stdout, exitCode) = await RunAsync("--no-such-option");
+
+        // Assert
+        exitCode.ShouldBe(2);
+
+        var envelope = JsonNode.Parse(stdout)!.AsObject();
+        var error = envelope["errors"]!.AsArray()[0]!.AsObject();
+
+        error["extensions"]!["code"]!.GetValue<string>().ShouldBe("USAGE");
+    }
+
+    [Fact]
+    public async Task Parse_error_missing_address_emits_single_usage_envelope_and_exits_2()
+    {
+        // Arrange
+
+        // Act — no positional address and no query: pure parse error.
+        var (stdout, exitCode) = await RunAsync("--plaintext");
+
+        // Assert
+        exitCode.ShouldBe(2);
+
+        // Exactly one envelope with one error (the default parse-error action used to
+        // double-print missing-argument messages).
+        var envelope = JsonNode.Parse(stdout)!.AsObject();
+        var errors = envelope["errors"]!.AsArray();
+
+        errors.Count.ShouldBe(1);
+        errors[0]!["extensions"]!["code"]!.GetValue<string>().ShouldBe("USAGE");
+    }
+
     private static async Task<(string Stdout, int ExitCode)> RunAsync(params string[] args)
     {
         var originalOut = Console.Out;

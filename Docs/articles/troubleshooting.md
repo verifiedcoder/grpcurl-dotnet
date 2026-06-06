@@ -100,7 +100,7 @@ The JSON you supplied with `-d` contains a field the request message doesn't dec
 
 ### "Stdin exceeded the maximum allowed size"
 
-`grpcurl.net invoke -d @` accepts up to 16 MiB from stdin by default. For scripts, either split the payload or set an explicit numeric byte limit:
+`grpcurl.net invoke -d @` accepts up to 16 MiB from stdin by default and exits with code **2** (usage) when the cap is hit. For scripts, either split the payload or set an explicit numeric byte limit:
 
 ```bash
 grpcurl.net invoke --plaintext --max-stdin-bytes 1048576 -d @ localhost:9090 my.pkg.Service/Call
@@ -149,9 +149,9 @@ The server's `UnaryCall` (or other method) doesn't synthesise payloads from `res
 | `1` | Internal error | Unhandled exception that didn't fall into a known category. |
 | `2` | Usage / JSON-parse error | Bad CLI args, invalid JSON in `-d`, missing required GraphQL document. |
 | `3` | Schema / file error | Protoset missing or invalid, symbol not found, refusing to overwrite an existing `--protoset-out` target. |
-| `4` | Network error | TCP/TLS failure outside the RPC itself. |
-| `5` | Timeout | Connect or operation deadline exceeded outside the RPC itself. |
-| `64 + grpcStatusCode` | RPC failed with the given status | Examples: `InvalidArgument` (3) → `67`; `NotFound` (5) → `69`; `Unauthenticated` (16) → `80`; `Unavailable` (14) → `78`. |
+| `4` | Network error | TCP/TLS failure outside the RPC itself. Rare in practice: a refused connection usually surfaces as `Unavailable` → `78`. |
+| `5` | Timeout | Connect or operation deadline exceeded outside the RPC itself. Rare in practice: a `--max-time` hit during connect usually surfaces as `Cancelled` → `65`. |
+| `64 + grpcStatusCode` | RPC failed with the given status | Examples: `InvalidArgument` (3) → `67`; `NotFound` (5) → `69`; `Unauthenticated` (16) → `80`; `Unavailable` (14) → `78`. Most transport failures land here — treat `>= 64` as RPC/transport failure in scripts. |
 | `130` | User cancelled (Ctrl+C / SIGINT) | Streaming and long unary calls. |
 
 In `--output json` mode (`grpcurl.net`) the same code is paired with a single-line error envelope on stderr (`{"kind":"error","category":"...","exitCode":N,...}`); for `gql2grpc` the envelope on stdout always carries `errors[].extensions.code` (and `grpcStatus`/`grpcStatusCode` when the upstream RPC failed).

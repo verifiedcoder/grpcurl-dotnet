@@ -10,10 +10,13 @@
 | `1` | Internal | Unhandled exception that didn't fall into a known category. |
 | `2` | Usage / JSON-parse | Bad CLI args, invalid JSON in `-d`, missing GraphQL document. |
 | `3` | Schema / file | Protoset missing or invalid, symbol not found, refusing to overwrite an existing `--protoset-out` target. |
-| `4` | Network | TCP/TLS failure outside the RPC itself. |
-| `5` | Timeout | Connect or operation deadline exceeded outside the RPC itself. |
+| `4` | Network | TCP/TLS failure outside the RPC itself (rare in practice — see note below). |
+| `5` | Timeout | Connect or operation deadline exceeded outside the RPC itself (rare in practice — see note below). |
 | `64 + grpcStatusCode` | Upstream RPC failed. | `InvalidArgument` (3) → `67`, `NotFound` (5) → `69`, `Unauthenticated` (16) → `80`, `Unavailable` (14) → `78`. |
 | `130` | User cancelled (Ctrl+C / SIGINT). | Long-running streams aborted by the pipeline runner. |
+
+> [!NOTE]
+> Most transport failures surface through the gRPC client as `64 + status`, not as `4`/`5`: a refused connection exits `78` (64 + `Unavailable`(14)) and a `--max-time` deadline hit during connect exits `65` (64 + `Cancelled`(1)). This matches upstream grpcurl. Robust scripts should treat any code `>= 64` as an RPC/transport failure and `1`–`3` as local failures, rather than keying on `4`/`5` specifically.
 
 The contract is implemented in `GrpCurl.Net.Exceptions.GrpcCommandException` (with the typed envelope from `ErrorRenderer`) and (for Gql2Grpc) `ExceptionTranslator.ExitCodeFor`. Every script example below assumes these codes.
 
@@ -100,11 +103,11 @@ Run the repository validation from the solution root. The commands below are the
 ```bash
 dotnet restore GrpCurl.Net.slnx --locked-mode
 dotnet build GrpCurl.Net.slnx --configuration Release --no-restore /nr:false
-dotnet test GrpCurl.Net.slnx --configuration Release --no-build
+dotnet test --solution GrpCurl.Net.slnx --configuration Release --no-build
 dotnet run --project Scripts/ValidationRunner/ValidationRunner.csproj --configuration Release --no-restore -- --ci
 ```
 
-`dotnet test GrpCurl.Net.slnx --configuration Release --no-build` runs every test project currently included in the solution:
+`dotnet test --solution GrpCurl.Net.slnx --configuration Release --no-build` runs every test project currently included in the solution (under .NET 10's Microsoft.Testing.Platform the solution must be passed via `--solution`; a bare positional `.slnx` argument is rejected):
 
 | Test project | Test type | What it covers |
 |---|---|---|

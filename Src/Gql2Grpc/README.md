@@ -12,10 +12,11 @@ Full reference documentation lives in the DocFx site:
 
 ## Quickstart
 
-Install the tool:
+Install the tool by packing from source (the package is not published to NuGet.org):
 
 ```bash
-dotnet tool install -g Gql2Grpc
+dotnet pack Src/Gql2Grpc -c Release
+dotnet tool install -g Gql2Grpc --add-source Src/Gql2Grpc/bin/Release
 ```
 
 Reflection-based (no mapping file, no protoset):
@@ -61,4 +62,4 @@ Failure (envelope + `extensions.grpcStatus`):
 }
 ```
 
-Exit codes follow `grpcurl-dotnet`'s convention: `0` success, `1` generic, `64 + <grpc status code>` for RPC errors (`UNAVAILABLE=14` => `78`), `130` for Ctrl+C.
+Exit codes follow `grpcurl-dotnet`'s convention: `0` success, `1` internal, `2` usage/JSON-parse (including bad CLI arguments), `3` schema/file, `64 + <grpc status code>` for RPC errors (`UNAVAILABLE=14` => `78`), `130` for Ctrl+C. Most transport failures surface as `64 + status` (connection refused => `78`).

@@ -19,7 +19,13 @@ try
 {
     var parseResult = rootCommand.Parse(effectiveArgs);
 
-    return await parseResult.InvokeAsync();
+    // Parse errors (unknown option, missing required argument) are usage errors: exit 2
+    // per the documented contract, printed once. The default action would return 1.
+    return ParseErrorReporter.TryHandleParseErrors(
+               parseResult,
+               Console.Error,
+               "Run 'grpcurl.net [command] --help' for usage.")
+           ?? await parseResult.InvokeAsync();
 }
 catch (Exception ex)
 {

@@ -126,11 +126,14 @@ dotnet run --project Tests/GrpCurl.Net.TestServer -- --port 9443 --require-clien
 **"Project file not found"** - Run scripts from inside the repository checkout, or keep
 the repository layout intact so `Scripts/common.sh` can find `Src/`.
 
-**Permission denied** - Run `chmod +x *.sh`. On Windows, run via Git Bash / WSL, or
-prefer the cross-platform ValidationRunner.
+**Permission denied** - The scripts are committed with executable bits, so `./NN-*.sh`
+works on a normal clone. If your checkout tooling dropped the bits, run `chmod +x *.sh`
+(or invoke via `bash NN-*.sh`). On Windows, run via Git Bash / WSL, or prefer the
+cross-platform ValidationRunner.
 
-**protoc not found** - Some demos use `--proto` which needs `protoc` on PATH. Install
-via `apt install protobuf-compiler`, `brew install protobuf`, or `choco install protoc`.
+**protoc not found** - None of the bundled demos use `--proto`; the note applies only if
+you add `--proto`-based workflows, which need `protoc` on PATH. Install via
+`apt install protobuf-compiler`, `brew install protobuf`, or `choco install protoc`.
 
 **Scripts reading stdin** - `grpcurl.net invoke -d @` accepts up to 16 MiB by default.
 Use `--max-stdin-bytes <bytes>` in automation when you want a smaller or explicitly

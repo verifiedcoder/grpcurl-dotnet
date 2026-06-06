@@ -84,13 +84,13 @@ The services are listed without any network access. The protoset file contains e
 
 ## Creating Protoset Files with protoc
 
-If you have the `.proto` source files, you can also create protoset files using the `protoc` compiler. This is common in build systems where the proto sources are available:
+If you have the `.proto` source files, you can also create protoset files using the `protoc` compiler. This is common in build systems where the proto sources are available. To try it with this repository's own schema, run from the repo root:
 
 ```bash
 protoc --descriptor_set_out=service.protoset \
   --include_imports \
-  --proto_path=. \
-  test.proto well_known_types.proto
+  --proto_path=Tests/GrpCurl.Net.TestServer/Protos \
+  test.proto
 ```
 
 | Flag | Purpose |

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Gql2Grpc.Diagnostics;
 using Grpc.Core;
+using GrpCurl.Net.DescriptorSources;
 
 namespace Gql2Grpc.Tests.Unit.Diagnostics;
 
@@ -40,6 +41,7 @@ public sealed class ExceptionTranslatorTests
 
     [Theory]
     [InlineData(typeof(JsonException), "INVALID_JSON")]
+    [InlineData(typeof(ProtocNotFoundException), "PROTOC_NOT_FOUND")]
     [InlineData(typeof(FileNotFoundException), "FILE_NOT_FOUND")]
     [InlineData(typeof(HttpRequestException), "CONNECTION_FAILED")]
     [InlineData(typeof(TimeoutException), "TIMEOUT")]
@@ -73,6 +75,7 @@ public sealed class ExceptionTranslatorTests
     [Theory]
     [InlineData(typeof(OperationCanceledException), 130)]
     [InlineData(typeof(JsonException), 2)]
+    [InlineData(typeof(ProtocNotFoundException), 3)]
     [InlineData(typeof(FileNotFoundException), 3)]
     [InlineData(typeof(HttpRequestException), 4)]
     [InlineData(typeof(TimeoutException), 5)]

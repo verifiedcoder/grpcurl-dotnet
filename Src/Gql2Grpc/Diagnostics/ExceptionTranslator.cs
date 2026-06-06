@@ -1,5 +1,6 @@
 using Gql2Grpc.GraphQL;
 using Grpc.Core;
+using GrpCurl.Net.DescriptorSources;
 using System.Text.Json;
 
 namespace Gql2Grpc.Diagnostics;
@@ -37,6 +38,7 @@ internal static class ExceptionTranslator
             OperationCanceledException                          => CanceledExitCode,
             RpcException rpc                                    => GrpcExitCodeBase + (int)rpc.StatusCode,
             JsonException                                       => UsageExitCode,
+            ProtocNotFoundException                             => SchemaExitCode,
             FileNotFoundException or DirectoryNotFoundException => SchemaExitCode,
             HttpRequestException                                => NetworkExitCode,
             TimeoutException                                    => TimeoutExitCode,
@@ -51,6 +53,10 @@ internal static class ExceptionTranslator
                 $"Invalid JSON: {json.Message}",
                 path,
                 new Dictionary<string, object?> { ["code"] = "INVALID_JSON" }),
+            ProtocNotFoundException protoc => new GraphQLError(
+                protoc.Message,
+                path,
+                new Dictionary<string, object?> { ["code"] = "PROTOC_NOT_FOUND" }),
             FileNotFoundException fnf => new GraphQLError(
                 $"Required file not found: {fnf.FileName ?? fnf.Message}",
                 path,

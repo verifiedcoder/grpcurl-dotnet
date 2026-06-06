@@ -202,12 +202,12 @@ Exit codes follow this contract (shared by `grpcurl.net` and `gql2grpc`):
 | `1` | Internal (uncaught) |
 | `2` | Usage (bad CLI args, JSON-parse failure on `-d`) |
 | `3` | Schema/file (missing protoset, symbol not found, refusing to overwrite `--protoset-out`) |
-| `4` | Network (HTTP/2 connect failure outside the RPC) |
-| `5` | Timeout (connect or operation deadline exceeded outside the RPC) |
-| `64 + statusCode` | RPC error from the server (e.g. `StatusCode.NotFound` (5) → 69) |
+| `4` | Network (HTTP/2 connect failure outside the RPC; rare — most transport failures arrive as `RpcException` and map to `64 + status`) |
+| `5` | Timeout (connect or operation deadline exceeded outside the RPC; rare — a `--max-time` hit during connect typically maps to `64 + Cancelled(1)` = `65`) |
+| `64 + statusCode` | RPC error from the server or transport (e.g. `StatusCode.NotFound` (5) → 69; connection refused → `Unavailable` (14) → 78) |
 | `130` | Cancelled (Ctrl+C / SIGINT) |
 
-Each catch block builds an `ErrorEnvelope` whose `Category` field discriminates these classes; `ErrorRenderer` consults it to produce either Spectre markup (text mode) or a JSON envelope (json mode).
+Each catch block builds an `ErrorEnvelope` whose `Category` field discriminates these classes; `ErrorRenderer` consults it to produce either Spectre markup (text mode) or a JSON envelope (json mode). The `Network`/`Timeout` categories are reached only when the failure bypasses the gRPC client entirely (`HttpRequestException`/`TimeoutException`); in practice most transport failures surface as `RpcException` and therefore exit `64 + status`, matching upstream grpcurl.
 
 ## Extensibility Points
 
@@ -243,14 +243,14 @@ The codebase has three test projects, all using xUnit v3 with Shouldly assertion
 ### Running the tests
 
 ```bash
-# Entire solution
+# Entire solution (.NET 10 Microsoft.Testing.Platform requires --solution / --project)
 dotnet restore GrpCurl.Net.slnx --locked-mode
 dotnet build GrpCurl.Net.slnx --configuration Release --no-restore /nr:false
-dotnet test GrpCurl.Net.slnx --configuration Release --no-build
+dotnet test --solution GrpCurl.Net.slnx --configuration Release --no-build
 dotnet run --project Scripts/ValidationRunner/ValidationRunner.csproj --configuration Release --no-restore -- --ci
 
-# Single test by fully-qualified name
-dotnet test Tests/Gql2Grpc.Tests/Gql2Grpc.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~EndToEndTests"
+# Single test class (MTP filter syntax — everything after `--` goes to the test host)
+dotnet test --project Tests/Gql2Grpc.Tests/Gql2Grpc.Tests.csproj --configuration Release --no-build -- --filter-class "Gql2Grpc.Tests.Integration.EndToEnd.EndToEndTests"
 ```
 
 Test fixtures are reused across projects via a linked `GrpcTestFixture.cs` compile item in `Tests/Gql2Grpc.Tests/Fixtures/` — one fixture definition, consumed by both assemblies.

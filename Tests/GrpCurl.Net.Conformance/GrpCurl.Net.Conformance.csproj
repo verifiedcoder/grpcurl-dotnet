@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <RootNamespace>GrpCurl.Net.Conformance</RootNamespace>
+        <AssemblyName>GrpCurl.Net.Conformance</AssemblyName>
+        <IsPackable>false</IsPackable>
+        <Description>Client-under-test adapter for the connectrpc/conformance suite. Speaks the runner's binary stdin/stdout protocol and issues every RPC through GrpCurl.Net.Core's DynamicInvoker — the same invocation path the CLI uses.</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Google.Protobuf" />
+        <PackageReference Include="Grpc.Net.Client" />
+        <PackageReference Include="Grpc.Tools">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- GrpcServices=None: messages + descriptors only, no generated stubs.
+             RPCs are issued through GrpCurl.Net.Core's DynamicInvoker so the suite
+             certifies the product's invocation path, not Grpc.Net.Client. -->
+        <Protobuf Include="Protos/**/*.proto" ProtoRoot="Protos" GrpcServices="None" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Src\GrpCurl.Net.Core\GrpCurl.Net.Core.csproj" />
+    </ItemGroup>
+
+</Project>

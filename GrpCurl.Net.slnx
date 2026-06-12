@@ -80,6 +80,7 @@
     <File Path="Scripts/31-gql-error-envelope.sh" />
     <File Path="Scripts/32-gql-introspection.sh" />
     <File Path="Scripts/README.md" />
+    <File Path="Scripts/run-conformance.sh" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/GrpCurl.DotNet.Tests.Integration/GrpCurl.Net.Tests.Integration.csproj" Id="858ad827-d773-45b8-8f9f-8ed02cf63789" />
@@ -87,6 +88,7 @@
     <Project Path="Tests/GrpCurl.Net.TestServer/GrpCurl.Net.TestServer.csproj" Id="a1b2c3d4-e5f6-7890-abcd-ef1234567890" />
     <Project Path="Scripts/ValidationRunner/ValidationRunner.csproj" />
     <Project Path="Tests/Gql2Grpc.Tests/Gql2Grpc.Tests.csproj" Id="2e3f4a5b-6c7d-8e9f-a0b1-c2d3e4f5a6b7" />
+    <Project Path="Tests/GrpCurl.Net.Conformance/GrpCurl.Net.Conformance.csproj" />
   </Folder>
   <Project Path="Src/Gql2Grpc/Gql2Grpc.csproj" />
   <Project Path="Src/GrpCurl.Net.Core/GrpCurl.Net.Core.csproj" />

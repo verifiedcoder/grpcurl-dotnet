@@ -908,4 +908,71 @@ public sealed class GrpcChannelFactoryTests
     }
 
     #endregion
+
+    #region ValidateTlsMaterialOptions Tests
+
+    [Fact]
+    public void ValidateTlsMaterialOptions_CaPathAndCaPemBothSet_ThrowsArgumentException()
+    {
+        var options = new GrpcChannelFactory.ChannelOptions
+        {
+            CaCertPath = "/tmp/ca.pem",
+            CaCertPem = "-----BEGIN CERTIFICATE-----"
+        };
+
+        var ex = Should.Throw<ArgumentException>(() => GrpcChannelFactory.ValidateTlsMaterialOptions(options));
+
+        ex.Message.ShouldContain("CaCertPath");
+        ex.Message.ShouldContain("CaCertPem");
+    }
+
+    [Fact]
+    public void ValidateTlsMaterialOptions_ClientCertPathAndPemBothSet_ThrowsArgumentException()
+    {
+        var options = new GrpcChannelFactory.ChannelOptions
+        {
+            ClientCertPath = "/tmp/client.pem",
+            ClientCertPem = "-----BEGIN CERTIFICATE-----",
+            ClientKeyPem = "-----BEGIN PRIVATE KEY-----"
+        };
+
+        var ex = Should.Throw<ArgumentException>(() => GrpcChannelFactory.ValidateTlsMaterialOptions(options));
+
+        ex.Message.ShouldContain("ClientCertPath");
+        ex.Message.ShouldContain("ClientCertPem");
+    }
+
+    [Fact]
+    public void ValidateTlsMaterialOptions_ClientCertPemWithoutKeyPem_ThrowsArgumentException()
+    {
+        var options = new GrpcChannelFactory.ChannelOptions
+        {
+            ClientCertPem = "-----BEGIN CERTIFICATE-----"
+        };
+
+        var ex = Should.Throw<ArgumentException>(() => GrpcChannelFactory.ValidateTlsMaterialOptions(options));
+
+        ex.Message.ShouldContain("ClientKeyPem");
+    }
+
+    [Fact]
+    public void ValidateTlsMaterialOptions_ValidCombinations_DoNotThrow()
+    {
+        Should.NotThrow(() => GrpcChannelFactory.ValidateTlsMaterialOptions(new GrpcChannelFactory.ChannelOptions()));
+
+        Should.NotThrow(() => GrpcChannelFactory.ValidateTlsMaterialOptions(new GrpcChannelFactory.ChannelOptions
+        {
+            CaCertPem = "-----BEGIN CERTIFICATE-----",
+            ClientCertPem = "-----BEGIN CERTIFICATE-----",
+            ClientKeyPem = "-----BEGIN PRIVATE KEY-----"
+        }));
+
+        Should.NotThrow(() => GrpcChannelFactory.ValidateTlsMaterialOptions(new GrpcChannelFactory.ChannelOptions
+        {
+            CaCertPath = "/tmp/ca.pem",
+            ClientCertPath = "/tmp/client.p12"
+        }));
+    }
+
+    #endregion
 }

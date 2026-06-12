@@ -17,6 +17,8 @@ internal static partial class GrpcChannelFactory
     {
         options ??= new ChannelOptions();
 
+        ValidateTlsMaterialOptions(options);
+
         /*
          * Unix-domain socket addresses are accepted as `unix:///absolute/path`. They are
          * valid on Linux and macOS; Windows fails fast with a clear error rather than
@@ -66,13 +68,22 @@ internal static partial class GrpcChannelFactory
             Plaintext: true,
             InsecureSkipVerify: false,
             CaCertPath: null,
+            CaCertPem: null,
             ClientCertPath: null,
+            ClientCertPem: null,
             ConnectTimeout: null,
             KeepaliveTime: null,
             Authority: null,
             ServerName: null
         })
         {
+            // Mirrors Grpc.Net.Client's own default handler (no keepalive pings, platform
+            // connect timeout) — wrapped so the protocol guards apply on every path.
+            channelOptions.HttpHandler = WrapWithProtocolGuards(new SocketsHttpHandler
+            {
+                EnableMultipleHttp2Connections = true
+            });
+
             return GrpcChannel.ForAddress(address, channelOptions);
         }
 
@@ -106,9 +117,11 @@ internal static partial class GrpcChannelFactory
         {
             httpHandler.SslOptions.RemoteCertificateValidationCallback ??= (_, _, _, _) => true;
         }
-        else if (options.CaCertPath is not null)
+        else if (options.CaCertPath is not null || options.CaCertPem is not null)
         {
-            var caCert = X509CertificateLoader.LoadCertificateFromFile(options.CaCertPath);
+            var caCert = options.CaCertPath is not null
+                ? X509CertificateLoader.LoadCertificateFromFile(options.CaCertPath)
+                : X509Certificate2.CreateFromPem(options.CaCertPem);
             // Revocation defaults to Online when a custom CA is supplied so revoked
             // certificates are rejected — previously this was hard-coded to NoCheck which
             // accepted revoked certs (see CODE-REVIEW.md P2 "TLS Hardening Gaps"). The
@@ -190,6 +203,34 @@ internal static partial class GrpcChannelFactory
 
             httpHandler.SslOptions.ClientCertificates = [clientCert];
         }
+        else if (options.ClientCertPem is not null)
+        {
+            // In-memory PEM cert + key (e.g. supplied by a test harness rather than the
+            // filesystem). Round-trip through PKCS12 exactly like the PEM-file fallback
+            // above so platform key-storage behaviour stays identical.
+            var storageFlags = GetClientCertificateStorageFlags(options.ExportableClientKey);
+
+            X509Certificate2 clientCert;
+
+            try
+            {
+                using var pemCert = X509Certificate2.CreateFromPem(options.ClientCertPem, options.ClientKeyPem);
+
+                clientCert = X509CertificateLoader.LoadPkcs12(
+                    pemCert.Export(X509ContentType.Pkcs12),
+                    null,
+                    storageFlags);
+            }
+            catch (CryptographicException ex)
+            {
+                throw new ArgumentException(
+                    "Could not load the in-memory PEM client certificate. " +
+                    "Ensure the certificate and private key are valid PEM and belong together.",
+                    ex);
+            }
+
+            httpHandler.SslOptions.ClientCertificates = [clientCert];
+        }
 
         // When --authority is set, wrap the socket handler so every outgoing request has
         // its Host header overwritten — HTTP/2 maps Host to :authority. Affects both
@@ -201,10 +242,18 @@ internal static partial class GrpcChannelFactory
             outerHandler = new AuthorityOverrideHandler(options.Authority, httpHandler);
         }
 
-        channelOptions.HttpHandler = outerHandler;
+        channelOptions.HttpHandler = WrapWithProtocolGuards(outerHandler);
 
         return GrpcChannel.ForAddress(address, channelOptions);
     }
+
+    /// <summary>
+    ///     Wraps a transport handler with the wire-level guards every channel needs:
+    ///     spec-conformant trailers-only handling on responses and the compressed-flag
+    ///     fix on empty request messages.
+    /// </summary>
+    private static HttpMessageHandler WrapWithProtocolGuards(HttpMessageHandler inner) =>
+        new TrailersOnlyGuardHandler(new CompressedEmptyMessageFixHandler(inner));
 
     /// <summary>
     ///     Returns the Unix socket path encoded in <paramref name="address" /> if it begins
@@ -288,7 +337,7 @@ internal static partial class GrpcChannelFactory
             outer = new AuthorityOverrideHandler(options.Authority, httpHandler);
         }
 
-        channelOptions.HttpHandler = outer;
+        channelOptions.HttpHandler = WrapWithProtocolGuards(outer);
 
         // The address is fictional — the connect callback is what actually opens the
         // Unix socket. Grpc.Net.Client still requires a syntactically valid URL.
@@ -525,6 +574,29 @@ internal static partial class GrpcChannelFactory
         };
     }
 
+    /// <summary>
+    ///     Rejects ambiguous TLS material combinations: each certificate input must be
+    ///     supplied either as a file path or as in-memory PEM, never both, and an
+    ///     in-memory client certificate requires its in-memory private key.
+    /// </summary>
+    internal static void ValidateTlsMaterialOptions(ChannelOptions options)
+    {
+        if (options.CaCertPath is not null && options.CaCertPem is not null)
+        {
+            throw new ArgumentException("Specify either CaCertPath or CaCertPem, not both.");
+        }
+
+        if (options.ClientCertPath is not null && options.ClientCertPem is not null)
+        {
+            throw new ArgumentException("Specify either ClientCertPath or ClientCertPem, not both.");
+        }
+
+        if (options.ClientCertPem is not null && options.ClientKeyPem is null)
+        {
+            throw new ArgumentException("ClientCertPem requires ClientKeyPem.");
+        }
+    }
+
     internal static X509KeyStorageFlags GetClientCertificateStorageFlags(bool exportableClientKey)
     {
         if (exportableClientKey)
@@ -556,9 +628,26 @@ internal static partial class GrpcChannelFactory
 
         public string? CaCertPath { get; init; }
 
+        /// <summary>
+        ///     PEM-encoded CA certificate text supplied in memory. Mutually exclusive with
+        ///     <see cref="CaCertPath" />.
+        /// </summary>
+        public string? CaCertPem { get; init; }
+
         public string? ClientCertPath { get; init; }
 
         public string? ClientKeyPath { get; init; }
+
+        /// <summary>
+        ///     PEM-encoded client certificate text supplied in memory. Requires
+        ///     <see cref="ClientKeyPem" />; mutually exclusive with <see cref="ClientCertPath" />.
+        /// </summary>
+        public string? ClientCertPem { get; init; }
+
+        /// <summary>
+        ///     PEM-encoded client private key text paired with <see cref="ClientCertPem" />.
+        /// </summary>
+        public string? ClientKeyPem { get; init; }
 
         public string? ClientCertPassword { get; init; }
 

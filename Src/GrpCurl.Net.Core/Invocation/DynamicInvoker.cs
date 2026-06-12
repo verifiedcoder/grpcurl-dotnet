@@ -52,7 +52,17 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
             callOptions,
             request);
 
-        var response = await call.ResponseAsync;
+        IMessage response;
+
+        try
+        {
+            response = await call.ResponseAsync;
+        }
+        catch (RpcException ex)
+        {
+            throw await AttachResponseHeadersAsync(RpcErrorNormalizer.Normalize(ex, deadline), call.ResponseHeadersAsync);
+        }
+
         var responseHeaders = await call.ResponseHeadersAsync;
 
         Metadata? responseTrailers = null;
@@ -96,7 +106,7 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
             callOptions,
             request);
 
-        await foreach (var response in call.ResponseStream.ReadAllAsync(cancellationToken))
+        await foreach (var response in RemapDeadlineExpiry(call.ResponseStream.ReadAllAsync(cancellationToken), deadline, cancellationToken))
         {
             yield return response;
         }
@@ -123,7 +133,7 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
 
         return new StreamingInvocationResult(
             call.ResponseHeadersAsync,
-            call.ResponseStream.ReadAllAsync(cancellationToken),
+            RemapDeadlineExpiry(call.ResponseStream.ReadAllAsync(cancellationToken), deadline, cancellationToken),
             call.GetTrailers,
             call.Dispose);
     }
@@ -168,20 +178,81 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
         var callOptions = new CallOptions(headers, deadline, cancellationToken);
         var call = callInvoker.AsyncClientStreamingCall(method, null, callOptions);
 
-        await foreach (var request in requests.WithCancellation(cancellationToken))
+        try
         {
-            await call.RequestStream.WriteAsync(request, cancellationToken);
+            await foreach (var request in requests.WithCancellation(cancellationToken))
+            {
+                await call.RequestStream.WriteAsync(request, cancellationToken);
+            }
+
+            await call.RequestStream.CompleteAsync();
+
+            var response = await call.ResponseAsync;
+
+            return new ClientStreamingInvocationResult(
+                call.ResponseHeadersAsync,
+                response,
+                call.GetTrailers,
+                call.Dispose);
+        }
+        catch (RpcException ex)
+        {
+            throw await AttachResponseHeadersAsync(RpcErrorNormalizer.Normalize(ex, deadline), call.ResponseHeadersAsync);
+        }
+    }
+
+    /// <summary>
+    ///     Captures the response headers (when the server delivered any before failing)
+    ///     so error paths can surface them via <see cref="RpcInvocationException" />.
+    ///     Connection-level failures, where the headers task faults, rethrow unchanged.
+    /// </summary>
+    private static async Task<RpcException> AttachResponseHeadersAsync(RpcException exception, Task<Metadata> responseHeadersTask)
+    {
+        Metadata responseHeaders;
+
+        try
+        {
+            responseHeaders = await responseHeadersTask.ConfigureAwait(false);
+        }
+        catch
+        {
+            return exception;
         }
 
-        await call.RequestStream.CompleteAsync();
+        return new RpcInvocationException(exception, responseHeaders);
+    }
 
-        var response = await call.ResponseAsync;
+    /// <summary>
+    ///     Applies <see cref="RpcErrorNormalizer.Normalize" /> to failures observed while
+    ///     enumerating a response stream.
+    /// </summary>
+    private static async IAsyncEnumerable<IMessage> RemapDeadlineExpiry(
+        IAsyncEnumerable<IMessage> source,
+        DateTime? deadline,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await using var enumerator = source.GetAsyncEnumerator(cancellationToken);
 
-        return new ClientStreamingInvocationResult(
-            call.ResponseHeadersAsync,
-            response,
-            call.GetTrailers,
-            call.Dispose);
+        while (true)
+        {
+            IMessage current;
+
+            try
+            {
+                if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
+                {
+                    break;
+                }
+
+                current = enumerator.Current;
+            }
+            catch (RpcException ex)
+            {
+                throw RpcErrorNormalizer.Normalize(ex, deadline);
+            }
+
+            yield return current;
+        }
     }
 
     /// <summary>
@@ -230,7 +301,7 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
 
         async IAsyncEnumerable<IMessage> ReadAll()
         {
-            await foreach (var response in call.ResponseStream.ReadAllAsync(cancellationToken).ConfigureAwait(false))
+            await foreach (var response in RemapDeadlineExpiry(call.ResponseStream.ReadAllAsync(cancellationToken), deadline, cancellationToken).ConfigureAwait(false))
             {
                 yield return response;
             }
@@ -315,7 +386,7 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
         // Read responses
         try
         {
-            await foreach (var response in call.ResponseStream.ReadAllAsync(cancellationToken))
+            await foreach (var response in RemapDeadlineExpiry(call.ResponseStream.ReadAllAsync(cancellationToken), deadline, cancellationToken))
             {
                 yield return response;
             }
@@ -383,9 +454,18 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
                 // Create a SimpleDynamicMessage and parse the bytes
                 var dynamicMessage = new SimpleDynamicMessage(messageDescriptor);
 
-                using (var input = new CodedInputStream(bytes))
+                try
                 {
+                    using var input = new CodedInputStream(bytes);
+
                     dynamicMessage.MergeFrom(input);
+                }
+                catch (InvalidProtocolBufferException ex)
+                {
+                    // A malformed response message is INTERNAL per the gRPC spec; a raw
+                    // protobuf exception escaping the marshaller would surface as
+                    // UNAVAILABLE ("Error starting gRPC call") instead.
+                    throw new RpcException(new Status(StatusCode.Internal, $"Failed to deserialize response message: {ex.Message}", ex));
                 }
 
                 return (T)(object)dynamicMessage;

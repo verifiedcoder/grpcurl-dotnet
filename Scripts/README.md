@@ -93,6 +93,7 @@ bash Scripts/08-invoke-unary-call.sh
 | 32-gql-introspection.sh | `__schema` introspection over the synthesised schema |
 | **Validation entry points** | |
 | run-production-validation.sh | Thin wrapper that delegates to `ValidationRunner` (Unix only). |
+| run-conformance.sh | Runs the connectrpc/conformance suite (client mode) against `Tests/GrpCurl.Net.Conformance`. Downloads the pinned `connectconformance` runner on first use; pass `--run '<pattern>' -v --trace` to iterate on one case. |
 | dev-bootstrap/install-go.sh | Developer-only bootstrap for upstream `grpcurl`/`grpc-go`. Pinned versions + SHA-256 checks. |
 
 ## TestServer Services

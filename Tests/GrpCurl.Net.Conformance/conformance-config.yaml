@@ -1,0 +1,24 @@
+# Feature declaration for the connectrpc/conformance suite (client mode).
+# The runner expands these into the full matrix of config cases; every declared
+# combination must pass. Widen one axis at a time (see grpc-client-conformance-report.md).
+features:
+  versions:
+    - HTTP_VERSION_2          # gRPC requires HTTP/2
+  protocols:
+    - PROTOCOL_GRPC
+  codecs:
+    - CODEC_PROTO
+  compressions:
+    - COMPRESSION_IDENTITY
+    - COMPRESSION_GZIP        # via grpc-internal-encoding-request, Grpc.Net.Client's built-in
+  stream_types:
+    - STREAM_TYPE_UNARY
+    - STREAM_TYPE_CLIENT_STREAM
+    - STREAM_TYPE_SERVER_STREAM
+    - STREAM_TYPE_HALF_DUPLEX_BIDI_STREAM
+    - STREAM_TYPE_FULL_DUPLEX_BIDI_STREAM
+  supports_h2c: true          # plaintext HTTP/2 (prior knowledge)
+  supports_tls: true
+  supports_tls_client_certs: true
+  supports_trailers: true
+  supports_message_receive_limit: true

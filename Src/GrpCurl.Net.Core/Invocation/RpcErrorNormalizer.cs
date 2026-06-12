@@ -1,0 +1,120 @@
+using Grpc.Core;
+
+namespace GrpCurl.Net.Invocation;
+
+/// <summary>
+///     Normalizes <see cref="RpcException" /> status codes to the gRPC specification where
+///     Grpc.Net.Client deviates. The matched messages are client-generated constants from
+///     grpc-dotnet (never server-supplied data), so the remaps cannot misfire on genuine
+///     server statuses. The connectrpc/conformance suite in CI guards these patterns
+///     against grpc-dotnet version drift.
+/// </summary>
+internal static class RpcErrorNormalizer
+{
+    private const string BadHttpStatusPrefix = "Bad gRPC response. HTTP status code: ";
+
+    private static readonly TimeSpan DeadlineSkewTolerance = TimeSpan.FromMilliseconds(50);
+
+    public static RpcException Normalize(RpcException exception, DateTime? deadline)
+    {
+        var normalized = NormalizeDeadlineExpiry(exception, deadline);
+
+        return NormalizeStackDeviations(normalized);
+    }
+
+    /// <summary>
+    ///     Reports DEADLINE_EXCEEDED for any RPC failure that surfaces after the deadline
+    ///     elapsed, matching official gRPC clients. Covers the race where the server tears
+    ///     the stream down at its own deadline (an HTTP/2 RST that would otherwise map to
+    ///     CANCELLED) a moment before the local deadline timer fires.
+    /// </summary>
+    private static RpcException NormalizeDeadlineExpiry(RpcException exception, DateTime? deadline)
+    {
+        if (deadline is null || exception.StatusCode == StatusCode.DeadlineExceeded)
+        {
+            return exception;
+        }
+
+        var now = DateTime.UtcNow;
+
+        if (now >= deadline.Value)
+        {
+            return WithStatusCode(exception, StatusCode.DeadlineExceeded);
+        }
+
+        // A bare HTTP/2 RST_STREAM(CANCEL) with no grpc-status is how gRPC servers abort
+        // a call whose deadline fired. Timer granularity can land it a hair before the
+        // locally computed deadline, so allow a small skew window for that exact shape.
+        if (exception.StatusCode == StatusCode.Cancelled
+            && now >= deadline.Value - DeadlineSkewTolerance
+            && exception.Status.Detail.Contains("server reset the stream. HTTP/2 error code 'CANCEL'", StringComparison.Ordinal))
+        {
+            return WithStatusCode(exception, StatusCode.DeadlineExceeded);
+        }
+
+        return exception;
+    }
+
+    private static RpcException NormalizeStackDeviations(RpcException exception)
+    {
+        var detail = exception.Status.Detail;
+
+        switch (exception.StatusCode)
+        {
+            // gRPC spec (PROTOCOL-HTTP2.md): when a response carries an HTTP error status
+            // with no grpc-status, statuses outside the mapping table translate to
+            // UNKNOWN. grpc-dotnet reports INTERNAL for all of them.
+            case StatusCode.Internal when detail.StartsWith(BadHttpStatusPrefix, StringComparison.Ordinal)
+                                          && int.TryParse(detail.AsSpan(BadHttpStatusPrefix.Length), out var httpStatus):
+                return WithStatusCode(exception, MapHttpStatusToGrpcCode(httpStatus));
+
+            // A second message on a unary/client-streaming response is a cardinality
+            // violation: UNIMPLEMENTED per the spec (and grpc-go since v1.58);
+            // grpc-dotnet reports INTERNAL.
+            case StatusCode.Internal when detail.Contains("Unexpected data after finished reading message", StringComparison.Ordinal):
+                return WithStatusCode(exception, StatusCode.Unimplemented);
+
+            // An OK response with no message is likewise a cardinality violation:
+            // UNIMPLEMENTED; grpc-dotnet reports INTERNAL.
+            case StatusCode.Internal when detail.Contains("Failed to deserialize response message", StringComparison.Ordinal):
+                return WithStatusCode(exception, StatusCode.Unimplemented);
+
+            // A response missing grpc-status entirely is a broken gRPC response: UNKNOWN;
+            // grpc-dotnet reports CANCELLED.
+            case StatusCode.Cancelled when detail.Contains("No grpc-status found on response", StringComparison.Ordinal):
+                return WithStatusCode(exception, StatusCode.Unknown);
+
+            // A response with a non-gRPC content-type is not a gRPC response: UNKNOWN;
+            // grpc-dotnet reports CANCELLED.
+            case StatusCode.Cancelled when detail.Contains("Bad gRPC response. Invalid content-type value", StringComparison.Ordinal):
+                return WithStatusCode(exception, StatusCode.Unknown);
+
+            // A response compressed with an encoding the client never advertised is a
+            // protocol violation by the server: INTERNAL; grpc-dotnet reports
+            // UNIMPLEMENTED (which the spec reserves for the server to send).
+            case StatusCode.Unimplemented when detail.Contains("Unsupported grpc-encoding value", StringComparison.Ordinal):
+                return WithStatusCode(exception, StatusCode.Internal);
+
+            default:
+                return exception;
+        }
+    }
+
+    /// <summary>HTTP-to-gRPC status mapping from PROTOCOL-HTTP2.md.</summary>
+    private static StatusCode MapHttpStatusToGrpcCode(int httpStatus) => httpStatus switch
+    {
+        400 => StatusCode.Internal,
+        401 => StatusCode.Unauthenticated,
+        403 => StatusCode.PermissionDenied,
+        404 => StatusCode.Unimplemented,
+        429 or 502 or 503 or 504 => StatusCode.Unavailable,
+        _ => StatusCode.Unknown
+    };
+
+    private static RpcException WithStatusCode(RpcException exception, StatusCode statusCode) =>
+        statusCode == exception.StatusCode
+            ? exception
+            : new RpcException(
+                new Status(statusCode, exception.Status.Detail, exception.Status.DebugException),
+                exception.Trailers);
+}

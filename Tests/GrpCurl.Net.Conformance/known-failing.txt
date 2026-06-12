@@ -1,0 +1,4 @@
+# Test-case patterns expected to fail, one per line (supports * and ** wildcards).
+# Passed to connectconformance via --known-failing @this-file.
+# Entries still execute and FAIL THE BUILD if they unexpectedly pass, so the list
+# cannot silently go stale. Every entry must cite a tracking issue.

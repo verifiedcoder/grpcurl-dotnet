@@ -426,3 +426,6 @@ FodyWeavers.xsd
 Docs/api/**/*.yml
 Docs/api/**/*.manifest
 Docs/_site/
+
+# connectconformance runner binary cache (Scripts/run-conformance.sh)
+Tests/GrpCurl.Net.Conformance/.tools/

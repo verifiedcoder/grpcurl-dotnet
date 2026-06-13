@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Gql2Grpc.Diagnostics;
+using Gql2Grpc.Translation;
 using Grpc.Core;
 using GrpCurl.Net.DescriptorSources;
 
@@ -7,6 +8,24 @@ namespace Gql2Grpc.Tests.Unit.Diagnostics;
 
 public sealed class ExceptionTranslatorTests
 {
+    [Fact]
+    public void UnknownArgument_maps_to_usage_error_with_code()
+    {
+        // Arrange
+        var ex = new UnknownArgumentException("input", "input", "testing.SimpleRequest");
+
+        // Act
+        var error = ExceptionTranslator.ToFieldError(ex, "foo");
+        var exitCode = ExceptionTranslator.ExitCodeFor(ex);
+
+        // Assert
+        error.Path.ShouldBe(["foo"]);
+        error.Extensions.ShouldNotBeNull();
+        error.Extensions!["code"].ShouldBe("UNKNOWN_ARGUMENT");
+        error.Message.ShouldContain("testing.SimpleRequest");
+        exitCode.ShouldBe(2);
+    }
+
     [Fact]
     public void RpcException_translates_to_grpc_extensions_with_field_path()
     {

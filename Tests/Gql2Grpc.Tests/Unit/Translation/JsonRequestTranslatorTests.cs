@@ -2,6 +2,7 @@ using System.Text.Json.Nodes;
 using Gql2Grpc.Configuration;
 using Gql2Grpc.GraphQL;
 using Gql2Grpc.Translation;
+using GrpCurl.Net.TestServer.Protos;
 
 namespace Gql2Grpc.Tests.Unit.Translation;
 
@@ -183,4 +184,139 @@ public sealed class JsonRequestTranslatorTests
         // Assert
         JsonNode.Parse(json)!.AsObject()["user_id"]!.GetValue<string>().ShouldBe("abc");
     }
+
+    [Fact]
+    public void Convention_validates_known_field_against_request_type()
+    {
+        // Arrange — response_size is a real field of testing.SimpleRequest
+        var entry = ConventionEntry();
+        var selection = new ResolvedSelection("foo", "foo",
+            new Dictionary<string, JsonNode?> { ["responseSize"] = JsonValue.Create(8) },
+            []);
+
+        // Act
+        var json = _translator.Translate(selection, entry, _defaults, SimpleRequest.Descriptor);
+
+        // Assert
+        JsonNode.Parse(json)!.AsObject()["response_size"]!.GetValue<int>().ShouldBe(8);
+    }
+
+    [Fact]
+    public void Convention_unknown_top_level_argument_throws()
+    {
+        // Arrange — "input" matches no field of SimpleRequest (the cookbook's wrong shape)
+        var entry = ConventionEntry();
+        var selection = new ResolvedSelection("foo", "foo",
+            new Dictionary<string, JsonNode?> { ["input"] = new JsonObject { ["responseSize"] = 8 } },
+            []);
+
+        // Act / Assert
+        var ex = Should.Throw<UnknownArgumentException>(() =>
+            _translator.Translate(selection, entry, _defaults, SimpleRequest.Descriptor));
+
+        ex.ArgumentName.ShouldBe("input");
+        ex.RequestTypeName.ShouldBe("testing.SimpleRequest");
+        ex.Message.ShouldContain("testing.SimpleRequest");
+    }
+
+    [Fact]
+    public void Convention_nested_path_descends_into_message_fields()
+    {
+        // Arrange — details.description exists on NestedTypesMessage; arg aliases to that path.
+        var entry = new MappingEntry
+        {
+            GraphqlField = "foo",
+            OperationType = GraphQLOperationType.Query,
+            Service = "s",
+            Method = "M"
+        };
+        var defaults = new MappingDefaults
+        {
+            ArgumentAliases = new Dictionary<string, string> { ["desc"] = "details.description" }
+        };
+        var selection = new ResolvedSelection("foo", "foo",
+            new Dictionary<string, JsonNode?> { ["desc"] = JsonValue.Create("hi") },
+            []);
+
+        // Act
+        var json = _translator.Translate(selection, entry, defaults, NestedTypesMessage.Descriptor);
+
+        // Assert
+        JsonNode.Parse(json)!.AsObject()["details"]!.AsObject()["description"]!.GetValue<string>().ShouldBe("hi");
+    }
+
+    [Fact]
+    public void Convention_descend_into_scalar_field_throws()
+    {
+        // Arrange — name is a scalar; name.foo cannot descend.
+        var entry = new MappingEntry
+        {
+            GraphqlField = "foo",
+            OperationType = GraphQLOperationType.Query,
+            Service = "s",
+            Method = "M"
+        };
+        var defaults = new MappingDefaults
+        {
+            ArgumentAliases = new Dictionary<string, string> { ["x"] = "name.foo" }
+        };
+        var selection = new ResolvedSelection("foo", "foo",
+            new Dictionary<string, JsonNode?> { ["x"] = JsonValue.Create("v") },
+            []);
+
+        // Act / Assert
+        Should.Throw<UnknownArgumentException>(() =>
+            _translator.Translate(selection, entry, defaults, NestedTypesMessage.Descriptor));
+    }
+
+    [Fact]
+    public void Mapped_rule_to_unknown_field_is_not_validated()
+    {
+        // Arrange — explicit rules are authoritative; an unknown target is left untouched
+        // (the mapping file is the user's contract, validated separately at load time).
+        var entry = new MappingEntry
+        {
+            GraphqlField = "foo",
+            OperationType = GraphQLOperationType.Query,
+            Service = "s",
+            Method = "M",
+            Arguments = new Dictionary<string, ArgumentRule>
+            {
+                ["whatever"] = new ArgumentRule.Rename("not_a_real_field")
+            }
+        };
+        var selection = new ResolvedSelection("foo", "foo",
+            new Dictionary<string, JsonNode?> { ["whatever"] = JsonValue.Create(1) },
+            []);
+
+        // Act
+        var json = _translator.Translate(selection, entry, _defaults, SimpleRequest.Descriptor);
+
+        // Assert
+        JsonNode.Parse(json)!.AsObject()["not_a_real_field"]!.GetValue<int>().ShouldBe(1);
+    }
+
+    [Fact]
+    public void Null_request_type_skips_validation()
+    {
+        // Arrange — without a descriptor, the prior permissive behaviour is preserved.
+        var entry = ConventionEntry();
+        var selection = new ResolvedSelection("foo", "foo",
+            new Dictionary<string, JsonNode?> { ["totallyUnknown"] = JsonValue.Create(1) },
+            []);
+
+        // Act
+        var json = _translator.Translate(selection, entry, _defaults, requestType: null);
+
+        // Assert
+        JsonNode.Parse(json)!.AsObject()["totally_unknown"]!.GetValue<int>().ShouldBe(1);
+    }
+
+    private static MappingEntry ConventionEntry() => new()
+    {
+        GraphqlField = "foo",
+        OperationType = GraphQLOperationType.Query,
+        Service = "s",
+        Method = "M"
+    };
 }

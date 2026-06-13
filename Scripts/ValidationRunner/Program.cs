@@ -60,7 +60,7 @@ internal static class Program
             foreach (var scenario in scenarios)
             {
                 await Console.Out.WriteLineAsync($"\n== {scenario.Name}");
-                await Console.Out.WriteLineAsync($"   $ grpcurl.net {string.Join(' ', scenario.Args)}");
+                await Console.Out.WriteLineAsync($"   $ grpcn {string.Join(' ', scenario.Args)}");
 
                 var (exitCode, stdout, stderr) = await RunPublishedCli(publishedCli, scenario.Args, scenario.Stdin).ConfigureAwait(false);
 

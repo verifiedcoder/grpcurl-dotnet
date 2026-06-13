@@ -169,7 +169,7 @@ public sealed class GrpcChannelFactoryTests
         metadata.ShouldHaveSingleItem();
         metadata[0].Key.ShouldBe("user-agent");
         metadata[0].Value.ShouldBe(UserAgentProvider.Default);
-        metadata[0].Value.ShouldStartWith("grpcurl-dotnet/");
+        metadata[0].Value.ShouldStartWith("grpcn/");
     }
 
     [Fact]

@@ -24,19 +24,19 @@ echo "  - Offline documentation/development"
 echo ""
 
 echo "--- List services from protoset (no server needed for this) ---"
-echo "Command: grpcurl.net list --max-time 10s --protoset $PROTOSET"
+echo "Command: grpcn list --max-time 10s --protoset $PROTOSET"
 echo ""
 grpcurl_net list --max-time 10s --protoset "$PROTOSET"
 
 echo ""
 echo "--- Describe a message from protoset ---"
-echo "Command: grpcurl.net describe --max-time 10s --protoset $PROTOSET testing.SimpleRequest"
+echo "Command: grpcn describe --max-time 10s --protoset $PROTOSET testing.SimpleRequest"
 echo ""
 grpcurl_net describe --max-time 10s --protoset "$PROTOSET" testing.SimpleRequest
 
 echo ""
 echo "--- Invoke using protoset (still needs server for actual RPC) ---"
-echo "Command: grpcurl.net invoke --plaintext --max-time 10s --protoset $PROTOSET $SERVER testing.TestService/EmptyCall"
+echo "Command: grpcn invoke --plaintext --max-time 10s --protoset $PROTOSET $SERVER testing.TestService/EmptyCall"
 echo ""
 grpcurl_net invoke --plaintext --max-time 10s --protoset "$PROTOSET" $SERVER testing.TestService/EmptyCall
 

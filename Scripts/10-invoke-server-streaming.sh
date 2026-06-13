@@ -19,7 +19,7 @@ echo ""
 
 echo "--- Request for 3 responses of sizes 10, 20, 30 bytes ---"
 REQUEST='{"response_parameters":[{"size":10},{"size":20},{"size":30}]}'
-echo "Command: grpcurl.net invoke --plaintext --max-time 10s -d '$REQUEST' $SERVER testing.TestService/StreamingOutputCall"
+echo "Command: grpcn invoke --plaintext --max-time 10s -d '$REQUEST' $SERVER testing.TestService/StreamingOutputCall"
 echo ""
 
 grpcurl_net invoke --plaintext --max-time 10s -d "$REQUEST" $SERVER testing.TestService/StreamingOutputCall

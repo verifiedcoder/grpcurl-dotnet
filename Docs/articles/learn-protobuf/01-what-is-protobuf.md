@@ -225,7 +225,7 @@ You send JSON --> GrpCurl.Net encodes to protobuf --> Server processes --> Serve
 For example, you can describe the `SimpleRequest` message we examined above by running:
 
 ```bash
-grpcurl.net describe --plaintext --msg-template localhost:9090 testing.SimpleRequest
+grpcn describe --plaintext --msg-template localhost:9090 testing.SimpleRequest
 ```
 
 GrpCurl.Net queries the server's reflection endpoint, retrieves the `SimpleRequest` descriptor, and outputs the proto definition followed by a JSON template showing all fields with their default values:
@@ -263,7 +263,7 @@ The template uses the proto `snake_case` field names (e.g., `response_size`, `fi
 You can then use that JSON as a starting point for an actual RPC call. The TestServer's `UnaryCall` method echoes back whatever payload you send:
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"payload": {"body": "SGVsbG8gV29ybGQ="}}' \
   localhost:9090 testing.TestService/UnaryCall
 ```
@@ -292,4 +292,4 @@ The `body` field is `bytes`, so the value is Base64-encoded -- `"SGVsbG8gV29ybGQ
 
 ## What's Next
 
-In the next chapter, [Your First gRPC Call](02-getting-started.md), you will start the TestServer, explore its services with `grpcurl.net list` and `grpcurl.net describe`, and make your first RPC calls.
+In the next chapter, [Your First gRPC Call](02-getting-started.md), you will start the TestServer, explore its services with `grpcn list` and `grpcn describe`, and make your first RPC calls.

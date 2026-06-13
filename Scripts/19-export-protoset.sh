@@ -21,7 +21,7 @@ echo "This captures the proto definitions for offline use."
 echo ""
 
 echo "--- Export protoset during list operation ---"
-echo "Command: grpcurl.net list --plaintext --max-time 10s --protoset-out $OUTPUT_FILE $SERVER"
+echo "Command: grpcn list --plaintext --max-time 10s --protoset-out $OUTPUT_FILE $SERVER"
 echo ""
 grpcurl_net list --plaintext --max-time 10s --protoset-out "$OUTPUT_FILE" $SERVER
 
@@ -33,7 +33,7 @@ if [ -f "$OUTPUT_FILE" ]; then
     echo ""
 
     echo "--- Use exported protoset ---"
-    echo "Command: grpcurl.net list --max-time 10s --protoset $OUTPUT_FILE"
+    echo "Command: grpcn list --max-time 10s --protoset $OUTPUT_FILE"
     grpcurl_net list --max-time 10s --protoset "$OUTPUT_FILE"
 
     echo ""

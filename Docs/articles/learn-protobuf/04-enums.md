@@ -91,7 +91,7 @@ Enum values are stored as `int32` on the wire, so they must be in the range -2,1
 You can inspect an enum type just like you inspect a message. Use the `describe` command:
 
 ```bash
-grpcurl.net describe --plaintext localhost:9090 testing.PayloadType
+grpcn describe --plaintext localhost:9090 testing.PayloadType
 ```
 
 Expected output:
@@ -110,7 +110,7 @@ This shows the complete definition, including all named values and their numeric
 You can also see enums in context by examining messages that use them. Let us look at `SimpleRequest`:
 
 ```bash
-grpcurl.net describe --plaintext --msg-template localhost:9090 testing.SimpleRequest
+grpcn describe --plaintext --msg-template localhost:9090 testing.SimpleRequest
 ```
 
 Expected output:
@@ -154,7 +154,7 @@ When sending enum values in a gRPC request via GrpCurl.Net, you have two options
 Use the string name of the enum value. This is the **preferred** approach because it is self-documenting and less error-prone. The `StreamingOutputCall` method reflects the `responseType` enum back in the response payload, making it easy to see the effect:
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"responseType": "UNCOMPRESSABLE", "responseParameters": [{"size": 5}]}' \
   localhost:9090 testing.TestService/StreamingOutputCall
 ```
@@ -166,7 +166,7 @@ The value `"UNCOMPRESSABLE"` is a quoted string that matches exactly the name de
 Use the integer value directly. This is equivalent but harder to read:
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"responseType": 1, "responseParameters": [{"size": 5}]}' \
   localhost:9090 testing.TestService/StreamingOutputCall
 ```
@@ -187,12 +187,12 @@ These two commands are exactly equivalent:
 
 ```bash
 # By name (recommended -- clear and self-documenting)
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"responseType": "UNCOMPRESSABLE", "responseParameters": [{"size": 5}]}' \
   localhost:9090 testing.TestService/StreamingOutputCall
 
 # By number (equivalent -- but what does 1 mean?)
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"responseType": 1, "responseParameters": [{"size": 5}]}' \
   localhost:9090 testing.TestService/StreamingOutputCall
 ```
@@ -216,7 +216,7 @@ When an enum field is not explicitly set in a request, it takes the **zero value
 
 ```bash
 # responseType is not set, so it defaults to COMPRESSABLE (value 0)
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"responseParameters": [{"size": 5}]}' \
   localhost:9090 testing.TestService/StreamingOutputCall
 ```
@@ -289,13 +289,13 @@ Key commands for working with enums:
 
 ```bash
 # Discover an enum's values
-grpcurl.net describe --plaintext localhost:9090 testing.PayloadType
+grpcn describe --plaintext localhost:9090 testing.PayloadType
 
 # See enums in message context
-grpcurl.net describe --plaintext --msg-template localhost:9090 testing.SimpleRequest
+grpcn describe --plaintext --msg-template localhost:9090 testing.SimpleRequest
 
 # Use enum by name in a call
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"responseType": "UNCOMPRESSABLE", "responseParameters": [{"size": 5}]}' \
   localhost:9090 testing.TestService/StreamingOutputCall
 ```

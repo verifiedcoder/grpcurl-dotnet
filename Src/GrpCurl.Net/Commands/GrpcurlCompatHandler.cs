@@ -1,7 +1,7 @@
 namespace GrpCurl.Net.Commands;
 
 /// <summary>
-///     Drop-in compatibility shim that lets users invoke <c>grpcurl.net</c> with the same
+///     Drop-in compatibility shim that lets users invoke <c>grpcn</c> with the same
 ///     positional / single-dash flag shape as upstream <c>grpcurl</c>. Detects the legacy
 ///     form (single-dash flags, no <c>list</c>/<c>describe</c>/<c>invoke</c> subcommand
 ///     present) and rewrites the argv into the native subcommand shape before handing
@@ -82,7 +82,7 @@ internal static class GrpcurlCompatHandler
         }
 
         // The argv is grpcurl-style when at least one single-dash flag we recognise
-        // appears (e.g. -plaintext, -d, -proto). This keeps `grpcurl.net foo` from
+        // appears (e.g. -plaintext, -d, -proto). This keeps `grpcn foo` from
         // being misinterpreted as compat mode.
         if (!args.Any(LooksLikeUpstreamFlag))
         {

@@ -82,7 +82,7 @@ By default, GrpCurl.Net (and protobuf JSON serialization in general) **omits fie
 ### Without `--emit-defaults` (Sparse Output)
 
 ```bash
-grpcurl.net invoke --plaintext -d '{}' localhost:9090 testing.TestService/EmptyCall
+grpcn invoke --plaintext -d '{}' localhost:9090 testing.TestService/EmptyCall
 ```
 
 Example Output:
@@ -94,7 +94,7 @@ Example Output:
 The `Empty` message has no fields, so the output is trivially empty. Let us try a more interesting example:
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"responseSize": 0}' \
   localhost:9090 testing.TestService/UnaryCall
 ```
@@ -112,7 +112,7 @@ Even though we explicitly sent `"responseSize": 0`, the response contains nothin
 Adding `--emit-defaults` forces GrpCurl.Net to include every field, regardless of its value:
 
 ```bash
-grpcurl.net invoke --plaintext --emit-defaults \
+grpcn invoke --plaintext --emit-defaults \
   -d '{"responseSize": 0}' \
   localhost:9090 testing.TestService/UnaryCall
 ```
@@ -138,7 +138,7 @@ Now you can see the complete shape of the `SimpleResponse` message, including al
 Sparse -- only non-default fields shown:
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"payload": {"body": "SGVsbG8="}}' \
   localhost:9090 testing.TestService/UnaryCall
 ```
@@ -154,7 +154,7 @@ grpcurl.net invoke --plaintext \
 Complete -- every field shown:
 
 ```bash
-grpcurl.net invoke --plaintext --emit-defaults \
+grpcn invoke --plaintext --emit-defaults \
   -d '{"payload": {"body": "SGVsbG8="}}' \
   localhost:9090 testing.TestService/UnaryCall
 ```
@@ -201,10 +201,10 @@ When constructing requests, GrpCurl.Net accepts both the camelCase JSON name and
 
 ```bash
 # Both of these are equivalent:
-grpcurl.net invoke --plaintext -d '{"responseSize": 10}' \
+grpcn invoke --plaintext -d '{"responseSize": 10}' \
   localhost:9090 testing.TestService/UnaryCall
 
-grpcurl.net invoke --plaintext -d '{"response_size": 10}' \
+grpcn invoke --plaintext -d '{"response_size": 10}' \
   localhost:9090 testing.TestService/UnaryCall
 ```
 
@@ -260,7 +260,7 @@ However, there are situations where you want to be lenient -- for example, when 
 
 ```bash
 # This would normally fail because "nonExistentField" is not in SimpleRequest:
-grpcurl.net invoke --plaintext --allow-unknown-fields \
+grpcn invoke --plaintext --allow-unknown-fields \
   -d '{"responseSize": 10, "nonExistentField": "ignored"}' \
   localhost:9090 testing.TestService/UnaryCall
 ```
@@ -284,7 +284,7 @@ When a gRPC call fails, the server returns a status code and an error message. B
 Call a method on a service the server does not implement. The `UnimplementedService` exists in the schema but intentionally has no implementation:
 
 ```bash
-grpcurl.net invoke --plaintext --output json \
+grpcn invoke --plaintext --output json \
   -d '{}' \
   localhost:9090 testing.UnimplementedService/UnimplementedCall 2>error.json ; echo $?
 ```
@@ -319,7 +319,7 @@ These flags can be combined for different use cases:
 
 ```bash
 # Full output with all defaults, lenient parsing, and structured envelopes
-grpcurl.net invoke --plaintext --emit-defaults --allow-unknown-fields --output json \
+grpcn invoke --plaintext --emit-defaults --allow-unknown-fields --output json \
   -d '{"responseSize": 10, "fillUsername": true, "extraField": "ignored"}' \
   localhost:9090 testing.TestService/UnaryCall
 ```

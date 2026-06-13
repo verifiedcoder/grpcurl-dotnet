@@ -251,7 +251,7 @@ This is by design in proto3 and is important to remember when interpreting respo
 The TestServer includes an `AllScalarsMessage` type that contains one field for every scalar type. Let us examine it:
 
 ```bash
-grpcurl.net describe --plaintext --msg-template localhost:9090 testing.AllScalarsMessage
+grpcn describe --plaintext --msg-template localhost:9090 testing.AllScalarsMessage
 ```
 
 Expected output:
@@ -303,7 +303,7 @@ In the template, 64-bit integer types (`int64_val`, `uint64_val`, `sint64_val`, 
 Now let us see scalar types in action. The `StreamingOutputCall` method accepts a `responseParameters` array where each entry's `size` field (`int32`) controls the byte size of the response payload:
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"responseParameters": [{"size": 10}]}' \
   localhost:9090 testing.TestService/StreamingOutputCall
 ```
@@ -325,7 +325,7 @@ The server generated a 10-byte payload. The `body` field is `bytes`, so it appea
 We can also demonstrate `bool` and `bytes` scalars with `UnaryCall`, which echoes back the payload you send:
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"payload": {"body": "SGVsbG8="}, "fillUsername": true}' \
   localhost:9090 testing.TestService/UnaryCall
 ```

@@ -1,6 +1,6 @@
 # Troubleshooting
 
-Common errors surfaced by `grpcurl.net` and `gql2grpc`, with diagnoses and fixes. Organised by error class so you can jump to the symptom.
+Common errors surfaced by `grpcn` and `gql2grpc`, with diagnoses and fixes. Organised by error class so you can jump to the symptom.
 
 ## TLS / certificate errors
 
@@ -53,7 +53,7 @@ When reconstructing `.proto` files, descriptor names are treated as untrusted in
 The call exceeded the per-RPC deadline (`--max-time`). Inspect very-verbose timing to see which phase is slow:
 
 ```bash
-grpcurl.net invoke --vv --max-time 30s ...
+grpcn invoke --vv --max-time 30s ...
 ```
 
 The `--vv` output breaks down connection, schema discovery, serialisation, and the RPC itself. If "RPC" dominates, the server is slow; if "Schema Discovery" dominates, consider a protoset to skip reflection.
@@ -63,8 +63,8 @@ The `--vv` output breaks down connection, schema discovery, serialisation, and t
 `list`, `describe`, and `--protoset-out` can all use server reflection. Add `--max-time` to bound the whole discovery operation:
 
 ```bash
-grpcurl.net list --plaintext --max-time 10s localhost:9090
-grpcurl.net describe --plaintext --max-time 10s localhost:9090 my.pkg.Service
+grpcn list --plaintext --max-time 10s localhost:9090
+grpcn describe --plaintext --max-time 10s localhost:9090 my.pkg.Service
 ```
 
 ### Connection hangs before status arrives
@@ -79,7 +79,7 @@ grpcurl.net describe --plaintext --max-time 10s localhost:9090 my.pkg.Service
 Default is 4 MB per message. Raise with `--max-msg-sz`:
 
 ```bash
-grpcurl.net invoke --max-msg-sz 64MB ...
+grpcn invoke --max-msg-sz 64MB ...
 ```
 
 Accepts `B`, `KB`, `MB`, `GB`. Applies to both inbound and outbound messages — set high enough for whichever direction overflows. For streaming methods, this is per-message, not total.
@@ -90,7 +90,7 @@ Accepts `B`, `KB`, `MB`, `GB`. Applies to both inbound and outbound messages —
 
 The JSON you supplied with `-d` contains a field the request message doesn't declare. Two fixes:
 
-- Check the field name against the schema: `grpcurl.net describe --plaintext --msg-template localhost:9090 my.pkg.MyRequest`.
+- Check the field name against the schema: `grpcn describe --plaintext --msg-template localhost:9090 my.pkg.MyRequest`.
 - Temporarily skip the unknown field: add `--allow-unknown-fields`. Unknown fields are silently dropped — useful when sending the same JSON to multiple schema versions.
 
 ### "Invalid JSON" or parsing errors
@@ -100,10 +100,10 @@ The JSON you supplied with `-d` contains a field the request message doesn't dec
 
 ### "Stdin exceeded the maximum allowed size"
 
-`grpcurl.net invoke -d @` accepts up to 16 MiB from stdin by default and exits with code **2** (usage) when the cap is hit. For scripts, either split the payload or set an explicit numeric byte limit:
+`grpcn invoke -d @` accepts up to 16 MiB from stdin by default and exits with code **2** (usage) when the cap is hit. For scripts, either split the payload or set an explicit numeric byte limit:
 
 ```bash
-grpcurl.net invoke --plaintext --max-stdin-bytes 1048576 -d @ localhost:9090 my.pkg.Service/Call
+grpcn invoke --plaintext --max-stdin-bytes 1048576 -d @ localhost:9090 my.pkg.Service/Call
 ```
 
 ## Cancellation
@@ -154,6 +154,6 @@ The server's `UnaryCall` (or other method) doesn't synthesise payloads from `res
 | `64 + grpcStatusCode` | RPC failed with the given status | Examples: `InvalidArgument` (3) → `67`; `NotFound` (5) → `69`; `Unauthenticated` (16) → `80`; `Unavailable` (14) → `78`. Most transport failures land here — treat `>= 64` as RPC/transport failure in scripts. |
 | `130` | User cancelled (Ctrl+C / SIGINT) | Streaming and long unary calls. |
 
-In `--output json` mode (`grpcurl.net`) the same code is paired with a single-line error envelope on stderr (`{"kind":"error","category":"...","exitCode":N,...}`); for `gql2grpc` the envelope on stdout always carries `errors[].extensions.code` (and `grpcStatus`/`grpcStatusCode` when the upstream RPC failed).
+In `--output json` mode (`grpcn`) the same code is paired with a single-line error envelope on stderr (`{"kind":"error","category":"...","exitCode":N,...}`); for `gql2grpc` the envelope on stdout always carries `errors[].extensions.code` (and `grpcStatus`/`grpcStatusCode` when the upstream RPC failed).
 
 For GitHub Actions / GitLab CI patterns, see [CI/CD integration](ci-cd.md).

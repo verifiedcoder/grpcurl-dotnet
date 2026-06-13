@@ -1,6 +1,6 @@
 # API Reference
 
-Public API documentation for the libraries backing `grpcurl.net` and `gql2grpc`.
+Public API documentation for the libraries backing `grpcn` and `gql2grpc`.
 
 The reference is generated from XML doc comments in source. Internal helpers, tests, and auto-generated protocol types are excluded via `filterConfig.yml`. Browse types via the API sidebar, or pick a landing namespace below.
 

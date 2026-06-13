@@ -72,17 +72,17 @@ The server will start listening on `localhost:9090` with server reflection enabl
 
 ### Follow the Chapters in Order
 
-Each chapter introduces new concepts and builds on what came before. The hands-on commands in later chapters assume familiarity with techniques covered earlier (such as using `grpcurl.net describe` and `grpcurl.net invoke`).
+Each chapter introduces new concepts and builds on what came before. The hands-on commands in later chapters assume familiarity with techniques covered earlier (such as using `grpcn describe` and `grpcn invoke`).
 
 ### Run the Commands
 
-Every chapter includes `grpcurl.net` commands that you can copy and run directly. For example:
+Every chapter includes `grpcn` commands that you can copy and run directly. For example:
 
 ```bash
-grpcurl.net list --plaintext localhost:9090
+grpcn list --plaintext localhost:9090
 ```
 
-If you have not published or installed a `grpcurl.net` executable on your PATH yet, run the same command from the repository checkout with `dotnet run` and place the command arguments after `--`:
+If you have not published or installed a `grpcn` executable on your PATH yet, run the same command from the repository checkout with `dotnet run` and place the command arguments after `--`:
 
 ```bash
 dotnet run --project Src/GrpCurl.Net -- list --plaintext localhost:9090
@@ -93,13 +93,13 @@ Most JSON examples use POSIX shell quoting, such as `-d '{"field": "value"}'`. I
 ```powershell
 @'
 {"field": "value"}
-'@ | grpcurl.net invoke --plaintext -d '@' localhost:9090 package.Service/Method
+'@ | grpcn invoke --plaintext -d '@' localhost:9090 package.Service/Method
 ```
 
 Experiment freely -- modify the JSON payloads, try different flags, and observe how the output changes. Hands-on exploration is the fastest way to internalise protobuf concepts.
 
 > [!NOTE]
-> This series uses `grpcurl.net`, which is the .NET implementation of grpcurl. It is command-compatible with the Go-based `grpcurl` tool but runs on .NET and provides additional features such as detailed timing output. All command examples use the installed-tool form; source-tree users can replace `grpcurl.net` with `dotnet run --project Src/GrpCurl.Net --`.
+> This series uses `grpcn`, which is the .NET implementation of grpcurl. It is command-compatible with the Go-based `grpcurl` tool but runs on .NET and provides additional features such as detailed timing output. All command examples use the installed-tool form; source-tree users can replace `grpcn` with `dotnet run --project Src/GrpCurl.Net --`.
 
 ## Chapter Index
 

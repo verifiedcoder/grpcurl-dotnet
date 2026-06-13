@@ -23,22 +23,22 @@ GrpCurl.Net lets you call gRPC servers with JSON instead of binary protobuf. It 
 
 ```bash
 # List services on a gRPC server
-grpcurl.net list --plaintext localhost:9090
+grpcn list --plaintext localhost:9090
 
 # Describe a service
-grpcurl.net describe --plaintext localhost:9090 my.package.Service
+grpcn describe --plaintext localhost:9090 my.package.Service
 
 # Invoke a method
-grpcurl.net invoke --plaintext --max-time 30s \
+grpcn invoke --plaintext --max-time 30s \
   -d '{"name": "World"}' localhost:9090 my.package.Service/SayHello
 
 # mTLS with custom CA + client cert
-grpcurl.net invoke --max-time 30s \
+grpcn invoke --max-time 30s \
   --cacert ca.pem --cert client.crt --key client.key \
   -d '{}' my-service.internal:443 my.package.Service/Status
 
 # Unix-domain socket (Linux / macOS)
-grpcurl.net invoke --plaintext --max-time 30s \
+grpcn invoke --plaintext --max-time 30s \
   unix:///var/run/grpc.sock my.package.Service/Status -d '{}'
 ```
 
@@ -49,7 +49,7 @@ GrpCurl.Net is installed by building the [.NET tool](https://learn.microsoft.com
 ```bash
 dotnet pack Src/GrpCurl.Net -c Release
 dotnet tool install -g GrpCurl.Net --add-source Src/GrpCurl.Net/bin/Release
-grpcurl.net --version
+grpcn --version
 ```
 
 The GraphQL bridge is built and installed the same way as a separate tool:
@@ -63,6 +63,8 @@ gql2grpc --help
 For team distribution, push the packed `.nupkg` files to an internal NuGet feed and install with `--add-source <feed-url>`.
 
 `GrpCurl.Net.Core` is bundled inside the tool packages and is not installed directly.
+
+> **Naming note:** the command was formerly invoked as `grpcurl.net`; it was renamed to `grpcn` before first public release. The package ID remains `GrpCurl.Net`.
 
 ## Agent / Script Usage
 
@@ -78,15 +80,15 @@ GrpCurl.Net is designed to be driven by AI agents and shell scripts without huma
 
 ```bash
 # Machine-readable list
-grpcurl.net list --plaintext --output json localhost:9090 | jq '.services[]'
+grpcn list --plaintext --output json localhost:9090 | jq '.services[]'
 
 # NDJSON streaming responses
-grpcurl.net invoke --plaintext --output json --max-time 30s \
+grpcn invoke --plaintext --output json --max-time 30s \
   localhost:9090 svc/Stream -d '{"n":3}' \
   | jq -c '.message'
 
 # Structured error on stderr (exit code 76 = 64 + Unimplemented(12))
-grpcurl.net invoke --plaintext --output json --max-time 5s \
+grpcn invoke --plaintext --output json --max-time 5s \
   localhost:9090 svc/Missing -d '{}' 2>error.json ; echo $?
 ```
 

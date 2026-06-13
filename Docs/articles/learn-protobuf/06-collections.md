@@ -42,7 +42,7 @@ Each element in the array corresponds to one instance of the repeated field's ty
 Use `--msg-template` to see which fields are repeated. Repeated fields will appear as arrays in the template:
 
 ```bash
-grpcurl.net describe --plaintext --msg-template localhost:9090 testing.StreamingOutputCallRequest
+grpcn describe --plaintext --msg-template localhost:9090 testing.StreamingOutputCallRequest
 ```
 
 The template output shows the proto definition followed by the JSON template, with repeated fields as arrays containing a single example element:
@@ -83,7 +83,7 @@ The `response_parameters` field shows up as an array with one template element, 
 The most common use of repeated fields is to hold multiple instances of a message type. The `StreamingOutputCall` method accepts a list of `ResponseParameters`, where each entry specifies the size of one response chunk:
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"responseParameters": [{"size": 10}, {"size": 20}, {"size": 30}]}' \
   localhost:9090 testing.TestService/StreamingOutputCall
 ```
@@ -127,7 +127,7 @@ message RepeatedScalarsTest {
 Discover its full structure:
 
 ```bash
-grpcurl.net describe --plaintext --msg-template localhost:9090 testing.RepeatedScalarsTest
+grpcn describe --plaintext --msg-template localhost:9090 testing.RepeatedScalarsTest
 ```
 
 In JSON, arrays of scalars look exactly as you would expect:
@@ -223,7 +223,7 @@ This is a natural fit -- JSON objects _are_ key-value maps.
 Use `describe --msg-template` to see the map fields and their expected types:
 
 ```bash
-grpcurl.net describe --plaintext --msg-template localhost:9090 testing.MapFieldsMessage
+grpcn describe --plaintext --msg-template localhost:9090 testing.MapFieldsMessage
 ```
 
 The template output will show each map field as a JSON object with example entries, helping you understand the expected key and value types.

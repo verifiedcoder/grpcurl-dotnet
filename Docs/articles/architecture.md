@@ -145,7 +145,7 @@ Headers are processed with environment variable expansion. The default `User-Age
 ```csharp
 var metadata = GrpcChannelFactory.CreateMetadata(
     headers: new[] { "Authorization: Bearer ${TOKEN}" },
-    userAgent: null // resolves to UserAgentProvider.Default, e.g. "grpcurl-dotnet/1.0.0"
+    userAgent: null // resolves to UserAgentProvider.Default, e.g. "grpcn/1.0.0"
 );
 ```
 
@@ -194,7 +194,7 @@ This allows commands to signal specific exit codes without calling `Environment.
 
 ### Error Mapping
 
-Exit codes follow this contract (shared by `grpcurl.net` and `gql2grpc`):
+Exit codes follow this contract (shared by `grpcn` and `gql2grpc`):
 
 | Code | Category |
 |---|---|

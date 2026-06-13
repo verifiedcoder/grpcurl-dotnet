@@ -8,7 +8,7 @@ using System.CommandLine;
 // have to relearn the flag spellings. The native shape stays the canonical interface.
 var effectiveArgs = GrpcurlCompatHandler.TryRewrite(args) ?? args;
 
-var rootCommand = new RootCommand("grpcurl.net - A .NET implementation of grpcurl")
+var rootCommand = new RootCommand("grpcn - A .NET implementation of grpcurl")
 {
     ListCommandHandler.Create(),
     DescribeCommandHandler.Create(),
@@ -24,7 +24,7 @@ try
     return ParseErrorReporter.TryHandleParseErrors(
                parseResult,
                Console.Error,
-               "Run 'grpcurl.net [command] --help' for usage.")
+               "Run 'grpcn [command] --help' for usage.")
            ?? await parseResult.InvokeAsync();
 }
 catch (Exception ex)

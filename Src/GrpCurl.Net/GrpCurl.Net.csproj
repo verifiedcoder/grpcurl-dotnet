@@ -8,7 +8,7 @@
         <InformationalVersion>1.0.0</InformationalVersion>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <PackAsTool>true</PackAsTool>
-        <ToolCommandName>grpcurl.net</ToolCommandName>
+        <ToolCommandName>grpcn</ToolCommandName>
         <IsPackable>true</IsPackable>
         <PackageId>GrpCurl.Net</PackageId>
         <PackageReadmeFile>README.md</PackageReadmeFile>

@@ -14,6 +14,40 @@ public sealed class TimingContextTests
         return new TimingContext(console);
     }
 
+    #region Phases accessor (SPEC-031)
+
+    [Fact]
+    public void Phases_ReturnsCompletedPhasesInOrder()
+    {
+        // Arrange
+        var context = NewContext(out _);
+
+        context.StartPhase("Connection");
+        context.StartPhase("Schema Discovery"); // ends "Connection"
+        context.StartPhase("Call");             // ends "Schema Discovery"
+
+        // Act — before the final phase ends, only completed phases are present.
+        var beforeEnd = context.Phases.Select(p => p.Phase).ToList();
+
+        context.PrintSummary(); // ends "Call"
+        var afterEnd = context.Phases.Select(p => p.Phase).ToList();
+
+        // Assert
+        beforeEnd.ShouldBe(["Connection", "Schema Discovery"]);
+        afterEnd.ShouldBe(["Connection", "Schema Discovery", "Call"]);
+        context.Phases.ShouldAllBe(p => p.Duration >= TimeSpan.Zero);
+    }
+
+    [Fact]
+    public void Phases_EmptyBeforeAnyPhaseStarts()
+    {
+        var context = NewContext(out _);
+
+        context.Phases.ShouldBeEmpty();
+    }
+
+    #endregion
+
     #region FormatBytes Tests
 
     [Theory]

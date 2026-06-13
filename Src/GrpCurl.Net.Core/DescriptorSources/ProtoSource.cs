@@ -28,10 +28,12 @@ internal static class ProtoSource
     ///     Cancels both the <c>protoc</c> child process and
     ///     the descriptor load.
     /// </param>
+    /// <param name="warningSink">Optional sink for non-fatal load warnings; defaults to <c>Console.Error</c>.</param>
     public static async Task<ProtosetSource> LoadFromProtoFilesAsync(
         IReadOnlyList<string> protoFiles,
         IReadOnlyList<string> importPaths,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        IDescriptorWarningSink? warningSink = null)
     {
         if (protoFiles.Count == 0)
         {
@@ -117,7 +119,7 @@ internal static class ProtoSource
 
                 if (process.ExitCode == 0)
                 {
-                    return await ProtosetSource.LoadFromFilesAsync([tempProtoset], cancellationToken).ConfigureAwait(false);
+                    return await ProtosetSource.LoadFromFilesAsync([tempProtoset], DescriptorSourceOptions.Default, cancellationToken, warningSink).ConfigureAwait(false);
                 }
 
                 var stderr = await stderrTask.ConfigureAwait(false);

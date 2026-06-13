@@ -39,6 +39,15 @@ internal sealed class TimingContext
     public int MessageCount { get; set; }
 
     /// <summary>
+    ///     The completed phases and their durations, in the same order
+    ///     <see cref="PrintSummary" /> renders them. Provides programmatic access to the
+    ///     timing data for non-console hosts (e.g. a GUI timing pane) without re-parsing the
+    ///     rendered text. The currently-running phase is included only once it has ended.
+    /// </summary>
+    public IReadOnlyList<(string Phase, TimeSpan Duration)> Phases
+        => _phaseTimings.Select(entry => (entry.Key, TimeSpan.FromMilliseconds(entry.Value))).ToList();
+
+    /// <summary>
     ///     Starts timing a new phase. Automatically ends the previous phase if one was running.
     /// </summary>
     /// <param name="phaseName">Name of the phase to track (e.g., "Connection Establishment")</param>

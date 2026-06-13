@@ -45,8 +45,9 @@ internal sealed class DescriptorSourceFactory : IAsyncDisposable
         IReadOnlyList<string> protosetPaths,
         GrpcChannelFactory.ChannelOptions channelOptions,
         Metadata reflectionMetadata,
-        CancellationToken cancellationToken)
-        => CreateAsync(address, protosetPaths, [], [], channelOptions, reflectionMetadata, cancellationToken);
+        CancellationToken cancellationToken,
+        IDescriptorWarningSink? warningSink = null)
+        => CreateAsync(address, protosetPaths, [], [], channelOptions, reflectionMetadata, cancellationToken, warningSink);
 
     public static async Task<DescriptorSourceFactory> CreateAsync(
         string? address,
@@ -55,7 +56,8 @@ internal sealed class DescriptorSourceFactory : IAsyncDisposable
         IReadOnlyList<string> importPaths,
         GrpcChannelFactory.ChannelOptions channelOptions,
         Metadata reflectionMetadata,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        IDescriptorWarningSink? warningSink = null)
     {
         var hasProtosets = protosetPaths.Count > 0;
         var hasProtoFiles = protoFiles.Count > 0;
@@ -80,15 +82,15 @@ internal sealed class DescriptorSourceFactory : IAsyncDisposable
         if (hasProtoFiles)
         {
             // Highest precedence: shell out to protoc and use the resulting protoset.
-            source = await ProtoSource.LoadFromProtoFilesAsync(protoFiles, importPaths, cancellationToken).ConfigureAwait(false);
+            source = await ProtoSource.LoadFromProtoFilesAsync(protoFiles, importPaths, cancellationToken, warningSink).ConfigureAwait(false);
         }
         else if (hasProtosets)
         {
-            source = await ProtosetSource.LoadFromFilesAsync(protosetPaths, cancellationToken).ConfigureAwait(false);
+            source = await ProtosetSource.LoadFromFilesAsync(protosetPaths, DescriptorSourceOptions.Default, cancellationToken, warningSink).ConfigureAwait(false);
         }
         else
         {
-            source = new ReflectionSource(channel!, reflectionMetadata);
+            source = new ReflectionSource(channel!, reflectionMetadata, warningSink: warningSink);
         }
 
         return new DescriptorSourceFactory(channel, source);

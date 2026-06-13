@@ -15,16 +15,19 @@ namespace GrpCurl.Net.DescriptorSources;
 /// <param name="metadata">Optional metadata to send with reflection requests.</param>
 /// <param name="ownsChannel">If true, the channel will be disposed when this object is disposed. Default is false.</param>
 /// <param name="options">Optional descriptor resource limits.</param>
+/// <param name="warningSink">Optional sink for non-fatal load warnings; defaults to <c>Console.Error</c>.</param>
 public sealed class ReflectionSource(
     GrpcChannel channel,
     Metadata? metadata = null,
     bool ownsChannel = false,
-    DescriptorSourceOptions? options = null)
+    DescriptorSourceOptions? options = null,
+    IDescriptorWarningSink? warningSink = null)
     : IDescriptorSource, IDisposable
 {
     private readonly GrpcChannel _channel = channel ?? throw new ArgumentNullException(nameof(channel));
     private readonly ServerReflection.ServerReflectionClient _client = new(channel);
     private readonly DescriptorSourceOptions _options = ValidateOptions(options ?? DescriptorSourceOptions.Default);
+    private readonly IDescriptorWarningSink _warningSink = warningSink ?? ConsoleWarningSink.Instance;
     private readonly ConcurrentDictionary<string, FileDescriptor> _fileDescriptors = new();
     private readonly ConcurrentDictionary<string, IDescriptor> _symbolCache = new();
     private bool _servicesLoaded;
@@ -183,12 +186,11 @@ public sealed class ReflectionSource(
 
         if (failedServices.Count > 0)
         {
-            await Console.Error.WriteLineAsync($"Warning: Failed to load {failedServices.Count} service(s):");
+            // Aggregate into a single multi-line warning (collect-then-emit, as before).
+            var lines = new[] { $"Warning: Failed to load {failedServices.Count} service(s):" }
+                .Concat(failedServices.Select(failure => $"  - {failure}"));
 
-            foreach (var failure in failedServices)
-            {
-                await Console.Error.WriteLineAsync($"  - {failure}");
-            }
+            _warningSink.OnWarning(string.Join(Environment.NewLine, lines));
         }
 
         _servicesLoaded = true;

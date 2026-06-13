@@ -13,11 +13,13 @@ public sealed class ProtosetSource : IDescriptorSource
     private readonly Dictionary<string, FileDescriptor> _fileDescriptors = [];
     private readonly Dictionary<string, IDescriptor> _symbolCache = [];
     private readonly DescriptorSourceOptions _options;
+    private readonly IDescriptorWarningSink _warningSink;
 
-    private ProtosetSource(DescriptorSourceOptions? options = null)
+    private ProtosetSource(DescriptorSourceOptions? options = null, IDescriptorWarningSink? warningSink = null)
     {
         _options = options ?? DescriptorSourceOptions.Default;
         _options.ThrowIfInvalid();
+        _warningSink = warningSink ?? ConsoleWarningSink.Instance;
     }
 
     /// <inheritdoc />
@@ -55,9 +57,10 @@ public sealed class ProtosetSource : IDescriptorSource
     internal static async Task<ProtosetSource> LoadFromFileAsync(
         string filePath,
         DescriptorSourceOptions options,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        IDescriptorWarningSink? warningSink = null)
     {
-        var source = new ProtosetSource(options);
+        var source = new ProtosetSource(options, warningSink);
 
         await source.LoadProtosetAsync(filePath, cancellationToken);
 
@@ -76,9 +79,10 @@ public sealed class ProtosetSource : IDescriptorSource
     internal static async Task<ProtosetSource> LoadFromFilesAsync(
         IEnumerable<string> filePaths,
         DescriptorSourceOptions options,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        IDescriptorWarningSink? warningSink = null)
     {
-        var source = new ProtosetSource(options);
+        var source = new ProtosetSource(options, warningSink);
 
         foreach (var filePath in filePaths)
         {
@@ -114,7 +118,7 @@ public sealed class ProtosetSource : IDescriptorSource
             {
                 if (existingFiles.Contains(file.Name))
                 {
-                    await Console.Error.WriteLineAsync($"Warning: Proto file '{file.Name}' already loaded, skipping duplicate from '{filePath}'");
+                    _warningSink.OnWarning($"Warning: Proto file '{file.Name}' already loaded, skipping duplicate from '{filePath}'");
                 }
                 else
                 {
@@ -139,7 +143,7 @@ public sealed class ProtosetSource : IDescriptorSource
         {
             if (_fileDescriptors.ContainsKey(name))
             {
-                await Console.Error.WriteLineAsync($"Warning: File descriptor '{name}' already cached, overwriting from '{filePath}'");
+                _warningSink.OnWarning($"Warning: File descriptor '{name}' already cached, overwriting from '{filePath}'");
             }
 
             _fileDescriptors[name] = descriptor;
@@ -293,7 +297,7 @@ public sealed class ProtosetSource : IDescriptorSource
         // Only warn for service-level conflicts, not for common types like well-known types
         if (_symbolCache.TryGetValue(fullName, out _) && descriptor is ServiceDescriptor or MethodDescriptor)
         {
-            Console.Error.WriteLine($"Warning: Symbol '{fullName}' already defined, overwriting from '{sourceFile}'");
+            _warningSink.OnWarning($"Warning: Symbol '{fullName}' already defined, overwriting from '{sourceFile}'");
         }
 
         _symbolCache[fullName] = descriptor;

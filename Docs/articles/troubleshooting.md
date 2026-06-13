@@ -46,6 +46,13 @@ When reconstructing `.proto` files, descriptor names are treated as untrusted in
 - For plaintext, ensure the server speaks HTTP/2 cleartext (h2c). ASP.NET Core Kestrel requires `HttpProtocols.Http2` in `ListenOptions`.
 - For TLS, ensure the port serves TLS and ALPN advertises `h2`. Behind nginx, `grpc_pass` is usually required.
 
+### Connection failures while a proxy is configured
+
+The underlying `SocketsHttpHandler` honours the `HTTP_PROXY`, `HTTPS_PROXY`, and `ALL_PROXY` environment variables. A `localhost` plaintext (h2c) call routed through a proxy that doesn't speak h2c will fail with a connection error that doesn't mention the proxy. When one of these variables is set and a connection-shaped failure occurs, GrpCurl.Net appends a suggestion naming the variable.
+
+- Unset the variable for the call: `HTTP_PROXY= HTTPS_PROXY= grpcn invoke ...`.
+- Or exclude the host: add it to `NO_PROXY` (supports exact hosts and `.suffix` domain matching, and `*` for all). Unix-domain-socket addresses (`unix://`) are never proxied.
+
 ## Deadlines and timeouts
 
 ### `StatusCode.DeadlineExceeded`

@@ -366,6 +366,9 @@ internal static class DescribeCommandHandler
         string? keepaliveTimeout = null)
     {
         var startTime = DateTime.UtcNow;
+
+        PositionalArgumentGuard.RejectOptionLikeValues("describe", output, ("address", address), ("symbol", symbol));
+
         var maxTimeSpan = maxTime is not null ? GrpcChannelFactory.ParseDuration(maxTime) : (TimeSpan?)null;
 
         using var deadlineCts = maxTimeSpan is not null

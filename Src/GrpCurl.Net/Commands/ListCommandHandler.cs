@@ -350,6 +350,9 @@ internal static class ListCommandHandler
         string? keepaliveTimeout = null)
     {
         var startTime = DateTime.UtcNow;
+
+        PositionalArgumentGuard.RejectOptionLikeValues("list", output, ("address", address), ("service", service));
+
         var maxTimeSpan = maxTime is not null ? GrpcChannelFactory.ParseDuration(maxTime) : (TimeSpan?)null;
 
         using var deadlineCts = maxTimeSpan is not null

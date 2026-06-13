@@ -442,6 +442,8 @@ internal static class InvokeCommandHandler
         string? protoOutDir = null,
         long? maxStdinBytes = null)
     {
+        PositionalArgumentGuard.RejectOptionLikeValues("invoke", output, ("address", address), ("method", methodName));
+
         // Validate options before proceeding
         ValidateOptions(plaintext, insecure, serverName, maxMsgSz, verbose);
 

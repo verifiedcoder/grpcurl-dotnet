@@ -152,66 +152,6 @@ internal static class WellKnownTypeHandler
         return message;
     }
 
-    public static SimpleDynamicMessage? ConvertAny(JsonElement element, MessageDescriptor messageType)
-    {
-        // Any is encoded as JSON object with "@type" field and embedded message
-        if (element.ValueKind != JsonValueKind.Object)
-        {
-            return null;
-        }
-
-        var message = new SimpleDynamicMessage(messageType);
-
-        // Field 1: type_url (string)
-        var typeUrlField = messageType.FindFieldByNumber(1);
-
-        // Field 2: value (bytes) - serialized embedded message
-        var valueField = messageType.FindFieldByNumber(2);
-
-        if (typeUrlField is not null && element.TryGetProperty("@type", out var typeUrlElement))
-        {
-            message.Fields[typeUrlField] = typeUrlElement.GetString();
-        }
-
-        // For simplicity, we'll serialize the entire JSON (excluding @type) as bytes
-        // A full implementation would parse the embedded message based on type_url
-        if (valueField is null)
-        {
-            return message;
-        }
-
-        // Create a JSON object without the @type field
-        var valueJson = new StringBuilder();
-
-        valueJson.Append('{');
-
-        var first = true;
-
-        foreach (var property in element.EnumerateObject().Where(property => property.Name != "@type"))
-        {
-            if (!first)
-            {
-                valueJson.Append(',');
-            }
-
-            first = false;
-
-            valueJson.Append('"');
-            valueJson.Append(property.Name);
-            valueJson.Append("\":");
-            valueJson.Append(property.Value.GetRawText());
-        }
-
-        valueJson.Append('}');
-
-        // Encode as UTF-8 bytes
-        var bytes = Encoding.UTF8.GetBytes(valueJson.ToString());
-
-        message.Fields[valueField] = ByteString.CopyFrom(bytes);
-
-        return message;
-    }
-
     /// <summary>
     ///     Empty is encoded as empty JSON object. Just return an empty message.
     /// </summary>
@@ -486,47 +426,6 @@ internal static class WellKnownTypeHandler
         {
             sb.Append("null");
         }
-    }
-
-    public static void WriteAnyJson(StringBuilder sb, SimpleDynamicMessage any, MessageDescriptor messageType)
-    {
-        // Any is encoded as JSON object with "@type" field and embedded message fields
-        var typeUrlField = messageType.FindFieldByNumber(1);
-        var valueField = messageType.FindFieldByNumber(2);
-
-        sb.Append('{');
-
-        // Write @type field
-        if (typeUrlField is not null && any.Fields.TryGetValue(typeUrlField, out var typeUrl))
-        {
-            sb.Append("\"@type\":\"");
-            sb.Append(JsonEncodedText.Encode((string)typeUrl!).ToString());
-            sb.Append('"');
-        }
-
-        // Write embedded message fields
-        if (valueField is not null && any.Fields.TryGetValue(valueField, out var valueBytes) && valueBytes is ByteString bytes)
-        {
-            // Parse the bytes as JSON and merge into the output
-            var jsonString = Encoding.UTF8.GetString(bytes.ToByteArray());
-
-            if (!string.IsNullOrEmpty(jsonString) && jsonString != "{}")
-            {
-                sb.Append(',');
-
-                // Remove outer braces and append the inner content
-                var innerJson = jsonString.Trim();
-
-                if (innerJson.StartsWith('{') && innerJson.EndsWith('}'))
-                {
-                    innerJson = innerJson[1..^1];
-                }
-
-                sb.Append(innerJson);
-            }
-        }
-
-        sb.Append('}');
     }
 
     public static void WriteEmptyJson(StringBuilder sb)

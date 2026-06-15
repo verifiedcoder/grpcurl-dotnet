@@ -20,13 +20,13 @@ echo ""
 echo "--- Request with response_size: 10 ---"
 echo "Command: grpcn invoke --plaintext --max-time 10s -d '{\"response_size\": 10}' $SERVER testing.TestService/UnaryCall"
 echo ""
-grpcurl_net invoke --plaintext --max-time 10s -d '{"response_size": 10}' $SERVER testing.TestService/UnaryCall
+grpcn invoke --plaintext --max-time 10s -d '{"response_size": 10}' $SERVER testing.TestService/UnaryCall
 
 echo ""
 echo "--- Request with fill_username: true ---"
 echo "Command: grpcn invoke --plaintext --max-time 10s -d '{\"fill_username\": true}' $SERVER testing.TestService/UnaryCall"
 echo ""
-grpcurl_net invoke --plaintext --max-time 10s -d '{"fill_username": true}' $SERVER testing.TestService/UnaryCall
+grpcn invoke --plaintext --max-time 10s -d '{"fill_username": true}' $SERVER testing.TestService/UnaryCall
 
 echo ""
 echo "=== Done ==="

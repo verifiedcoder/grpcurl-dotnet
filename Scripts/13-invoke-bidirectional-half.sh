@@ -33,7 +33,7 @@ echo "Command: echo '<requests>' | grpcn invoke --plaintext --max-time 10s --max
 echo "Uses --max-stdin-bytes to make the stdin budget explicit for scripts."
 echo ""
 
-echo "$REQUESTS" | grpcurl_net invoke --plaintext --max-time 10s --max-stdin-bytes 1048576 -d @ $SERVER testing.TestService/HalfDuplexCall
+echo "$REQUESTS" | grpcn invoke --plaintext --max-time 10s --max-stdin-bytes 1048576 -d @ $SERVER testing.TestService/HalfDuplexCall
 
 echo ""
 echo "=== Done ==="

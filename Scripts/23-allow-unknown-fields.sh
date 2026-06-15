@@ -19,13 +19,13 @@ echo "--- Without --allow-unknown-fields (will error) ---"
 echo "Request contains 'unknown_field' which doesn't exist in the proto."
 echo "Command: grpcn invoke --plaintext --max-time 10s -d '{\"response_size\":10,\"unknown_field\":\"test\"}' $SERVER testing.TestService/UnaryCall"
 echo ""
-grpcurl_net invoke --plaintext --max-time 10s -d '{"response_size":10,"unknown_field":"test"}' $SERVER testing.TestService/UnaryCall 2>&1 || true
+grpcn invoke --plaintext --max-time 10s -d '{"response_size":10,"unknown_field":"test"}' $SERVER testing.TestService/UnaryCall 2>&1 || true
 
 echo ""
 echo "--- With --allow-unknown-fields (success) ---"
 echo "Command: grpcn invoke --plaintext --max-time 10s --allow-unknown-fields -d '{\"response_size\":10,\"unknown_field\":\"test\"}' $SERVER testing.TestService/UnaryCall"
 echo ""
-grpcurl_net invoke --plaintext --max-time 10s --allow-unknown-fields -d '{"response_size":10,"unknown_field":"test"}' $SERVER testing.TestService/UnaryCall
+grpcn invoke --plaintext --max-time 10s --allow-unknown-fields -d '{"response_size":10,"unknown_field":"test"}' $SERVER testing.TestService/UnaryCall
 
 echo ""
 echo "=== Done ==="

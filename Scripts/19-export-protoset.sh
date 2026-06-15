@@ -10,7 +10,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$SCRIPT_DIR/common.sh"
 SERVER="localhost:9090"
-OUTPUT_FILE="$(mktemp "${TMPDIR:-/tmp}/grpcurl-dotnet-export.XXXXXX")"
+OUTPUT_FILE="$(mktemp "${TMPDIR:-/tmp}/grpcn-export.XXXXXX")"
 rm -f "$OUTPUT_FILE"
 trap 'rm -f "$OUTPUT_FILE"' EXIT
 
@@ -23,7 +23,7 @@ echo ""
 echo "--- Export protoset during list operation ---"
 echo "Command: grpcn list --plaintext --max-time 10s --protoset-out $OUTPUT_FILE $SERVER"
 echo ""
-grpcurl_net list --plaintext --max-time 10s --protoset-out "$OUTPUT_FILE" $SERVER
+grpcn list --plaintext --max-time 10s --protoset-out "$OUTPUT_FILE" $SERVER
 
 echo ""
 echo "--- Verify exported file ---"
@@ -34,7 +34,7 @@ if [ -f "$OUTPUT_FILE" ]; then
 
     echo "--- Use exported protoset ---"
     echo "Command: grpcn list --max-time 10s --protoset $OUTPUT_FILE"
-    grpcurl_net list --max-time 10s --protoset "$OUTPUT_FILE"
+    grpcn list --max-time 10s --protoset "$OUTPUT_FILE"
 
     echo ""
     echo "Temporary protoset will be cleaned up when the script exits."

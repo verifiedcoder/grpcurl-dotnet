@@ -42,7 +42,7 @@ echo "Request JSON:"
 echo "$REQUEST" | head -10
 echo ""
 
-grpcurl_net invoke --plaintext --max-time 10s -d "$REQUEST" $SERVER testing.TestService/UnaryCall
+grpcn invoke --plaintext --max-time 10s -d "$REQUEST" $SERVER testing.TestService/UnaryCall
 
 echo ""
 echo "=== Done ==="

@@ -19,7 +19,7 @@ echo ""
 echo "Command: grpcn invoke --plaintext --max-time 10s $SERVER testing.TestService/EmptyCall"
 echo ""
 
-grpcurl_net invoke --plaintext --max-time 10s $SERVER testing.TestService/EmptyCall
+grpcn invoke --plaintext --max-time 10s $SERVER testing.TestService/EmptyCall
 
 echo ""
 echo "=== Done ==="

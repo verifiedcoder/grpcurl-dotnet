@@ -23,31 +23,31 @@ echo ""
 echo "--- Discovery timeout for reflection-backed list (10 seconds) ---"
 echo "Command: grpcn list --plaintext --max-time 10s $SERVER"
 echo ""
-grpcurl_net list --plaintext --max-time 10s $SERVER
+grpcn list --plaintext --max-time 10s $SERVER
 
 echo ""
 echo "--- Discovery timeout for describe (10 seconds) ---"
 echo "Command: grpcn describe --plaintext --max-time 10s $SERVER testing.TestService"
 echo ""
-grpcurl_net describe --plaintext --max-time 10s $SERVER testing.TestService
+grpcn describe --plaintext --max-time 10s $SERVER testing.TestService
 
 echo ""
 echo "--- Connect timeout (5 seconds) ---"
 echo "Command: grpcn invoke --plaintext --connect-timeout 5s --max-time 30s $SERVER testing.TestService/EmptyCall"
 echo ""
-grpcurl_net invoke --plaintext --connect-timeout 5s --max-time 30s $SERVER testing.TestService/EmptyCall
+grpcn invoke --plaintext --connect-timeout 5s --max-time 30s $SERVER testing.TestService/EmptyCall
 
 echo ""
 echo "--- Max operation time (30 seconds) ---"
 echo "Command: grpcn invoke --plaintext --max-time 30s $SERVER testing.TestService/EmptyCall"
 echo ""
-grpcurl_net invoke --plaintext --max-time 30s $SERVER testing.TestService/EmptyCall
+grpcn invoke --plaintext --max-time 30s $SERVER testing.TestService/EmptyCall
 
 echo ""
 echo "--- Both timeouts combined ---"
 echo "Command: grpcn invoke --plaintext --connect-timeout 5s --max-time 30s $SERVER testing.TestService/EmptyCall"
 echo ""
-grpcurl_net invoke --plaintext --connect-timeout 5s --max-time 30s $SERVER testing.TestService/EmptyCall
+grpcn invoke --plaintext --connect-timeout 5s --max-time 30s $SERVER testing.TestService/EmptyCall
 
 echo ""
 echo "=== Done ==="

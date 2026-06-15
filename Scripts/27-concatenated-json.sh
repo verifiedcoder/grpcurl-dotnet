@@ -25,7 +25,7 @@ echo "--- Client Streaming: 3 messages via concatenated JSON ---"
 echo "Command: grpcn invoke --plaintext --max-time 10s -d '{...} {...} {...}' \$SERVER testing.TestService/StreamingInputCall"
 echo ""
 
-grpcurl_net invoke --plaintext \
+grpcn invoke --plaintext \
   --max-time 10s \
   -d '{"payload":{"body":"YQ=="}} {"payload":{"body":"YmI="}} {"payload":{"body":"Y2Nj"}}' \
   $SERVER testing.TestService/StreamingInputCall
@@ -37,7 +37,7 @@ echo "--- Bidirectional Streaming: 2 messages via concatenated JSON ---"
 echo "Command: grpcn invoke --plaintext --max-time 10s -d '{...} {...}' \$SERVER testing.TestService/FullDuplexCall"
 echo ""
 
-grpcurl_net invoke --plaintext \
+grpcn invoke --plaintext \
   --max-time 10s \
   -d '{"response_parameters":[{"size":5}]} {"response_parameters":[{"size":10}]}' \
   $SERVER testing.TestService/FullDuplexCall
@@ -50,7 +50,7 @@ echo ""
 printf '%s\n%s\n' \
   '{"payload":{"body":"ZA=="}}' \
   '{"payload":{"body":"ZWU="}}' | \
-  grpcurl_net invoke --plaintext --max-time 10s --max-stdin-bytes 1048576 -d @ $SERVER testing.TestService/StreamingInputCall
+  grpcn invoke --plaintext --max-time 10s --max-stdin-bytes 1048576 -d @ $SERVER testing.TestService/StreamingInputCall
 
 echo ""
 echo "=== Done ==="

@@ -1,5 +1,6 @@
 using Gql2Grpc.Configuration;
 using Gql2Grpc.GraphQL;
+using Google.Protobuf.Reflection;
 
 namespace Gql2Grpc.Translation;
 
@@ -15,6 +16,12 @@ public interface IRequestTranslator
     /// <param name="root">The resolved root selection (already with fragments inlined and arguments coerced).</param>
     /// <param name="entry">The mapping entry that resolved this selection to a service/method.</param>
     /// <param name="defaults">Mapping-wide defaults applied as a fallback (e.g., argument aliases).</param>
+    /// <param name="requestType">
+    ///     The request message descriptor. When supplied, convention-resolved caller arguments
+    ///     (those without an explicit mapping rule) are validated against its fields, so an
+    ///     unknown argument raises <see cref="UnknownArgumentException" /> instead of being
+    ///     silently dropped. When <see langword="null" />, no field validation is performed.
+    /// </param>
     /// <returns>JSON string suitable for <c>SimpleDynamicMessage</c> construction.</returns>
-    string Translate(ResolvedSelection root, MappingEntry entry, MappingDefaults defaults);
+    string Translate(ResolvedSelection root, MappingEntry entry, MappingDefaults defaults, MessageDescriptor? requestType = null);
 }

@@ -1,5 +1,6 @@
 using Gql2Grpc.Configuration;
 using Gql2Grpc.GraphQL;
+using Google.Protobuf.Reflection;
 using System.Text.Json.Nodes;
 
 namespace Gql2Grpc.Translation;
@@ -11,7 +12,7 @@ namespace Gql2Grpc.Translation;
 public sealed class JsonRequestTranslator : IRequestTranslator
 {
     /// <inheritdoc />
-    public string Translate(ResolvedSelection root, MappingEntry entry, MappingDefaults defaults)
+    public string Translate(ResolvedSelection root, MappingEntry entry, MappingDefaults defaults, MessageDescriptor? requestType = null)
     {
         var request = new JsonObject();
 
@@ -31,7 +32,7 @@ public sealed class JsonRequestTranslator : IRequestTranslator
         // 2. Caller-supplied arguments route through their matching rule, or the convention fallback.
         foreach (var (argName, argValue) in root.Arguments)
         {
-            ApplyCallerArgument(request, argName, argValue, entry, defaults);
+            ApplyCallerArgument(request, argName, argValue, entry, defaults, requestType);
         }
 
         // 3. $selection.fieldMask — derive a FieldMask from the resolved selection tree.
@@ -55,7 +56,8 @@ public sealed class JsonRequestTranslator : IRequestTranslator
         string argName,
         JsonNode? value,
         MappingEntry entry,
-        MappingDefaults defaults)
+        MappingDefaults defaults,
+        MessageDescriptor? requestType)
     {
         if (entry.Arguments.TryGetValue(argName, out var rule))
         {
@@ -90,9 +92,51 @@ public sealed class JsonRequestTranslator : IRequestTranslator
             }
         }
 
+        // Convention fallback: only this path is validated. Explicit mapping rules above
+        // are authoritative by design and left untouched.
         var conventionTarget = ResolveTargetPath(argName, entry, defaults);
 
+        if (requestType is not null)
+        {
+            ValidateConventionPath(requestType, conventionTarget, argName);
+        }
+
         SetAtPath(request, conventionTarget, value?.DeepClone());
+    }
+
+    /// <summary>
+    ///     Walks a dotted convention path against the request descriptor, descending through
+    ///     message-typed fields. A segment that names no field — or that tries to descend
+    ///     into a non-message field — means the argument matches nothing and would be
+    ///     silently dropped, so it is rejected via <see cref="UnknownArgumentException" />.
+    /// </summary>
+    private static void ValidateConventionPath(MessageDescriptor requestType, string path, string argName)
+    {
+        var segments = path.Split('.');
+        var current = requestType;
+
+        for (var i = 0; i < segments.Length; i++)
+        {
+            var field = current.FindFieldByName(segments[i]);
+
+            if (field is null)
+            {
+                throw new UnknownArgumentException(argName, path, current.FullName);
+            }
+
+            if (i == segments.Length - 1)
+            {
+                return;
+            }
+
+            // More segments remain: the current field must be a message to descend into.
+            if (field.FieldType != FieldType.Message || field.MessageType is null)
+            {
+                throw new UnknownArgumentException(argName, path, requestType.FullName);
+            }
+
+            current = field.MessageType;
+        }
     }
 
     private static string ResolveTargetPath(string argName, MappingEntry entry, MappingDefaults defaults)

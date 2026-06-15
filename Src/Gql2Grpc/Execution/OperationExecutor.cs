@@ -204,7 +204,7 @@ internal sealed class OperationExecutor(
         var method = svc.Methods.FirstOrDefault(m => string.Equals(m.Name, entry.Method, StringComparison.Ordinal))
                      ?? throw new InvalidOperationException($"Method '{serviceName}.{entry.Method}' not found.");
 
-        var requestJson = translator.Translate(selection, entry, mappingResolver.Config.Defaults);
+        var requestJson = translator.Translate(selection, entry, mappingResolver.Config.Defaults, method.InputType);
 
         logger.Verbose($"[{selection.ResponseKey}] → {serviceName}/{entry.Method}");
         logger.VeryVerbose($"[{selection.ResponseKey}] request JSON: {requestJson}");

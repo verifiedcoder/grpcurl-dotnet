@@ -1,4 +1,5 @@
 using Gql2Grpc.GraphQL;
+using Gql2Grpc.Translation;
 using Grpc.Core;
 using GrpCurl.Net.DescriptorSources;
 using System.Text.Json;
@@ -37,6 +38,7 @@ internal static class ExceptionTranslator
         {
             OperationCanceledException                          => CanceledExitCode,
             RpcException rpc                                    => GrpcExitCodeBase + (int)rpc.StatusCode,
+            UnknownArgumentException                            => UsageExitCode,
             JsonException                                       => UsageExitCode,
             ProtocNotFoundException                             => SchemaExitCode,
             FileNotFoundException or DirectoryNotFoundException => SchemaExitCode,
@@ -49,6 +51,10 @@ internal static class ExceptionTranslator
         => exception switch
         {
             RpcException rpc => FromRpcException(rpc, path),
+            UnknownArgumentException unknownArg => new GraphQLError(
+                unknownArg.Message,
+                path,
+                new Dictionary<string, object?> { ["code"] = "UNKNOWN_ARGUMENT" }),
             JsonException json => new GraphQLError(
                 $"Invalid JSON: {json.Message}",
                 path,

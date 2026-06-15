@@ -35,7 +35,20 @@ public sealed partial class InvocationDocumentView : UserControl
             _requestEditor.TextArea.TextView.BackgroundRenderers.Add(_squiggles);
         }
 
+        ApplyIndentation(_requestEditor);
+        ApplyIndentation(_responseEditor);
+
         DataContextChanged += OnDataContextChanged;
+    }
+
+    // FR-152: pick up the configured indentation width (font/size flow via DynamicResource).
+    private static void ApplyIndentation(TextEditor? editor)
+    {
+        if (editor is not null
+            && Avalonia.Application.Current?.Resources["Editor.IndentationSize"] is int indent and > 0)
+        {
+            editor.Options.IndentationSize = indent;
+        }
     }
 
     private void InitializeComponent() => AvaloniaXamlLoader.Load(this);

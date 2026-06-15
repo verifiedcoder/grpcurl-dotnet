@@ -1,5 +1,6 @@
 using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels.Connections;
+using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
@@ -20,6 +21,29 @@ public sealed class ConnectionEditorViewModelTests
 
         vm.SaveCommand.CanExecute(null).ShouldBeTrue();
         vm.TestConnectionCommand.CanExecute(null).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void New_connection_seeds_network_fields_from_the_app_defaults()
+    {
+        var defaults = new NetworkSettings { ConnectTimeout = "7s", KeepaliveTime = "45s", KeepaliveTimeout = "20s" };
+
+        var vm = new ConnectionEditorViewModel(new FakeConnectionRegistry(), existing: null, defaults);
+
+        vm.ConnectTimeout.ShouldBe("7s");
+        vm.KeepaliveTime.ShouldBe("45s");
+        vm.KeepaliveTimeout.ShouldBe("20s");
+    }
+
+    [Fact]
+    public void Editing_an_existing_connection_ignores_the_app_defaults()
+    {
+        var existing = new SavedConnection { Name = "s", Address = "a:443", ConnectTimeout = "5s" };
+        var defaults = new NetworkSettings { ConnectTimeout = "99s" };
+
+        var vm = new ConnectionEditorViewModel(new FakeConnectionRegistry(), existing, defaults);
+
+        vm.ConnectTimeout.ShouldBe("5s"); // the connection's own value wins
     }
 
     [Fact]

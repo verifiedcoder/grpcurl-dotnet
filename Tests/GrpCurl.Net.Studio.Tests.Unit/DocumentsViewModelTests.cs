@@ -1,6 +1,7 @@
 using GrpCurl.Net.Studio.Services;
 using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels.Documents;
+using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Descriptors;
 
@@ -10,7 +11,7 @@ public sealed class DocumentsViewModelTests
 {
     private static SavedConnection Conn() => new() { Name = "c", Address = "h:1" };
 
-    private static DocumentsViewModel Create()
+    private static DocumentsViewModel Create(InMemorySettingsStore? settings = null)
     {
         var descriptors = new FakeDescriptorService
         {
@@ -18,7 +19,24 @@ public sealed class DocumentsViewModelTests
                 DescribeResult.Success(new MessageDescription(symbol, symbol, "f.proto", [], [], "{}")))
         };
 
-        return new DocumentsViewModel(descriptors, new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator(), new InMemorySettingsStore(), new FakeThemeService());
+        return new DocumentsViewModel(descriptors, new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator(), settings ?? new InMemorySettingsStore(), new FakeThemeService());
+    }
+
+    [Fact]
+    public void Open_invocation_seeds_network_defaults_and_dialect()
+    {
+        var settings = new InMemorySettingsStore();
+        settings.Current.Network.DefaultDeadline = "30s";
+        settings.Current.Network.MaxMessageSize = "8MB";
+        settings.Current.General.CliShellDialect = ShellDialect.PowerShell;
+        var docs = Create(settings);
+
+        docs.OpenInvocation(Conn(), "pkg.Svc/Go");
+
+        var tab = docs.Documents.OfType<InvocationDocumentViewModel>().ShouldHaveSingleItem();
+        tab.Deadline.ShouldBe("30s");
+        tab.MaxMessageSize.ShouldBe("8MB");
+        tab.CliDialect.ShouldBe(ShellDialect.PowerShell);
     }
 
     [Fact]

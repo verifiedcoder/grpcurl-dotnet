@@ -11,6 +11,9 @@ public interface ISettingsStore
 {
     StudioSettings Current { get; }
 
+    /// <summary>Raised after settings are persisted, so live consumers (e.g. editor fonts) can refresh.</summary>
+    event EventHandler? Changed;
+
     Task<StudioSettings> LoadAsync(CancellationToken cancellationToken = default);
 
     Task SaveAsync(StudioSettings settings, CancellationToken cancellationToken = default);

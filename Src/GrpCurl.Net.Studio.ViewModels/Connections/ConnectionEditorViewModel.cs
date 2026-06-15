@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Services;
 
@@ -66,7 +67,7 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
     [NotifyPropertyChangedFor(nameof(IsTesting))]
     private bool _isTestRunning;
 
-    public ConnectionEditorViewModel(IConnectionRegistry registry, SavedConnection? existing = null)
+    public ConnectionEditorViewModel(IConnectionRegistry registry, SavedConnection? existing = null, NetworkSettings? networkDefaults = null)
     {
         _registry = registry;
         IsEdit = existing is not null;
@@ -76,9 +77,12 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
         _name = c.Name;
         _address = c.Address;
         _isPlaintext = c.Transport == TransportMode.Plaintext;
-        _connectTimeout = c.ConnectTimeout ?? string.Empty;
-        _keepaliveTime = c.Keepalive.Time ?? string.Empty;
-        _keepaliveTimeout = c.Keepalive.Timeout ?? string.Empty;
+
+        // FR-153: a brand-new connection seeds its network fields from the app defaults; editing an
+        // existing one keeps that connection's own values.
+        _connectTimeout = c.ConnectTimeout ?? (existing is null ? networkDefaults?.ConnectTimeout : null) ?? string.Empty;
+        _keepaliveTime = c.Keepalive.Time ?? (existing is null ? networkDefaults?.KeepaliveTime : null) ?? string.Empty;
+        _keepaliveTimeout = c.Keepalive.Timeout ?? (existing is null ? networkDefaults?.KeepaliveTimeout : null) ?? string.Empty;
         _authority = c.Authority ?? string.Empty;
         _serverName = c.ServerName ?? string.Empty;
         _userAgent = c.UserAgent ?? string.Empty;

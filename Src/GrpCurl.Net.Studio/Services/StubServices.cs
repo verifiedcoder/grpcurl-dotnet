@@ -22,6 +22,8 @@ internal sealed class NoopFilePickerService : IFilePickerService
 /// </summary>
 internal sealed class InMemorySettingsStore : ISettingsStore
 {
+    public event EventHandler? Changed;
+
     public StudioSettings Current { get; private set; } = StudioSettings.Defaults();
 
     public Task<StudioSettings> LoadAsync(CancellationToken cancellationToken = default)
@@ -30,6 +32,7 @@ internal sealed class InMemorySettingsStore : ISettingsStore
     public Task SaveAsync(StudioSettings settings, CancellationToken cancellationToken = default)
     {
         Current = settings;
+        Changed?.Invoke(this, EventArgs.Empty);
         return Task.CompletedTask;
     }
 }

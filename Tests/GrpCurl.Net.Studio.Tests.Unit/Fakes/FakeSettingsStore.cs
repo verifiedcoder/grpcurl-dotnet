@@ -6,6 +6,8 @@ namespace GrpCurl.Net.Studio.Tests.Unit.Fakes;
 /// <summary>In-memory <see cref="ISettingsStore" /> that records the last saved settings.</summary>
 public sealed class FakeSettingsStore : ISettingsStore
 {
+    public event EventHandler? Changed;
+
     public StudioSettings Current { get; private set; } = StudioSettings.Defaults();
 
     public int SaveCount { get; private set; }
@@ -17,6 +19,7 @@ public sealed class FakeSettingsStore : ISettingsStore
     {
         Current = settings;
         SaveCount++;
+        Changed?.Invoke(this, EventArgs.Empty);
         return Task.CompletedTask;
     }
 }

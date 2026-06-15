@@ -13,6 +13,11 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="avares://GrpCurl.Net.Studio/Themes/SemanticTokens.axaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- Editor defaults (FR-152); EditorOptionsManager overrides these from settings, live. -->
+            <FontFamily x:Key="Editor.FontFamily">Cascadia Code,Consolas,monospace</FontFamily>
+            <x:Double x:Key="Editor.FontSize">13</x:Double>
+            <x:Int32 x:Key="Editor.IndentationSize">2</x:Int32>
         </ResourceDictionary>
     </Application.Resources>
 

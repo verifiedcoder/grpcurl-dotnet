@@ -20,6 +20,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
     private readonly IConnectionRegistry _registry;
     private readonly IDialogService _dialogService;
     private readonly IConnectionSelection _selection;
+    private readonly ISettingsStore? _settings;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(EditConnectionCommand))]
@@ -31,12 +32,14 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         IWorkspaceStore workspaceStore,
         IConnectionRegistry registry,
         IDialogService dialogService,
-        IConnectionSelection selection)
+        IConnectionSelection selection,
+        ISettingsStore? settings = null)
     {
         _workspaceStore = workspaceStore;
         _registry = registry;
         _dialogService = dialogService;
         _selection = selection;
+        _settings = settings;
 
         Connections = [];
         Connections.CollectionChanged += OnConnectionsChanged;
@@ -63,7 +66,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
     [RelayCommand]
     private async Task AddConnection()
     {
-        var editor = new ConnectionEditorViewModel(_registry);
+        var editor = new ConnectionEditorViewModel(_registry, existing: null, _settings?.Current.Network);
         var saved = await _dialogService.ShowDialogAsync(editor);
 
         if (saved is not null)

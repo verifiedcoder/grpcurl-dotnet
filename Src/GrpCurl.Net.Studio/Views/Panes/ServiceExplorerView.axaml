@@ -18,59 +18,106 @@
         </Border>
 
         <!-- Filter (debounced via binding Delay; FR-023) -->
-        <TextBox Grid.Row="1" Margin="8,6" Watermark="Filter services and methods"
+        <TextBox Grid.Row="1" Margin="8,6" Watermark="Filter services and types"
                  Text="{Binding FilterText, Delay=200}"
                  IsVisible="{Binding IsLoaded}"
-                 AutomationProperties.Name="Filter services and methods" />
+                 AutomationProperties.Name="Filter services and types" />
 
         <!-- Content states -->
         <Panel Grid.Row="2">
 
-            <!-- Loaded: the service/method tree -->
-            <TreeView ItemsSource="{Binding Services}"
-                      IsVisible="{Binding IsLoaded}"
-                      AutomationProperties.Name="Service tree">
-                <TreeView.DataTemplates>
+            <!-- Loaded: services tree over types tree (FR-020/022) -->
+            <Grid IsVisible="{Binding IsLoaded}" RowDefinitions="*,4,Auto,*">
 
-                    <TreeDataTemplate DataType="explorer:ServiceNodeViewModel" ItemsSource="{Binding Methods}">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Grid.Column="0" Text="{Binding FullName}" FontWeight="SemiBold"
-                                       TextTrimming="CharacterEllipsis" />
-                            <TextBlock Grid.Column="1" Text="{Binding MethodCount}" Opacity="0.5"
-                                       Margin="6,0,0,0" VerticalAlignment="Center" />
-                            <Grid.ContextMenu>
-                                <ContextMenu>
-                                    <MenuItem Header="Copy full name"
-                                              Command="{Binding CopyFullNameCommand}"
-                                              CommandParameter="{Binding FullName}" />
-                                </ContextMenu>
-                            </Grid.ContextMenu>
-                        </Grid>
-                    </TreeDataTemplate>
+                <TreeView Grid.Row="0" ItemsSource="{Binding Services}"
+                          DoubleTapped="OnNodeDoubleTapped"
+                          AutomationProperties.Name="Service tree">
+                    <TreeView.DataTemplates>
 
-                    <DataTemplate DataType="explorer:MethodNodeViewModel">
-                        <StackPanel Orientation="Horizontal" Spacing="6"
-                                    ToolTip.Tip="{Binding Signature}">
-                            <Border Background="{DynamicResource Surface.PaneHeader}"
-                                    CornerRadius="3" Padding="4,0" MinWidth="22"
-                                    ToolTip.Tip="{Binding ShapeLabel}"
-                                    AutomationProperties.Name="{Binding ShapeLabel}">
-                                <TextBlock Text="{Binding Badge}" FontSize="10" FontWeight="Bold"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Border>
-                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
-                            <StackPanel.ContextMenu>
-                                <ContextMenu>
-                                    <MenuItem Header="Copy full name"
-                                              Command="{Binding CopyFullNameCommand}"
-                                              CommandParameter="{Binding FullName}" />
-                                </ContextMenu>
-                            </StackPanel.ContextMenu>
-                        </StackPanel>
-                    </DataTemplate>
+                        <TreeDataTemplate DataType="explorer:ServiceNodeViewModel" ItemsSource="{Binding Methods}">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="{Binding FullName}" FontWeight="SemiBold"
+                                           TextTrimming="CharacterEllipsis" />
+                                <TextBlock Grid.Column="1" Text="{Binding MethodCount}" Opacity="0.5"
+                                           Margin="6,0,0,0" VerticalAlignment="Center" />
+                                <Grid.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="Describe" Command="{Binding DescribeCommand}"
+                                                  CommandParameter="{Binding FullName}" />
+                                        <MenuItem Header="Copy full name" Command="{Binding CopyFullNameCommand}"
+                                                  CommandParameter="{Binding FullName}" />
+                                    </ContextMenu>
+                                </Grid.ContextMenu>
+                            </Grid>
+                        </TreeDataTemplate>
 
-                </TreeView.DataTemplates>
-            </TreeView>
+                        <DataTemplate DataType="explorer:MethodNodeViewModel">
+                            <StackPanel Orientation="Horizontal" Spacing="6"
+                                        ToolTip.Tip="{Binding Signature}">
+                                <Border Background="{DynamicResource Surface.PaneHeader}"
+                                        CornerRadius="3" Padding="4,0" MinWidth="22"
+                                        ToolTip.Tip="{Binding ShapeLabel}"
+                                        AutomationProperties.Name="{Binding ShapeLabel}">
+                                    <TextBlock Text="{Binding Badge}" FontSize="10" FontWeight="Bold"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                                <StackPanel.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="Describe" Command="{Binding DescribeCommand}"
+                                                  CommandParameter="{Binding FullName}" />
+                                        <MenuItem Header="Copy full name" Command="{Binding CopyFullNameCommand}"
+                                                  CommandParameter="{Binding FullName}" />
+                                    </ContextMenu>
+                                </StackPanel.ContextMenu>
+                            </StackPanel>
+                        </DataTemplate>
+
+                    </TreeView.DataTemplates>
+                </TreeView>
+
+                <GridSplitter Grid.Row="1" Height="4" HorizontalAlignment="Stretch"
+                              Background="{DynamicResource Divider}" />
+
+                <TextBlock Grid.Row="2" Text="Types" FontWeight="SemiBold" Margin="8,4" Opacity="0.7" />
+
+                <TreeView Grid.Row="3" ItemsSource="{Binding TypePackages}"
+                          DoubleTapped="OnNodeDoubleTapped"
+                          AutomationProperties.Name="Types tree">
+                    <TreeView.DataTemplates>
+
+                        <TreeDataTemplate DataType="explorer:TypePackageNodeViewModel" ItemsSource="{Binding Types}">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="{Binding Package}" FontWeight="SemiBold"
+                                           TextTrimming="CharacterEllipsis" />
+                                <TextBlock Grid.Column="1" Text="{Binding TypeCount}" Opacity="0.5"
+                                           Margin="6,0,0,0" VerticalAlignment="Center" />
+                            </Grid>
+                        </TreeDataTemplate>
+
+                        <DataTemplate DataType="explorer:TypeLeafNodeViewModel">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <Border Background="{DynamicResource Surface.PaneHeader}"
+                                        CornerRadius="3" Padding="4,0" MinWidth="18"
+                                        AutomationProperties.Name="{Binding Kind}">
+                                    <TextBlock Text="{Binding Badge}" FontSize="10" FontWeight="Bold"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                                <StackPanel.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="Describe" Command="{Binding DescribeCommand}"
+                                                  CommandParameter="{Binding FullName}" />
+                                        <MenuItem Header="Copy full name" Command="{Binding CopyFullNameCommand}"
+                                                  CommandParameter="{Binding FullName}" />
+                                    </ContextMenu>
+                                </StackPanel.ContextMenu>
+                            </StackPanel>
+                        </DataTemplate>
+
+                    </TreeView.DataTemplates>
+                </TreeView>
+            </Grid>
 
             <!-- No connection -->
             <TextBlock IsVisible="{Binding IsNoConnection}" Margin="12" Opacity="0.6"

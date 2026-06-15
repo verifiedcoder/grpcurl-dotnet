@@ -4,6 +4,7 @@ using GrpCurl.Net.Studio;
 using GrpCurl.Net.Studio.Tests.UI.Headless;
 using GrpCurl.Net.Studio.ViewModels;
 using GrpCurl.Net.Studio.ViewModels.Connections;
+using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Explorer;
 
 namespace GrpCurl.Net.Studio.Tests.UI;
@@ -25,7 +26,10 @@ public sealed class ViewLocatorTests(HeadlessSessionFixture fixture) : HeadlessT
         typeof(ConnectionListItemViewModel),
         typeof(HeaderRowViewModel),
         typeof(ServiceNodeViewModel),
-        typeof(MethodNodeViewModel)
+        typeof(MethodNodeViewModel),
+        typeof(TypePackageNodeViewModel),
+        typeof(TypeLeafNodeViewModel),
+        typeof(DocumentsViewModel)
     ];
 
     public static TheoryData<Type> ContentViewModels()

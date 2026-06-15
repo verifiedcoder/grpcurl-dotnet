@@ -24,7 +24,11 @@ public enum FieldLabel
 public abstract record SymbolDescription(SymbolKind Kind, string FullName, string Name, string? SourceFile);
 
 /// <summary>A method as it appears in a service's method table (FR-050).</summary>
-public sealed record MethodSummary(string Name, string FullName, StreamingShape Shape, TypeRef InputType, TypeRef OutputType);
+public sealed record MethodSummary(string Name, string FullName, StreamingShape Shape, TypeRef InputType, TypeRef OutputType)
+{
+    /// <summary>Streaming-shape badge (U/SS/CS/BD) for the method table.</summary>
+    public string Badge => Shape.Badge();
+}
 
 /// <summary>A service: its method table (FR-050).</summary>
 public sealed record ServiceDescription(
@@ -55,7 +59,16 @@ public sealed record FieldDescription(
     string TypeDisplay,
     TypeRef? Link,
     FieldLabel Label,
-    string? OneofName);
+    string? OneofName)
+{
+    /// <summary>Cardinality prefix for the field table (<c>repeated </c>/<c>map </c>/empty).</summary>
+    public string LabelText => Label switch
+    {
+        FieldLabel.Repeated => "repeated ",
+        FieldLabel.Map => "map ",
+        _ => string.Empty
+    };
+}
 
 /// <summary>A message: field table, nested type links, and request template (FR-050/052).</summary>
 public sealed record MessageDescription(

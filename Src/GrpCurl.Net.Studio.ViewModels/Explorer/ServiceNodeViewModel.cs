@@ -10,17 +10,20 @@ public sealed partial class ServiceNodeViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isExpanded;
 
-    public ServiceNodeViewModel(string fullName, IReadOnlyList<MethodNodeViewModel> methods, ICommand copyFullNameCommand)
+    public ServiceNodeViewModel(string fullName, IReadOnlyList<MethodNodeViewModel> methods, ICommand copyFullNameCommand, ICommand describeCommand)
     {
         FullName = fullName;
         CopyFullNameCommand = copyFullNameCommand;
+        DescribeCommand = describeCommand;
         Methods = new ObservableCollection<MethodNodeViewModel>(methods);
     }
 
     public string FullName { get; }
 
-    /// <summary>Shared explorer command, carried on the node so the context menu binds directly.</summary>
+    /// <summary>Shared explorer commands, carried on the node so the context menu binds directly.</summary>
     public ICommand CopyFullNameCommand { get; }
+
+    public ICommand DescribeCommand { get; }
 
     public ObservableCollection<MethodNodeViewModel> Methods { get; }
 

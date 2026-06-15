@@ -1,5 +1,6 @@
 using GrpCurl.Net.Studio.Services;
 using GrpCurl.Net.Studio.ViewModels;
+using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Panes;
 using GrpCurl.Net.Studio.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,6 +32,10 @@ internal static class ServiceRegistration
         // Descriptor/explorer layer (E1.2).
         services.AddSingleton<IConnectionSelection, ConnectionSelection>();
         services.AddSingleton<IDescriptorService, DescriptorService>();
+
+        // Document/describe layer (E1.3) — DocumentsViewModel is the IDocumentHost.
+        services.AddSingleton<DocumentsViewModel>();
+        services.AddSingleton<IDocumentHost>(sp => sp.GetRequiredService<DocumentsViewModel>());
 
         // View models — shell root + pane placeholders.
         services.AddSingleton<ConnectionsPaneViewModel>();

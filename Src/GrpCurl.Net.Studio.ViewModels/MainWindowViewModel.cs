@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Panes;
 using GrpCurl.Net.Studio.ViewModels.Services;
@@ -43,13 +44,15 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         ConnectionsPaneViewModel connections,
         ServiceExplorerViewModel explorer,
         ConsoleViewModel console,
-        InspectorViewModel inspector)
+        InspectorViewModel inspector,
+        DocumentsViewModel documents)
     {
         _settingsStore = settingsStore;
         Connections = connections;
         Explorer = explorer;
         Console = console;
         Inspector = inspector;
+        Documents = documents;
 
         _selectedTheme = ParseTheme(settingsStore.Current.Appearance.Theme);
 
@@ -73,6 +76,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     public ConsoleViewModel Console { get; }
 
     public InspectorViewModel Inspector { get; }
+
+    public DocumentsViewModel Documents { get; }
 
     [RelayCommand]
     private void ToggleSidebar() => IsSidebarOpen = !IsSidebarOpen;

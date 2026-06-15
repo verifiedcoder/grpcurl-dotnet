@@ -1,0 +1,186 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:docs="clr-namespace:GrpCurl.Net.Studio.ViewModels.Documents;assembly=GrpCurl.Net.Studio.ViewModels"
+             xmlns:m="clr-namespace:GrpCurl.Net.Studio.ViewModels.Models.Descriptors;assembly=GrpCurl.Net.Studio.ViewModels"
+             x:Class="GrpCurl.Net.Studio.Views.Documents.DescribeDocumentView"
+             x:Name="Root"
+             x:DataType="docs:DescribeDocumentViewModel">
+
+    <UserControl.Styles>
+        <!-- Hyperlinked type reference (FR-051). -->
+        <Style Selector="Button.link">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="{DynamicResource Conn.Connecting}" />
+        </Style>
+        <Style Selector="Button.link:pointerover /template/ ContentPresenter">
+            <Setter Property="TextBlock.TextDecorations" Value="Underline" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- Toolbar: back/forward + current symbol + source file -->
+        <Border Grid.Row="0" Background="{DynamicResource Surface.PaneHeader}" Padding="8,4"
+                BorderBrush="{DynamicResource Divider}" BorderThickness="0,0,0,1">
+            <DockPanel>
+                <Button DockPanel.Dock="Left" Content="←" Command="{Binding BackCommand}" Padding="6,0"
+                        ToolTip.Tip="Back" AutomationProperties.Name="Back" />
+                <Button DockPanel.Dock="Left" Content="→" Command="{Binding ForwardCommand}" Padding="6,0" Margin="2,0,0,0"
+                        ToolTip.Tip="Forward" AutomationProperties.Name="Forward" />
+                <TextBlock DockPanel.Dock="Right" Text="{Binding Symbol.SourceFile}" Opacity="0.55"
+                           VerticalAlignment="Center" IsVisible="{Binding IsLoaded}" />
+                <TextBlock Text="{Binding CurrentSymbol}" VerticalAlignment="Center" Margin="10,0" Opacity="0.7" />
+            </DockPanel>
+        </Border>
+
+        <Panel Grid.Row="1">
+            <!-- Loaded: symbol body (type-matched template) + request template -->
+            <ScrollViewer IsVisible="{Binding IsLoaded}">
+                <StackPanel Margin="14" Spacing="14">
+                    <ContentControl Content="{Binding Symbol}">
+                        <ContentControl.DataTemplates>
+
+                            <!-- Service: method table -->
+                            <DataTemplate DataType="m:ServiceDescription">
+                                <StackPanel Spacing="6">
+                                    <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" FontSize="16" />
+                                    <TextBlock Text="service" Opacity="0.6" FontStyle="Italic" />
+                                    <ItemsControl ItemsSource="{Binding Methods}" Margin="0,6,0,0">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="m:MethodSummary">
+                                                <Grid ColumnDefinitions="Auto,*" Margin="0,2">
+                                                    <Border Grid.Column="0" Background="{DynamicResource Surface.PaneHeader}"
+                                                            CornerRadius="3" Padding="4,0" MinWidth="22" VerticalAlignment="Center"
+                                                            ToolTip.Tip="{Binding Shape}">
+                                                        <TextBlock Text="{Binding Badge}" FontSize="10" FontWeight="Bold"
+                                                                   HorizontalAlignment="Center" />
+                                                    </Border>
+                                                    <WrapPanel Grid.Column="1" Margin="8,0,0,0">
+                                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                        <TextBlock Text=" ( " VerticalAlignment="Center" Opacity="0.6" />
+                                                        <Button Classes="link" Content="{Binding InputType.FullName}"
+                                                                Command="{Binding #Root.((docs:DescribeDocumentViewModel)DataContext).NavigateCommand}"
+                                                                CommandParameter="{Binding InputType}" />
+                                                        <TextBlock Text=" ) returns ( " VerticalAlignment="Center" Opacity="0.6" />
+                                                        <Button Classes="link" Content="{Binding OutputType.FullName}"
+                                                                Command="{Binding #Root.((docs:DescribeDocumentViewModel)DataContext).NavigateCommand}"
+                                                                CommandParameter="{Binding OutputType}" />
+                                                        <TextBlock Text=" )" VerticalAlignment="Center" Opacity="0.6" />
+                                                    </WrapPanel>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </DataTemplate>
+
+                            <!-- Method: signature -->
+                            <DataTemplate DataType="m:MethodDescription">
+                                <StackPanel Spacing="6">
+                                    <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" FontSize="16" />
+                                    <WrapPanel>
+                                        <TextBlock Text="rpc " Opacity="0.6" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                        <TextBlock Text=" ( " VerticalAlignment="Center" Opacity="0.6" />
+                                        <Button Classes="link" Content="{Binding InputType.FullName}"
+                                                Command="{Binding #Root.((docs:DescribeDocumentViewModel)DataContext).NavigateCommand}"
+                                                CommandParameter="{Binding InputType}" />
+                                        <TextBlock Text=" ) returns ( " VerticalAlignment="Center" Opacity="0.6" />
+                                        <Button Classes="link" Content="{Binding OutputType.FullName}"
+                                                Command="{Binding #Root.((docs:DescribeDocumentViewModel)DataContext).NavigateCommand}"
+                                                CommandParameter="{Binding OutputType}" />
+                                        <TextBlock Text=" )" VerticalAlignment="Center" Opacity="0.6" />
+                                    </WrapPanel>
+                                    <WrapPanel>
+                                        <TextBlock Text="in service " Opacity="0.6" VerticalAlignment="Center" />
+                                        <Button Classes="link" Content="{Binding ParentService.FullName}"
+                                                Command="{Binding #Root.((docs:DescribeDocumentViewModel)DataContext).NavigateCommand}"
+                                                CommandParameter="{Binding ParentService}" />
+                                    </WrapPanel>
+                                </StackPanel>
+                            </DataTemplate>
+
+                            <!-- Message: field table -->
+                            <DataTemplate DataType="m:MessageDescription">
+                                <StackPanel Spacing="6">
+                                    <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" FontSize="16" />
+                                    <TextBlock Text="message" Opacity="0.6" FontStyle="Italic" />
+                                    <ItemsControl ItemsSource="{Binding Fields}" Margin="0,6,0,0">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="m:FieldDescription">
+                                                <WrapPanel Margin="0,2">
+                                                    <TextBlock Text="{Binding LabelText}" Opacity="0.6" VerticalAlignment="Center" />
+                                                    <Button Classes="link" Content="{Binding TypeDisplay}" VerticalAlignment="Center"
+                                                            IsVisible="{Binding Link, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                            Command="{Binding #Root.((docs:DescribeDocumentViewModel)DataContext).NavigateCommand}"
+                                                            CommandParameter="{Binding Link}" />
+                                                    <TextBlock Text="{Binding TypeDisplay}" VerticalAlignment="Center"
+                                                               IsVisible="{Binding Link, Converter={x:Static ObjectConverters.IsNull}}" />
+                                                    <TextBlock Text="{Binding Name, StringFormat=' {0}'}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding Number, StringFormat=' = {0}'}" Opacity="0.6" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding OneofName, StringFormat='  (oneof {0})'}" Opacity="0.5"
+                                                               VerticalAlignment="Center" FontStyle="Italic"
+                                                               IsVisible="{Binding OneofName, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                                </WrapPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </DataTemplate>
+
+                            <!-- Enum: value table -->
+                            <DataTemplate DataType="m:EnumDescription">
+                                <StackPanel Spacing="6">
+                                    <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" FontSize="16" />
+                                    <TextBlock Text="enum" Opacity="0.6" FontStyle="Italic" />
+                                    <ItemsControl ItemsSource="{Binding Values}" Margin="0,6,0,0">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="m:EnumValue">
+                                                <TextBlock Margin="0,2">
+                                                    <Run Text="{Binding Name}" FontWeight="SemiBold" />
+                                                    <Run Text="{Binding Number, StringFormat=' = {0}'}" Foreground="{DynamicResource Status.Neutral}" />
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </DataTemplate>
+
+                        </ContentControl.DataTemplates>
+                    </ContentControl>
+
+                    <!-- Request template (FR-052/056) -->
+                    <StackPanel Spacing="6" IsVisible="{Binding HasTemplate}">
+                        <DockPanel>
+                            <TextBlock Text="Request template" FontWeight="SemiBold" VerticalAlignment="Center" />
+                            <Button DockPanel.Dock="Right" HorizontalAlignment="Right" Content="Copy"
+                                    Command="{Binding CopyTemplateJsonCommand}"
+                                    AutomationProperties.Name="Copy template JSON" />
+                        </DockPanel>
+                        <Border Background="{DynamicResource Surface.PaneHeader}" CornerRadius="4" Padding="10">
+                            <TextBox Text="{Binding TemplateJson, Mode=OneWay}" IsReadOnly="True"
+                                     FontFamily="Cascadia Code,Consolas,monospace" BorderThickness="0"
+                                     Background="Transparent" TextWrapping="NoWrap"
+                                     AutomationProperties.Name="Request template JSON" />
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Loading -->
+            <StackPanel IsVisible="{Binding IsLoading}" Margin="14" Spacing="10" VerticalAlignment="Top">
+                <ProgressBar IsIndeterminate="True" />
+                <TextBlock Text="Loading…" Opacity="0.7" />
+            </StackPanel>
+
+            <!-- Error -->
+            <StackPanel IsVisible="{Binding HasError}" Margin="14" Spacing="8" VerticalAlignment="Top">
+                <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Status.Server}" />
+            </StackPanel>
+        </Panel>
+    </Grid>
+</UserControl>

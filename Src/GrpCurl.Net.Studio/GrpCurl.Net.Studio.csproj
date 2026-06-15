@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <RootNamespace>GrpCurl.Net.Studio</RootNamespace>
+        <AssemblyName>GrpCurl.Net.Studio</AssemblyName>
+        <IsPackable>false</IsPackable>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <!-- Compiled bindings turn loose XAML bindings into build errors (fixed immediately)
+             rather than runtime warnings, which keeps TreatWarningsAsErrors honest. -->
+        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia" />
+        <PackageReference Include="Avalonia.Desktop" />
+        <PackageReference Include="Avalonia.Themes.Fluent" />
+        <PackageReference Include="Avalonia.Fonts.Inter" />
+        <!-- Dev-tools only: assets excluded outside Debug so they never ship in Release/CI. -->
+        <PackageReference Include="Avalonia.Diagnostics">
+            <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="CommunityToolkit.Mvvm" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\GrpCurl.Net.Studio.ViewModels\GrpCurl.Net.Studio.ViewModels.csproj" />
+        <ProjectReference Include="..\GrpCurl.Net.Core\GrpCurl.Net.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="GrpCurl.Net.Studio.Tests.Unit" />
+        <InternalsVisibleTo Include="GrpCurl.Net.Studio.Tests.UI" />
+    </ItemGroup>
+
+</Project>

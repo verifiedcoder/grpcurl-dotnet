@@ -1,0 +1,18 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:GrpCurl.Net.Studio.ViewModels;assembly=GrpCurl.Net.Studio.ViewModels"
+        x:Class="GrpCurl.Net.Studio.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="{Binding Title}"
+        Width="1280" Height="800"
+        MinWidth="1024" MinHeight="640">
+
+    <!-- Skeleton placeholder (E0.2 PR-A). The full three-zone shell replaces this in PR-B. -->
+    <Panel x:Name="RootPanel">
+        <TextBlock Text="{Binding Title}"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontSize="20" />
+    </Panel>
+
+</Window>

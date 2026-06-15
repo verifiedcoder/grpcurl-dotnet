@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="GrpCurl.Net.Studio.Views.WelcomeView">
+             xmlns:vm="clr-namespace:GrpCurl.Net.Studio.ViewModels;assembly=GrpCurl.Net.Studio.ViewModels"
+             x:Class="GrpCurl.Net.Studio.Views.WelcomeView"
+             x:DataType="vm:MainWindowViewModel">
     <!-- First-run empty state (SPEC-020 §7): shown until the first connection exists. -->
     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16" MaxWidth="420">
         <TextBlock Text="GrpCurl.Net Studio"
@@ -9,8 +11,9 @@
         <TextBlock Text="Connect to a gRPC server to get started."
                    Opacity="0.7" TextWrapping="Wrap"
                    HorizontalAlignment="Center" TextAlignment="Center" />
-        <Button Content="Add connection"
+        <Button Content="Add Connection"
+                Command="{Binding Connections.AddConnectionCommand}"
                 HorizontalAlignment="Center"
-                AutomationProperties.Name="Add connection" />
+                AutomationProperties.Name="Add Connection" />
     </StackPanel>
 </UserControl>

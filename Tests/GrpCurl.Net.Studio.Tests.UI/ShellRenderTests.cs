@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using GrpCurl.Net.Studio.Services;
 using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.Tests.UI.Headless;
@@ -40,6 +41,30 @@ public sealed class ShellRenderTests(HeadlessSessionFixture fixture) : HeadlessT
         window.FindControl<Control>("InspectorZone").ShouldNotBeNull();
         window.FindControl<Control>("ConsoleZone").ShouldNotBeNull();
         window.FindControl<Control>("Welcome").ShouldNotBeNull();
+    });
+
+    [Fact]
+    public Task Welcome_add_button_is_bound_to_the_add_connection_command() => RunOnUiThread(() =>
+    {
+        var pane = new ConnectionsPaneViewModel(
+            new FakeWorkspaceStore(), new FakeConnectionRegistry(), new FakeDialogService());
+        var viewModel = new MainWindowViewModel(
+            new InMemorySettingsStore(), pane,
+            new ServiceExplorerViewModel(), new ConsoleViewModel(), new InspectorViewModel());
+
+        var window = new MainWindow { DataContext = viewModel };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        // With no connections the welcome state is shown; its button must invoke the add flow.
+        viewModel.HasAnyConnection.ShouldBeFalse();
+
+        var addButton = window.GetVisualDescendants()
+            .OfType<Button>()
+            .Single(b => Equals(b.Content, "Add Connection"));
+
+        addButton.IsEffectivelyEnabled.ShouldBeTrue();
+        addButton.Command.ShouldBeSameAs(pane.AddConnectionCommand);
     });
 
     [Fact]

@@ -21,6 +21,9 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
     private readonly IDialogService _dialogService;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(EditConnectionCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DuplicateConnectionCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteConnectionCommand))]
     private ConnectionListItemViewModel? _selectedConnection;
 
     public ConnectionsPaneViewModel(IWorkspaceStore workspaceStore, IConnectionRegistry registry, IDialogService dialogService)
@@ -44,6 +47,9 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
 
     public bool HasConnections => Connections.Count > 0;
 
+    /// <summary>Edit/duplicate/delete act on the selected connection, so they require one.</summary>
+    private bool HasSelection => SelectedConnection is not null;
+
     [RelayCommand]
     private async Task AddConnection()
     {
@@ -57,7 +63,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(HasSelection))]
     private async Task EditConnection(ConnectionListItemViewModel? item)
     {
         item ??= SelectedConnection;
@@ -78,7 +84,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(HasSelection))]
     private async Task DuplicateConnection(ConnectionListItemViewModel? item)
     {
         item ??= SelectedConnection;
@@ -95,7 +101,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         await PersistAsync();
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(HasSelection))]
     private async Task DeleteConnection(ConnectionListItemViewModel? item)
     {
         item ??= SelectedConnection;

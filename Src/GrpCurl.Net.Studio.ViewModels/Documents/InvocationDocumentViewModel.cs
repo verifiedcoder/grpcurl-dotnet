@@ -24,6 +24,8 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     private readonly IClipboardService _clipboard;
     private readonly IDialogService _dialogs;
     private readonly ILauncherService _launcher;
+    private readonly IRequestValidator _validator;
+    private CancellationTokenSource? _validationCts;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsInFlight), nameof(IsCompleted), nameof(HasResponse))]
@@ -73,7 +75,8 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         IUiDispatcher dispatcher,
         IClipboardService clipboard,
         IDialogService dialogs,
-        ILauncherService launcher)
+        ILauncherService launcher,
+        IRequestValidator validator)
     {
         Connection = connection;
         MethodSymbol = methodSymbol;
@@ -83,6 +86,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         _clipboard = clipboard;
         _dialogs = dialogs;
         _launcher = launcher;
+        _validator = validator;
 
         Title = ShortName(methodSymbol);
 
@@ -105,14 +109,77 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     public ObservableCollection<MetadataItem> ResponseTrailers { get; } = [];
     public ObservableCollection<TimingPhase> Timing { get; } = [];
 
+    /// <summary>FR-063 advisory request-validation problems (never block Invoke).</summary>
+    public ObservableCollection<ValidationProblem> Problems { get; } = [];
+
+    /// <summary>Debounce window before request validation runs after an edit; tests shorten it.</summary>
+    internal TimeSpan ValidationDebounce { get; set; } = TimeSpan.FromMilliseconds(250);
+
     public bool IsInFlight => State == RunState.InFlight;
     public bool IsCompleted => State is RunState.Completed or RunState.Failed or RunState.Cancelled;
     public bool HasResponse => ResponseJson is not null;
     public bool HasError => Error is not null;
     public bool HasErrorSuggestions => Error is { Suggestions.Count: > 0 };
     public bool HasErrorDetails => Error is { Details.Count: > 0 };
+    public bool HasProblems => Problems.Count > 0;
 
     private bool CanInvoke => State != RunState.InFlight;
+
+    // FR-063: re-validate (debounced, off-thread) whenever the body or the unknown-fields toggle changes.
+    partial void OnRequestJsonChanged(string value) => ScheduleValidation();
+
+    partial void OnAllowUnknownFieldsChanged(bool value) => ScheduleValidation();
+
+    private void ScheduleValidation()
+    {
+        _validationCts?.Cancel();
+        _validationCts?.Dispose();
+
+        var cts = new CancellationTokenSource();
+        _validationCts = cts;
+        _ = DebouncedValidateAsync(cts.Token);
+    }
+
+    private async Task DebouncedValidateAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (ValidationDebounce > TimeSpan.Zero)
+            {
+                await Task.Delay(ValidationDebounce, cancellationToken).ConfigureAwait(false);
+            }
+
+            await RunValidationAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // Superseded by a newer edit; drop silently.
+        }
+    }
+
+    internal async Task RunValidationAsync(CancellationToken cancellationToken = default)
+    {
+        var problems = await _validator
+            .ValidateAsync(Connection, MethodSymbol, RequestJson, AllowUnknownFields, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        await _dispatcher.InvokeAsync(() =>
+        {
+            Problems.Clear();
+
+            foreach (var problem in problems)
+            {
+                Problems.Add(problem);
+            }
+
+            OnPropertyChanged(nameof(HasProblems));
+        });
+    }
 
     [RelayCommand(CanExecute = nameof(CanInvoke), IncludeCancelCommand = true)]
     private async Task Invoke(CancellationToken cancellationToken)

@@ -41,6 +41,7 @@ internal static class ServiceRegistration
         // Invocation layer (E1.4).
         services.AddSingleton<IInvocationService, InvocationService>();
         services.AddSingleton<IInvocationRunner, InvocationRunner>();
+        services.AddSingleton<IRequestValidator, RequestValidator>();
 
         // View models — shell root + pane placeholders.
         services.AddSingleton<ConnectionsPaneViewModel>();

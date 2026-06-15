@@ -15,7 +15,7 @@ public sealed class InvocationDocumentViewModelTests
         out FakeDescriptorService descriptors,
         out FakeClipboardService clipboard,
         string? initialJson = "{}")
-        => Create(out runner, out descriptors, out clipboard, out _, out _, initialJson);
+        => Create(out runner, out descriptors, out clipboard, out _, out _, out _, initialJson);
 
     private static InvocationDocumentViewModel Create(
         out FakeInvocationRunner runner,
@@ -23,6 +23,7 @@ public sealed class InvocationDocumentViewModelTests
         out FakeClipboardService clipboard,
         out FakeDialogService dialogs,
         out FakeLauncherService launcher,
+        out FakeRequestValidator validator,
         string? initialJson = "{}")
     {
         runner = new FakeInvocationRunner();
@@ -30,8 +31,9 @@ public sealed class InvocationDocumentViewModelTests
         clipboard = new FakeClipboardService();
         dialogs = new FakeDialogService();
         launcher = new FakeLauncherService();
+        validator = new FakeRequestValidator();
         return new InvocationDocumentViewModel(
-            Conn(), "pkg.Svc/Go", initialJson, runner, descriptors, new ImmediateUiDispatcher(), clipboard, dialogs, launcher);
+            Conn(), "pkg.Svc/Go", initialJson, runner, descriptors, new ImmediateUiDispatcher(), clipboard, dialogs, launcher, validator);
     }
 
     private static ErrorModel SampleError(int code = 5, string name = "NotFound", string headline = "missing") => new(
@@ -76,7 +78,7 @@ public sealed class InvocationDocumentViewModelTests
 
         var doc = new InvocationDocumentViewModel(
             Conn(), "pkg.Svc/Go", initialRequestJson: null, new FakeInvocationRunner(), descriptors, new ImmediateUiDispatcher(),
-            new FakeClipboardService(), new FakeDialogService(), new FakeLauncherService());
+            new FakeClipboardService(), new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator());
 
         doc.RequestJson.ShouldContain("seeded");
     }
@@ -172,7 +174,7 @@ public sealed class InvocationDocumentViewModelTests
     [Fact]
     public async Task Open_help_link_confirms_then_launches()
     {
-        var doc = Create(out _, out _, out _, out var dialogs, out var launcher);
+        var doc = Create(out _, out _, out _, out var dialogs, out var launcher, out _);
         dialogs.ConfirmResult = true;
 
         await doc.OpenHelpLinkCommand.ExecuteAsync("https://example.com/help");
@@ -185,7 +187,7 @@ public sealed class InvocationDocumentViewModelTests
     [Fact]
     public async Task Open_help_link_does_not_launch_when_declined()
     {
-        var doc = Create(out _, out _, out _, out var dialogs, out var launcher);
+        var doc = Create(out _, out _, out _, out var dialogs, out var launcher, out _);
         dialogs.ConfirmResult = false;
 
         await doc.OpenHelpLinkCommand.ExecuteAsync("https://example.com/help");
@@ -263,5 +265,45 @@ public sealed class InvocationDocumentViewModelTests
 
         doc.RemoveHeaderCommand.Execute(doc.Headers[0]);
         doc.Headers.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Validation_surfaces_problems_from_the_validator()
+    {
+        var doc = Create(out _, out _, out _, out _, out _, out var validator);
+        validator.Problems = [new ValidationProblem("Unexpected end of input", 2, 5)];
+
+        await doc.RunValidationAsync(TestContext.Current.CancellationToken);
+
+        doc.HasProblems.ShouldBeTrue();
+        doc.Problems.ShouldHaveSingleItem().Display.ShouldBe("Unexpected end of input (line 2)");
+    }
+
+    [Fact]
+    public async Task Validation_clears_problems_when_the_body_becomes_valid()
+    {
+        var doc = Create(out _, out _, out _, out _, out _, out var validator);
+        validator.Problems = [new ValidationProblem("bad", 1, 1)];
+        await doc.RunValidationAsync(TestContext.Current.CancellationToken);
+        doc.HasProblems.ShouldBeTrue();
+
+        validator.Problems = [];
+        await doc.RunValidationAsync(TestContext.Current.CancellationToken);
+
+        doc.HasProblems.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Problems_never_block_invoke()
+    {
+        var doc = Create(out var runner, out _, out _, out _, out _, out var validator);
+        validator.Problems = [new ValidationProblem("bad", 1, 1)];
+        await doc.RunValidationAsync(TestContext.Current.CancellationToken);
+        runner.Result = OkResult();
+
+        doc.InvokeCommand.CanExecute(null).ShouldBeTrue();
+        await doc.InvokeCommand.ExecuteAsync(null);
+
+        doc.State.ShouldBe(RunState.Completed);
     }
 }

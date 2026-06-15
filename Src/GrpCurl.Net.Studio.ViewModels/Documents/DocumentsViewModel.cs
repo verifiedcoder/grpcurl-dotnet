@@ -18,6 +18,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     private readonly IInvocationRunner _invocation;
     private readonly IDialogService _dialogs;
     private readonly ILauncherService _launcher;
+    private readonly IRequestValidator _validator;
 
     [ObservableProperty]
     private DocumentViewModel? _selectedDocument;
@@ -28,7 +29,8 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         IClipboardService clipboard,
         IInvocationRunner invocation,
         IDialogService dialogs,
-        ILauncherService launcher)
+        ILauncherService launcher,
+        IRequestValidator validator)
     {
         _descriptors = descriptors;
         _dispatcher = dispatcher;
@@ -36,6 +38,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         _invocation = invocation;
         _dialogs = dialogs;
         _launcher = launcher;
+        _validator = validator;
     }
 
     public ObservableCollection<DocumentViewModel> Documents { get; } = [];
@@ -65,7 +68,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     public void OpenInvocation(SavedConnection connection, string methodSymbol, string? initialRequestJson = null)
     {
         var document = new InvocationDocumentViewModel(
-            connection, methodSymbol, initialRequestJson, _invocation, _descriptors, _dispatcher, _clipboard, _dialogs, _launcher);
+            connection, methodSymbol, initialRequestJson, _invocation, _descriptors, _dispatcher, _clipboard, _dialogs, _launcher, _validator);
         document.CloseRequested += OnDocumentCloseRequested;
 
         Documents.Add(document);

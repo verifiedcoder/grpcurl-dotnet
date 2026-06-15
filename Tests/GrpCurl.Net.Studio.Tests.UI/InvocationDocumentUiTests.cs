@@ -26,7 +26,8 @@ public sealed class InvocationDocumentUiTests(HeadlessSessionFixture fixture) : 
         new ImmediateUiDispatcher(),
         new FakeClipboardService(),
         new FakeDialogService(),
-        new FakeLauncherService());
+        new FakeLauncherService(),
+        new FakeRequestValidator());
 
     [Fact]
     public Task Invocation_tab_renders_the_editor_and_method_binding() => RunOnUiThread(() =>
@@ -92,21 +93,55 @@ public sealed class InvocationDocumentUiTests(HeadlessSessionFixture fixture) : 
                 new ViewModels.Models.Invocation.TimingModel([], 0, 0), "service is disabled", error)
         };
 
+        // Populate the failed state BEFORE the window lays out so the error panel's nested item
+        // bindings attach during the initial layout pass (deterministic across headless OSes).
         var vm = Vm(runner);
+        vm.InvokeCommand.Execute(null);
+        vm.State.ShouldBe(RunState.Failed);
+
         var view = new InvocationDocumentView { DataContext = vm };
         var window = new Window { Content = view, Width = 800, Height = 600 };
         window.Show();
         Dispatcher.UIThread.RunJobs();
-
-        vm.InvokeCommand.Execute(null);
-        Dispatcher.UIThread.RunJobs();
-
-        vm.State.ShouldBe(RunState.Failed);
 
         var texts = window.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text).ToList();
         texts.ShouldContain("FailedPrecondition");     // status pill
         texts.ShouldContain("service is disabled");    // headline
         texts.ShouldContain("Bad request");            // rich-detail panel title rendered
         texts.ShouldContain("Try:");                   // suggestions section
+    });
+
+    private static InvocationDocumentViewModel ValidatingVm(FakeRequestValidator validator) => new(
+        new SavedConnection { Name = "c", Address = "h:1" },
+        "pkg.Svc/Go",
+        "{\n  \"x\": 1\n}",
+        new FakeInvocationRunner(),
+        new FakeDescriptorService(),
+        new ImmediateUiDispatcher(),
+        new FakeClipboardService(),
+        new FakeDialogService(),
+        new FakeLauncherService(),
+        validator);
+
+    [Fact]
+    public Task A_validation_problem_renders_in_the_problems_strip() => RunOnUiThread(() =>
+    {
+        var validator = new FakeRequestValidator
+        {
+            Problems = [new ViewModels.Models.Invocation.ValidationProblem("Unexpected character", 1, 3)]
+        };
+
+        // Populate the problems BEFORE layout so the strip binds during the initial pass.
+        var vm = ValidatingVm(validator);
+        vm.RunValidationAsync().GetAwaiter().GetResult();
+        vm.HasProblems.ShouldBeTrue();
+
+        var view = new InvocationDocumentView { DataContext = vm };
+        var window = new Window { Content = view, Width = 800, Height = 600 };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        window.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text)
+            .ShouldContain("Unexpected character (line 1)");
     });
 }

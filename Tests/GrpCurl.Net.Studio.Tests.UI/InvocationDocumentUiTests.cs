@@ -93,16 +93,16 @@ public sealed class InvocationDocumentUiTests(HeadlessSessionFixture fixture) : 
                 new ViewModels.Models.Invocation.TimingModel([], 0, 0), "service is disabled", error)
         };
 
+        // Populate the failed state BEFORE the window lays out so the error panel's nested item
+        // bindings attach during the initial layout pass (deterministic across headless OSes).
         var vm = Vm(runner);
+        vm.InvokeCommand.Execute(null);
+        vm.State.ShouldBe(RunState.Failed);
+
         var view = new InvocationDocumentView { DataContext = vm };
         var window = new Window { Content = view, Width = 800, Height = 600 };
         window.Show();
         Dispatcher.UIThread.RunJobs();
-
-        vm.InvokeCommand.Execute(null);
-        Dispatcher.UIThread.RunJobs();
-
-        vm.State.ShouldBe(RunState.Failed);
 
         var texts = window.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text).ToList();
         texts.ShouldContain("FailedPrecondition");     // status pill
@@ -131,16 +131,16 @@ public sealed class InvocationDocumentUiTests(HeadlessSessionFixture fixture) : 
             Problems = [new ViewModels.Models.Invocation.ValidationProblem("Unexpected character", 1, 3)]
         };
 
+        // Populate the problems BEFORE layout so the strip binds during the initial pass.
         var vm = ValidatingVm(validator);
+        vm.RunValidationAsync().GetAwaiter().GetResult();
+        vm.HasProblems.ShouldBeTrue();
+
         var view = new InvocationDocumentView { DataContext = vm };
         var window = new Window { Content = view, Width = 800, Height = 600 };
         window.Show();
         Dispatcher.UIThread.RunJobs();
 
-        vm.RunValidationAsync().GetAwaiter().GetResult();
-        Dispatcher.UIThread.RunJobs();
-
-        vm.HasProblems.ShouldBeTrue();
         window.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text)
             .ShouldContain("Unexpected character (line 1)");
     });

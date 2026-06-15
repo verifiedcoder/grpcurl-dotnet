@@ -4,6 +4,7 @@ using System.Text.Json;
 
 namespace GrpCurl.Net.Tests.Unit.Commands;
 
+[Collection("EnvironmentVariables")]
 public sealed class ErrorRendererTests
 {
     [Fact]
@@ -179,6 +180,114 @@ public sealed class ErrorRendererTests
         stdout.ShouldBeEmpty();
         stderr.ShouldStartWith("{");
     }
+
+    [Fact]
+    public void AppendProxyHintIfRelevant_NetworkErrorWithProxySet_AddsSuggestion()
+    {
+        WithProxyEnvironment(("HTTP_PROXY", "http://proxy.corp:3128"), () =>
+        {
+            var envelope = new ErrorEnvelope
+            {
+                Category = ErrorCategory.Network,
+                ExitCode = 4,
+                Message = "Failed to connect to localhost:9090",
+                Address = "localhost:9090"
+            };
+
+            var result = ErrorRenderer.AppendProxyHintIfRelevant(envelope);
+
+            result.Suggestions.ShouldContain(s => s.Contains("HTTP_PROXY") && s.Contains("localhost"));
+        });
+    }
+
+    [Fact]
+    public void AppendProxyHintIfRelevant_UnavailableRpcWithProxySet_AddsSuggestion()
+    {
+        WithProxyEnvironment(("HTTPS_PROXY", "http://proxy.corp:3128"), () =>
+        {
+            var envelope = new ErrorEnvelope
+            {
+                Category = ErrorCategory.Rpc,
+                ExitCode = 78,
+                Message = "connection refused",
+                Address = "api.example.com:443",
+                Grpc = new RpcErrorInfo { Code = 14, Status = "Unavailable", Detail = "connection refused" }
+            };
+
+            var result = ErrorRenderer.AppendProxyHintIfRelevant(envelope);
+
+            result.Suggestions.ShouldContain(s => s.Contains("HTTPS_PROXY"));
+        });
+    }
+
+    [Fact]
+    public void AppendProxyHintIfRelevant_NoProxySet_LeavesEnvelopeUnchanged()
+    {
+        WithProxyEnvironment(Array.Empty<(string, string?)>(), () =>
+        {
+            var envelope = new ErrorEnvelope
+            {
+                Category = ErrorCategory.Network,
+                ExitCode = 4,
+                Message = "Failed to connect",
+                Address = "localhost:9090"
+            };
+
+            var result = ErrorRenderer.AppendProxyHintIfRelevant(envelope);
+
+            result.ShouldBeSameAs(envelope);
+        });
+    }
+
+    [Fact]
+    public void AppendProxyHintIfRelevant_NonConnectionError_LeavesEnvelopeUnchanged()
+    {
+        WithProxyEnvironment(("HTTP_PROXY", "http://proxy.corp:3128"), () =>
+        {
+            var envelope = new ErrorEnvelope
+            {
+                Category = ErrorCategory.Schema,
+                ExitCode = 3,
+                Message = "Protoset file not found",
+                Address = "localhost:9090"
+            };
+
+            var result = ErrorRenderer.AppendProxyHintIfRelevant(envelope);
+
+            result.ShouldBeSameAs(envelope);
+        });
+    }
+
+    private static void WithProxyEnvironment((string Name, string? Value)[] overrides, Action body)
+    {
+        string[] names = ["HTTP_PROXY", "http_proxy", "HTTPS_PROXY", "https_proxy", "ALL_PROXY", "all_proxy", "NO_PROXY", "no_proxy"];
+        var saved = names.ToDictionary(n => n, Environment.GetEnvironmentVariable);
+
+        try
+        {
+            foreach (var name in names)
+            {
+                Environment.SetEnvironmentVariable(name, null);
+            }
+
+            foreach (var (name, value) in overrides)
+            {
+                Environment.SetEnvironmentVariable(name, value);
+            }
+
+            body();
+        }
+        finally
+        {
+            foreach (var (name, value) in saved)
+            {
+                Environment.SetEnvironmentVariable(name, value);
+            }
+        }
+    }
+
+    private static void WithProxyEnvironment((string Name, string? Value) singleOverride, Action body)
+        => WithProxyEnvironment([singleOverride], body);
 
     private static (string stderr, string stdout) CaptureStreams(Action<TextWriter> action)
     {

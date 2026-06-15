@@ -49,11 +49,50 @@ internal static class ErrorRenderer
     [DoesNotReturn]
     public static void RenderAndThrow(ErrorEnvelope envelope, OutputFormat format, TextWriter? writer = null)
     {
+        envelope = AppendProxyHintIfRelevant(envelope);
+
         Render(envelope, format, writer);
 
         throw new GrpcCommandException(envelope.Message, envelope.ExitCode, true)
         {
             Envelope = envelope
+        };
+    }
+
+    /// <summary>
+    ///     SocketsHttpHandler silently honours HTTP(S)_PROXY/ALL_PROXY, so a call routed
+    ///     through an unexpected proxy fails with an error that mentions neither the proxy
+    ///     nor the variable. For connection-shaped failures (network errors and UNAVAILABLE)
+    ///     with proxy variables in effect for the target, add a suggestion naming them.
+    ///     Suggestions are text-mode only, so JSON envelope output is unchanged.
+    /// </summary>
+    internal static ErrorEnvelope AppendProxyHintIfRelevant(ErrorEnvelope envelope)
+    {
+        var connectionShaped = envelope.Category == ErrorCategory.Network
+                               || (envelope.Category == ErrorCategory.Rpc
+                                   && envelope.Grpc?.Code == (int)Grpc.Core.StatusCode.Unavailable);
+
+        if (!connectionShaped)
+        {
+            return envelope;
+        }
+
+        var proxyVariables = ProxyEnvironment.GetActiveProxyVariables(envelope.Address);
+
+        if (proxyVariables.Count == 0)
+        {
+            return envelope;
+        }
+
+        var target = ProxyEnvironment.ExtractHost(envelope.Address) ?? "the target host";
+
+        return envelope with
+        {
+            Suggestions =
+            [
+                .. envelope.Suggestions,
+                $"Proxy environment detected ({string.Join(", ", proxyVariables)}): calls to {target} may be routed through it — unset the variable or add the host to NO_PROXY"
+            ]
         };
     }
 

@@ -36,9 +36,19 @@ internal class SimpleDynamicMessage : IMessage
 
         using var jsonDoc = JsonDocument.Parse(json);
 
-        foreach (var property in jsonDoc.RootElement.EnumerateObject())
+        PopulateFromJsonObject(jsonDoc.RootElement, allowUnknownFields);
+    }
+
+    /// <summary>
+    ///     Populates this message's fields from a JSON object element. Shared by the JSON-string
+    ///     constructor and the <c>google.protobuf.Any</c> embedded-message path so both honour the
+    ///     same field-matching and unknown-field rules.
+    /// </summary>
+    private void PopulateFromJsonObject(JsonElement root, bool allowUnknownFields)
+    {
+        foreach (var property in root.EnumerateObject())
         {
-            var field = descriptor.Fields.InDeclarationOrder().FirstOrDefault(f =>
+            var field = Descriptor.Fields.InDeclarationOrder().FirstOrDefault(f =>
                                                                                   f.JsonName.Equals(property.Name, StringComparison.OrdinalIgnoreCase) ||
                                                                                   f.Name.Equals(property.Name, StringComparison.OrdinalIgnoreCase));
 
@@ -49,7 +59,7 @@ internal class SimpleDynamicMessage : IMessage
 
                 if (!allowUnknownFields)
                 {
-                    throw new ArgumentException($"Unknown field '{property.Name}' in message type '{descriptor.FullName}'. Use --allow-unknown-fields to skip unknown fields.");
+                    throw new ArgumentException($"Unknown field '{property.Name}' in message type '{Descriptor.FullName}'. Use --allow-unknown-fields to skip unknown fields.");
                 }
 
                 continue;
@@ -255,7 +265,7 @@ internal class SimpleDynamicMessage : IMessage
 
             case "google.protobuf.Any":
 
-                return WellKnownTypeHandler.ConvertAny(element, messageType);
+                return ConvertAnyElement(element, messageType);
 
             case "google.protobuf.Empty":
 
@@ -301,6 +311,233 @@ internal class SimpleDynamicMessage : IMessage
         }
 
         return nestedMessage;
+    }
+
+    // Well-known types whose proto3 JSON form is not a plain object; inside an Any these
+    // are wrapped as {"@type": ..., "value": <special-form>}.
+    private static readonly HashSet<string> SpecialJsonWktNames = new(StringComparer.Ordinal)
+    {
+        "google.protobuf.Timestamp",
+        "google.protobuf.Duration",
+        "google.protobuf.FieldMask",
+        "google.protobuf.Struct",
+        "google.protobuf.Value",
+        "google.protobuf.ListValue",
+        "google.protobuf.DoubleValue",
+        "google.protobuf.FloatValue",
+        "google.protobuf.Int64Value",
+        "google.protobuf.UInt64Value",
+        "google.protobuf.Int32Value",
+        "google.protobuf.UInt32Value",
+        "google.protobuf.BoolValue",
+        "google.protobuf.StringValue",
+        "google.protobuf.BytesValue"
+    };
+
+    /// <summary>
+    ///     Converts a proto3-JSON <c>google.protobuf.Any</c> object into an Any message whose
+    ///     <c>value</c> field holds the binary protobuf of the embedded message (per spec), rather
+    ///     than treating <c>value</c> as opaque JSON text. The embedded type is resolved by
+    ///     <c>@type</c> against the descriptor closure of the message being processed.
+    /// </summary>
+    private SimpleDynamicMessage? ConvertAnyElement(JsonElement element, MessageDescriptor anyDescriptor)
+    {
+        if (element.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        var message = new SimpleDynamicMessage(anyDescriptor);
+        var typeUrlField = anyDescriptor.FindFieldByNumber(1);
+        var valueField = anyDescriptor.FindFieldByNumber(2);
+
+        if (!element.TryGetProperty("@type", out var typeUrlElement) || typeUrlElement.ValueKind != JsonValueKind.String)
+        {
+            // No @type: not a populated Any. Leave it empty rather than guessing.
+            return message;
+        }
+
+        var typeUrl = typeUrlElement.GetString()!;
+
+        if (typeUrlField is not null)
+        {
+            message.Fields[typeUrlField] = typeUrl;
+        }
+
+        if (valueField is null)
+        {
+            return message;
+        }
+
+        var embeddedDescriptor = AnyTypeResolver.ForContext(Descriptor).Resolve(typeUrl)
+                                 ?? throw new ArgumentException(
+                                     $"Cannot resolve google.protobuf.Any type '{typeUrl}'. The type must be present " +
+                                     "in the loaded descriptors (reflection, protoset, or proto files).");
+
+        var embedded = SpecialJsonWktNames.Contains(embeddedDescriptor.FullName)
+            ? BuildSpecialWktFromAny(element, embeddedDescriptor)
+            : BuildRegularMessageFromAny(element, embeddedDescriptor);
+
+        message.Fields[valueField] = embedded is null ? ByteString.Empty : embedded.ToByteString();
+
+        return message;
+    }
+
+    private SimpleDynamicMessage? BuildRegularMessageFromAny(JsonElement element, MessageDescriptor embeddedDescriptor)
+    {
+        // Regular messages inline their fields alongside @type; rebuild the embedded JSON
+        // object without @type and parse it through the standard path (maps/repeated/oneofs).
+        using var buffer = new MemoryStream();
+
+        using (var jsonWriter = new Utf8JsonWriter(buffer))
+        {
+            jsonWriter.WriteStartObject();
+
+            foreach (var property in element.EnumerateObject().Where(p => p.Name != "@type"))
+            {
+                property.WriteTo(jsonWriter);
+            }
+
+            jsonWriter.WriteEndObject();
+        }
+
+        var embeddedJson = Encoding.UTF8.GetString(buffer.ToArray());
+
+        return new SimpleDynamicMessage(embeddedDescriptor, embeddedJson);
+    }
+
+    private SimpleDynamicMessage? BuildSpecialWktFromAny(JsonElement element, MessageDescriptor embeddedDescriptor)
+    {
+        // Special well-known types appear as {"@type": ..., "value": <special-form>}.
+        if (!element.TryGetProperty("value", out var valueElement))
+        {
+            return new SimpleDynamicMessage(embeddedDescriptor);
+        }
+
+        return embeddedDescriptor.FullName switch
+        {
+            "google.protobuf.Timestamp"   => WellKnownTypeHandler.ConvertTimestamp(valueElement, embeddedDescriptor),
+            "google.protobuf.Duration"    => WellKnownTypeHandler.ConvertDuration(valueElement, embeddedDescriptor),
+            "google.protobuf.FieldMask"   => WellKnownTypeHandler.ConvertFieldMask(valueElement, embeddedDescriptor),
+            "google.protobuf.Struct"      => WellKnownTypeHandler.ConvertStruct(valueElement, embeddedDescriptor, ConvertValue),
+            "google.protobuf.Value"       => WellKnownTypeHandler.ConvertValue(valueElement, embeddedDescriptor, ConvertStruct, ConvertListValue),
+            "google.protobuf.ListValue"   => WellKnownTypeHandler.ConvertListValue(valueElement, embeddedDescriptor, ConvertValue),
+            _                             => WellKnownTypeHandler.ConvertWrapperType(valueElement, embeddedDescriptor, ConvertJsonValue)
+        };
+    }
+
+    /// <summary>
+    ///     Renders a <c>google.protobuf.Any</c> message to proto3 JSON, decoding the binary
+    ///     <c>value</c> payload by resolving <c>@type</c>. Unresolvable types fall back to a
+    ///     base64 rendering (upstream-grpcurl style) so no information is lost.
+    /// </summary>
+    private void WriteAnyJson(StringBuilder sb, SimpleDynamicMessage any, bool includeDefaults)
+    {
+        var typeUrlField = any.Descriptor.FindFieldByNumber(1);
+        var valueField = any.Descriptor.FindFieldByNumber(2);
+
+        var typeUrl = typeUrlField is not null && any.Fields.TryGetValue(typeUrlField, out var t) ? t as string : null;
+        var valueBytes = valueField is not null && any.Fields.TryGetValue(valueField, out var v) && v is ByteString bs
+            ? bs
+            : ByteString.Empty;
+
+        sb.Append('{');
+
+        if (string.IsNullOrEmpty(typeUrl))
+        {
+            sb.Append('}');
+
+            return;
+        }
+
+        sb.Append("\"@type\":\"").Append(JsonEncodedText.Encode(typeUrl)).Append('"');
+
+        var embeddedDescriptor = AnyTypeResolver.ForContext(Descriptor).Resolve(typeUrl);
+
+        if (embeddedDescriptor is null)
+        {
+            // Unresolvable: preserve the payload verbatim as base64 with an explicit marker.
+            sb.Append(",\"@error\":\"type not found\",\"value\":\"")
+              .Append(Convert.ToBase64String(valueBytes.ToByteArray()))
+              .Append('"');
+            sb.Append('}');
+
+            return;
+        }
+
+        var embedded = new SimpleDynamicMessage(embeddedDescriptor);
+
+        using (var input = new CodedInputStream(valueBytes.ToByteArray()))
+        {
+            embedded.MergeFrom(input);
+        }
+
+        if (SpecialJsonWktNames.Contains(embeddedDescriptor.FullName))
+        {
+            sb.Append(",\"value\":");
+            WriteSpecialWktInline(sb, embedded, embeddedDescriptor, includeDefaults);
+        }
+        else
+        {
+            var inner = embedded.ToJson(includeDefaults).Trim();
+
+            // Inline the embedded fields after @type; ToJson always returns a JSON object.
+            if (inner.Length > 2 && inner[0] == '{' && inner[^1] == '}')
+            {
+                sb.Append(',').Append(inner[1..^1]);
+            }
+        }
+
+        sb.Append('}');
+    }
+
+    private void WriteSpecialWktInline(StringBuilder sb, SimpleDynamicMessage embedded, MessageDescriptor descriptor, bool includeDefaults)
+    {
+        switch (descriptor.FullName)
+        {
+            case "google.protobuf.Timestamp":
+
+                WellKnownTypeHandler.WriteTimestampJson(sb, embedded);
+
+                break;
+
+            case "google.protobuf.Duration":
+
+                WellKnownTypeHandler.WriteDurationJson(sb, embedded);
+
+                break;
+
+            case "google.protobuf.FieldMask":
+
+                WellKnownTypeHandler.WriteFieldMaskJson(sb, embedded);
+
+                break;
+
+            case "google.protobuf.Struct":
+
+                WellKnownTypeHandler.WriteStructJson(sb, embedded, WriteValueJson);
+
+                break;
+
+            case "google.protobuf.Value":
+
+                WellKnownTypeHandler.WriteValueJson(sb, embedded, WriteStructJson, WriteListValueJson);
+
+                break;
+
+            case "google.protobuf.ListValue":
+
+                WellKnownTypeHandler.WriteListValueJson(sb, embedded, WriteValueJson);
+
+                break;
+
+            default:
+
+                WellKnownTypeHandler.WriteWrapperJson(sb, embedded, descriptor,
+                                                      (s, f, val) => WriteJsonValue(s, f, val, includeDefaults));
+
+                break;
+        }
     }
 
     // Adapter methods for WellKnownTypeHandler callbacks
@@ -744,7 +981,7 @@ internal class SimpleDynamicMessage : IMessage
 
                         case "google.protobuf.Any":
 
-                            WellKnownTypeHandler.WriteAnyJson(sb, nestedMessage, field.MessageType);
+                            WriteAnyJson(sb, nestedMessage, includeDefaults);
 
                             break;
 

@@ -403,83 +403,8 @@ public sealed class WellKnownTypeHandlerTests
 
     #endregion
 
-    #region ConvertAny Tests
-
-    [Fact]
-    public void ConvertAny_ValidObject_ParsesTypeUrl()
-    {
-        // Arrange
-        const string json = """{"@type": "type.googleapis.com/google.protobuf.Duration", "value": "10s"}""";
-
-        var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Any");
-        var element = JsonDocument.Parse(json).RootElement;
-
-        // Act
-        var result = WellKnownTypeHandler.ConvertAny(element, descriptor);
-
-        // Assert
-        result.ShouldNotBeNull();
-
-        var typeUrlField = descriptor.FindFieldByNumber(1);
-
-        result.Fields[typeUrlField!].ShouldBe("type.googleapis.com/google.protobuf.Duration");
-    }
-
-    [Fact]
-    public void ConvertAny_NonObjectValue_ReturnsNull()
-    {
-        // Arrange
-        var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Any");
-        var element = JsonDocument.Parse("\"not-an-object\"").RootElement;
-
-        // Act
-        var result = WellKnownTypeHandler.ConvertAny(element, descriptor);
-
-        // Assert
-        result.ShouldBeNull();
-    }
-
-    [Fact]
-    public void ConvertAny_WithEmbeddedFields_SerializesValue()
-    {
-        // Arrange
-        const string json = """{"@type": "type.googleapis.com/test.Message", "name": "test", "count": 42}""";
-
-        var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Any");
-        var element = JsonDocument.Parse(json).RootElement;
-
-        // Act
-        var result = WellKnownTypeHandler.ConvertAny(element, descriptor);
-
-        // Assert
-        result.ShouldNotBeNull();
-
-        var valueField = descriptor.FindFieldByNumber(2);
-
-        result.Fields.ContainsKey(valueField!).ShouldBeTrue();
-
-        var valueBytes = (ByteString)result.Fields[valueField!]!;
-        var valueJson = Encoding.UTF8.GetString(valueBytes.ToByteArray());
-
-        valueJson.ShouldContain("name");
-        valueJson.ShouldContain("test");
-    }
-
-    [Fact]
-    public void ConvertAny_EmptyObject_ReturnsEmptyMessage()
-    {
-        // Arrange
-        var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Any");
-        var element = JsonDocument.Parse("{}").RootElement;
-
-        // Act
-        var result = WellKnownTypeHandler.ConvertAny(element, descriptor);
-
-        // Assert
-        result.ShouldNotBeNull();
-    }
-
-    #endregion
+    // google.protobuf.Any conversion moved to SimpleDynamicMessage (binary-correct, type-resolving).
+    // See AnyWireFormatTests for the round-trip and fallback coverage.
 
     #region ConvertEmpty Tests
 
@@ -1083,70 +1008,8 @@ public sealed class WellKnownTypeHandlerTests
 
     #endregion
 
-    #region WriteAnyJson Tests
-
-    [Fact]
-    public void WriteAnyJson_WithTypeUrl_IncludesTypeField()
-    {
-        // Arrange
-        var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Any");
-        var message = new SimpleDynamicMessage(descriptor);
-        var typeUrlField = descriptor.FindFieldByNumber(1);
-
-        message.Fields[typeUrlField!] = "type.googleapis.com/test.Message";
-
-        var sb = new StringBuilder();
-
-        // Act
-        WellKnownTypeHandler.WriteAnyJson(sb, message, descriptor);
-
-        // Assert
-        var result = sb.ToString();
-
-        result.ShouldContain("@type");
-        result.ShouldContain("type.googleapis.com/test.Message");
-    }
-
-    [Fact]
-    public void WriteAnyJson_WithValue_IncludesEmbeddedFields()
-    {
-        // Arrange
-        var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Any");
-        var message = new SimpleDynamicMessage(descriptor);
-        var typeUrlField = descriptor.FindFieldByNumber(1);
-        var valueField = descriptor.FindFieldByNumber(2);
-
-        message.Fields[typeUrlField!] = "type.googleapis.com/test.Message";
-        message.Fields[valueField!] = ByteString.CopyFromUtf8("{\"name\":\"test\"}");
-
-        var sb = new StringBuilder();
-
-        // Act
-        WellKnownTypeHandler.WriteAnyJson(sb, message, descriptor);
-
-        // Assert
-        var result = sb.ToString();
-
-        result.ShouldContain("name");
-        result.ShouldContain("test");
-    }
-
-    [Fact]
-    public void WriteAnyJson_EmptyMessage_WritesEmptyObject()
-    {
-        // Arrange
-        var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Any");
-        var message = new SimpleDynamicMessage(descriptor);
-        var sb = new StringBuilder();
-
-        // Act
-        WellKnownTypeHandler.WriteAnyJson(sb, message, descriptor);
-
-        // Assert
-        sb.ToString().ShouldBe("{}");
-    }
-
-    #endregion
+    // google.protobuf.Any rendering moved to SimpleDynamicMessage (binary-decoding,
+    // type-resolving). See AnyWireFormatTests.
 
     #region WriteEmptyJson Test
 

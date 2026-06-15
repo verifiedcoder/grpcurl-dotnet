@@ -35,6 +35,10 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="Gql2Grpc.Tests" />
+        <InternalsVisibleTo Include="GrpCurl.Net.Studio" />
+        <InternalsVisibleTo Include="GrpCurl.Net.Studio.ViewModels" />
+        <InternalsVisibleTo Include="GrpCurl.Net.Studio.Tests.Unit" />
+        <InternalsVisibleTo Include="GrpCurl.Net.Studio.Tests.UI" />
     </ItemGroup>
 
 </Project>

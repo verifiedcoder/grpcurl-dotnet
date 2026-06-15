@@ -1,5 +1,6 @@
 using GrpCurl.Net.Studio.Services;
 using GrpCurl.Net.Studio.ViewModels;
+using GrpCurl.Net.Studio.ViewModels.Panes;
 using GrpCurl.Net.Studio.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -15,14 +16,19 @@ internal static class ServiceRegistration
     {
         var services = builder.Services;
 
-        // UI-thread + OS-edge abstractions (real dispatcher; stub the rest for the skeleton).
+        // UI-thread + OS-edge abstractions (real dispatcher + settings store; the remaining
+        // OS-edge services are stubbed until the features that need them land).
         services.AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>();
-        services.AddSingleton<ISettingsStore, InMemorySettingsStore>();
+        services.AddSingleton<ISettingsStore, JsonSettingsStore>();
         services.AddSingleton<IDialogService, NoopDialogService>();
         services.AddSingleton<IFilePickerService, NoopFilePickerService>();
         services.AddSingleton<IClipboardService, NoopClipboardService>();
 
-        // View models.
+        // View models — shell root + pane placeholders.
+        services.AddSingleton<ConnectionsPaneViewModel>();
+        services.AddSingleton<ServiceExplorerViewModel>();
+        services.AddSingleton<ConsoleViewModel>();
+        services.AddSingleton<InspectorViewModel>();
         services.AddSingleton<MainWindowViewModel>();
 
         return builder;

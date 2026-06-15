@@ -1,15 +1,22 @@
 using GrpCurl.Net.Studio.Tests.Unit.Fakes;
 using GrpCurl.Net.Studio.ViewModels;
+using GrpCurl.Net.Studio.ViewModels.Models;
+using GrpCurl.Net.Studio.ViewModels.Panes;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
 
 public sealed class MainWindowViewModelTests
 {
-    private static MainWindowViewModel CreateViewModel()
-        => new(new ImmediateUiDispatcher(), new FakeSettingsStore());
+    private static MainWindowViewModel CreateViewModel(FakeSettingsStore? settings = null)
+        => new(
+            settings ?? new FakeSettingsStore(),
+            new ConnectionsPaneViewModel(),
+            new ServiceExplorerViewModel(),
+            new ConsoleViewModel(),
+            new InspectorViewModel());
 
     [Fact]
-    public void Construction_resolves_dependencies_and_exposes_title()
+    public void Construction_exposes_title_and_default_pane_state()
     {
         var vm = CreateViewModel();
 
@@ -18,6 +25,18 @@ public sealed class MainWindowViewModelTests
         vm.IsInspectorOpen.ShouldBeTrue();
         vm.IsConsoleOpen.ShouldBeTrue();
         vm.IsFocusMode.ShouldBeFalse();
+        vm.HasAnyConnection.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Construction_reflects_persisted_theme()
+    {
+        var settings = new FakeSettingsStore();
+        settings.Current.Appearance.Theme = "dark";
+
+        var vm = CreateViewModel(settings);
+
+        vm.SelectedTheme.ShouldBe(AppTheme.Dark);
     }
 
     [Fact]
@@ -51,5 +70,18 @@ public sealed class MainWindowViewModelTests
         vm.IsSidebarOpen.ShouldBeTrue();
         vm.IsInspectorOpen.ShouldBeFalse(); // restored to its pre-focus value
         vm.IsConsoleOpen.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Set_theme_updates_selection_and_persists()
+    {
+        var settings = new FakeSettingsStore();
+        var vm = CreateViewModel(settings);
+
+        await vm.SetThemeCommand.ExecuteAsync(AppTheme.Dark);
+
+        vm.SelectedTheme.ShouldBe(AppTheme.Dark);
+        settings.Current.Appearance.Theme.ShouldBe("dark");
+        settings.SaveCount.ShouldBe(1);
     }
 }

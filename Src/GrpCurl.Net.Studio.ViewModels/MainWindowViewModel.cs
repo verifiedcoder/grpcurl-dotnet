@@ -1,16 +1,22 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using GrpCurl.Net.Studio.ViewModels.Models;
+using GrpCurl.Net.Studio.ViewModels.Panes;
 using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.ViewModels;
 
 /// <summary>
-///     Root view model for the application shell. Owns the collapsible-pane state and the
-///     pane-toggle commands. Theming and the welcome/empty-state wiring are layered on in the
-///     shell PR (E0.2 PR-B); this skeleton establishes the DI graph and pane mechanics.
+///     Root view model for the application shell. Owns the collapsible-pane state, focus mode,
+///     the active theme selection, and the welcome empty-state flag. Theme changes are
+///     persisted via <see cref="ISettingsStore" />; the app-layer <c>ThemeManager</c> observes
+///     <see cref="SelectedTheme" /> and applies the corresponding Avalonia theme variant,
+///     keeping this view model free of any UI-framework dependency.
 /// </summary>
 public sealed partial class MainWindowViewModel : ViewModelBase
 {
+    private readonly ISettingsStore _settingsStore;
+
     [ObservableProperty]
     private bool _isSidebarOpen = true;
 
@@ -23,17 +29,40 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isFocusMode;
 
+    [ObservableProperty]
+    private AppTheme _selectedTheme = AppTheme.System;
+
+    /// <summary>Drives the welcome empty-state: shown until the first connection exists (SPEC-020 §7).</summary>
+    [ObservableProperty]
+    private bool _hasAnyConnection;
+
     private (bool Sidebar, bool Inspector, bool Console)? _preFocusState;
 
-    public MainWindowViewModel(IUiDispatcher uiDispatcher, ISettingsStore settingsStore)
+    public MainWindowViewModel(
+        ISettingsStore settingsStore,
+        ConnectionsPaneViewModel connections,
+        ServiceExplorerViewModel explorer,
+        ConsoleViewModel console,
+        InspectorViewModel inspector)
     {
-        // Validated to prove the DI graph resolves; retained as fields once the shell PR
-        // (theming/persistence) actually consumes them.
-        ArgumentNullException.ThrowIfNull(uiDispatcher);
-        ArgumentNullException.ThrowIfNull(settingsStore);
+        _settingsStore = settingsStore;
+        Connections = connections;
+        Explorer = explorer;
+        Console = console;
+        Inspector = inspector;
+
+        _selectedTheme = ParseTheme(settingsStore.Current.Appearance.Theme);
     }
 
     public string Title => "GrpCurl.Net Studio";
+
+    public ConnectionsPaneViewModel Connections { get; }
+
+    public ServiceExplorerViewModel Explorer { get; }
+
+    public ConsoleViewModel Console { get; }
+
+    public InspectorViewModel Inspector { get; }
 
     [RelayCommand]
     private void ToggleSidebar() => IsSidebarOpen = !IsSidebarOpen;
@@ -65,4 +94,23 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             IsFocusMode = false;
         }
     }
+
+    /// <summary>Selects a theme and persists it. The app layer applies the live variant.</summary>
+    [RelayCommand]
+    private async Task SetTheme(AppTheme theme)
+    {
+        SelectedTheme = theme;
+
+        var settings = _settingsStore.Current;
+        settings.Appearance.Theme = theme.ToString().ToLowerInvariant();
+
+        await _settingsStore.SaveAsync(settings);
+    }
+
+    private static AppTheme ParseTheme(string value) => value.ToLowerInvariant() switch
+    {
+        "light" => AppTheme.Light,
+        "dark" => AppTheme.Dark,
+        _ => AppTheme.System
+    };
 }

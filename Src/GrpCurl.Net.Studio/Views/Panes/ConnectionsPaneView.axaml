@@ -1,13 +1,47 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:GrpCurl.Net.Studio.ViewModels.Panes;assembly=GrpCurl.Net.Studio.ViewModels"
+             xmlns:items="clr-namespace:GrpCurl.Net.Studio.ViewModels.Connections;assembly=GrpCurl.Net.Studio.ViewModels"
+             xmlns:conv="clr-namespace:GrpCurl.Net.Studio.Converters"
              x:Class="GrpCurl.Net.Studio.Views.Panes.ConnectionsPaneView"
              x:DataType="vm:ConnectionsPaneViewModel">
+    <UserControl.Resources>
+        <conv:ConnectionStatusToBrushConverter x:Key="StatusToBrush" />
+    </UserControl.Resources>
+
     <Grid RowDefinitions="Auto,*">
         <Border Grid.Row="0" Background="{DynamicResource Surface.PaneHeader}" Padding="8,6">
-            <TextBlock Text="{Binding Header}" FontWeight="SemiBold" />
+            <DockPanel>
+                <TextBlock Text="{Binding Header}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                <StackPanel Orientation="Horizontal" Spacing="2" HorizontalAlignment="Right" DockPanel.Dock="Right">
+                    <Button Content="+" Command="{Binding AddConnectionCommand}" Padding="6,0"
+                            ToolTip.Tip="Add connection" AutomationProperties.Name="Add connection" />
+                    <Button Content="✎" Command="{Binding EditConnectionCommand}" Padding="6,0"
+                            ToolTip.Tip="Edit connection" AutomationProperties.Name="Edit connection" />
+                    <Button Content="⧉" Command="{Binding DuplicateConnectionCommand}" Padding="6,0"
+                            ToolTip.Tip="Duplicate connection" AutomationProperties.Name="Duplicate connection" />
+                    <Button Content="✕" Command="{Binding DeleteConnectionCommand}" Padding="6,0"
+                            ToolTip.Tip="Delete connection" AutomationProperties.Name="Delete connection" />
+                </StackPanel>
+            </DockPanel>
         </Border>
-        <TextBlock Grid.Row="1" Margin="8" Opacity="0.6"
-                   Text="No connections yet." />
+
+        <ListBox Grid.Row="1" ItemsSource="{Binding Connections}"
+                 SelectedItem="{Binding SelectedConnection}"
+                 AutomationProperties.Name="Connections list">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="items:ConnectionListItemViewModel">
+                    <Grid ColumnDefinitions="Auto,*" Margin="0,2">
+                        <Ellipse Grid.Column="0" Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,8,0"
+                                 Fill="{Binding Status, Converter={StaticResource StatusToBrush}}"
+                                 ToolTip.Tip="{Binding StatusDetail}" />
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding Address}" Opacity="0.6" FontSize="12" />
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
     </Grid>
 </UserControl>

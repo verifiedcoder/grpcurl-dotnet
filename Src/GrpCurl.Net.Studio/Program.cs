@@ -21,9 +21,11 @@ internal static class Program
 
         host.Start();
 
-        // Load persisted settings before the shell view model is built, so the saved theme
-        // is reflected on first paint (the view model reads ISettingsStore.Current in its ctor).
+        // Load persisted settings and the workspace before the shell view model is built, so
+        // the saved theme and connections are present on first paint (the view models read
+        // ISettingsStore.Current / IWorkspaceStore.Current in their constructors).
         host.Services.GetRequiredService<ISettingsStore>().LoadAsync().GetAwaiter().GetResult();
+        host.Services.GetRequiredService<IWorkspaceStore>().LoadAsync().GetAwaiter().GetResult();
 
         try
         {

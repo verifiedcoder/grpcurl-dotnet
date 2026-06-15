@@ -1,7 +1,9 @@
+using System.Runtime.CompilerServices;
 using Avalonia.Controls;
 using GrpCurl.Net.Studio;
 using GrpCurl.Net.Studio.Tests.UI.Headless;
 using GrpCurl.Net.Studio.ViewModels;
+using GrpCurl.Net.Studio.ViewModels.Connections;
 
 namespace GrpCurl.Net.Studio.Tests.UI;
 
@@ -12,9 +14,16 @@ namespace GrpCurl.Net.Studio.Tests.UI;
 /// </summary>
 public sealed class ViewLocatorTests(HeadlessSessionFixture fixture) : HeadlessTestBase(fixture)
 {
-    // The shell window is hosted directly by the desktop lifetime (it IS a Window), not
-    // resolved through the ViewLocator, so it is excluded from the convention check.
-    private static readonly HashSet<Type> NotViewLocated = [typeof(MainWindowViewModel)];
+    // View models not resolved through the ViewLocator:
+    //  - the shell window is hosted directly by the desktop lifetime (it IS a Window);
+    //  - list-item / row view models are rendered via inline DataTemplates inside their
+    //    ItemsControls, not by name convention.
+    private static readonly HashSet<Type> NotViewLocated =
+    [
+        typeof(MainWindowViewModel),
+        typeof(ConnectionListItemViewModel),
+        typeof(HeaderRowViewModel)
+    ];
 
     public static TheoryData<Type> ContentViewModels()
     {
@@ -35,7 +44,9 @@ public sealed class ViewLocatorTests(HeadlessSessionFixture fixture) : HeadlessT
     [MemberData(nameof(ContentViewModels))]
     public Task Every_content_view_model_resolves_to_a_view(Type viewModelType) => RunOnUiThread(() =>
     {
-        var viewModel = Activator.CreateInstance(viewModelType)!;
+        // Construct without invoking the ctor — the locator only reads the runtime type, and
+        // content view models may require services to construct.
+        var viewModel = RuntimeHelpers.GetUninitializedObject(viewModelType);
         var locator = new ViewLocator();
 
         locator.Match(viewModel).ShouldBeTrue();

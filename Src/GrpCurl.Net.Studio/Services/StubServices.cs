@@ -3,18 +3,9 @@ using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.Services;
 
-// Minimal service implementations for the skeleton. Real implementations (native dialogs,
-// file pickers, clipboard, JSON-backed settings) arrive with the features that need them;
-// for now they keep the DI graph complete so the shell composes and runs.
-
-internal sealed class NoopDialogService : IDialogService
-{
-    public Task ShowMessageAsync(string title, string message, CancellationToken cancellationToken = default)
-        => Task.CompletedTask;
-
-    public Task<bool> ConfirmAsync(string title, string message, CancellationToken cancellationToken = default)
-        => Task.FromResult(false);
-}
+// Minimal service implementations for the skeleton. Real implementations (file pickers,
+// clipboard) arrive with the features that need them; for now they keep the DI graph complete.
+// Dialogs are handled by the real DialogService.
 
 internal sealed class NoopFilePickerService : IFilePickerService
 {

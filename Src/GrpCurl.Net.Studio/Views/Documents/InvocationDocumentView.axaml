@@ -11,6 +11,7 @@
 
     <UserControl.Resources>
         <conv:StatusBrushConverter x:Key="StatusBrush" />
+        <conv:SecretMaskConverter x:Key="SecretMask" />
     </UserControl.Resources>
 
     <Grid RowDefinitions="Auto,Auto,*,4,*">
@@ -20,6 +21,9 @@
                 BorderBrush="{DynamicResource Divider}" BorderThickness="0,0,0,1">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6">
+                    <Button Content="Copy as CLI" Command="{Binding CopyAsCliCommand}"
+                            ToolTip.Tip="Copy an equivalent grpcn command (secrets as ${VAR})"
+                            AutomationProperties.Name="Copy as CLI command" />
                     <Button Content="Invoke" Command="{Binding InvokeCommand}"
                             IsVisible="{Binding !IsInFlight}" AutomationProperties.Name="Invoke" />
                     <Button Content="Cancel" Command="{Binding InvokeCancelCommand}"
@@ -59,6 +63,7 @@
                                     <TextBox Grid.Column="0" Text="{Binding Name}" Watermark="name"
                                              AutomationProperties.Name="Header name" />
                                     <TextBox Grid.Column="1" Text="{Binding Value}" Watermark="value"
+                                             PasswordChar="{Binding IsSecret, Converter={StaticResource SecretMask}}"
                                              AutomationProperties.Name="Header value" />
                                     <Button Grid.Column="2" Content="✕" Padding="6,0"
                                             Command="{Binding #Root.((docs:InvocationDocumentViewModel)DataContext).RemoveHeaderCommand}"

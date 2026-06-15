@@ -2,6 +2,7 @@ using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Panes;
+using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
 
@@ -14,7 +15,7 @@ public sealed class ConnectionsPaneViewModelTests
     {
         store = new FakeWorkspaceStore(initial);
         dialogs = new FakeDialogService();
-        return new ConnectionsPaneViewModel(store, new FakeConnectionRegistry(), dialogs);
+        return new ConnectionsPaneViewModel(store, new FakeConnectionRegistry(), dialogs, new ConnectionSelection());
     }
 
     [Fact]

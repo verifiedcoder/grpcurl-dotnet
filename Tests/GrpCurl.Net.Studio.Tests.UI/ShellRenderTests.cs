@@ -8,6 +8,7 @@ using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.Tests.UI.Headless;
 using GrpCurl.Net.Studio.ViewModels;
 using GrpCurl.Net.Studio.ViewModels.Panes;
+using GrpCurl.Net.Studio.ViewModels.Services;
 using GrpCurl.Net.Studio.Views;
 
 namespace GrpCurl.Net.Studio.Tests.UI;
@@ -21,8 +22,8 @@ public sealed class ShellRenderTests(HeadlessSessionFixture fixture) : HeadlessT
     private static MainWindowViewModel CreateViewModel()
         => new(
             new InMemorySettingsStore(),
-            new ConnectionsPaneViewModel(new FakeWorkspaceStore(), new FakeConnectionRegistry(), new FakeDialogService()),
-            new ServiceExplorerViewModel(),
+            new ConnectionsPaneViewModel(new FakeWorkspaceStore(), new FakeConnectionRegistry(), new FakeDialogService(), new ConnectionSelection()),
+            new ServiceExplorerViewModel(new FakeDescriptorService(), new ConnectionSelection(), new FakeClipboardService(), new ImmediateUiDispatcher()),
             new ConsoleViewModel(),
             new InspectorViewModel());
 
@@ -47,10 +48,11 @@ public sealed class ShellRenderTests(HeadlessSessionFixture fixture) : HeadlessT
     public Task Welcome_add_button_is_bound_to_the_add_connection_command() => RunOnUiThread(() =>
     {
         var pane = new ConnectionsPaneViewModel(
-            new FakeWorkspaceStore(), new FakeConnectionRegistry(), new FakeDialogService());
+            new FakeWorkspaceStore(), new FakeConnectionRegistry(), new FakeDialogService(), new ConnectionSelection());
         var viewModel = new MainWindowViewModel(
             new InMemorySettingsStore(), pane,
-            new ServiceExplorerViewModel(), new ConsoleViewModel(), new InspectorViewModel());
+            new ServiceExplorerViewModel(new FakeDescriptorService(), new ConnectionSelection(), new FakeClipboardService(), new ImmediateUiDispatcher()),
+            new ConsoleViewModel(), new InspectorViewModel());
 
         var window = new MainWindow { DataContext = viewModel };
         window.Show();

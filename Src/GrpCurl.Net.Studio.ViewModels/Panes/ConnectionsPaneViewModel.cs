@@ -19,6 +19,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
     private readonly IWorkspaceStore _workspaceStore;
     private readonly IConnectionRegistry _registry;
     private readonly IDialogService _dialogService;
+    private readonly IConnectionSelection _selection;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(EditConnectionCommand))]
@@ -26,11 +27,16 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(DeleteConnectionCommand))]
     private ConnectionListItemViewModel? _selectedConnection;
 
-    public ConnectionsPaneViewModel(IWorkspaceStore workspaceStore, IConnectionRegistry registry, IDialogService dialogService)
+    public ConnectionsPaneViewModel(
+        IWorkspaceStore workspaceStore,
+        IConnectionRegistry registry,
+        IDialogService dialogService,
+        IConnectionSelection selection)
     {
         _workspaceStore = workspaceStore;
         _registry = registry;
         _dialogService = dialogService;
+        _selection = selection;
 
         Connections = [];
         Connections.CollectionChanged += OnConnectionsChanged;
@@ -49,6 +55,10 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
 
     /// <summary>Edit/duplicate/delete act on the selected connection, so they require one.</summary>
     private bool HasSelection => SelectedConnection is not null;
+
+    /// <summary>Publishes the active connection so the explorer (and later, invocation tabs) can react.</summary>
+    partial void OnSelectedConnectionChanged(ConnectionListItemViewModel? value)
+        => _selection.Set(value?.Connection);
 
     [RelayCommand]
     private async Task AddConnection()

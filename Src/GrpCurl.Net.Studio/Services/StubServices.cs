@@ -3,9 +3,9 @@ using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.Services;
 
-// Minimal service implementations for the skeleton. Real implementations (file pickers,
-// clipboard) arrive with the features that need them; for now they keep the DI graph complete.
-// Dialogs are handled by the real DialogService.
+// Minimal service implementations for the skeleton. Real implementations arrive with the
+// features that need them; for now they keep the DI graph complete. Dialogs are handled by the
+// real DialogService and clipboard by the real ClipboardService.
 
 internal sealed class NoopFilePickerService : IFilePickerService
 {
@@ -13,15 +13,6 @@ internal sealed class NoopFilePickerService : IFilePickerService
         => Task.FromResult<string?>(null);
 
     public Task<string?> SaveFileAsync(string title, string? suggestedName = null, IReadOnlyList<string>? extensions = null, CancellationToken cancellationToken = default)
-        => Task.FromResult<string?>(null);
-}
-
-internal sealed class NoopClipboardService : IClipboardService
-{
-    public Task SetTextAsync(string text, CancellationToken cancellationToken = default)
-        => Task.CompletedTask;
-
-    public Task<string?> GetTextAsync(CancellationToken cancellationToken = default)
         => Task.FromResult<string?>(null);
 }
 

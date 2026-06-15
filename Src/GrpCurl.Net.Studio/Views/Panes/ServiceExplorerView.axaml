@@ -1,13 +1,108 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:GrpCurl.Net.Studio.ViewModels.Panes;assembly=GrpCurl.Net.Studio.ViewModels"
+             xmlns:explorer="clr-namespace:GrpCurl.Net.Studio.ViewModels.Explorer;assembly=GrpCurl.Net.Studio.ViewModels"
              x:Class="GrpCurl.Net.Studio.Views.Panes.ServiceExplorerView"
              x:DataType="vm:ServiceExplorerViewModel">
-    <Grid RowDefinitions="Auto,*">
+
+    <Grid RowDefinitions="Auto,Auto,*">
+
+        <!-- Header + refresh -->
         <Border Grid.Row="0" Background="{DynamicResource Surface.PaneHeader}" Padding="8,6">
-            <TextBlock Text="{Binding Header}" FontWeight="SemiBold" />
+            <DockPanel>
+                <TextBlock Text="{Binding Header}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                <Button DockPanel.Dock="Right" HorizontalAlignment="Right" Content="⟳" Padding="6,0"
+                        Command="{Binding RefreshCommand}"
+                        ToolTip.Tip="Refresh" AutomationProperties.Name="Refresh services" />
+            </DockPanel>
         </Border>
-        <TextBlock Grid.Row="1" Margin="8" Opacity="0.6"
-                   Text="Connect to browse services." />
+
+        <!-- Filter (debounced via binding Delay; FR-023) -->
+        <TextBox Grid.Row="1" Margin="8,6" Watermark="Filter services and methods"
+                 Text="{Binding FilterText, Delay=200}"
+                 IsVisible="{Binding IsLoaded}"
+                 AutomationProperties.Name="Filter services and methods" />
+
+        <!-- Content states -->
+        <Panel Grid.Row="2">
+
+            <!-- Loaded: the service/method tree -->
+            <TreeView ItemsSource="{Binding Services}"
+                      IsVisible="{Binding IsLoaded}"
+                      AutomationProperties.Name="Service tree">
+                <TreeView.DataTemplates>
+
+                    <TreeDataTemplate DataType="explorer:ServiceNodeViewModel" ItemsSource="{Binding Methods}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="{Binding FullName}" FontWeight="SemiBold"
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock Grid.Column="1" Text="{Binding MethodCount}" Opacity="0.5"
+                                       Margin="6,0,0,0" VerticalAlignment="Center" />
+                            <Grid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Copy full name"
+                                              Command="{Binding CopyFullNameCommand}"
+                                              CommandParameter="{Binding FullName}" />
+                                </ContextMenu>
+                            </Grid.ContextMenu>
+                        </Grid>
+                    </TreeDataTemplate>
+
+                    <DataTemplate DataType="explorer:MethodNodeViewModel">
+                        <StackPanel Orientation="Horizontal" Spacing="6"
+                                    ToolTip.Tip="{Binding Signature}">
+                            <Border Background="{DynamicResource Surface.PaneHeader}"
+                                    CornerRadius="3" Padding="4,0" MinWidth="22"
+                                    ToolTip.Tip="{Binding ShapeLabel}"
+                                    AutomationProperties.Name="{Binding ShapeLabel}">
+                                <TextBlock Text="{Binding Badge}" FontSize="10" FontWeight="Bold"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                            <StackPanel.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Copy full name"
+                                              Command="{Binding CopyFullNameCommand}"
+                                              CommandParameter="{Binding FullName}" />
+                                </ContextMenu>
+                            </StackPanel.ContextMenu>
+                        </StackPanel>
+                    </DataTemplate>
+
+                </TreeView.DataTemplates>
+            </TreeView>
+
+            <!-- No connection -->
+            <TextBlock IsVisible="{Binding IsNoConnection}" Margin="12" Opacity="0.6"
+                       TextWrapping="Wrap" VerticalAlignment="Top"
+                       Text="Select or create a connection to browse its services." />
+
+            <!-- Loading (cancellable) -->
+            <StackPanel IsVisible="{Binding IsLoading}" Margin="12" Spacing="10" VerticalAlignment="Top">
+                <ProgressBar IsIndeterminate="True" />
+                <TextBlock Text="Loading services…" Opacity="0.7" />
+                <Button Content="Cancel" HorizontalAlignment="Left"
+                        Command="{Binding CancelCommand}" AutomationProperties.Name="Cancel loading" />
+            </StackPanel>
+
+            <!-- Empty -->
+            <StackPanel IsVisible="{Binding IsEmpty}" Margin="12" Spacing="10" VerticalAlignment="Top">
+                <TextBlock TextWrapping="Wrap" Opacity="0.7"
+                           Text="The server exposes no services via reflection." />
+                <Button Content="Refresh" HorizontalAlignment="Left"
+                        Command="{Binding RefreshCommand}" AutomationProperties.Name="Refresh services" />
+            </StackPanel>
+
+            <!-- Error (FR-026) -->
+            <StackPanel IsVisible="{Binding HasError}" Margin="12" Spacing="10" VerticalAlignment="Top">
+                <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Status.Server}" />
+                <TextBlock Text="{Binding ErrorHint}" TextWrapping="Wrap" Opacity="0.7"
+                           IsVisible="{Binding ReflectionUnavailable}" />
+                <Button Content="Retry" HorizontalAlignment="Left"
+                        Command="{Binding RefreshCommand}" AutomationProperties.Name="Retry loading" />
+            </StackPanel>
+
+        </Panel>
     </Grid>
 </UserControl>

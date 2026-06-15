@@ -6,11 +6,12 @@ namespace GrpCurl.Net.Studio.ViewModels.Explorer;
 /// <summary>A method leaf in the explorer tree: name, streaming-shape badge, and signature (FR-020/021).</summary>
 public sealed class MethodNodeViewModel : ViewModelBase
 {
-    public MethodNodeViewModel(ServiceMethod method, ICommand copyFullNameCommand, ICommand describeCommand)
+    public MethodNodeViewModel(ServiceMethod method, ICommand copyFullNameCommand, ICommand describeCommand, ICommand newRequestCommand)
     {
         Method = method;
         CopyFullNameCommand = copyFullNameCommand;
         DescribeCommand = describeCommand;
+        NewRequestCommand = newRequestCommand;
         Badge = method.Shape.Badge();
         ShapeLabel = method.Shape.Label();
     }
@@ -21,6 +22,8 @@ public sealed class MethodNodeViewModel : ViewModelBase
     public ICommand CopyFullNameCommand { get; }
 
     public ICommand DescribeCommand { get; }
+
+    public ICommand NewRequestCommand { get; }
 
     public string Name => Method.Name;
 

@@ -15,4 +15,12 @@ public interface IDocumentHost
     ///     that symbol is selected instead of opening a duplicate (FR-051 Ctrl+click → new tab).
     /// </summary>
     void OpenDescribe(SavedConnection connection, string symbol, bool newTab = false);
+
+    /// <summary>
+    ///     Opens a new invocation tab bound to <paramref name="methodSymbol" /> on
+    ///     <paramref name="connection" /> (FR-053 / FR-024 New request). When
+    ///     <paramref name="initialRequestJson" /> is <see langword="null" /> the tab generates the
+    ///     request template itself. Invocation tabs are editable drafts, so each call opens a new one.
+    /// </summary>
+    void OpenInvocation(SavedConnection connection, string methodSymbol, string? initialRequestJson = null);
 }

@@ -156,9 +156,14 @@
                     <StackPanel Spacing="6" IsVisible="{Binding HasTemplate}">
                         <DockPanel>
                             <TextBlock Text="Request template" FontWeight="SemiBold" VerticalAlignment="Center" />
-                            <Button DockPanel.Dock="Right" HorizontalAlignment="Right" Content="Copy"
-                                    Command="{Binding CopyTemplateJsonCommand}"
-                                    AutomationProperties.Name="Copy template JSON" />
+                            <StackPanel DockPanel.Dock="Right" HorizontalAlignment="Right" Orientation="Horizontal" Spacing="6">
+                                <!-- FR-053: opens a new invocation tab pre-filled with this template. -->
+                                <Button Content="Generate request" Command="{Binding GenerateRequestCommand}"
+                                        IsVisible="{Binding IsMethod}"
+                                        AutomationProperties.Name="Generate request" />
+                                <Button Content="Copy" Command="{Binding CopyTemplateJsonCommand}"
+                                        AutomationProperties.Name="Copy template JSON" />
+                            </StackPanel>
                         </DockPanel>
                         <Border Background="{DynamicResource Surface.PaneHeader}" CornerRadius="4" Padding="10">
                             <TextBox Text="{Binding TemplateJson, Mode=OneWay}" IsReadOnly="True"

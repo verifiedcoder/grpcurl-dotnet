@@ -64,6 +64,8 @@
                                 <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
                                 <StackPanel.ContextMenu>
                                     <ContextMenu>
+                                        <MenuItem Header="New request" Command="{Binding NewRequestCommand}"
+                                                  CommandParameter="{Binding FullName}" />
                                         <MenuItem Header="Describe" Command="{Binding DescribeCommand}"
                                                   CommandParameter="{Binding FullName}" />
                                         <MenuItem Header="Copy full name" Command="{Binding CopyFullNameCommand}"

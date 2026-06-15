@@ -15,15 +15,17 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     private readonly IDescriptorService _descriptors;
     private readonly IUiDispatcher _dispatcher;
     private readonly IClipboardService _clipboard;
+    private readonly IInvocationRunner _invocation;
 
     [ObservableProperty]
     private DocumentViewModel? _selectedDocument;
 
-    public DocumentsViewModel(IDescriptorService descriptors, IUiDispatcher dispatcher, IClipboardService clipboard)
+    public DocumentsViewModel(IDescriptorService descriptors, IUiDispatcher dispatcher, IClipboardService clipboard, IInvocationRunner invocation)
     {
         _descriptors = descriptors;
         _dispatcher = dispatcher;
         _clipboard = clipboard;
+        _invocation = invocation;
     }
 
     public ObservableCollection<DocumentViewModel> Documents { get; } = [];
@@ -44,6 +46,16 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         }
 
         var document = new DescribeDocumentViewModel(connection, symbol, _descriptors, _dispatcher, _clipboard, this);
+        document.CloseRequested += OnDocumentCloseRequested;
+
+        Documents.Add(document);
+        SelectedDocument = document;
+    }
+
+    public void OpenInvocation(SavedConnection connection, string methodSymbol, string? initialRequestJson = null)
+    {
+        var document = new InvocationDocumentViewModel(
+            connection, methodSymbol, initialRequestJson, _invocation, _descriptors, _dispatcher, _clipboard);
         document.CloseRequested += OnDocumentCloseRequested;
 
         Documents.Add(document);

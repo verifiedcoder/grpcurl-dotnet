@@ -577,6 +577,11 @@
         "resolved": "13.0.3",
         "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
       },
+      "Onigwrap": {
+        "type": "Transitive",
+        "resolved": "1.0.8",
+        "contentHash": "PElH31TECN5e25yLS0NTvA0nkbgyuw2OKWY8DOWmbNnEU5O94UrcU33lQQUr0SVp8I0plpH93TY0yGduQsDizQ=="
+      },
       "SkiaSharp": {
         "type": "Transitive",
         "resolved": "2.88.9",
@@ -707,14 +712,18 @@
         "type": "Project",
         "dependencies": {
           "Avalonia": "[11.3.17, )",
+          "Avalonia.AvaloniaEdit": "[11.3.0, )",
           "Avalonia.Desktop": "[11.3.17, )",
           "Avalonia.Diagnostics": "[11.3.17, )",
           "Avalonia.Fonts.Inter": "[11.3.17, )",
           "Avalonia.Themes.Fluent": "[11.3.17, )",
+          "AvaloniaEdit.TextMate": "[11.3.0, )",
           "CommunityToolkit.Mvvm": "[8.4.2, )",
           "GrpCurl.Net.Core": "[1.0.0, )",
           "GrpCurl.Net.Studio.ViewModels": "[1.0.0, )",
-          "Microsoft.Extensions.Hosting": "[10.0.9, )"
+          "Microsoft.Extensions.Hosting": "[10.0.9, )",
+          "TextMateSharp": "[1.0.70, )",
+          "TextMateSharp.Grammars": "[1.0.70, )"
         }
       },
       "grpcurl.net.studio.viewmodels": {
@@ -740,6 +749,15 @@
           "Avalonia.BuildServices": "11.3.2",
           "Avalonia.Remote.Protocol": "11.3.17",
           "MicroCom.Runtime": "0.11.0"
+        }
+      },
+      "Avalonia.AvaloniaEdit": {
+        "type": "CentralTransitive",
+        "requested": "[11.3.0, )",
+        "resolved": "11.3.0",
+        "contentHash": "9M/jJb4DPqQmKtNMZn6+vpqlf+ZGMtK8vEBpPVP3De1xRCu1hv4ZAtoA8hY6bYj2hgv/luete3ixoOsEQ++YJQ==",
+        "dependencies": {
+          "Avalonia": "11.0.0"
         }
       },
       "Avalonia.Desktop": {
@@ -782,6 +800,18 @@
         "contentHash": "Idqy3y0+T2cwDfEUw4hM+sC29o8jtATiL2bAQKH2hylMIj+HBux+XxUnRbQcRD3nfB/CSyJvWNPqS+QmMmf3Zg==",
         "dependencies": {
           "Avalonia": "11.3.17"
+        }
+      },
+      "AvaloniaEdit.TextMate": {
+        "type": "CentralTransitive",
+        "requested": "[11.3.0, )",
+        "resolved": "11.3.0",
+        "contentHash": "9yDE7JUGZxWLo5eqhd6FXMHgj4EH2NOQxL030Vja6SBYX5wiLR8Pk67A8DtIabb0tpvEEDPWBBasN70OhjUiwg==",
+        "dependencies": {
+          "Avalonia": "11.0.0",
+          "Avalonia.AvaloniaEdit": "11.3.0",
+          "TextMateSharp": "1.0.65",
+          "TextMateSharp.Grammars": "1.0.65"
         }
       },
       "CommunityToolkit.Mvvm": {
@@ -858,6 +888,24 @@
         "contentHash": "yc0g12YJpmZHofGJLTQX02/uqfzJ6XHRx6pe9rANNjleQptXMHPxD9KI2/DWkXiJWddc+4oizEdGox15c89hhw==",
         "dependencies": {
           "Spectre.Console.Ansi": "0.55.2"
+        }
+      },
+      "TextMateSharp": {
+        "type": "CentralTransitive",
+        "requested": "[1.0.70, )",
+        "resolved": "1.0.70",
+        "contentHash": "Bxvwx5lgu7TApl9MIEqb742ijRKqk7kD15YbzyVunC8+uZ1mAtswAaFGjNbq/apc1z2/3lpU3cxMovcMbhVJgg==",
+        "dependencies": {
+          "Onigwrap": "1.0.8"
+        }
+      },
+      "TextMateSharp.Grammars": {
+        "type": "CentralTransitive",
+        "requested": "[1.0.70, )",
+        "resolved": "1.0.70",
+        "contentHash": "BnvHDxUvxqo0D1/N9wiPtrYR9syJTB1TUR9NP5kmZBpvs4W1I2EI7rfjPIOIPwYtlN8fmqCGw4FmTMuQG4kAzQ==",
+        "dependencies": {
+          "TextMateSharp": "1.0.70"
         }
       }
     }

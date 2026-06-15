@@ -37,6 +37,10 @@ internal static class ServiceRegistration
         services.AddSingleton<DocumentsViewModel>();
         services.AddSingleton<IDocumentHost>(sp => sp.GetRequiredService<DocumentsViewModel>());
 
+        // Invocation layer (E1.4).
+        services.AddSingleton<IInvocationService, InvocationService>();
+        services.AddSingleton<IInvocationRunner, InvocationRunner>();
+
         // View models — shell root + pane placeholders.
         services.AddSingleton<ConnectionsPaneViewModel>();
         services.AddSingleton<ServiceExplorerViewModel>();

@@ -12,7 +12,7 @@ namespace GrpCurl.Net.Studio.Services;
 /// </summary>
 internal static class ConnectionChannelMapper
 {
-    public static GrpcChannelFactory.ChannelOptions ToChannelOptions(SavedConnection connection) => new()
+    public static GrpcChannelFactory.ChannelOptions ToChannelOptions(SavedConnection connection, int? maxMessageSize = null) => new()
     {
         Plaintext = connection.Transport == TransportMode.Plaintext,
         ConnectTimeout = ParseOrNull(connection.ConnectTimeout),
@@ -20,7 +20,10 @@ internal static class ConnectionChannelMapper
         KeepaliveTimeout = ParseOrNull(connection.Keepalive.Timeout),
         Authority = NullIfBlank(connection.Authority),
         // SNI only applies under TLS.
-        ServerName = connection.Transport == TransportMode.Tls ? NullIfBlank(connection.ServerName) : null
+        ServerName = connection.Transport == TransportMode.Tls ? NullIfBlank(connection.ServerName) : null,
+        // Applies to both send and receive limits, mirroring the CLI's --max-msg-sz (FR-071).
+        MaxReceiveMessageSize = maxMessageSize,
+        MaxSendMessageSize = maxMessageSize
     };
 
     public static Metadata BuildReflectionMetadata(SavedConnection connection)

@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <RootNamespace>GrpCurl.Net.Studio.Conformance</RootNamespace>
+        <AssemblyName>GrpCurl.Net.Studio.Conformance</AssemblyName>
+        <IsPackable>false</IsPackable>
+        <Description>Client-under-test adapter for the connectrpc/conformance suite that issues every RPC through GrpCurl.Net Studio's IInvocationService — certifying the desktop app's invocation path, not just Core's. Unary subset (E1.4); streaming arrives with E2.1.</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Google.Protobuf" />
+        <PackageReference Include="Grpc.Net.Client" />
+        <PackageReference Include="Grpc.Tools">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Reuse the CLI adapter's vendored conformance protos (messages + descriptors only).
+             Routing RPCs through the Studio IInvocationService certifies the app's path. -->
+        <Protobuf Include="..\GrpCurl.Net.Conformance\Protos\**\*.proto" ProtoRoot="..\GrpCurl.Net.Conformance\Protos" GrpcServices="None" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- The UI-free view-model layer hosts the conformance-drivable IInvocationService and
+             transitively brings in Core (GrpcChannelFactory, SimpleDynamicMessage, …). -->
+        <ProjectReference Include="..\..\Src\GrpCurl.Net.Studio.ViewModels\GrpCurl.Net.Studio.ViewModels.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -261,3 +261,61 @@ jobs:
             --conf Tests/GrpCurl.Net.Conformance/conformance-config.yaml \
             --known-failing @Tests/GrpCurl.Net.Conformance/known-failing.txt \
             -- dotnet exec Tests/GrpCurl.Net.Conformance/bin/Release/net10.0/GrpCurl.Net.Conformance.dll
+
+  conformance-studio:
+    name: conformance-studio (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    needs: build-test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      CONFORMANCE_VERSION: v1.0.5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup .NET (from global.json)
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore (locked mode)
+        run: dotnet restore --locked-mode GrpCurl.Net.slnx
+
+      - name: Build Studio conformance adapter (Release)
+        run: dotnet build Tests/GrpCurl.Net.Studio.Conformance/GrpCurl.Net.Studio.Conformance.csproj --configuration Release --no-restore
+
+      - name: Download connectconformance (POSIX)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          case "${{ runner.os }}-${{ runner.arch }}" in
+            Linux-X64)   asset="connectconformance-${CONFORMANCE_VERSION}-Linux-x86_64.tar.gz" ;;
+            Linux-ARM64) asset="connectconformance-${CONFORMANCE_VERSION}-Linux-aarch64.tar.gz" ;;
+            macOS-ARM64) asset="connectconformance-${CONFORMANCE_VERSION}-Darwin-arm64.tar.gz" ;;
+            macOS-X64)   asset="connectconformance-${CONFORMANCE_VERSION}-Darwin-x86_64.tar.gz" ;;
+            *) echo "unsupported runner: ${{ runner.os }}-${{ runner.arch }}"; exit 1 ;;
+          esac
+          mkdir -p "$RUNNER_TEMP/conformance"
+          curl -fsSL "https://github.com/connectrpc/conformance/releases/download/${CONFORMANCE_VERSION}/${asset}" \
+            | tar -xz -C "$RUNNER_TEMP/conformance"
+          echo "$RUNNER_TEMP/conformance" >> "$GITHUB_PATH"
+
+      - name: Download connectconformance (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $asset = "connectconformance-$env:CONFORMANCE_VERSION-Windows-x86_64.zip"
+          Invoke-WebRequest "https://github.com/connectrpc/conformance/releases/download/$env:CONFORMANCE_VERSION/$asset" -OutFile "$env:RUNNER_TEMP\$asset"
+          Expand-Archive "$env:RUNNER_TEMP\$asset" -DestinationPath "$env:RUNNER_TEMP\conformance"
+          Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP\conformance"
+
+      - name: Run Studio conformance suite (unary subset)
+        shell: bash
+        run: |
+          connectconformance --mode client \
+            --conf Tests/GrpCurl.Net.Studio.Conformance/conformance-config.yaml \
+            --known-failing @Tests/GrpCurl.Net.Studio.Conformance/known-failing.txt \
+            -- dotnet exec Tests/GrpCurl.Net.Studio.Conformance/bin/Release/net10.0/GrpCurl.Net.Studio.Conformance.dll

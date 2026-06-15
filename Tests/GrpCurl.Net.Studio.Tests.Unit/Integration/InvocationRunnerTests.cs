@@ -54,6 +54,22 @@ public sealed class InvocationRunnerTests(StudioPlaintextServerFixture server)
     }
 
     [Fact]
+    public async Task Response_status_error_populates_the_rich_error_model()
+    {
+        var result = await Runner().InvokeUnaryAsync(
+            Request("testing.TestService/UnaryCall", """{ "response_status": { "code": 7, "message": "denied" } }"""),
+            TestContext.Current.CancellationToken);
+
+        result.Ok.ShouldBeFalse();
+        result.Error.ShouldNotBeNull();
+        result.Error!.StatusCode.ShouldBe(7); // PermissionDenied
+        result.Error.Severity.ShouldBe(StatusSeverity.Caller);
+        result.Error.Headline.ShouldBe("denied");
+        result.Error.Category.ShouldBe(ErrorCategoryKind.Rpc);
+        result.Error.JsonEnvelope.ShouldContain("\"kind\":\"error\"");
+    }
+
+    [Fact]
     public async Task Unknown_method_returns_a_failure()
     {
         var result = await Runner().InvokeUnaryAsync(

@@ -29,6 +29,7 @@ internal sealed partial class InvocationRunner(IInvocationService invocation) : 
         var options = ConnectionChannelMapper.ToChannelOptions(connection, ParseSizeOrNull(request.MaxMessageSize));
         var reflectionMetadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
         var deadline = ParseDeadline(request.Deadline);
+        var ctx = new ErrorContext(request.MethodSymbol, connection.Address, DeadlineSet: deadline is not null);
 
         try
         {
@@ -45,7 +46,7 @@ internal sealed partial class InvocationRunner(IInvocationService invocation) : 
 
             if (await session.Source.FindSymbolAsync(symbol, cancellationToken).ConfigureAwait(false) is not MethodDescriptor method)
             {
-                return Failure($"Method '{request.MethodSymbol}' was not found on the server.");
+                return Failure(ErrorMapper.FromSchema($"Method '{request.MethodSymbol}' was not found on the server.", ctx));
             }
 
             resolve.Stop();
@@ -78,7 +79,8 @@ internal sealed partial class InvocationRunner(IInvocationService invocation) : 
                 ResponseTrailers: ToItems(outcome.ResponseTrailers),
                 Status: new InvocationStatusModel(outcome.Status.Code, outcome.Status.CodeName, outcome.Status.Detail),
                 Timing: timing,
-                ErrorMessage: outcome.Ok ? null : NonEmpty(outcome.Status.Detail, outcome.Status.CodeName));
+                ErrorMessage: outcome.Ok ? null : NonEmpty(outcome.Status.Detail, outcome.Status.CodeName),
+                Error: outcome.Ok ? null : ErrorMapper.FromOutcome(outcome, ctx));
         }
         catch (OperationCanceledException)
         {
@@ -86,19 +88,19 @@ internal sealed partial class InvocationRunner(IInvocationService invocation) : 
         }
         catch (RpcException ex)
         {
-            return Failure(NonEmpty(ex.Status.Detail, ex.StatusCode.ToString()));
+            return Failure(ErrorMapper.FromRpcException(ex, ctx));
         }
         catch (Exception ex)
         {
-            // Malformed request JSON, etc. — server/Core stays the authority; advisory validation is E1.4 PR-C.
-            return Failure(ex.Message);
+            // Malformed request JSON, etc. — server/Core stays the authority; advisory validation is E1.5 PR-C.
+            return Failure(ErrorMapper.FromInternal(ex.Message, ctx));
         }
     }
 
-    private static InvocationResultModel Failure(string message)
+    private static InvocationResultModel Failure(ErrorModel error)
         => new(false, null, [], [],
-            new InvocationStatusModel((int)StatusCode.Unknown, nameof(StatusCode.Unknown), message),
-            new TimingModel([], 0, 0), message);
+            new InvocationStatusModel(error.StatusCode, error.StatusName, error.Headline),
+            new TimingModel([], 0, 0), error.Headline, error);
 
     private static IReadOnlyList<MetadataItem> ToItems(Metadata? metadata)
     {

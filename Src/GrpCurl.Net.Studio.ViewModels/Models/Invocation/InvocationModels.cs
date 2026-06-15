@@ -25,7 +25,11 @@ public sealed record TimingPhase(string Phase, TimeSpan Duration);
 /// <summary>Timing breakdown for a call (feeds the Timing tab).</summary>
 public sealed record TimingModel(IReadOnlyList<TimingPhase> Phases, long RequestBytes, long ResponseBytes);
 
-/// <summary>The model-side result of a unary invoke: response JSON + metadata + status + timing.</summary>
+/// <summary>
+///     The model-side result of a unary invoke: response JSON + metadata + status + timing. On
+///     failure, <see cref="Error" /> carries the rich error presentation (FR-090..099); the legacy
+///     <see cref="ErrorMessage" /> is retained as the one-line headline.
+/// </summary>
 public sealed record InvocationResultModel(
     bool Ok,
     string? ResponseJson,
@@ -33,4 +37,5 @@ public sealed record InvocationResultModel(
     IReadOnlyList<MetadataItem> ResponseTrailers,
     InvocationStatusModel Status,
     TimingModel Timing,
-    string? ErrorMessage);
+    string? ErrorMessage,
+    ErrorModel? Error = null);

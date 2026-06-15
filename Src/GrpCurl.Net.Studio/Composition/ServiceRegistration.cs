@@ -24,6 +24,7 @@ internal static class ServiceRegistration
         services.AddSingleton<IDialogService, DialogService>();
         services.AddSingleton<IFilePickerService, NoopFilePickerService>();
         services.AddSingleton<IClipboardService, ClipboardService>();
+        services.AddSingleton<ILauncherService, LauncherService>();
 
         // Connection layer (E1.1).
         services.AddSingleton<IWorkspaceStore, JsonWorkspaceStore>();

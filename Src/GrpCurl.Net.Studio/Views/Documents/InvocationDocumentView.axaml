@@ -10,9 +10,120 @@
              x:DataType="docs:InvocationDocumentViewModel">
 
     <UserControl.Resources>
-        <conv:StatusBrushConverter x:Key="StatusBrush" />
+        <conv:SeverityToBrushConverter x:Key="SeverityBrush" />
         <conv:SecretMaskConverter x:Key="SecretMask" />
     </UserControl.Resources>
+
+    <!-- Rich google.rpc.Status detail panels (implicit templates, resolved by data type). -->
+    <UserControl.DataTemplates>
+        <DataTemplate DataType="inv:BadRequestDetail">
+            <ItemsControl ItemsSource="{Binding Violations}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="inv:FieldViolation">
+                        <TextBlock Margin="0,1" TextWrapping="Wrap" FontFamily="Cascadia Code,Consolas,monospace" FontSize="12">
+                            <Run Text="{Binding Field}" FontWeight="SemiBold" />
+                            <Run Text=" — " />
+                            <Run Text="{Binding Description}" />
+                        </TextBlock>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </DataTemplate>
+
+        <DataTemplate DataType="inv:RetryInfoDetail">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock VerticalAlignment="Center">
+                    <Run Text="Server suggests retrying after" />
+                    <Run Text="{Binding Delay}" FontWeight="SemiBold" />
+                </TextBlock>
+                <Button Content="Retry"
+                        Command="{Binding $parent[UserControl].((docs:InvocationDocumentViewModel)DataContext).RetryCommand}"
+                        AutomationProperties.Name="Retry after delay" />
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="inv:ErrorInfoDetail">
+            <StackPanel Spacing="2">
+                <TextBlock>
+                    <Run Text="Reason:" FontWeight="SemiBold" />
+                    <Run Text="{Binding Reason}" />
+                    <Run Text="  Domain:" FontWeight="SemiBold" />
+                    <Run Text="{Binding Domain}" />
+                </TextBlock>
+                <ItemsControl ItemsSource="{Binding Metadata}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="inv:MetadataItem">
+                            <TextBlock Margin="0,1" FontFamily="Cascadia Code,Consolas,monospace" FontSize="12">
+                                <Run Text="{Binding Name}" FontWeight="SemiBold" />
+                                <Run Text=" = " />
+                                <Run Text="{Binding Value}" />
+                            </TextBlock>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="inv:QuotaFailureDetail">
+            <ItemsControl ItemsSource="{Binding Violations}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="inv:QuotaViolation">
+                        <TextBlock Margin="0,1" TextWrapping="Wrap">
+                            <Run Text="{Binding Subject}" FontWeight="SemiBold" />
+                            <Run Text=" — " />
+                            <Run Text="{Binding Description}" />
+                        </TextBlock>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </DataTemplate>
+
+        <DataTemplate DataType="inv:PreconditionFailureDetail">
+            <ItemsControl ItemsSource="{Binding Violations}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="inv:PreconditionViolation">
+                        <TextBlock Margin="0,1" TextWrapping="Wrap">
+                            <Run Text="{Binding Type}" FontWeight="SemiBold" />
+                            <Run Text=" / " />
+                            <Run Text="{Binding Subject}" />
+                            <Run Text=" — " />
+                            <Run Text="{Binding Description}" />
+                        </TextBlock>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </DataTemplate>
+
+        <DataTemplate DataType="inv:HelpDetail">
+            <ItemsControl ItemsSource="{Binding Links}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="inv:HelpLink">
+                        <Button Margin="0,1" Padding="0" Background="Transparent" BorderThickness="0"
+                                Content="{Binding Description}"
+                                Command="{Binding $parent[UserControl].((docs:InvocationDocumentViewModel)DataContext).OpenHelpLinkCommand}"
+                                CommandParameter="{Binding Url}"
+                                Foreground="{DynamicResource Status.Neutral}"
+                                AutomationProperties.Name="Open help link" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </DataTemplate>
+
+        <DataTemplate DataType="inv:LocalizedMessageDetail">
+            <TextBlock TextWrapping="Wrap">
+                <Run Text="{Binding Locale}" FontWeight="SemiBold" Foreground="{DynamicResource Status.Neutral}" />
+                <Run Text="  " />
+                <Run Text="{Binding Message}" />
+            </TextBlock>
+        </DataTemplate>
+
+        <DataTemplate DataType="inv:GenericDetail">
+            <StackPanel Spacing="2">
+                <TextBlock Text="{Binding TypeUrl}" Opacity="0.6" FontSize="11" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding Json}" FontFamily="Cascadia Code,Consolas,monospace" FontSize="12" TextWrapping="Wrap" />
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.DataTemplates>
 
     <Grid RowDefinitions="Auto,Auto,*,4,*">
 
@@ -87,13 +198,14 @@
         <GridSplitter Grid.Row="3" Height="4" HorizontalAlignment="Stretch" Background="{DynamicResource Divider}" />
 
         <!-- Response -->
-        <Grid Grid.Row="4" RowDefinitions="Auto,*">
+        <Grid Grid.Row="4" RowDefinitions="Auto,Auto,*">
             <Border Grid.Row="0" Padding="10,6">
                 <DockPanel>
                     <Border DockPanel.Dock="Left" CornerRadius="3" Padding="6,1" VerticalAlignment="Center"
                             IsVisible="{Binding StatusText, Converter={x:Static ObjectConverters.IsNotNull}}"
-                            Background="{Binding StatusIsError, Converter={StaticResource StatusBrush}}">
-                        <TextBlock Text="{Binding StatusText}" Foreground="White" FontWeight="SemiBold" FontSize="12" />
+                            Background="{Binding Severity, Converter={StaticResource SeverityBrush}}">
+                        <TextBlock Text="{Binding StatusText}" Foreground="White" FontWeight="SemiBold" FontSize="12"
+                                   AutomationProperties.Name="Status" />
                     </Border>
                     <Button DockPanel.Dock="Right" HorizontalAlignment="Right" Content="Copy"
                             Command="{Binding CopyResponseCommand}" AutomationProperties.Name="Copy response" />
@@ -101,7 +213,63 @@
                 </DockPanel>
             </Border>
 
-            <TabControl Grid.Row="1" Margin="8,0,8,8">
+            <!-- Rich error panel (FR-090..099) — inline only, shown on failure. -->
+            <Border Grid.Row="1" IsVisible="{Binding HasError}" Margin="8,0,8,8" Padding="10"
+                    Background="{DynamicResource Surface.PaneHeader}"
+                    BorderBrush="{DynamicResource Divider}" BorderThickness="1" CornerRadius="3">
+                <StackPanel Spacing="6">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6" VerticalAlignment="Top">
+                            <Button Content="Retry" Command="{Binding RetryCommand}" AutomationProperties.Name="Retry invoke" />
+                            <Button Content="Copy as JSON" Command="{Binding CopyErrorJsonCommand}"
+                                    AutomationProperties.Name="Copy error as JSON" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding Error.Headline}" FontWeight="SemiBold" FontSize="14"
+                                   TextWrapping="Wrap" AutomationProperties.Name="Error headline" />
+                    </DockPanel>
+
+                    <TextBlock Opacity="0.7" FontSize="12">
+                        <Run Text="calling" />
+                        <Run Text="{Binding Error.Method}" FontWeight="SemiBold" />
+                        <Run Text="on" />
+                        <Run Text="{Binding Error.Address}" FontWeight="SemiBold" />
+                    </TextBlock>
+
+                    <TextBlock Text="{Binding Error.Hint}" FontStyle="Italic" TextWrapping="Wrap"
+                               IsVisible="{Binding Error.Hint, Converter={x:Static ObjectConverters.IsNotNull}}" />
+
+                    <StackPanel Spacing="2" IsVisible="{Binding HasErrorSuggestions}">
+                        <TextBlock Text="Try:" FontWeight="SemiBold" Margin="0,4,0,0" />
+                        <ItemsControl ItemsSource="{Binding Error.Suggestions}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="inv:SuggestionModel">
+                                    <TextBlock Margin="8,0,0,0" TextWrapping="Wrap">
+                                        <Run Text="•" />
+                                        <Run Text="{Binding Text}" />
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <ItemsControl ItemsSource="{Binding Error.Details}" IsVisible="{Binding HasErrorDetails}" Margin="0,4,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="inv:ErrorDetailModel">
+                                <Border Margin="0,3,0,0" Padding="8" CornerRadius="3"
+                                        BorderBrush="{DynamicResource Divider}" BorderThickness="1">
+                                    <StackPanel Spacing="3">
+                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12"
+                                                   Foreground="{DynamicResource Status.Neutral}" />
+                                        <ContentControl Content="{Binding}" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <TabControl Grid.Row="2" Margin="8,0,8,8">
                 <TabItem Header="Body">
                     <Border BorderBrush="{DynamicResource Divider}" BorderThickness="1" CornerRadius="3">
                         <ae:TextEditor x:Name="ResponseEditor" ShowLineNumbers="True" IsReadOnly="True"

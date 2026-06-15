@@ -24,7 +24,9 @@ public sealed class InvocationDocumentUiTests(HeadlessSessionFixture fixture) : 
         runner,
         new FakeDescriptorService(),
         new ImmediateUiDispatcher(),
-        new FakeClipboardService());
+        new FakeClipboardService(),
+        new FakeDialogService(),
+        new FakeLauncherService());
 
     [Fact]
     public Task Invocation_tab_renders_the_editor_and_method_binding() => RunOnUiThread(() =>
@@ -65,5 +67,46 @@ public sealed class InvocationDocumentUiTests(HeadlessSessionFixture fixture) : 
 
         var response = window.GetVisualDescendants().OfType<TextEditor>().First(e => e.Name == "ResponseEditor");
         response.Text.ShouldContain("echo");
+    });
+
+    [Fact]
+    public Task A_failed_invoke_renders_the_error_panel_with_pill_headline_and_a_rich_detail() => RunOnUiThread(() =>
+    {
+        var error = new ViewModels.Models.Invocation.ErrorModel(
+            ViewModels.Models.Invocation.ErrorCategoryKind.Rpc, 9, "FailedPrecondition",
+            ViewModels.Models.Invocation.StatusSeverity.Caller, "service is disabled",
+            Hint: null, Address: "h:1", Method: "pkg.Svc/Go",
+            Suggestions: [new ViewModels.Models.Invocation.SuggestionModel("Enable the service first.")],
+            Details:
+            [
+                new ViewModels.Models.Invocation.BadRequestDetail(
+                    [new ViewModels.Models.Invocation.FieldViolation("name", "must not be empty")])
+            ],
+            JsonEnvelope: "{\"kind\":\"error\"}");
+
+        var runner = new FakeInvocationRunner
+        {
+            Result = new ViewModels.Models.Invocation.InvocationResultModel(
+                false, null, [], [],
+                new ViewModels.Models.Invocation.InvocationStatusModel(9, "FailedPrecondition", "service is disabled"),
+                new ViewModels.Models.Invocation.TimingModel([], 0, 0), "service is disabled", error)
+        };
+
+        var vm = Vm(runner);
+        var view = new InvocationDocumentView { DataContext = vm };
+        var window = new Window { Content = view, Width = 800, Height = 600 };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        vm.InvokeCommand.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+
+        vm.State.ShouldBe(RunState.Failed);
+
+        var texts = window.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text).ToList();
+        texts.ShouldContain("FailedPrecondition");     // status pill
+        texts.ShouldContain("service is disabled");    // headline
+        texts.ShouldContain("Bad request");            // rich-detail panel title rendered
+        texts.ShouldContain("Try:");                   // suggestions section
     });
 }

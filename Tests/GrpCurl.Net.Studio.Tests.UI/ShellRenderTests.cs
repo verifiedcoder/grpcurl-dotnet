@@ -27,7 +27,7 @@ public sealed class ShellRenderTests(HeadlessSessionFixture fixture) : HeadlessT
             new ServiceExplorerViewModel(new FakeDescriptorService(), new ConnectionSelection(), new FakeClipboardService(), new ImmediateUiDispatcher(), new FakeDocumentHost()),
             new ConsoleViewModel(),
             new InspectorViewModel(),
-            new DocumentsViewModel(new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner()));
+            new DocumentsViewModel(new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService()));
 
     [Fact]
     public Task Shell_renders_all_named_zones_with_title() => RunOnUiThread(() =>
@@ -55,7 +55,7 @@ public sealed class ShellRenderTests(HeadlessSessionFixture fixture) : HeadlessT
             new InMemorySettingsStore(), pane,
             new ServiceExplorerViewModel(new FakeDescriptorService(), new ConnectionSelection(), new FakeClipboardService(), new ImmediateUiDispatcher(), new FakeDocumentHost()),
             new ConsoleViewModel(), new InspectorViewModel(),
-            new DocumentsViewModel(new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner()));
+            new DocumentsViewModel(new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService()));
 
         var window = new MainWindow { DataContext = viewModel };
         window.Show();

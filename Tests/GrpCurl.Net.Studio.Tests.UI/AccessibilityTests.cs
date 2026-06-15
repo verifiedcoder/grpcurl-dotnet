@@ -30,7 +30,7 @@ public sealed class AccessibilityTests(HeadlessSessionFixture fixture) : Headles
             new ServiceExplorerViewModel(new FakeDescriptorService(), new ConnectionSelection(), new FakeClipboardService(), new ImmediateUiDispatcher(), new FakeDocumentHost()),
             new ConsoleViewModel(),
             new InspectorViewModel(),
-            new DocumentsViewModel(new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner()));
+            new DocumentsViewModel(new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService()));
 
     [Fact]
     public Task Every_interactive_control_in_the_shell_has_an_accessible_name() => RunOnUiThread(() =>

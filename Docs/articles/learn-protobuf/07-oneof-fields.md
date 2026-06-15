@@ -32,7 +32,7 @@ Think of the oneof group as a tagged union or discriminated union if you are fam
 Use `describe --msg-template` to see the structure:
 
 ```bash
-grpcurl.net describe --plaintext --msg-template localhost:9090 testing.OneofMessage
+grpcn describe --plaintext --msg-template localhost:9090 testing.OneofMessage
 ```
 
 The output includes the proto definition followed by a JSON template with all fields from the oneof alongside regular fields:
@@ -66,7 +66,7 @@ Message template:
 You can also examine the proto definition directly to confirm the oneof grouping:
 
 ```bash
-grpcurl.net describe --plaintext localhost:9090 testing.OneofMessage
+grpcn describe --plaintext localhost:9090 testing.OneofMessage
 ```
 
 Expected output:
@@ -195,14 +195,14 @@ This is another way oneof differs from a regular scalar field. A regular `int32`
 
 The `OneofMessage` type is defined in the TestServer's `test.proto` but does not have a dedicated RPC method that uses it as a request or response type. This means you cannot invoke an RPC to send and receive `OneofMessage` instances directly.
 
-However, you can still explore the type thoroughly using `grpcurl.net describe`:
+However, you can still explore the type thoroughly using `grpcn describe`:
 
 ```bash
 # See the proto definition with the oneof block
-grpcurl.net describe --plaintext localhost:9090 testing.OneofMessage
+grpcn describe --plaintext localhost:9090 testing.OneofMessage
 
 # See the full JSON template
-grpcurl.net describe --plaintext --msg-template localhost:9090 testing.OneofMessage
+grpcn describe --plaintext --msg-template localhost:9090 testing.OneofMessage
 ```
 
 This is a common situation in real-world gRPC development. Not every message type is used directly in an RPC signature -- some are embedded as fields within other messages, or used internally by the server. The `describe` command lets you inspect any type the server exposes through reflection, regardless of whether it appears in an RPC method signature.
@@ -226,7 +226,7 @@ Oneof fields appear frequently in real-world protobuf schemas. Common patterns i
 | **Multiple fields set** | Implementation-dependent (usually last wins) -- avoid doing this |
 | **Explicit presence** | Oneof fields track whether they are set, unlike regular proto3 scalars |
 | **No default** | An empty oneof has no active variant, which is distinct from any default value |
-| **Discovery** | Use `grpcurl.net describe --msg-template` to see oneof fields and their types |
+| **Discovery** | Use `grpcn describe --msg-template` to see oneof fields and their types |
 
 ## What's Next
 

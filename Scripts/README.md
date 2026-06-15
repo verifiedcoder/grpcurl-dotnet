@@ -136,6 +136,6 @@ cross-platform ValidationRunner.
 you add `--proto`-based workflows, which need `protoc` on PATH. Install via
 `apt install protobuf-compiler`, `brew install protobuf`, or `choco install protoc`.
 
-**Scripts reading stdin** - `grpcurl.net invoke -d @` accepts up to 16 MiB by default.
+**Scripts reading stdin** - `grpcn invoke -d @` accepts up to 16 MiB by default.
 Use `--max-stdin-bytes <bytes>` in automation when you want a smaller or explicitly
 documented numeric byte budget.

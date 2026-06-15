@@ -99,7 +99,7 @@ internal static class DescribeCommandHandler
 
         var userAgentOpt = new Option<string?>("--user-agent")
         {
-            Description = "User-Agent header value. Default: grpcurl-dotnet/1.0.0"
+            Description = "User-Agent header value. Default: grpcn/1.0.0"
         };
 
         var headerOpt = new Option<string[]>("--header", "-H")
@@ -300,9 +300,9 @@ internal static class DescribeCommandHandler
                     Message = "Must specify either --protoset files, --proto files, or server address",
                     Suggestions =
                     [
-                        "grpcurl-dotnet --protoset file.protoset describe",
-                        "grpcurl-dotnet --proto file.proto describe MyService",
-                        "grpcurl-dotnet localhost:9090 describe MyService"
+                        "grpcn --protoset file.protoset describe",
+                        "grpcn --proto file.proto describe MyService",
+                        "grpcn localhost:9090 describe MyService"
                     ]
                 }, output);
 

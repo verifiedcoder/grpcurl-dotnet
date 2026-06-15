@@ -1,6 +1,6 @@
 # Authentication recipes
 
-Header-based authentication patterns for `grpcurl.net invoke` and `gql2grpc`. Both CLIs share the same header machinery — `-H "name: value"`, `--rpc-header`, `--reflect-header` — and both expand `${ENV_VAR}` references via `GrpcChannelFactory.ExpandEnvironmentVariables`, so secrets stay out of shell history when sourced from the environment.
+Header-based authentication patterns for `grpcn invoke` and `gql2grpc`. Both CLIs share the same header machinery — `-H "name: value"`, `--rpc-header`, `--reflect-header` — and both expand `${ENV_VAR}` references via `GrpcChannelFactory.ExpandEnvironmentVariables`, so secrets stay out of shell history when sourced from the environment.
 
 Scopes:
 
@@ -14,7 +14,7 @@ The standard OAuth2 / OpenID Connect pattern:
 
 ```bash
 export API_TOKEN='<your bearer token>'
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   --rpc-header "authorization: Bearer ${API_TOKEN}" \
   -d '{"id": "abc"}' \
   api.example.com:443 my.pkg.MyService/GetThing
@@ -28,7 +28,7 @@ Typical patterns include `x-api-key` or a vendor-specific header. Same substitut
 
 ```bash
 export MY_API_KEY='...'
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   --rpc-header "x-api-key: ${MY_API_KEY}" \
   -d '{}' localhost:9090 my.pkg.MyService/Ping
 ```
@@ -69,12 +69,12 @@ Separate values with `; ` (semicolon-space). The HTTP cookie format is preserved
 
 ## Mutual TLS (mTLS)
 
-`grpcurl.net` and `gql2grpc` both support client-certificate authentication via PEM and PKCS12.
+`grpcn` and `gql2grpc` both support client-certificate authentication via PEM and PKCS12.
 
 ### PEM — separate cert and key
 
 ```bash
-grpcurl.net invoke \
+grpcn invoke \
   --cacert ca.pem \
   --cert client.pem \
   --key client.key \
@@ -87,7 +87,7 @@ The private key file must be unencrypted — passphrases require PKCS12 below.
 ### PKCS12 — single container
 
 ```bash
-grpcurl.net invoke \
+grpcn invoke \
   --cacert ca.pem \
   --cert client.p12 \
   --cert-password "${P12_PASSPHRASE}" \
@@ -122,7 +122,7 @@ GrpCurl.Net applies these defaults whenever `--cacert` or `--cert` is supplied:
 
 Use `--revocation-mode nocheck` only against self-signed fixtures that lack a CRL distribution point. Production deployments should leave the default `Online` so revoked certs are rejected.
 
-`--revocation-mode` and `--exportable-key` are accepted by every command — `list`, `describe`, `invoke`, and `gql2grpc` — so discovery against a private CA without CRL/OCSP endpoints works the same way as invocation (e.g. `grpcurl.net list --cacert ca.pem --revocation-mode offline my-service.internal:443`).
+`--revocation-mode` and `--exportable-key` are accepted by every command — `list`, `describe`, `invoke`, and `gql2grpc` — so discovery against a private CA without CRL/OCSP endpoints works the same way as invocation (e.g. `grpcn list --cacert ca.pem --revocation-mode offline my-service.internal:443`).
 
 On Windows, .NET's Schannel-backed TLS stack requires the client certificate private key to be available from a key set for mTLS handshakes, so GrpCurl.Net uses non-exportable `UserKeySet` there. Linux keeps the safer ephemeral behavior. macOS does not support `EphemeralKeySet` for PFX private keys because .NET needs keychain-backed storage, so GrpCurl.Net uses platform default keychain handling on macOS. Use `--exportable-key` only when a workflow explicitly needs exportable private key material.
 
@@ -154,7 +154,7 @@ ACCESS_TOKEN=$(curl -s -X POST https://idp.example.com/oauth2/token \
   | jq -r .access_token)
 
 # Pass it to every subsequent gRPC call
-grpcurl.net invoke \
+grpcn invoke \
   --rpc-header "authorization: Bearer ${ACCESS_TOKEN}" \
   -d '{"query": "..."}' \
   api.example.com:443 my.pkg.SearchService/Search

@@ -16,7 +16,7 @@ echo ""
 echo "EmptyCall takes an empty request and returns an empty response."
 echo "This is the simplest possible gRPC invocation."
 echo ""
-echo "Command: grpcurl.net invoke --plaintext --max-time 10s $SERVER testing.TestService/EmptyCall"
+echo "Command: grpcn invoke --plaintext --max-time 10s $SERVER testing.TestService/EmptyCall"
 echo ""
 
 grpcurl_net invoke --plaintext --max-time 10s $SERVER testing.TestService/EmptyCall

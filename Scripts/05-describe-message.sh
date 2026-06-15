@@ -15,19 +15,19 @@ echo "=== Describe Message Types ==="
 echo ""
 
 echo "--- testing.SimpleRequest ---"
-echo "Command: grpcurl.net describe --plaintext --max-time 10s $SERVER testing.SimpleRequest"
+echo "Command: grpcn describe --plaintext --max-time 10s $SERVER testing.SimpleRequest"
 echo ""
 grpcurl_net describe --plaintext --max-time 10s $SERVER testing.SimpleRequest
 
 echo ""
 echo "--- testing.Payload ---"
-echo "Command: grpcurl.net describe --plaintext --max-time 10s $SERVER testing.Payload"
+echo "Command: grpcn describe --plaintext --max-time 10s $SERVER testing.Payload"
 echo ""
 grpcurl_net describe --plaintext --max-time 10s $SERVER testing.Payload
 
 echo ""
 echo "--- testing.PayloadType (enum) ---"
-echo "Command: grpcurl.net describe --plaintext --max-time 10s $SERVER testing.PayloadType"
+echo "Command: grpcn describe --plaintext --max-time 10s $SERVER testing.PayloadType"
 echo ""
 grpcurl_net describe --plaintext --max-time 10s $SERVER testing.PayloadType
 

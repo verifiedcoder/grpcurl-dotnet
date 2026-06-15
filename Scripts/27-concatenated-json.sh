@@ -22,7 +22,7 @@ echo ""
 
 # --- Client Streaming with Concatenated JSON ---
 echo "--- Client Streaming: 3 messages via concatenated JSON ---"
-echo "Command: grpcurl.net invoke --plaintext --max-time 10s -d '{...} {...} {...}' \$SERVER testing.TestService/StreamingInputCall"
+echo "Command: grpcn invoke --plaintext --max-time 10s -d '{...} {...} {...}' \$SERVER testing.TestService/StreamingInputCall"
 echo ""
 
 grpcurl_net invoke --plaintext \
@@ -34,7 +34,7 @@ echo ""
 
 # --- Bidirectional Streaming with Concatenated JSON ---
 echo "--- Bidirectional Streaming: 2 messages via concatenated JSON ---"
-echo "Command: grpcurl.net invoke --plaintext --max-time 10s -d '{...} {...}' \$SERVER testing.TestService/FullDuplexCall"
+echo "Command: grpcn invoke --plaintext --max-time 10s -d '{...} {...}' \$SERVER testing.TestService/FullDuplexCall"
 echo ""
 
 grpcurl_net invoke --plaintext \
@@ -44,7 +44,7 @@ grpcurl_net invoke --plaintext \
 
 echo ""
 echo "--- Client Streaming: stdin with explicit max stdin size ---"
-echo "Command: printf '<json objects>' | grpcurl.net invoke --plaintext --max-time 10s --max-stdin-bytes 1048576 -d @ \$SERVER testing.TestService/StreamingInputCall"
+echo "Command: printf '<json objects>' | grpcn invoke --plaintext --max-time 10s --max-stdin-bytes 1048576 -d @ \$SERVER testing.TestService/StreamingInputCall"
 echo ""
 
 printf '%s\n%s\n' \

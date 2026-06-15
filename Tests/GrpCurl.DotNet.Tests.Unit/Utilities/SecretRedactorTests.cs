@@ -104,10 +104,10 @@ public sealed class SecretRedactorTests
         // Arrange
 
         // Act
-        var result = SecretRedactor.FormatValue("user-agent", "grpcurl.net/1.0", unsafeShowSecrets: false);
+        var result = SecretRedactor.FormatValue("user-agent", "grpcn/1.0", unsafeShowSecrets: false);
 
         // Assert
-        result.ShouldBe("grpcurl.net/1.0");
+        result.ShouldBe("grpcn/1.0");
     }
 
     [Fact]
@@ -142,7 +142,7 @@ public sealed class SecretRedactorTests
         // Arrange
         var metadata = new Metadata
         {
-            { "user-agent", "grpcurl.net/1.0" },
+            { "user-agent", "grpcn/1.0" },
             { "authorization", "Bearer secret-token" },
             { "x-request-id", "abc123" },
             { "cookie", "session=xyz" }
@@ -152,7 +152,7 @@ public sealed class SecretRedactorTests
         var lines = SecretRedactor.FormatLines(metadata, unsafeShowSecrets: false).ToArray();
 
         // Assert
-        lines.ShouldContain("user-agent: grpcurl.net/1.0");
+        lines.ShouldContain("user-agent: grpcn/1.0");
         lines.ShouldContain("authorization: [REDACTED]");
         lines.ShouldContain("x-request-id: abc123");
         lines.ShouldContain("cookie: [REDACTED]");

@@ -55,7 +55,7 @@ These options are available for all commands:
 
 ```bash
 # Send a base64-encoded byte payload as the trace-bin header
-grpcurl.net invoke --plaintext --max-time 30s \
+grpcn invoke --plaintext --max-time 30s \
   -H 'trace-bin: AQIDBA==' \
   localhost:9090 my.pkg.Service/Echo -d '{}'
 ```
@@ -69,7 +69,7 @@ List available services or methods for a specific service.
 ### Syntax
 
 ```bash
-grpcurl.net list [options] [address] [service]
+grpcn list [options] [address] [service]
 ```
 
 ### Arguments
@@ -83,25 +83,25 @@ grpcurl.net list [options] [address] [service]
 
 ```bash
 # List all services
-grpcurl.net list --plaintext localhost:9090
+grpcn list --plaintext localhost:9090
 
 # Bound reflection-backed discovery
-grpcurl.net list --plaintext --max-time 10s localhost:9090
+grpcn list --plaintext --max-time 10s localhost:9090
 
 # List methods for a service
-grpcurl.net list --plaintext localhost:9090 my.package.Service
+grpcn list --plaintext localhost:9090 my.package.Service
 
 # Machine-readable JSON envelope (single line on stdout)
-grpcurl.net list --plaintext --output json localhost:9090 \
+grpcn list --plaintext --output json localhost:9090 \
   | jq '.services[]'
 
 # List services using protoset (offline)
-grpcurl.net list --protoset service.protoset
+grpcn list --protoset service.protoset
 
 # List and export protoset (initial write)
-grpcurl.net list --plaintext --protoset-out export.protoset localhost:9090
+grpcn list --plaintext --protoset-out export.protoset localhost:9090
 # ... and force-overwrite on subsequent runs
-grpcurl.net list --plaintext --protoset-out export.protoset --force localhost:9090
+grpcn list --plaintext --protoset-out export.protoset --force localhost:9090
 ```
 
 ---
@@ -113,7 +113,7 @@ Describe a service, method, or message type.
 ### Syntax
 
 ```bash
-grpcurl.net describe [options] [address] [symbol]
+grpcn describe [options] [address] [symbol]
 ```
 
 ### Arguments
@@ -133,19 +133,19 @@ grpcurl.net describe [options] [address] [symbol]
 
 ```bash
 # Describe all services
-grpcurl.net describe --plaintext localhost:9090
+grpcn describe --plaintext localhost:9090
 
 # Describe a specific service with bounded reflection discovery
-grpcurl.net describe --plaintext --max-time 10s localhost:9090 my.package.Service
+grpcn describe --plaintext --max-time 10s localhost:9090 my.package.Service
 
 # Describe a message type
-grpcurl.net describe --plaintext localhost:9090 my.package.MyMessage
+grpcn describe --plaintext localhost:9090 my.package.MyMessage
 
 # Get JSON template for a message
-grpcurl.net describe --plaintext --msg-template localhost:9090 my.package.MyRequest
+grpcn describe --plaintext --msg-template localhost:9090 my.package.MyRequest
 
 # Machine-readable JSON envelope for a service
-grpcurl.net describe --plaintext --output json localhost:9090 my.package.Service \
+grpcn describe --plaintext --output json localhost:9090 my.package.Service \
   | jq '{kind, methods: [.methods[].fullName]}'
 ```
 
@@ -158,7 +158,7 @@ Invoke a gRPC method.
 ### Syntax
 
 ```bash
-grpcurl.net invoke [options] <address> <method>
+grpcn invoke [options] <address> <method>
 ```
 
 ### Arguments
@@ -189,58 +189,58 @@ grpcurl.net invoke [options] <address> <method>
 > ```powershell
 > @'
 > {"name": "World"}
-> '@ | grpcurl.net invoke --plaintext --max-stdin-bytes 1048576 -d '@' localhost:9090 my.package.Service/SayHello
+> '@ | grpcn invoke --plaintext --max-stdin-bytes 1048576 -d '@' localhost:9090 my.package.Service/SayHello
 > ```
 
 ### Examples
 
 ```bash
 # Invoke unary method with inline JSON
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"name": "World"}' \
   localhost:9090 my.package.Service/SayHello
 
 # Invoke with data from stdin
-echo '{"name": "World"}' | grpcurl.net invoke --plaintext \
+echo '{"name": "World"}' | grpcn invoke --plaintext \
   --max-stdin-bytes 1048576 \
   -d @ \
   localhost:9090 my.package.Service/SayHello
 
 # Invoke with custom headers
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -H "Authorization: Bearer token123" \
   -H "X-Request-Id: abc123" \
   -d '{}' \
   localhost:9090 my.package.Service/GetData
 
 # Invoke with timeout
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   --max-time 30s \
   -d '{}' \
   localhost:9090 my.package.Service/LongRunningOperation
 
 # Invoke server streaming
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"count": 5}' \
   localhost:9090 my.package.Service/StreamData
 
 # Invoke client streaming (multiple messages from stdin)
 echo '{"value": 1}
 {"value": 2}
-{"value": 3}' | grpcurl.net invoke --plaintext \
+{"value": 3}' | grpcn invoke --plaintext \
   --max-stdin-bytes 1048576 \
   -d @ \
   localhost:9090 my.package.Service/AccumulateValues
 
 # Invoke bidirectional streaming
 echo '{"message": "hello"}
-{"message": "world"}' | grpcurl.net invoke --plaintext \
+{"message": "world"}' | grpcn invoke --plaintext \
   --max-stdin-bytes 1048576 \
   -d @ \
   localhost:9090 my.package.Service/Chat
 
 # Machine-readable NDJSON streaming responses
-grpcurl.net invoke --plaintext --output json --max-time 30s \
+grpcn invoke --plaintext --output json --max-time 30s \
   -d '{"count": 5}' \
   localhost:9090 my.package.Service/StreamData \
   | jq -c '.message'
@@ -319,7 +319,7 @@ GraphQL documents loaded with `--file`, JSON variables loaded with `--variables-
 
 ### Exit codes
 
-`0` on success, `2` for usage/JSON-parse errors, `3` for missing-file/schema errors, `4` for network errors, `5` for timeouts, `64 + grpcStatusCode` when the upstream RPC fails (e.g. `InvalidArgument=3` → `67`), `130` on Ctrl+C, `1` for anything else. As with `grpcurl.net`, most transport failures surface as `64 + status` (connection refused → `78`) rather than `4`/`5`. Top-level failures (e.g. missing GraphQL document, unreachable address) still produce a parseable `{"data":null,"errors":[...]}` envelope on stdout — there is no out-of-band error format.
+`0` on success, `2` for usage/JSON-parse errors, `3` for missing-file/schema errors, `4` for network errors, `5` for timeouts, `64 + grpcStatusCode` when the upstream RPC fails (e.g. `InvalidArgument=3` → `67`), `130` on Ctrl+C, `1` for anything else. As with `grpcn`, most transport failures surface as `64 + status` (connection refused → `78`) rather than `4`/`5`. Top-level failures (e.g. missing GraphQL document, unreachable address) still produce a parseable `{"data":null,"errors":[...]}` envelope on stdout — there is no out-of-band error format.
 
 ### Examples
 
@@ -391,7 +391,7 @@ Size values accept the following formats:
 | 64 + StatusCode | RPC error from the server (e.g. `Unavailable=14` → `78`, `NotFound=5` → `69`) |
 | 130 | Cancelled by user (Ctrl+C) |
 
-Both `grpcurl.net` and `gql2grpc` use the same exit-code mapping. In `--output json` mode every code is accompanied by a structured envelope on stderr (or, for `gql2grpc`, inside the GraphQL response envelope on stdout) that carries the category and any RPC details.
+Both `grpcn` and `gql2grpc` use the same exit-code mapping. In `--output json` mode every code is accompanied by a structured envelope on stderr (or, for `gql2grpc`, inside the GraphQL response envelope on stdout) that carries the category and any RPC details.
 
 > [!NOTE]
 > Most transport failures surface through the gRPC client as `64 + status`, not as `4`/`5`: a refused connection exits `78` (64 + `Unavailable`(14)) and a `--max-time` deadline hit during connect exits `65` (64 + `Cancelled`(1)). This matches upstream grpcurl. Robust scripts should treat any code `>= 64` as an RPC/transport failure and `1`–`3` as local failures, rather than keying on `4`/`5` specifically.
@@ -401,7 +401,7 @@ Both `grpcurl.net` and `gql2grpc` use the same exit-code mapping. In `--output j
 Headers can reference environment variables using `${VAR_NAME}` syntax:
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -H "Authorization: Bearer ${AUTH_TOKEN}" \
   -d '{}' \
   localhost:9090 my.package.Service/SecureMethod
@@ -416,7 +416,7 @@ Both CLIs follow strict stdout/stderr discipline:
 - **stdout** carries only data: list entries, describe output, invoke response messages, GraphQL response envelopes.
 - **stderr** carries everything else: error envelopes (text or JSON), suggestion blocks, verbose chatter.
 
-In `--output json` mode for `grpcurl.net`:
+In `--output json` mode for `grpcn`:
 
 - `list` (no service): `{"kind":"services","services":[...]}` — single line on stdout.
 - `list <service>`: `{"kind":"methods","service":"...","methods":[...]}` — single line on stdout.

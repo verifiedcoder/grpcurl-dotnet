@@ -25,7 +25,7 @@ Pack the tool packages and install them from the local build output:
 ```bash
 dotnet pack Src/GrpCurl.Net -c Release
 dotnet tool install -g GrpCurl.Net --add-source Src/GrpCurl.Net/bin/Release
-grpcurl.net --version
+grpcn --version
 ```
 
 Install the GraphQL bridge when you need GraphQL-to-gRPC translation:
@@ -61,7 +61,7 @@ dotnet publish Src/GrpCurl.Net -c Release -r osx-arm64 --self-contained -p:Publi
 dotnet publish Src/GrpCurl.Net -c Release -r win-x64 --self-contained -p:PublishSingleFile=true
 ```
 
-Replace `Src/GrpCurl.Net` with `Src/Gql2Grpc` to publish the GraphQL bridge instead. The executable lands in `Src/<Project>/bin/Release/<target-framework>/<runtime>/publish/` and is named after the project (`GrpCurl.Net` / `Gql2Grpc`, plus `.exe` on Windows) — not `grpcurl.net`, which is the dotnet-tool command name. The `<target-framework>` folder tracks whatever the `.csproj` declares, so the path stays correct across .NET upgrades.
+Replace `Src/GrpCurl.Net` with `Src/Gql2Grpc` to publish the GraphQL bridge instead. The executable lands in `Src/<Project>/bin/Release/<target-framework>/<runtime>/publish/` and is named after the project (`GrpCurl.Net` / `Gql2Grpc`, plus `.exe` on Windows) — not `grpcn`, which is the dotnet-tool command name. The `<target-framework>` folder tracks whatever the `.csproj` declares, so the path stays correct across .NET upgrades.
 
 ## Basic Usage
 
@@ -70,7 +70,7 @@ Replace `Src/GrpCurl.Net` with `Src/Gql2Grpc` to publish the GraphQL bridge inst
 List all services available on a gRPC server:
 
 ```bash
-grpcurl.net list --plaintext localhost:9090
+grpcn list --plaintext localhost:9090
 ```
 
 Example Output:
@@ -85,7 +85,7 @@ testing.UnimplementedService
 List methods for a specific service:
 
 ```bash
-grpcurl.net list --plaintext localhost:9090 testing.TestService
+grpcn list --plaintext localhost:9090 testing.TestService
 ```
 
 Example Output:
@@ -103,7 +103,7 @@ testing.TestService.UnaryCall
 Get a JSON template for a message type:
 
 ```bash
-grpcurl.net describe --plaintext --msg-template localhost:9090 testing.SimpleRequest
+grpcn describe --plaintext --msg-template localhost:9090 testing.SimpleRequest
 ```
 
 Example Output:
@@ -140,7 +140,7 @@ Message template:
 Call a unary RPC method with JSON data. The TestServer's `UnaryCall` echoes back whatever payload you send:
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"payload": {"body": "SGVsbG8gV29ybGQ="}}' \
   localhost:9090 testing.TestService/UnaryCall
 ```
@@ -159,7 +159,7 @@ PowerShell handles quotes in native command arguments differently from Bash. If 
 ```powershell
 @'
 {"payload": {"body": "SGVsbG8gV29ybGQ="}}
-'@ | grpcurl.net invoke --plaintext --max-stdin-bytes 1048576 -d '@' localhost:9090 testing.TestService/UnaryCall
+'@ | grpcn invoke --plaintext --max-stdin-bytes 1048576 -d '@' localhost:9090 testing.TestService/UnaryCall
 ```
 
 ## Common Options

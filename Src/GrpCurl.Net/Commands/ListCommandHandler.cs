@@ -92,7 +92,7 @@ internal static class ListCommandHandler
 
         var userAgentOpt = new Option<string?>("--user-agent")
         {
-            Description = "User-Agent header value. Default: grpcurl-dotnet/1.0.0"
+            Description = "User-Agent header value. Default: grpcn/1.0.0"
         };
 
         var headerOpt = new Option<string[]>("--header", "-H")
@@ -285,9 +285,9 @@ internal static class ListCommandHandler
                     Message = "Must specify either --protoset files, --proto files, or server address",
                     Suggestions =
                     [
-                        "grpcurl-dotnet --protoset file.protoset list",
-                        "grpcurl-dotnet --proto file.proto list",
-                        "grpcurl-dotnet localhost:9090 list"
+                        "grpcn --protoset file.protoset list",
+                        "grpcn --proto file.proto list",
+                        "grpcn localhost:9090 list"
                     ]
                 }, output);
 

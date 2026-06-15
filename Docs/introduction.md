@@ -75,14 +75,14 @@ Two methods for discovering protobuf schemas:
 
 ## GraphQL bridge (gql2grpc)
 
-Alongside `grpcurl.net`, this project ships `gql2grpc` — a GraphQL-to-gRPC CLI bridge built directly on top of the same descriptor-source and dynamic-invocation code. It lets existing GraphQL clients (GraphiQL, Altair, or any SDK) and enterprise systems that authenticate via cookies / bearer tokens talk to a gRPC backend without a bespoke gateway.
+Alongside `grpcn`, this project ships `gql2grpc` — a GraphQL-to-gRPC CLI bridge built directly on top of the same descriptor-source and dynamic-invocation code. It lets existing GraphQL clients (GraphiQL, Altair, or any SDK) and enterprise systems that authenticate via cookies / bearer tokens talk to a gRPC backend without a bespoke gateway.
 
 Feature highlights:
 
 - **Operations**: queries, mutations, subscriptions (→ server-streaming, emitted as NDJSON).
 - **GraphQL surface**: fragments (spreads and inline), aliases, operation-level variables, `--var`/`--variables-file`, `@include`/`@skip` directives, selection-set response pruning, FieldMask projection.
 - **Schema introspection**: answers `__schema`, `__type`, and `__typename` from a schema synthesised out of the descriptor set — no RPC required.
-- **Transport parity with `grpcurl.net invoke`**: every TLS / mTLS / header / timeout / message-size option behaves identically, because both CLIs share a single in-process `GrpcChannel`.
+- **Transport parity with `grpcn invoke`**: every TLS / mTLS / header / timeout / message-size option behaves identically, because both CLIs share a single in-process `GrpcChannel`.
 - **Config-driven mapping**: a YAML (or JSON) file associates each GraphQL field with a gRPC service/method. A convention-based fallback covers the common case (`activeResponses` → `ActiveResponses` on a default service).
 
 Start with the [mapping reference](articles/gql2grpc-mapping.md) and then the [cookbook](articles/gql2grpc-cookbook.md) for worked patterns.

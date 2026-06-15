@@ -38,7 +38,7 @@ Think of it like object composition in any programming language. A `SimpleReques
 Before building a request by hand, you can ask GrpCurl.Net to show you the full structure of a message, including all nested types expanded into a ready-to-use JSON template:
 
 ```bash
-grpcurl.net describe --plaintext --msg-template localhost:9090 testing.SimpleRequest
+grpcn describe --plaintext --msg-template localhost:9090 testing.SimpleRequest
 ```
 
 The output includes the proto definition followed by a JSON template showing every field with its default value:
@@ -90,7 +90,7 @@ Now that you know the structure, you can construct a request with nested data. Y
 The `Payload` message has a `type` field (an enum) and a `body` field (of type `bytes`). Let's send a request with a populated payload:
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"payload": {"type": "COMPRESSABLE", "body": "SGVsbG8="}}' \
   localhost:9090 testing.TestService/UnaryCall
 ```
@@ -111,7 +111,7 @@ There are two important details in this example:
 The `response_status` field on `SimpleRequest` is of type `EchoStatus`, which is another good example of nested message composition. You can explore its structure independently:
 
 ```bash
-grpcurl.net describe --plaintext --msg-template localhost:9090 testing.EchoStatus
+grpcn describe --plaintext --msg-template localhost:9090 testing.EchoStatus
 ```
 
 This will show you the `EchoStatus` message definition along with its JSON template:
@@ -183,13 +183,13 @@ This message contains:
 You can discover the full template:
 
 ```bash
-grpcurl.net describe --plaintext --msg-template localhost:9090 testing.StreamingOutputCallRequest
+grpcn describe --plaintext --msg-template localhost:9090 testing.StreamingOutputCallRequest
 ```
 
 And construct a request that populates multiple nested layers:
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"responseType": "COMPRESSABLE", "responseParameters": [{"size": 10}], "payload": {"type": "COMPRESSABLE", "body": "SGVsbG8="}}' \
   localhost:9090 testing.TestService/StreamingOutputCall
 ```
@@ -203,7 +203,7 @@ Here, `StreamingOutputCallRequest` contains a `Payload` which itself has two fie
 | **Message fields** | A field whose type is another message, appearing as a nested JSON object |
 | **Bytes in JSON** | The `bytes` type is represented as a base64-encoded string |
 | **snake_case field names** | Templates and responses use proto `snake_case` field names; camelCase is also accepted in requests |
-| **Discovering structure** | Use `grpcurl.net describe --msg-template` to see the full nested template |
+| **Discovering structure** | Use `grpcn describe --msg-template` to see the full nested template |
 | **Null vs empty** | Omitting a message field (null) is different from setting it to `{}` (empty) |
 | **Arbitrary depth** | Messages can nest other messages to any depth the schema defines |
 

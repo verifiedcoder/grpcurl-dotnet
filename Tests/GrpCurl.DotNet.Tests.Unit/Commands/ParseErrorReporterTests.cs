@@ -10,7 +10,7 @@ namespace GrpCurl.Net.Tests.Unit.Commands;
 /// </summary>
 public sealed class ParseErrorReporterTests
 {
-    private const string HelpHint = "Run 'grpcurl.net [command] --help' for usage.";
+    private const string HelpHint = "Run 'grpcn [command] --help' for usage.";
 
     private static RootCommand BuildRootCommand() => new("test root")
     {

@@ -61,7 +61,7 @@ Neither the request nor the response has the `stream` keyword.
 The simplest possible unary RPC -- an empty request produces an empty response:
 
 ```bash
-grpcurl.net invoke --plaintext -d '{}' localhost:9090 testing.TestService/EmptyCall
+grpcn invoke --plaintext -d '{}' localhost:9090 testing.TestService/EmptyCall
 ```
 
 Expected output:
@@ -75,7 +75,7 @@ Expected output:
 A more useful example -- send a request with a payload and receive it echoed back:
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"payload": {"body": "SGVsbG8gV29ybGQ="}}' \
   localhost:9090 testing.TestService/UnaryCall
 ```
@@ -118,7 +118,7 @@ Server streaming is ideal for:
 The `StreamingOutputCall` method accepts `responseParameters` -- a repeated field where each entry tells the server to send one response of the specified size:
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"responseParameters": [{"size": 10}, {"size": 20}, {"size": 30}]}' \
   localhost:9090 testing.TestService/StreamingOutputCall
 ```
@@ -150,7 +150,7 @@ Notice how the output contains **three JSON objects**, one for each entry in `re
 Let us examine the `StreamingOutputCallRequest` message to understand all available options:
 
 ```bash
-grpcurl.net describe --plaintext --msg-template localhost:9090 testing.StreamingOutputCallRequest
+grpcn describe --plaintext --msg-template localhost:9090 testing.StreamingOutputCallRequest
 ```
 
 The `ResponseParameters` entries configure each response in the stream:
@@ -189,7 +189,7 @@ When sending multiple messages to a client-streaming or bidirectional RPC, you p
 echo '{"payload":{"body":"YQ=="}}
 {"payload":{"body":"YmI="}}
 {"payload":{"body":"Y2Nj"}}' | \
-grpcurl.net invoke --plaintext --max-stdin-bytes 1048576 -d @ localhost:9090 testing.TestService/StreamingInputCall
+grpcn invoke --plaintext --max-stdin-bytes 1048576 -d @ localhost:9090 testing.TestService/StreamingInputCall
 ```
 
 Expected output:
@@ -209,7 +209,7 @@ The server received three payloads (`YQ==` decodes to "a" at 1 byte, `YmI=` deco
 You can also pass multiple JSON objects directly with `-d`, separating them with whitespace:
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"payload":{"body":"YQ=="}} {"payload":{"body":"YmI="}}' \
   localhost:9090 testing.TestService/StreamingInputCall
 ```
@@ -268,7 +268,7 @@ Send multiple requests and observe the server responding to each one:
 echo '{"responseParameters": [{"size": 10}]}
 {"responseParameters": [{"size": 20}]}
 {"responseParameters": [{"size": 30}]}' | \
-grpcurl.net invoke --plaintext --max-stdin-bytes 1048576 -d @ localhost:9090 testing.TestService/FullDuplexCall
+grpcn invoke --plaintext --max-stdin-bytes 1048576 -d @ localhost:9090 testing.TestService/FullDuplexCall
 ```
 
 Expected output:
@@ -300,7 +300,7 @@ HalfDuplexCall echoes back each request's payload. The server buffers all reques
 ```bash
 echo '{"payload":{"body":"SGVsbG8="}}
 {"payload":{"body":"V29ybGQ="}}' | \
-grpcurl.net invoke --plaintext --max-stdin-bytes 1048576 -d @ localhost:9090 testing.TestService/HalfDuplexCall
+grpcn invoke --plaintext --max-stdin-bytes 1048576 -d @ localhost:9090 testing.TestService/HalfDuplexCall
 ```
 
 Expected output:
@@ -346,19 +346,19 @@ GrpCurl.Net's `list` and `describe` commands are your primary tools for understa
 
 ```bash
 # List all services on a server
-grpcurl.net list --plaintext --max-time 10s localhost:9090
+grpcn list --plaintext --max-time 10s localhost:9090
 
 # List all methods on a specific service
-grpcurl.net list --plaintext --max-time 10s localhost:9090 testing.TestService
+grpcn list --plaintext --max-time 10s localhost:9090 testing.TestService
 
 # Describe a service (shows all method signatures)
-grpcurl.net describe --plaintext --max-time 10s localhost:9090 testing.TestService
+grpcn describe --plaintext --max-time 10s localhost:9090 testing.TestService
 
 # Describe a specific method
-grpcurl.net describe --plaintext --max-time 10s localhost:9090 testing.TestService.UnaryCall
+grpcn describe --plaintext --max-time 10s localhost:9090 testing.TestService.UnaryCall
 
 # Describe a request message with a template
-grpcurl.net describe --plaintext --max-time 10s --msg-template localhost:9090 testing.StreamingOutputCallRequest
+grpcn describe --plaintext --max-time 10s --msg-template localhost:9090 testing.StreamingOutputCallRequest
 ```
 
 These commands work through **server reflection** -- the server describes its own API at runtime. This means you can explore any reflection-enabled gRPC server without having its `.proto` files on hand. In unattended runs, add `--max-time` so reflection discovery cannot wait forever on a slow or blocked server.

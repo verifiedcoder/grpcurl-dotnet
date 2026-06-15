@@ -13,7 +13,7 @@ SERVER="localhost:9090"
 
 echo "=== List All Services ==="
 echo ""
-echo "Command: grpcurl.net list --plaintext --max-time 10s $SERVER"
+echo "Command: grpcn list --plaintext --max-time 10s $SERVER"
 echo ""
 
 grpcurl_net list --plaintext --max-time 10s $SERVER

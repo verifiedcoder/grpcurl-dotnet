@@ -1,6 +1,6 @@
 # CI/CD integration
 
-`grpcurl.net` and `gql2grpc` are designed to work cleanly inside bash scripts and CI pipelines. Both honour a POSIX-ish exit code contract and emit structured JSON (or NDJSON) so downstream tools can parse results deterministically.
+`grpcn` and `gql2grpc` are designed to work cleanly inside bash scripts and CI pipelines. Both honour a POSIX-ish exit code contract and emit structured JSON (or NDJSON) so downstream tools can parse results deterministically.
 
 ## Exit code contract
 
@@ -29,15 +29,15 @@ Always prefer:
 set -euo pipefail
 ```
 
-- `-e` — exit on any command failure. Crucial for `grpcurl.net` calls so downstream steps don't run on a 401/404.
+- `-e` — exit on any command failure. Crucial for `grpcn` calls so downstream steps don't run on a 401/404.
 - `-u` — treat unset variables as errors. Catches `$TOKEN` typos before the CLI is even invoked.
-- `-o pipefail` — fail the whole pipe if any segment fails. Prevents `grpcurl.net … | jq …` from swallowing upstream failures.
+- `-o pipefail` — fail the whole pipe if any segment fails. Prevents `grpcn … | jq …` from swallowing upstream failures.
 
 To continue on failure, wrap in a subshell and explicitly inspect the exit code:
 
 ```bash
 status=0
-output=$(grpcurl.net invoke --plaintext ... ) || status=$?
+output=$(grpcn invoke --plaintext ... ) || status=$?
 
 if (( status == 78 )); then
   echo "upstream unavailable; retrying..."
@@ -53,8 +53,8 @@ fi
 The `describe --msg-template` output is a JSON template for a message type. Pipe it directly into `invoke -d @` to send a default payload — useful for smoke tests:
 
 ```bash
-grpcurl.net describe --plaintext --max-time 10s --msg-template localhost:9090 my.pkg.MyRequest \
-  | grpcurl.net invoke --plaintext --max-time 10s --max-stdin-bytes 1048576 -d @ localhost:9090 my.pkg.MyService/DoThing
+grpcn describe --plaintext --max-time 10s --msg-template localhost:9090 my.pkg.MyRequest \
+  | grpcn invoke --plaintext --max-time 10s --max-stdin-bytes 1048576 -d @ localhost:9090 my.pkg.MyService/DoThing
 ```
 
 `-d @` reads JSON from stdin. For streaming methods, `@` reads one JSON object per line; for unary, the full stdin is treated as a single document. Stdin is capped at 16 MiB by default; set `--max-stdin-bytes <bytes>` when a pipeline should document a smaller numeric byte budget.
@@ -88,7 +88,7 @@ The envelope is always emitted on stdout, even for error responses, so `jq` can 
 A fail-fast ping that exits within 3 seconds:
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   --connect-timeout 1s \
   --max-time 3s \
   -d '{}' localhost:9090 grpc.health.v1.Health/Check
@@ -198,7 +198,7 @@ Secrets come in via CI/CD variables (`$API_TOKEN`, etc.) and substitute into `-H
 `System.CommandLine` returns exit code 0 when no action fires (e.g. unknown flag parsed as a positional argument). Guard against this with an output assertion rather than trusting the exit code alone:
 
 ```bash
-response=$(grpcurl.net invoke --plaintext -d '{}' localhost:9090 my.pkg.Svc/Ping)
+response=$(grpcn invoke --plaintext -d '{}' localhost:9090 my.pkg.Svc/Ping)
 
 [[ -n "$response" ]] || { echo "empty response" >&2; exit 1; }
 

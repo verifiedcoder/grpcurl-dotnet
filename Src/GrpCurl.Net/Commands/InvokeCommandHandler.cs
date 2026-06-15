@@ -633,8 +633,8 @@ internal static class InvokeCommandHandler
                     Message = "--data @ requires stdin to be redirected (piped or from a file); not connected to a TTY",
                     Suggestions =
                     [
-                        $"Pipe input: printf '{{}}' | grpcurl.net invoke ... {methodName} --data @",
-                        $"Or pass inline: grpcurl.net invoke ... {methodName} --data '{{...}}'",
+                        $"Pipe input: printf '{{}}' | grpcn invoke ... {methodName} --data @",
+                        $"Or pass inline: grpcn invoke ... {methodName} --data '{{...}}'",
                         "For client/bidi streaming, use a JSON array: --data '[{...},{...}]'"
                     ]
                 }, output);

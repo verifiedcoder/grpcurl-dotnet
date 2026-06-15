@@ -7,19 +7,19 @@ This page provides practical examples for common GrpCurl.Net use cases.
 ### List All Services
 
 ```bash
-grpcurl.net list --plaintext localhost:9090
+grpcn list --plaintext localhost:9090
 ```
 
 For unattended scripts, bound reflection-backed discovery:
 
 ```bash
-grpcurl.net list --plaintext --max-time 10s localhost:9090
+grpcn list --plaintext --max-time 10s localhost:9090
 ```
 
 ### List Services with Verbose Output
 
 ```bash
-grpcurl.net list --plaintext -v localhost:9090
+grpcn list --plaintext -v localhost:9090
 ```
 
 Output includes connection details and service listing:
@@ -32,7 +32,7 @@ testing.UnimplementedService
 ### List Methods for a Service
 
 ```bash
-grpcurl.net list --plaintext localhost:9090 testing.TestService
+grpcn list --plaintext localhost:9090 testing.TestService
 ```
 
 ---
@@ -42,13 +42,13 @@ grpcurl.net list --plaintext localhost:9090 testing.TestService
 ### Describe a Service
 
 ```bash
-grpcurl.net describe --plaintext localhost:9090 testing.TestService
+grpcn describe --plaintext localhost:9090 testing.TestService
 ```
 
 ### Describe a Message Type
 
 ```bash
-grpcurl.net describe --plaintext localhost:9090 testing.SimpleRequest
+grpcn describe --plaintext localhost:9090 testing.SimpleRequest
 ```
 
 ### Get JSON Template for a Message
@@ -56,7 +56,7 @@ grpcurl.net describe --plaintext localhost:9090 testing.SimpleRequest
 Very useful for understanding the expected request format:
 
 ```bash
-grpcurl.net describe --plaintext --msg-template localhost:9090 testing.SimpleRequest
+grpcn describe --plaintext --msg-template localhost:9090 testing.SimpleRequest
 ```
 
 Example Output:
@@ -95,13 +95,13 @@ Message template:
 ### Simple Unary Call
 
 ```bash
-grpcurl.net invoke --plaintext localhost:9090 testing.TestService/EmptyCall
+grpcn invoke --plaintext localhost:9090 testing.TestService/EmptyCall
 ```
 
 ### Unary Call with Request Data
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"response_size": 20, "fill_username": true}' \
   localhost:9090 testing.TestService/UnaryCall
 ```
@@ -111,7 +111,7 @@ grpcurl.net invoke --plaintext \
 Request one message, receive multiple responses:
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"response_parameters": [{"size": 10}, {"size": 20}, {"size": 30}]}' \
   localhost:9090 testing.TestService/StreamingOutputCall
 ```
@@ -143,7 +143,7 @@ Send multiple messages, receive one response:
 echo '{"payload": {"body": "AAAA"}}
 {"payload": {"body": "BBBB"}}
 {"payload": {"body": "CCCC"}}' | \
-grpcurl.net invoke --plaintext --max-stdin-bytes 1048576 -d @ localhost:9090 testing.TestService/StreamingInputCall
+grpcn invoke --plaintext --max-stdin-bytes 1048576 -d @ localhost:9090 testing.TestService/StreamingInputCall
 ```
 
 ### Client Streaming with Concatenated JSON
@@ -151,7 +151,7 @@ grpcurl.net invoke --plaintext --max-stdin-bytes 1048576 -d @ localhost:9090 tes
 For streaming methods, you can also pass multiple JSON objects as concatenated inline data (without stdin):
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"payload":{"body":"YQ=="}} {"payload":{"body":"YmI="}} {"payload":{"body":"Y2Nj"}}' \
   localhost:9090 testing.TestService/StreamingInputCall
 ```
@@ -165,7 +165,7 @@ Send and receive multiple messages:
 ```bash
 echo '{"response_parameters": [{"size": 10}]}
 {"response_parameters": [{"size": 20}]}' | \
-grpcurl.net invoke --plaintext --max-stdin-bytes 1048576 -d @ localhost:9090 testing.TestService/FullDuplexCall
+grpcn invoke --plaintext --max-stdin-bytes 1048576 -d @ localhost:9090 testing.TestService/FullDuplexCall
 ```
 
 ---
@@ -175,7 +175,7 @@ grpcurl.net invoke --plaintext --max-stdin-bytes 1048576 -d @ localhost:9090 tes
 ### Add Custom Headers
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -H "Authorization: Bearer my-token" \
   -H "X-Request-Id: req-12345" \
   -d '{}' \
@@ -187,7 +187,7 @@ grpcurl.net invoke --plaintext \
 Use `--reflect-header` for reflection-only headers and `--rpc-header` for RPC-only headers:
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   --reflect-header "X-Reflect-Auth: reflect-token" \
   --rpc-header "X-RPC-Auth: rpc-token" \
   -H "X-Common: shared-value" \
@@ -199,7 +199,7 @@ grpcurl.net invoke --plaintext \
 
 ```bash
 export AUTH_TOKEN="my-secret-token"
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -H "Authorization: Bearer ${AUTH_TOKEN}" \
   -d '{}' \
   localhost:9090 testing.TestService/EmptyCall
@@ -221,7 +221,7 @@ protoc --descriptor_set_out=service.protoset \
 
 Or export from a running server:
 ```bash
-grpcurl.net list --plaintext --max-time 10s --protoset-out service.protoset localhost:9090
+grpcn list --plaintext --max-time 10s --protoset-out service.protoset localhost:9090
 ```
 
 Local protoset files are capped at 64 MiB each before they are read. Reflection descriptor responses are capped at 16 MiB by default, and `--protoset-out` refuses to overwrite an existing file unless you pass `--force`.
@@ -229,13 +229,13 @@ Local protoset files are capped at 64 MiB each before they are read. Reflection 
 ### List Services from Protoset (Offline)
 
 ```bash
-grpcurl.net list --protoset service.protoset
+grpcn list --protoset service.protoset
 ```
 
 ### Invoke Method Using Protoset
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   --protoset service.protoset \
   -d '{"name": "World"}' \
   localhost:9090 my.package.Service/SayHello
@@ -248,7 +248,7 @@ grpcurl.net invoke --plaintext \
 ### Verbose Mode
 
 ```bash
-grpcurl.net invoke --plaintext -v \
+grpcn invoke --plaintext -v \
   -H "Authorization: Bearer demo-token" \
   -d '{"payload": {"body": "SGVsbG8="}}' \
   localhost:9090 testing.TestService/UnaryCall
@@ -261,7 +261,7 @@ rpc UnaryCall ( .testing.SimpleRequest ) returns ( .testing.SimpleResponse );
 
 Request metadata to send:
 authorization: [REDACTED]
-user-agent: grpcurl-dotnet/1.0.0
+user-agent: grpcn/1.0.0
 
 Response headers received:
 (server-specific headers)
@@ -285,12 +285,12 @@ Protobuf JSON drops unset scalars by default (proto3 semantics). Add `--emit-def
 
 ```bash
 # Without --emit-defaults: unset fields are omitted
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"payload": {"body": "SGVsbG8="}}' \
   localhost:9090 testing.TestService/UnaryCall
 
 # With --emit-defaults: username, oauth_scope, response_status etc. appear as their defaults
-grpcurl.net invoke --plaintext --emit-defaults \
+grpcn invoke --plaintext --emit-defaults \
   -d '{"payload": {"body": "SGVsbG8="}}' \
   localhost:9090 testing.TestService/UnaryCall
 ```
@@ -299,10 +299,10 @@ Demonstrated by `Scripts/15-emit-defaults.sh`.
 
 ### Custom User-Agent
 
-The default User-Agent is derived from the assembly version (e.g. `grpcurl-dotnet/1.0.0`). Override with `--user-agent` when you need to identify traffic to your service or bypass a WAF rule:
+The default User-Agent is derived from the assembly version (e.g. `grpcn/1.0.0`). Override with `--user-agent` when you need to identify traffic to your service or bypass a WAF rule:
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   --user-agent "my-tool/2.4 (ci-runner-42)" \
   -d '{}' localhost:9090 testing.TestService/EmptyCall
 ```
@@ -316,7 +316,7 @@ Demonstrated by `Scripts/25-user-agent.sh`.
 ### Very Verbose Mode with Timing
 
 ```bash
-grpcurl.net invoke --plaintext --vv \
+grpcn invoke --plaintext --vv \
   -d '{"payload": {"body": "SGVsbG8="}}' \
   localhost:9090 testing.TestService/UnaryCall
 ```
@@ -350,7 +350,7 @@ Output includes detailed timing (values are illustrative):
 ### Connection Timeout
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   --connect-timeout 5s \
   -d '{}' \
   localhost:9090 testing.TestService/EmptyCall
@@ -360,7 +360,7 @@ grpcurl.net invoke --plaintext \
 
 ```bash
 # Illustrative service/method — substitute your own long-running RPC
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   --max-time 30s \
   -d '{}' \
   localhost:9090 my.package.Service/LongRunningOperation
@@ -369,15 +369,15 @@ grpcurl.net invoke --plaintext \
 `--max-time` also bounds reflection-backed `list` and `describe` operations:
 
 ```bash
-grpcurl.net list --plaintext --max-time 10s localhost:9090
-grpcurl.net describe --plaintext --max-time 10s localhost:9090 testing.TestService
+grpcn list --plaintext --max-time 10s localhost:9090
+grpcn describe --plaintext --max-time 10s localhost:9090 testing.TestService
 ```
 
 ### Stdin Size Limit
 
 ```bash
 echo '{"payload": {"body": "AAAA"}}' | \
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   --max-stdin-bytes 1048576 \
   -d @ \
   localhost:9090 testing.TestService/StreamingInputCall
@@ -389,7 +389,7 @@ grpcurl.net invoke --plaintext \
 
 ```bash
 # Illustrative service/method — substitute your own large-payload RPC
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   --max-msg-sz 10MB \
   -d '{"large_payload": "..."}' \
   localhost:9090 my.package.Service/ProcessLargeData
@@ -402,7 +402,7 @@ grpcurl.net invoke --plaintext \
 ### View Error as JSON
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   --output json \
   -d '{"response_status": {"code": 3, "message": "Custom error"}}' \
   localhost:9090 testing.TestService/UnaryCall 2>error.json ; echo $?
@@ -420,7 +420,7 @@ Example `error.json`:
 Pressing Ctrl+C during a long-running call sends SIGINT. The CLI cancels the in-flight RPC gracefully and exits with code **130**:
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"response_parameters": [{"interval_us": 1000000}, {"interval_us": 1000000}]}' \
   localhost:9090 testing.TestService/StreamingOutputCall
 # press Ctrl+C after the first response
@@ -439,7 +439,7 @@ This matches the POSIX convention (`128 + SIGINT=2`). In streaming mode, any mes
 # Test-only: accept self-signed or mismatched certs during development.
 # Targets the TestServer in TLS mode:
 #   dotnet run --project Tests/GrpCurl.Net.TestServer -- --port 9443 --tls
-grpcurl.net invoke --insecure \
+grpcn invoke --insecure \
   -d '{}' localhost:9443 testing.TestService/EmptyCall
 ```
 
@@ -450,7 +450,7 @@ Prefer `--cacert <ca.crt>` against internal PKIs. See [Troubleshooting](troubles
 If your JSON contains fields not in the proto definition:
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   --allow-unknown-fields \
   -d '{"known_field": "value", "unknown_field": "ignored"}' \
   localhost:9090 testing.TestService/UnaryCall
@@ -463,7 +463,7 @@ grpcurl.net invoke --plaintext \
 ### TLS with Default CA
 
 ```bash
-grpcurl.net invoke \
+grpcn invoke \
   -d '{}' \
   secure-server.example.com:443 my.package.Service/Method
 ```
@@ -471,7 +471,7 @@ grpcurl.net invoke \
 ### TLS with Custom CA Certificate
 
 ```bash
-grpcurl.net invoke \
+grpcn invoke \
   --cacert /path/to/ca.crt \
   -d '{}' \
   secure-server.example.com:443 my.package.Service/Method
@@ -480,7 +480,7 @@ grpcurl.net invoke \
 ### Mutual TLS (mTLS)
 
 ```bash
-grpcurl.net invoke \
+grpcn invoke \
   --cacert /path/to/ca.crt \
   --cert /path/to/client.crt \
   --key /path/to/client.key \
@@ -491,7 +491,7 @@ grpcurl.net invoke \
 ### Mutual TLS with PKCS12 Certificate
 
 ```bash
-grpcurl.net invoke \
+grpcn invoke \
   --cert /path/to/client.p12 \
   --cert-password "my-password" \
   -d '{}' \
@@ -501,7 +501,7 @@ grpcurl.net invoke \
 ### Skip Certificate Verification (Testing Only)
 
 ```bash
-grpcurl.net invoke --insecure \
+grpcn invoke --insecure \
   -d '{}' \
   secure-server.example.com:443 my.package.Service/Method
 ```
@@ -511,7 +511,7 @@ grpcurl.net invoke --insecure \
 Useful for virtual hosting or when the server expects a specific host:
 
 ```bash
-grpcurl.net invoke \
+grpcn invoke \
   --authority api.example.com \
   -d '{}' \
   10.0.0.1:443 my.package.Service/Method
@@ -526,7 +526,7 @@ GrpCurl.Net automatically handles Google protobuf well-known types with their ca
 ### Timestamp (RFC 3339)
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"created_at": "2024-01-15T10:30:00Z"}' \
   localhost:9090 my.package.Service/CreateEvent
 ```
@@ -534,7 +534,7 @@ grpcurl.net invoke --plaintext \
 ### Duration
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"timeout": "30.5s"}' \
   localhost:9090 my.package.Service/SetTimeout
 ```
@@ -544,7 +544,7 @@ grpcurl.net invoke --plaintext \
 Wrapper types (e.g., `google.protobuf.StringValue`) are represented as their raw JSON values:
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   -d '{"optional_name": "Alice"}' \
   localhost:9090 my.package.Service/UpdateUser
 ```

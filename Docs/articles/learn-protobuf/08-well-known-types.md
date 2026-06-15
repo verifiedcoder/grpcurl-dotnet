@@ -38,7 +38,7 @@ These files are part of every protobuf SDK. You do not need to download them sep
 The project includes a `WellKnownTypesMessage` defined in a proto file that uses every major well-known type. Let us start by examining the message structure using a protoset file:
 
 ```bash
-grpcurl.net describe --protoset Tests/TestProtosets/well-known-types.protoset --msg-template wkttesting.WellKnownTypesMessage
+grpcn describe --protoset Tests/TestProtosets/well-known-types.protoset --msg-template wkttesting.WellKnownTypesMessage
 ```
 
 > **Note:** The `WellKnownTypesService` is defined in the project's proto files but is not running on the TestServer. We use a **protoset file** (a binary schema snapshot -- covered in detail in [Chapter 11](11-schema-management.md)) to explore its message types offline. The `--protoset` flag tells GrpCurl.Net to read the schema from a file instead of connecting to a server.
@@ -153,7 +153,7 @@ This three-state capability (absent, null, or present with a value) is exactly w
 Use `Empty` when an RPC method does not need a meaningful request or response. For example, the TestServer's `EmptyCall` uses `Empty` for both its request and response:
 
 ```bash
-grpcurl.net invoke --plaintext -d '{}' localhost:9090 testing.TestService/EmptyCall
+grpcn invoke --plaintext -d '{}' localhost:9090 testing.TestService/EmptyCall
 ```
 
 > **Why not just define your own empty message?** You could, but using `google.protobuf.Empty` signals intent clearly and avoids every team creating slightly different "nothing" messages. It is a convention that the entire ecosystem understands.
@@ -335,7 +335,7 @@ Here is a complete `WellKnownTypesMessage` with every field populated:
 Since the `WellKnownTypesService` is defined in a protoset file but not running on the TestServer, you can explore its complete structure offline:
 
 ```bash
-grpcurl.net describe --protoset Tests/TestProtosets/well-known-types.protoset --msg-template wkttesting.WellKnownTypesMessage
+grpcn describe --protoset Tests/TestProtosets/well-known-types.protoset --msg-template wkttesting.WellKnownTypesMessage
 ```
 
 This outputs a JSON template showing every well-known type field with its canonical default representation, letting you study the canonical JSON forms without a running server.

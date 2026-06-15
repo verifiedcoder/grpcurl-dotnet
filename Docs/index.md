@@ -24,13 +24,13 @@ GrpCurl.Net lets you interact with gRPC servers using JSON requests instead of b
 
 ```bash
 # List services on a gRPC server
-grpcurl.net list --plaintext localhost:9090
+grpcn list --plaintext localhost:9090
 
 # Describe a service
-grpcurl.net describe --plaintext localhost:9090 my.package.Service
+grpcn describe --plaintext localhost:9090 my.package.Service
 
 # Invoke a method
-grpcurl.net invoke --plaintext -d '{"name": "World"}' localhost:9090 my.package.Service/SayHello
+grpcn invoke --plaintext -d '{"name": "World"}' localhost:9090 my.package.Service/SayHello
 
 # Run a GraphQL query via the bridge
 gql2grpc --plaintext --default-service my.package.Service localhost:9090 \

@@ -26,9 +26,9 @@ With a protoset file, you can list services, describe messages, and generate tem
 
 ```bash
 # No server needed for these commands
-grpcurl.net list --protoset service.protoset
-grpcurl.net describe --protoset service.protoset testing.TestService
-grpcurl.net describe --protoset service.protoset --msg-template testing.SimpleRequest
+grpcn list --protoset service.protoset
+grpcn describe --protoset service.protoset testing.TestService
+grpcn describe --protoset service.protoset --msg-template testing.SimpleRequest
 ```
 
 ### 2. CI/CD Pipelines
@@ -52,7 +52,7 @@ When investigating a production issue, having the exact schema from the time of 
 The `--protoset-out` flag tells GrpCurl.Net to save the schema it discovers via server reflection to a file:
 
 ```bash
-grpcurl.net list --plaintext --max-time 10s --protoset-out service.protoset localhost:9090
+grpcn list --plaintext --max-time 10s --protoset-out service.protoset localhost:9090
 ```
 
 This command does two things:
@@ -69,7 +69,7 @@ The exported file contains all services, messages, enums, and their dependencies
 After exporting, verify the protoset file works by using it without a server connection:
 
 ```bash
-grpcurl.net list --protoset service.protoset
+grpcn list --protoset service.protoset
 ```
 
 Expected output:
@@ -108,7 +108,7 @@ Once you have a protoset file, it works with every GrpCurl.Net command.
 ### Listing Services (Offline)
 
 ```bash
-grpcurl.net list --protoset service.protoset
+grpcn list --protoset service.protoset
 ```
 
 No server address is needed. The protoset file is the sole source of schema information.
@@ -116,7 +116,7 @@ No server address is needed. The protoset file is the sole source of schema info
 ### Listing Methods (Offline)
 
 ```bash
-grpcurl.net list --protoset service.protoset testing.TestService
+grpcn list --protoset service.protoset testing.TestService
 ```
 
 Expected output:
@@ -133,11 +133,11 @@ testing.TestService.UnaryCall
 ### Describing Services and Messages (Offline)
 
 ```bash
-grpcurl.net describe --protoset service.protoset testing.TestService
+grpcn describe --protoset service.protoset testing.TestService
 ```
 
 ```bash
-grpcurl.net describe --protoset service.protoset --msg-template testing.SimpleRequest
+grpcn describe --protoset service.protoset --msg-template testing.SimpleRequest
 ```
 
 These commands produce the same output as their server-reflection counterparts but without any network access.
@@ -147,7 +147,7 @@ These commands produce the same output as their server-reflection counterparts b
 For actual RPC calls, you still need a running server -- the protoset file provides the schema, but the server processes the request:
 
 ```bash
-grpcurl.net invoke --plaintext --protoset service.protoset \
+grpcn invoke --plaintext --protoset service.protoset \
   -d '{"payload": {"body": "SGVsbG8gV29ybGQ="}}' \
   localhost:9090 testing.TestService/UnaryCall
 ```
@@ -160,20 +160,20 @@ Protoset files work with all four streaming patterns:
 
 ```bash
 # Server streaming
-grpcurl.net invoke --plaintext --protoset service.protoset \
+grpcn invoke --plaintext --protoset service.protoset \
   -d '{"responseParameters": [{"size": 10}, {"size": 20}]}' \
   localhost:9090 testing.TestService/StreamingOutputCall
 
 # Client streaming
 echo '{"payload":{"body":"YQ=="}}
 {"payload":{"body":"YmI="}}' | \
-grpcurl.net invoke --plaintext --protoset service.protoset \
+grpcn invoke --plaintext --protoset service.protoset \
   --max-stdin-bytes 1048576 -d @ localhost:9090 testing.TestService/StreamingInputCall
 
 # Bidirectional streaming
 echo '{"responseParameters": [{"size": 10}]}
 {"responseParameters": [{"size": 20}]}' | \
-grpcurl.net invoke --plaintext --protoset service.protoset \
+grpcn invoke --plaintext --protoset service.protoset \
   --max-stdin-bytes 1048576 -d @ localhost:9090 testing.TestService/FullDuplexCall
 ```
 
@@ -182,7 +182,7 @@ grpcurl.net invoke --plaintext --protoset service.protoset \
 When your system spans multiple services defined in separate protoset files, you can specify more than one:
 
 ```bash
-grpcurl.net invoke --plaintext \
+grpcn invoke --plaintext \
   --protoset testing.protoset \
   --protoset wkttesting.protoset \
   -d '{"payload": {"body": "SGVsbG8="}}' \
@@ -198,7 +198,7 @@ GrpCurl.Net merges the schemas from all specified protoset files. This is useful
 ### Listing Across Multiple Protosets
 
 ```bash
-grpcurl.net list --protoset testing.protoset --protoset wkttesting.protoset
+grpcn list --protoset testing.protoset --protoset wkttesting.protoset
 ```
 
 This shows services from both protoset files combined.
@@ -212,7 +212,7 @@ Protoset files fit naturally into version control workflows. Because they are bi
 **Step 1: Export the schema from your staging environment**
 
 ```bash
-grpcurl.net list --plaintext --max-time 10s --protoset-out schemas/v1.0.0.protoset staging-server:9090
+grpcn list --plaintext --max-time 10s --protoset-out schemas/v1.0.0.protoset staging-server:9090
 ```
 
 **Step 2: Commit to version control**
@@ -232,10 +232,10 @@ When you export a new version, you can compare the two schemas by describing the
 
 ```bash
 # Describe the old schema
-grpcurl.net describe --protoset schemas/v1.0.0.protoset testing.SimpleRequest
+grpcn describe --protoset schemas/v1.0.0.protoset testing.SimpleRequest
 
 # Describe the new schema
-grpcurl.net describe --protoset schemas/v1.1.0.protoset testing.SimpleRequest
+grpcn describe --protoset schemas/v1.1.0.protoset testing.SimpleRequest
 ```
 
 Differences in the output reveal added, removed, or changed fields.
@@ -260,7 +260,7 @@ Let us walk through a complete workflow that demonstrates the practical value of
 Start by capturing the schema from the running TestServer:
 
 ```bash
-grpcurl.net list --plaintext --max-time 10s --protoset-out testserver.protoset localhost:9090
+grpcn list --plaintext --max-time 10s --protoset-out testserver.protoset localhost:9090
 ```
 
 ### 2. Inspect the Schema Offline
@@ -269,19 +269,19 @@ Now stop thinking of the server -- everything from here can be done offline:
 
 ```bash
 # What services are available?
-grpcurl.net list --protoset testserver.protoset
+grpcn list --protoset testserver.protoset
 
 # What methods does TestService offer?
-grpcurl.net list --protoset testserver.protoset testing.TestService
+grpcn list --protoset testserver.protoset testing.TestService
 
 # What does a SimpleRequest look like?
-grpcurl.net describe --protoset testserver.protoset --msg-template testing.SimpleRequest
+grpcn describe --protoset testserver.protoset --msg-template testing.SimpleRequest
 
 # What about the streaming request?
-grpcurl.net describe --protoset testserver.protoset --msg-template testing.StreamingOutputCallRequest
+grpcn describe --protoset testserver.protoset --msg-template testing.StreamingOutputCallRequest
 
 # Explore the well-known types message (requires the separate WKT protoset)
-grpcurl.net describe --protoset Tests/TestProtosets/well-known-types.protoset --msg-template wkttesting.WellKnownTypesMessage
+grpcn describe --protoset Tests/TestProtosets/well-known-types.protoset --msg-template wkttesting.WellKnownTypesMessage
 ```
 
 ### 3. Use the Schema for Calls
@@ -289,7 +289,7 @@ grpcurl.net describe --protoset Tests/TestProtosets/well-known-types.protoset --
 When you do need to make a call, the protoset file eliminates the reflection lookup:
 
 ```bash
-grpcurl.net invoke --plaintext --protoset testserver.protoset \
+grpcn invoke --plaintext --protoset testserver.protoset \
   -d '{"payload": {"body": "SGVsbG8gV29ybGQ="}}' \
   localhost:9090 testing.TestService/UnaryCall
 ```

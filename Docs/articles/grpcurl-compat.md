@@ -1,12 +1,12 @@
 # Drop-in upstream `grpcurl` shape
 
-GrpCurl.Net is normally invoked through three subcommands — `list`, `describe`, `invoke`. To make migration from upstream `grpcurl` painless, the CLI also accepts upstream-style positional invocations: `grpcurl.net <flags> host:port [symbol]`. The first argument that isn't a flag determines which subcommand the input is routed to.
+GrpCurl.Net is normally invoked through three subcommands — `list`, `describe`, `invoke`. To make migration from upstream `grpcurl` painless, the CLI also accepts upstream-style positional invocations: `grpcn <flags> host:port [symbol]`. The first argument that isn't a flag determines which subcommand the input is routed to.
 
 ```bash
 # Upstream-style — works as-is on GrpCurl.Net:
-grpcurl.net -plaintext localhost:9090                       # → list
-grpcurl.net -plaintext localhost:9090 my.pkg.Service        # → describe
-grpcurl.net -plaintext -d '{}' localhost:9090 my.pkg.Service/MyMethod   # → invoke
+grpcn -plaintext localhost:9090                       # → list
+grpcn -plaintext localhost:9090 my.pkg.Service        # → describe
+grpcn -plaintext -d '{}' localhost:9090 my.pkg.Service/MyMethod   # → invoke
 ```
 
 ## Subcommand inference
@@ -69,24 +69,24 @@ These differ from upstream by design — they are not bugs:
 An unknown single-dash flag is passed through verbatim so the parser raises the standard usage error (exit code 2) rather than silently dropping it:
 
 ```bash
-grpcurl.net -unknown-thing localhost:9090
+grpcn -unknown-thing localhost:9090
 # Required command was not provided.
 # Unrecognized command or argument '-unknown-thing'.
 # Unrecognized command or argument 'localhost:9090'.
-# Run 'grpcurl.net [command] --help' for usage.
+# Run 'grpcn [command] --help' for usage.
 ```
 
 ## Worked examples
 
 ```bash
 # 1. List services
-grpcurl.net -plaintext localhost:9090
+grpcn -plaintext localhost:9090
 
 # 2. Describe with import-path so the schema comes from local .proto files
-grpcurl.net -plaintext -I ./protos -proto svc.proto localhost:9090 pkg.Service
+grpcn -plaintext -I ./protos -proto svc.proto localhost:9090 pkg.Service
 
 # 3. Invoke with mTLS, JSON envelope output, and authority override
-grpcurl.net \
+grpcn \
   -cacert ca.pem -cert client.crt -key client.key \
   -authority internal.svc.cluster \
   -max-time 30s \
@@ -95,5 +95,5 @@ grpcurl.net \
   api.internal:443 pkg.Service/SayHello
 
 # 4. Drop-in invocation against a Unix socket
-grpcurl.net -plaintext -d '{}' unix:///var/run/grpc.sock pkg.Service/Status
+grpcn -plaintext -d '{}' unix:///var/run/grpc.sock pkg.Service/Status
 ```

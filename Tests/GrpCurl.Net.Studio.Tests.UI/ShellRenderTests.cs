@@ -22,12 +22,12 @@ public sealed class ShellRenderTests(HeadlessSessionFixture fixture) : HeadlessT
 {
     private static MainWindowViewModel CreateViewModel()
         => new(
-            new InMemorySettingsStore(),
+            new FakeThemeService(),
             new ConnectionsPaneViewModel(new FakeWorkspaceStore(), new FakeConnectionRegistry(), new FakeDialogService(), new ConnectionSelection()),
             new ServiceExplorerViewModel(new FakeDescriptorService(), new ConnectionSelection(), new FakeClipboardService(), new ImmediateUiDispatcher(), new FakeDocumentHost()),
             new ConsoleViewModel(),
             new InspectorViewModel(),
-            new DocumentsViewModel(new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator()));
+            new DocumentsViewModel(new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator(), new InMemorySettingsStore(), new FakeThemeService()));
 
     [Fact]
     public Task Shell_renders_all_named_zones_with_title() => RunOnUiThread(() =>
@@ -52,10 +52,10 @@ public sealed class ShellRenderTests(HeadlessSessionFixture fixture) : HeadlessT
         var pane = new ConnectionsPaneViewModel(
             new FakeWorkspaceStore(), new FakeConnectionRegistry(), new FakeDialogService(), new ConnectionSelection());
         var viewModel = new MainWindowViewModel(
-            new InMemorySettingsStore(), pane,
+            new FakeThemeService(), pane,
             new ServiceExplorerViewModel(new FakeDescriptorService(), new ConnectionSelection(), new FakeClipboardService(), new ImmediateUiDispatcher(), new FakeDocumentHost()),
             new ConsoleViewModel(), new InspectorViewModel(),
-            new DocumentsViewModel(new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator()));
+            new DocumentsViewModel(new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator(), new InMemorySettingsStore(), new FakeThemeService()));
 
         var window = new MainWindow { DataContext = viewModel };
         window.Show();

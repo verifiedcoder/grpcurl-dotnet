@@ -21,6 +21,7 @@ internal static class ServiceRegistration
         // OS-edge services are stubbed until the features that need them land).
         services.AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>();
         services.AddSingleton<ISettingsStore, JsonSettingsStore>();
+        services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<IDialogService, DialogService>();
         services.AddSingleton<IFilePickerService, NoopFilePickerService>();
         services.AddSingleton<IClipboardService, ClipboardService>();

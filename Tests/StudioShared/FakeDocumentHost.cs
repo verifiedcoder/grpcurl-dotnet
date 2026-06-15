@@ -21,4 +21,8 @@ public sealed class FakeDocumentHost : IDocumentHost
 
     public void OpenInvocation(SavedConnection connection, string methodSymbol, string? initialRequestJson = null)
         => Invocations.Add((connection, methodSymbol, initialRequestJson));
+
+    public int SettingsOpened { get; private set; }
+
+    public void OpenSettings() => SettingsOpened++;
 }

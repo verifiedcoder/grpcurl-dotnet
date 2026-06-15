@@ -16,6 +16,7 @@
         <KeyBinding Gesture="Ctrl+J" Command="{Binding ToggleConsoleCommand}" />
         <KeyBinding Gesture="Ctrl+I" Command="{Binding ToggleInspectorCommand}" />
         <KeyBinding Gesture="Ctrl+Shift+M" Command="{Binding ToggleFocusModeCommand}" />
+        <KeyBinding Gesture="Ctrl+OemComma" Command="{Binding OpenSettingsCommand}" />
     </Window.KeyBindings>
 
     <DockPanel>
@@ -23,6 +24,9 @@
         <!-- Menu bar -->
         <Menu DockPanel.Dock="Top" x:Name="MenuBar">
             <MenuItem Header="_File">
+                <MenuItem Header="_Settings…" InputGesture="Ctrl+," Command="{Binding OpenSettingsCommand}"
+                          AutomationProperties.Name="Settings" />
+                <Separator />
                 <MenuItem Header="E_xit" Click="OnExitClicked" AutomationProperties.Name="Exit" />
             </MenuItem>
             <MenuItem Header="_Edit">

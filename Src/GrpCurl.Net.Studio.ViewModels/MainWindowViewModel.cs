@@ -9,14 +9,14 @@ namespace GrpCurl.Net.Studio.ViewModels;
 
 /// <summary>
 ///     Root view model for the application shell. Owns the collapsible-pane state, focus mode,
-///     the active theme selection, and the welcome empty-state flag. Theme changes are
-///     persisted via <see cref="ISettingsStore" />; the app-layer <c>ThemeManager</c> observes
-///     <see cref="SelectedTheme" /> and applies the corresponding Avalonia theme variant,
+///     the active theme selection, and the welcome empty-state flag. Theme is owned by the shared
+///     <see cref="IThemeService" /> (the same source the Settings screen drives); the app-layer
+///     <c>ThemeManager</c> observes it and applies the corresponding Avalonia theme variant,
 ///     keeping this view model free of any UI-framework dependency.
 /// </summary>
 public sealed partial class MainWindowViewModel : ViewModelBase
 {
-    private readonly ISettingsStore _settingsStore;
+    private readonly IThemeService _theme;
 
     [ObservableProperty]
     private bool _isSidebarOpen = true;
@@ -40,21 +40,28 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private (bool Sidebar, bool Inspector, bool Console)? _preFocusState;
 
     public MainWindowViewModel(
-        ISettingsStore settingsStore,
+        IThemeService theme,
         ConnectionsPaneViewModel connections,
         ServiceExplorerViewModel explorer,
         ConsoleViewModel console,
         InspectorViewModel inspector,
         DocumentsViewModel documents)
     {
-        _settingsStore = settingsStore;
+        _theme = theme;
         Connections = connections;
         Explorer = explorer;
         Console = console;
         Inspector = inspector;
         Documents = documents;
 
-        _selectedTheme = ParseTheme(settingsStore.Current.Appearance.Theme);
+        _selectedTheme = theme.Current;
+        theme.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(IThemeService.Current))
+            {
+                SelectedTheme = _theme.Current;
+            }
+        };
 
         // The welcome empty-state shows until the first connection exists (SPEC-020 §7).
         _hasAnyConnection = connections.HasConnections;
@@ -110,22 +117,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
     }
 
-    /// <summary>Selects a theme and persists it. The app layer applies the live variant.</summary>
+    /// <summary>Selects a theme via the shared service (persists + applies the live variant).</summary>
     [RelayCommand]
-    private async Task SetTheme(AppTheme theme)
-    {
-        SelectedTheme = theme;
+    private Task SetTheme(AppTheme theme) => _theme.SetAsync(theme);
 
-        var settings = _settingsStore.Current;
-        settings.Appearance.Theme = theme.ToString().ToLowerInvariant();
-
-        await _settingsStore.SaveAsync(settings);
-    }
-
-    private static AppTheme ParseTheme(string value) => value.ToLowerInvariant() switch
-    {
-        "light" => AppTheme.Light,
-        "dark" => AppTheme.Dark,
-        _ => AppTheme.System
-    };
+    /// <summary>Opens (or focuses) the Settings tab.</summary>
+    [RelayCommand]
+    private void OpenSettings() => Documents.OpenSettings();
 }

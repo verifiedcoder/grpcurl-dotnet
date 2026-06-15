@@ -18,11 +18,11 @@ public sealed class MainWindowViewModelTests
 
     private static DocumentsViewModel EmptyDocuments()
         => new(new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner(),
-            new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator());
+            new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator(), new FakeSettingsStore(), new FakeThemeService());
 
     private static MainWindowViewModel CreateViewModel(FakeSettingsStore? settings = null)
         => new(
-            settings ?? new FakeSettingsStore(),
+            new ThemeService(settings ?? new FakeSettingsStore()),
             EmptyConnectionsPane(),
             EmptyExplorer(),
             new ConsoleViewModel(),
@@ -97,5 +97,15 @@ public sealed class MainWindowViewModelTests
         vm.SelectedTheme.ShouldBe(AppTheme.Dark);
         settings.Current.Appearance.Theme.ShouldBe("dark");
         settings.SaveCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public void Open_settings_opens_the_settings_tab()
+    {
+        var vm = CreateViewModel();
+
+        vm.OpenSettingsCommand.Execute(null);
+
+        vm.Documents.Documents.OfType<SettingsDocumentViewModel>().ShouldHaveSingleItem();
     }
 }

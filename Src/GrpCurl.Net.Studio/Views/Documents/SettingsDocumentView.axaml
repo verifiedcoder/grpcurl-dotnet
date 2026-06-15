@@ -1,0 +1,121 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:docs="clr-namespace:GrpCurl.Net.Studio.ViewModels.Documents;assembly=GrpCurl.Net.Studio.ViewModels"
+             x:Class="GrpCurl.Net.Studio.Views.Documents.SettingsDocumentView"
+             x:Name="Root"
+             x:DataType="docs:SettingsDocumentViewModel">
+
+    <UserControl.Styles>
+        <!-- One settings row: label + control + inline description + reset. -->
+        <Style Selector="TextBlock.settingLabel">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,0,0,2" />
+        </Style>
+        <Style Selector="TextBlock.settingHint">
+            <Setter Property="Opacity" Value="0.6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,2,0,0" />
+        </Style>
+        <Style Selector="TextBlock.sectionHeader">
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="Margin" Value="0,14,0,8" />
+        </Style>
+    </UserControl.Styles>
+
+    <ScrollViewer Padding="20,14">
+        <StackPanel Spacing="6" MaxWidth="640" HorizontalAlignment="Left">
+
+            <TextBlock Text="Settings" FontWeight="Bold" FontSize="20" />
+            <TextBlock Classes="settingHint"
+                       Text="Changes apply and save immediately. Each setting can be reset to its default." />
+
+            <!-- ───────── General ───────── -->
+            <TextBlock Classes="sectionHeader" Text="General" />
+
+            <StackPanel Spacing="2">
+                <TextBlock Classes="settingLabel" Text="Theme" />
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Reset" Margin="8,0,0,0"
+                            Command="{Binding ResetSettingCommand}" CommandParameter="theme"
+                            AutomationProperties.Name="Reset theme" />
+                    <ComboBox ItemsSource="{Binding ThemeOptions}" SelectedItem="{Binding Theme}"
+                              MinWidth="180" HorizontalAlignment="Left" AutomationProperties.Name="Theme" />
+                </DockPanel>
+                <TextBlock Classes="settingHint" Text="Light, Dark, or follow the OS (default: System). Applies live." />
+            </StackPanel>
+
+            <StackPanel Spacing="2">
+                <TextBlock Classes="settingLabel" Text="Startup" />
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Reset" Margin="8,0,0,0"
+                            Command="{Binding ResetSettingCommand}" CommandParameter="startup"
+                            AutomationProperties.Name="Reset startup" />
+                    <ComboBox ItemsSource="{Binding StartupOptions}" SelectedItem="{Binding Startup}"
+                              MinWidth="180" HorizontalAlignment="Left" AutomationProperties.Name="Startup behaviour" />
+                </DockPanel>
+                <TextBlock Classes="settingHint"
+                           Text="Reopen the last workspace and tabs, or start empty (default: Restore last workspace)." />
+            </StackPanel>
+
+            <StackPanel Spacing="2">
+                <TextBlock Classes="settingLabel" Text="CLI export dialect" />
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Reset" Margin="8,0,0,0"
+                            Command="{Binding ResetSettingCommand}" CommandParameter="dialect"
+                            AutomationProperties.Name="Reset CLI dialect" />
+                    <ComboBox ItemsSource="{Binding DialectOptions}" SelectedItem="{Binding CliShellDialect}"
+                              MinWidth="180" HorizontalAlignment="Left" AutomationProperties.Name="CLI export dialect" />
+                </DockPanel>
+                <TextBlock Classes="settingHint" Text="Default shell quoting for &quot;Copy as CLI&quot; (default: Bash)." />
+            </StackPanel>
+
+            <!-- ───────── Editor ───────── -->
+            <TextBlock Classes="sectionHeader" Text="Editor" />
+
+            <StackPanel Spacing="2">
+                <TextBlock Classes="settingLabel" Text="Font family" />
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Reset" Margin="8,0,0,0"
+                            Command="{Binding ResetSettingCommand}" CommandParameter="fontFamily"
+                            AutomationProperties.Name="Reset font family" />
+                    <TextBox Text="{Binding EditorFontFamily}" MinWidth="260" HorizontalAlignment="Left"
+                             AutomationProperties.Name="Editor font family" />
+                </DockPanel>
+                <TextBlock Classes="settingHint" Text="Applies to all code editors (default: Cascadia Code,Consolas,monospace)." />
+            </StackPanel>
+
+            <StackPanel Spacing="2">
+                <TextBlock Classes="settingLabel" Text="Font size" />
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Reset" Margin="8,0,0,0"
+                            Command="{Binding ResetSettingCommand}" CommandParameter="fontSize"
+                            AutomationProperties.Name="Reset font size" />
+                    <NumericUpDown Value="{Binding EditorFontSize}" Minimum="8" Maximum="32" Increment="1"
+                                   MinWidth="140" HorizontalAlignment="Left" AutomationProperties.Name="Editor font size" />
+                </DockPanel>
+                <TextBlock Classes="settingHint" Text="Editor text size in points (default: 13)." />
+            </StackPanel>
+
+            <StackPanel Spacing="2">
+                <TextBlock Classes="settingLabel" Text="Indentation width" />
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Reset" Margin="8,0,0,0"
+                            Command="{Binding ResetSettingCommand}" CommandParameter="indent"
+                            AutomationProperties.Name="Reset indentation width" />
+                    <NumericUpDown Value="{Binding EditorIndentWidth}" Minimum="1" Maximum="8" Increment="1"
+                                   MinWidth="140" HorizontalAlignment="Left" AutomationProperties.Name="Indentation width" />
+                </DockPanel>
+                <TextBlock Classes="settingHint" Text="Spaces per indent for pretty-printed JSON (default: 2)." />
+            </StackPanel>
+
+            <StackPanel Spacing="2">
+                <CheckBox IsChecked="{Binding EditorFormatOnPaste}" Content="Format on paste"
+                          AutomationProperties.Name="Format on paste" />
+                <TextBlock Classes="settingHint" Text="Re-indent pasted JSON (default: on)." />
+            </StackPanel>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

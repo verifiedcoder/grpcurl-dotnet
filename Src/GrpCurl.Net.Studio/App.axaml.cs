@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using GrpCurl.Net.Studio.Theming;
 using GrpCurl.Net.Studio.ViewModels;
+using GrpCurl.Net.Studio.ViewModels.Services;
 using GrpCurl.Net.Studio.Views;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -29,8 +30,8 @@ public sealed partial class App : Application
         {
             var viewModel = _services.GetRequiredService<MainWindowViewModel>();
 
-            // Apply the persisted theme and keep it live as the selection changes.
-            new ThemeManager(this).Attach(viewModel);
+            // Apply the persisted theme and keep it live as the shared service changes.
+            new ThemeManager(this).Attach(_services.GetRequiredService<IThemeService>());
 
             desktop.MainWindow = new MainWindow { DataContext = viewModel };
         }

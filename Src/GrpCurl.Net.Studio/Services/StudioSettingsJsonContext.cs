@@ -9,6 +9,7 @@ namespace GrpCurl.Net.Studio.Services;
 /// </summary>
 [JsonSourceGenerationOptions(
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    UseStringEnumConverter = true,
     WriteIndented = true)]
 [JsonSerializable(typeof(StudioSettings))]
 internal sealed partial class StudioSettingsJsonContext : JsonSerializerContext;

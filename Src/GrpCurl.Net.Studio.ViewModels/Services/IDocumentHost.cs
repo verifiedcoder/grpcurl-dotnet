@@ -23,4 +23,7 @@ public interface IDocumentHost
     ///     request template itself. Invocation tabs are editable drafts, so each call opens a new one.
     /// </summary>
     void OpenInvocation(SavedConnection connection, string methodSymbol, string? initialRequestJson = null);
+
+    /// <summary>Opens the Settings tab (FR-150), or focuses it if already open (single instance).</summary>
+    void OpenSettings();
 }

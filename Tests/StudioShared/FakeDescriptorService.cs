@@ -13,9 +13,19 @@ public sealed class FakeDescriptorService : IDescriptorService
     /// <summary>Optional custom behaviour (e.g. to honour cancellation or throw).</summary>
     public Func<SavedConnection, CancellationToken, Task<DescriptorLoadResult>>? OnLoad { get; set; }
 
+    /// <summary>Result returned when <see cref="OnDescribe" /> is not set.</summary>
+    public DescribeResult DescribeResult { get; set; } = DescribeResult.Failure(new DescriptorLoadError("not configured", null, false));
+
+    /// <summary>Optional custom describe behaviour (e.g. to vary by symbol, honour cancellation, or throw).</summary>
+    public Func<SavedConnection, string, CancellationToken, Task<DescribeResult>>? OnDescribe { get; set; }
+
     public SavedConnection? LastLoaded { get; private set; }
 
     public int LoadCount { get; private set; }
+
+    public string? LastDescribed { get; private set; }
+
+    public int DescribeCount { get; private set; }
 
     public Task<DescriptorLoadResult> LoadAsync(SavedConnection connection, CancellationToken cancellationToken = default)
     {
@@ -29,5 +39,19 @@ public sealed class FakeDescriptorService : IDescriptorService
 
         cancellationToken.ThrowIfCancellationRequested();
         return Task.FromResult(Result);
+    }
+
+    public Task<DescribeResult> DescribeAsync(SavedConnection connection, string symbol, CancellationToken cancellationToken = default)
+    {
+        LastDescribed = symbol;
+        DescribeCount++;
+
+        if (OnDescribe is not null)
+        {
+            return OnDescribe(connection, symbol, cancellationToken);
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(DescribeResult);
     }
 }

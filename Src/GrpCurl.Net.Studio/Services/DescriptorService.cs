@@ -1,6 +1,7 @@
 using Google.Protobuf.Reflection;
 using Grpc.Core;
 using GrpCurl.Net.DescriptorSources;
+using GrpCurl.Net.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Descriptors;
 using GrpCurl.Net.Studio.ViewModels.Services;
@@ -8,10 +9,11 @@ using GrpCurl.Net.Studio.ViewModels.Services;
 namespace GrpCurl.Net.Studio.Services;
 
 /// <summary>
-///     Reflection-backed <see cref="IDescriptorService" />. Builds the catalog through Core's
-///     <see cref="DescriptorSourceFactory" /> using the connection's full channel options, so the
-///     explorer sees exactly what a CLI <c>list</c> would. The session (and its channel) is disposed
-///     once the catalog is read; the long-lived business channel for invocation arrives with E1.4.
+///     Reflection-backed <see cref="IDescriptorService" />. Builds the catalog and per-symbol
+///     descriptions through Core's <see cref="DescriptorSourceFactory" /> using the connection's full
+///     channel options, so Studio sees exactly what the CLI <c>list</c>/<c>describe</c> would. The
+///     session (and its channel) is disposed once read; the long-lived business channel for
+///     invocation arrives with E1.4.
 /// </summary>
 internal sealed class DescriptorService : IDescriptorService
 {
@@ -46,7 +48,12 @@ internal sealed class DescriptorService : IDescriptorService
                 }
             }
 
-            return DescriptorLoadResult.Success(new ServiceCatalog(services, warnings.Messages));
+            var catalog = new ServiceCatalog(services, warnings.Messages)
+            {
+                Types = CollectTypes(session.Source.FileDescriptorSet)
+            };
+
+            return DescriptorLoadResult.Success(catalog);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -55,6 +62,50 @@ internal sealed class DescriptorService : IDescriptorService
         catch (RpcException ex)
         {
             return DescriptorLoadResult.Failure(MapRpcError(ex));
+        }
+    }
+
+    public async Task<DescribeResult> DescribeAsync(SavedConnection connection, string symbol, CancellationToken cancellationToken = default)
+    {
+        var options = ConnectionChannelMapper.ToChannelOptions(connection);
+        var metadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
+        var warnings = new CollectingWarningSink();
+
+        try
+        {
+            await using var session = await DescriptorSourceFactory.CreateAsync(
+                connection.Address,
+                protosetPaths: [],
+                protoFiles: [],
+                importPaths: [],
+                channelOptions: options,
+                reflectionMetadata: metadata,
+                cancellationToken: cancellationToken,
+                warningSink: warnings).ConfigureAwait(false);
+
+            // Accept both the dotted FQN and the invocation grammar (pkg.Service/Method) for methods.
+            var normalized = symbol.Replace('/', '.');
+            var descriptor = await session.Source.FindSymbolAsync(normalized, cancellationToken).ConfigureAwait(false);
+
+            return descriptor switch
+            {
+                ServiceDescriptor s => DescribeResult.Success(MapServiceDescription(s)),
+                MethodDescriptor m  => DescribeResult.Success(MapMethodDescription(m)),
+                MessageDescriptor g => DescribeResult.Success(MapMessageDescription(g)),
+                EnumDescriptor e    => DescribeResult.Success(MapEnumDescription(e)),
+                null                => DescribeResult.Failure(new DescriptorLoadError(
+                    $"Symbol '{symbol}' was not found in the active descriptor set.", Hint: null, ReflectionUnavailable: false)),
+                _                   => DescribeResult.Failure(new DescriptorLoadError(
+                    $"'{symbol}' is a {descriptor.GetType().Name}, which cannot be described.", Hint: null, ReflectionUnavailable: false))
+            };
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (RpcException ex)
+        {
+            return DescribeResult.Failure(MapRpcError(ex));
         }
     }
 
@@ -71,6 +122,158 @@ internal sealed class DescriptorService : IDescriptorService
 
         return new ServiceEntry(descriptor.FullName, methods);
     }
+
+    // --- describe mapping (FR-050/052) ---
+
+    private static ServiceDescription MapServiceDescription(ServiceDescriptor s)
+    {
+        var methods = s.Methods
+            .Select(m => new MethodSummary(
+                m.Name,
+                $"{s.FullName}/{m.Name}",
+                StreamingShapeExtensions.FromFlags(m.IsClientStreaming, m.IsServerStreaming),
+                new TypeRef(m.InputType.FullName, Resolvable: true),
+                new TypeRef(m.OutputType.FullName, Resolvable: true)))
+            .ToList();
+
+        return new ServiceDescription(s.FullName, s.Name, s.File.Name, methods);
+    }
+
+    private static MethodDescription MapMethodDescription(MethodDescriptor m)
+        => new(
+            m.FullName,
+            m.Name,
+            m.File.Name,
+            StreamingShapeExtensions.FromFlags(m.IsClientStreaming, m.IsServerStreaming),
+            new TypeRef(m.InputType.FullName, Resolvable: true),
+            new TypeRef(m.OutputType.FullName, Resolvable: true),
+            new TypeRef(m.Service.FullName, Resolvable: true),
+            MessageTemplateGenerator.GenerateJson(m.InputType));
+
+    private static MessageDescription MapMessageDescription(MessageDescriptor g)
+    {
+        var fields = g.Fields.InDeclarationOrder()
+            .Select(MapField)
+            .ToList();
+
+        var nested = g.NestedTypes
+            .Where(n => n.GetOptions()?.MapEntry != true)
+            .Select(n => new TypeRef(n.FullName, Resolvable: true))
+            .Concat(g.EnumTypes.Select(e => new TypeRef(e.FullName, Resolvable: true)))
+            .ToList();
+
+        return new MessageDescription(g.FullName, g.Name, g.File.Name, fields, nested, MessageTemplateGenerator.GenerateJson(g));
+    }
+
+    private static FieldDescription MapField(FieldDescriptor field)
+    {
+        var (display, link) = DescribeFieldType(field);
+        var label = field.IsMap
+            ? FieldLabel.Map
+            : field.IsRepeated ? FieldLabel.Repeated : FieldLabel.Optional;
+
+        // proto3 `optional` produces a synthetic single-field oneof — not a user-facing oneof.
+        var oneof = field.ContainingOneof is { IsSynthetic: false } o ? o.Name : null;
+
+        return new FieldDescription(field.Name, field.FieldNumber, display, link, label, oneof);
+    }
+
+    private static EnumDescription MapEnumDescription(EnumDescriptor e)
+        => new(e.FullName, e.Name, e.File.Name, e.Values.Select(v => new EnumValue(v.Name, v.Number)).ToList());
+
+    private static (string Display, TypeRef? Link) DescribeFieldType(FieldDescriptor field)
+    {
+        if (!field.IsMap)
+        {
+            return NamedType(field);
+        }
+
+        var entry = field.MessageType;
+        var keyName = ScalarName(entry.Fields[1]);
+        var (valueDisplay, valueLink) = NamedType(entry.Fields[2]);
+        return ($"map<{keyName}, {valueDisplay}>", valueLink);
+    }
+
+    private static (string Display, TypeRef? Link) NamedType(FieldDescriptor field) => field.FieldType switch
+    {
+        FieldType.Message => ($".{field.MessageType.FullName}", new TypeRef(field.MessageType.FullName, Resolvable: true)),
+        FieldType.Enum    => ($".{field.EnumType.FullName}", new TypeRef(field.EnumType.FullName, Resolvable: true)),
+        _                 => (ScalarName(field), null)
+    };
+
+    private static string ScalarName(FieldDescriptor field) => field.FieldType switch
+    {
+        FieldType.Double   => "double",
+        FieldType.Float    => "float",
+        FieldType.Int64    => "int64",
+        FieldType.UInt64   => "uint64",
+        FieldType.Int32    => "int32",
+        FieldType.Fixed64  => "fixed64",
+        FieldType.Fixed32  => "fixed32",
+        FieldType.Bool     => "bool",
+        FieldType.String   => "string",
+        FieldType.Bytes    => "bytes",
+        FieldType.UInt32   => "uint32",
+        FieldType.SFixed32 => "sfixed32",
+        FieldType.SFixed64 => "sfixed64",
+        FieldType.SInt32   => "sint32",
+        FieldType.SInt64   => "sint64",
+        FieldType.Enum     => $".{field.EnumType.FullName}",
+        FieldType.Message  => $".{field.MessageType.FullName}",
+        _                  => field.FieldType.ToString().ToLowerInvariant()
+    };
+
+    // --- Types branch (FR-022): all message/enum FQNs from the raw descriptor set ---
+
+    private static List<TypeEntry> CollectTypes(FileDescriptorSet? set)
+    {
+        var types = new List<TypeEntry>();
+
+        if (set is null)
+        {
+            return types;
+        }
+
+        foreach (var file in set.File)
+        {
+            var package = file.Package;
+
+            foreach (var message in file.MessageType)
+            {
+                CollectMessage(message, package, package, types);
+            }
+
+            foreach (var enumType in file.EnumType)
+            {
+                types.Add(new TypeEntry(Combine(package, enumType.Name), TypeNodeKind.Enum, package));
+            }
+        }
+
+        return types;
+    }
+
+    private static void CollectMessage(DescriptorProto message, string package, string scope, List<TypeEntry> types)
+    {
+        if (message.Options?.MapEntry == true)
+        {
+            return; // synthetic map-entry type
+        }
+
+        var fullName = Combine(scope, message.Name);
+        types.Add(new TypeEntry(fullName, TypeNodeKind.Message, package));
+
+        foreach (var nested in message.NestedType)
+        {
+            CollectMessage(nested, package, fullName, types);
+        }
+
+        foreach (var enumType in message.EnumType)
+        {
+            types.Add(new TypeEntry(Combine(fullName, enumType.Name), TypeNodeKind.Enum, package));
+        }
+    }
+
+    private static string Combine(string scope, string name) => string.IsNullOrEmpty(scope) ? name : $"{scope}.{name}";
 
     private static DescriptorLoadError MapRpcError(RpcException ex)
     {

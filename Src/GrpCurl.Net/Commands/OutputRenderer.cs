@@ -91,7 +91,7 @@ internal static class OutputRenderer
 
         if (msgTemplate && descriptor is MessageDescriptor msgTmplDesc)
         {
-            var template = DescribeCommandHandler.CreateMessageTemplate(msgTmplDesc, []);
+            var template = MessageTemplateGenerator.CreateTemplate(msgTmplDesc);
 
             var envelope = new
             {

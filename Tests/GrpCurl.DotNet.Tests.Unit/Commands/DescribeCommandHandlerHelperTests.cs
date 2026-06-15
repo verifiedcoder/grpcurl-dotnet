@@ -1,4 +1,5 @@
 using GrpCurl.Net.Commands;
+using GrpCurl.Net.Invocation;
 using GrpCurl.Net.DescriptorSources;
 using GrpCurl.Net.Tests.Unit.Fixtures;
 
@@ -102,7 +103,7 @@ public sealed class DescribeCommandHandlerHelperTests
         var field = TestDescriptorProvider.SimpleRequest.FindFieldByNumber(1)!;
 
         // Act
-        var result = DescribeCommandHandler.GetEnumDefault(field.EnumType);
+        var result = MessageTemplateGenerator.GetEnumDefault(field.EnumType);
 
         // Assert
         result.ShouldBe("COMPRESSABLE");
@@ -120,21 +121,21 @@ public sealed class DescribeCommandHandlerHelperTests
 
         // Act
         // Assert
-        DescribeCommandHandler.GetScalarDefault(desc.FindFieldByNumber(1)!).ShouldBe(0);     // double
-        DescribeCommandHandler.GetScalarDefault(desc.FindFieldByNumber(2)!).ShouldBe(0);     // float
-        DescribeCommandHandler.GetScalarDefault(desc.FindFieldByNumber(3)!).ShouldBe(0);     // int32
-        DescribeCommandHandler.GetScalarDefault(desc.FindFieldByNumber(4)!).ShouldBe("0");   // int64 (quoted)
-        DescribeCommandHandler.GetScalarDefault(desc.FindFieldByNumber(5)!).ShouldBe(0);     // uint32
-        DescribeCommandHandler.GetScalarDefault(desc.FindFieldByNumber(6)!).ShouldBe("0");   // uint64 (quoted)
-        DescribeCommandHandler.GetScalarDefault(desc.FindFieldByNumber(7)!).ShouldBe(0);     // sint32
-        DescribeCommandHandler.GetScalarDefault(desc.FindFieldByNumber(8)!).ShouldBe("0");   // sint64 (quoted)
-        DescribeCommandHandler.GetScalarDefault(desc.FindFieldByNumber(9)!).ShouldBe(0);     // fixed32
-        DescribeCommandHandler.GetScalarDefault(desc.FindFieldByNumber(10)!).ShouldBe("0");  // fixed64 (quoted)
-        DescribeCommandHandler.GetScalarDefault(desc.FindFieldByNumber(11)!).ShouldBe(0);    // sfixed32
-        DescribeCommandHandler.GetScalarDefault(desc.FindFieldByNumber(12)!).ShouldBe("0");  // sfixed64 (quoted)
-        DescribeCommandHandler.GetScalarDefault(desc.FindFieldByNumber(13)!).ShouldBe(false); // bool
-        DescribeCommandHandler.GetScalarDefault(desc.FindFieldByNumber(14)!).ShouldBe("");    // string
-        DescribeCommandHandler.GetScalarDefault(desc.FindFieldByNumber(15)!).ShouldBe("");    // bytes
+        MessageTemplateGenerator.GetScalarDefault(desc.FindFieldByNumber(1)!).ShouldBe(0);     // double
+        MessageTemplateGenerator.GetScalarDefault(desc.FindFieldByNumber(2)!).ShouldBe(0);     // float
+        MessageTemplateGenerator.GetScalarDefault(desc.FindFieldByNumber(3)!).ShouldBe(0);     // int32
+        MessageTemplateGenerator.GetScalarDefault(desc.FindFieldByNumber(4)!).ShouldBe("0");   // int64 (quoted)
+        MessageTemplateGenerator.GetScalarDefault(desc.FindFieldByNumber(5)!).ShouldBe(0);     // uint32
+        MessageTemplateGenerator.GetScalarDefault(desc.FindFieldByNumber(6)!).ShouldBe("0");   // uint64 (quoted)
+        MessageTemplateGenerator.GetScalarDefault(desc.FindFieldByNumber(7)!).ShouldBe(0);     // sint32
+        MessageTemplateGenerator.GetScalarDefault(desc.FindFieldByNumber(8)!).ShouldBe("0");   // sint64 (quoted)
+        MessageTemplateGenerator.GetScalarDefault(desc.FindFieldByNumber(9)!).ShouldBe(0);     // fixed32
+        MessageTemplateGenerator.GetScalarDefault(desc.FindFieldByNumber(10)!).ShouldBe("0");  // fixed64 (quoted)
+        MessageTemplateGenerator.GetScalarDefault(desc.FindFieldByNumber(11)!).ShouldBe(0);    // sfixed32
+        MessageTemplateGenerator.GetScalarDefault(desc.FindFieldByNumber(12)!).ShouldBe("0");  // sfixed64 (quoted)
+        MessageTemplateGenerator.GetScalarDefault(desc.FindFieldByNumber(13)!).ShouldBe(false); // bool
+        MessageTemplateGenerator.GetScalarDefault(desc.FindFieldByNumber(14)!).ShouldBe("");    // string
+        MessageTemplateGenerator.GetScalarDefault(desc.FindFieldByNumber(15)!).ShouldBe("");    // bytes
     }
 
     #endregion
@@ -148,7 +149,7 @@ public sealed class DescribeCommandHandlerHelperTests
         var echoStatus = TestDescriptorProvider.GetMessageDescriptor("testing.EchoStatus");
 
         // Act
-        var template = DescribeCommandHandler.CreateMessageTemplate(echoStatus, []);
+        var template = MessageTemplateGenerator.CreateTemplate(echoStatus, []);
 
         // Assert
         template.ShouldContainKey("code");
@@ -164,7 +165,7 @@ public sealed class DescribeCommandHandlerHelperTests
         var simpleRequest = TestDescriptorProvider.SimpleRequest;
 
         // Act
-        var template = DescribeCommandHandler.CreateMessageTemplate(simpleRequest, []);
+        var template = MessageTemplateGenerator.CreateTemplate(simpleRequest, []);
 
         // Assert - field names are snake_case (proto field names)
         template.ShouldContainKey("payload");
@@ -183,7 +184,7 @@ public sealed class DescribeCommandHandlerHelperTests
         var simpleRequest = TestDescriptorProvider.SimpleRequest;
 
         // Act
-        var template = DescribeCommandHandler.CreateMessageTemplate(simpleRequest, []);
+        var template = MessageTemplateGenerator.CreateTemplate(simpleRequest, []);
 
         // Assert - field name is snake_case (proto field name)
         template.ShouldContainKey("response_type");
@@ -197,7 +198,7 @@ public sealed class DescribeCommandHandlerHelperTests
         var mapFieldsMessage = TestDescriptorProvider.MapFieldsMessage;
 
         // Act
-        var template = DescribeCommandHandler.CreateMessageTemplate(mapFieldsMessage, []);
+        var template = MessageTemplateGenerator.CreateTemplate(mapFieldsMessage, []);
 
         // Assert - field names are snake_case, map key is type-appropriate default ("" for string keys)
         template.ShouldContainKey("message_map");
@@ -223,7 +224,7 @@ public sealed class DescribeCommandHandlerHelperTests
         var mapFieldsMessage = TestDescriptorProvider.MapFieldsMessage;
 
         // Act
-        var template = DescribeCommandHandler.CreateMessageTemplate(mapFieldsMessage, []);
+        var template = MessageTemplateGenerator.CreateTemplate(mapFieldsMessage, []);
 
         // Assert - field names are snake_case, map key is type-appropriate default ("" for string keys)
         template.ShouldContainKey("enum_map");
@@ -242,7 +243,7 @@ public sealed class DescribeCommandHandlerHelperTests
         var mapFieldsMessage = TestDescriptorProvider.MapFieldsMessage;
 
         // Act
-        var template = DescribeCommandHandler.CreateMessageTemplate(mapFieldsMessage, []);
+        var template = MessageTemplateGenerator.CreateTemplate(mapFieldsMessage, []);
 
         // Assert - field names are snake_case, map key is type-appropriate default ("" for string keys)
         template.ShouldContainKey("string_map");
@@ -261,7 +262,7 @@ public sealed class DescribeCommandHandlerHelperTests
         var mapFieldsMessage = TestDescriptorProvider.MapFieldsMessage;
 
         // Act
-        var template = DescribeCommandHandler.CreateMessageTemplate(mapFieldsMessage, []);
+        var template = MessageTemplateGenerator.CreateTemplate(mapFieldsMessage, []);
 
         // Assert - field names are snake_case, map key is type-appropriate default ("" for string keys)
         template.ShouldContainKey("int_map");
@@ -284,7 +285,7 @@ public sealed class DescribeCommandHandlerHelperTests
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Struct");
 
         // Act
-        var result = DescribeCommandHandler.HandleWellKnownType(descriptor, []);
+        var result = MessageTemplateGenerator.HandleWellKnownType(descriptor, []);
 
         // Assert
         result.ShouldBeOfType<Dictionary<string, object?>>();
@@ -302,7 +303,7 @@ public sealed class DescribeCommandHandlerHelperTests
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Value");
 
         // Act
-        var result = DescribeCommandHandler.HandleWellKnownType(descriptor, []);
+        var result = MessageTemplateGenerator.HandleWellKnownType(descriptor, []);
 
         // Assert
         result.ShouldBeOfType<Dictionary<string, object?>>();
@@ -320,7 +321,7 @@ public sealed class DescribeCommandHandlerHelperTests
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.ListValue");
 
         // Act
-        var result = DescribeCommandHandler.HandleWellKnownType(descriptor, []);
+        var result = MessageTemplateGenerator.HandleWellKnownType(descriptor, []);
 
         // Assert
         result.ShouldBeOfType<List<object?>>();
@@ -343,7 +344,7 @@ public sealed class DescribeCommandHandlerHelperTests
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Any");
 
         // Act
-        var result = DescribeCommandHandler.HandleWellKnownType(descriptor, []);
+        var result = MessageTemplateGenerator.HandleWellKnownType(descriptor, []);
 
         // Assert
         result.ShouldBeOfType<Dictionary<string, object?>>();
@@ -367,7 +368,7 @@ public sealed class DescribeCommandHandlerHelperTests
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.FieldMask");
 
         // Act
-        var result = DescribeCommandHandler.HandleWellKnownType(descriptor, []);
+        var result = MessageTemplateGenerator.HandleWellKnownType(descriptor, []);
 
         // Assert
         result.ShouldBeOfType<Dictionary<string, object?>>();
@@ -390,7 +391,7 @@ public sealed class DescribeCommandHandlerHelperTests
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Timestamp");
 
         // Act
-        var result = DescribeCommandHandler.HandleWellKnownType(descriptor, []);
+        var result = MessageTemplateGenerator.HandleWellKnownType(descriptor, []);
 
         // Assert
         result.ShouldBe("1970-01-01T00:00:00Z");
@@ -403,7 +404,7 @@ public sealed class DescribeCommandHandlerHelperTests
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Duration");
 
         // Act
-        var result = DescribeCommandHandler.HandleWellKnownType(descriptor, []);
+        var result = MessageTemplateGenerator.HandleWellKnownType(descriptor, []);
 
         // Assert
         result.ShouldBe("0s");
@@ -416,7 +417,7 @@ public sealed class DescribeCommandHandlerHelperTests
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Empty");
 
         // Act
-        var result = DescribeCommandHandler.HandleWellKnownType(descriptor, []);
+        var result = MessageTemplateGenerator.HandleWellKnownType(descriptor, []);
 
         // Assert
         result.ShouldBeOfType<Dictionary<string, object?>>();
@@ -437,7 +438,7 @@ public sealed class DescribeCommandHandlerHelperTests
         var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("wkttesting.WellKnownTypesMessage");
 
         // Act
-        var template = DescribeCommandHandler.CreateMessageTemplate(descriptor, []);
+        var template = MessageTemplateGenerator.CreateTemplate(descriptor, []);
 
         // Assert - Timestamp (field names are snake_case)
         template.ShouldContainKey("timestamp_field");
@@ -963,7 +964,7 @@ public sealed class DescribeCommandHandlerHelperTests
         var mapKeyField = mapFieldsMessage.FindFieldByNumber(1)!.MessageType.Fields[1]; // Key field
 
         // Act
-        var result = DescribeCommandHandler.GetMapKeyDefault(mapKeyField);
+        var result = MessageTemplateGenerator.GetMapKeyDefault(mapKeyField);
 
         // Assert
         result.ShouldBe("");
@@ -977,7 +978,7 @@ public sealed class DescribeCommandHandlerHelperTests
         var mapKeyField = mapFieldsMessage.FindFieldByNumber(3)!.MessageType.Fields[1]; // Key field
 
         // Act
-        var result = DescribeCommandHandler.GetMapKeyDefault(mapKeyField);
+        var result = MessageTemplateGenerator.GetMapKeyDefault(mapKeyField);
 
         // Assert
         result.ShouldBe("0");
@@ -990,7 +991,7 @@ public sealed class DescribeCommandHandlerHelperTests
         var mapFieldsMessage = TestDescriptorProvider.MapFieldsMessage;
 
         // Act
-        var template = DescribeCommandHandler.CreateMessageTemplate(mapFieldsMessage, []);
+        var template = MessageTemplateGenerator.CreateTemplate(mapFieldsMessage, []);
 
         // Assert - int_key_map should use "0" as the key default for int32 keys
         template.ShouldContainKey("int_key_map");

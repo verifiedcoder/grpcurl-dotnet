@@ -3,19 +3,23 @@ using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels;
 using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Panes;
+using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
 
 public sealed class MainWindowViewModelTests
 {
     private static ConnectionsPaneViewModel EmptyConnectionsPane()
-        => new(new FakeWorkspaceStore(), new FakeConnectionRegistry(), new FakeDialogService());
+        => new(new FakeWorkspaceStore(), new FakeConnectionRegistry(), new FakeDialogService(), new ConnectionSelection());
+
+    private static ServiceExplorerViewModel EmptyExplorer()
+        => new(new FakeDescriptorService(), new ConnectionSelection(), new FakeClipboardService(), new ImmediateUiDispatcher());
 
     private static MainWindowViewModel CreateViewModel(FakeSettingsStore? settings = null)
         => new(
             settings ?? new FakeSettingsStore(),
             EmptyConnectionsPane(),
-            new ServiceExplorerViewModel(),
+            EmptyExplorer(),
             new ConsoleViewModel(),
             new InspectorViewModel());
 

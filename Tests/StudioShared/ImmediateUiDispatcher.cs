@@ -1,11 +1,8 @@
 using GrpCurl.Net.Studio.ViewModels.Services;
 
-namespace GrpCurl.Net.Studio.Tests.Unit.Fakes;
+namespace GrpCurl.Net.Studio.TestSupport;
 
-/// <summary>
-///     Test <see cref="IUiDispatcher" /> that runs everything inline on the calling thread, so
-///     view models can be exercised without a UI thread (SPEC-070).
-/// </summary>
+/// <summary>Runs all dispatched work synchronously on the calling thread, for headless tests.</summary>
 public sealed class ImmediateUiDispatcher : IUiDispatcher
 {
     public bool IsOnUiThread => true;

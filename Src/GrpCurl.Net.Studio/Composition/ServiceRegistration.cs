@@ -22,7 +22,7 @@ internal static class ServiceRegistration
         services.AddSingleton<ISettingsStore, JsonSettingsStore>();
         services.AddSingleton<IDialogService, DialogService>();
         services.AddSingleton<IFilePickerService, NoopFilePickerService>();
-        services.AddSingleton<IClipboardService, NoopClipboardService>();
+        services.AddSingleton<IClipboardService, ClipboardService>();
 
         // Connection layer (E1.1).
         services.AddSingleton<IWorkspaceStore, JsonWorkspaceStore>();

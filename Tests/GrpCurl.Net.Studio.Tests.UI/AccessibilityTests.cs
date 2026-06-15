@@ -9,6 +9,7 @@ using GrpCurl.Net.Studio.Tests.UI.Headless;
 using GrpCurl.Net.Studio.ViewModels;
 using GrpCurl.Net.Studio.ViewModels.Connections;
 using GrpCurl.Net.Studio.ViewModels.Panes;
+using GrpCurl.Net.Studio.ViewModels.Services;
 using GrpCurl.Net.Studio.Views;
 
 namespace GrpCurl.Net.Studio.Tests.UI;
@@ -24,8 +25,8 @@ public sealed class AccessibilityTests(HeadlessSessionFixture fixture) : Headles
     private static MainWindowViewModel CreateShellViewModel()
         => new(
             new InMemorySettingsStore(),
-            new ConnectionsPaneViewModel(new FakeWorkspaceStore(), new FakeConnectionRegistry(), new FakeDialogService()),
-            new ServiceExplorerViewModel(),
+            new ConnectionsPaneViewModel(new FakeWorkspaceStore(), new FakeConnectionRegistry(), new FakeDialogService(), new ConnectionSelection()),
+            new ServiceExplorerViewModel(new FakeDescriptorService(), new ConnectionSelection(), new FakeClipboardService(), new ImmediateUiDispatcher()),
             new ConsoleViewModel(),
             new InspectorViewModel());
 

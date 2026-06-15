@@ -1,4 +1,5 @@
 using GrpCurl.Net.Studio.Tests.Unit.Fakes;
+using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels;
 using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Panes;
@@ -7,10 +8,13 @@ namespace GrpCurl.Net.Studio.Tests.Unit;
 
 public sealed class MainWindowViewModelTests
 {
+    private static ConnectionsPaneViewModel EmptyConnectionsPane()
+        => new(new FakeWorkspaceStore(), new FakeConnectionRegistry(), new FakeDialogService());
+
     private static MainWindowViewModel CreateViewModel(FakeSettingsStore? settings = null)
         => new(
             settings ?? new FakeSettingsStore(),
-            new ConnectionsPaneViewModel(),
+            EmptyConnectionsPane(),
             new ServiceExplorerViewModel(),
             new ConsoleViewModel(),
             new InspectorViewModel());

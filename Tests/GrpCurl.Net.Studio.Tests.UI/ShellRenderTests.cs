@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using GrpCurl.Net.Studio.Services;
+using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.Tests.UI.Headless;
 using GrpCurl.Net.Studio.ViewModels;
 using GrpCurl.Net.Studio.ViewModels.Panes;
@@ -19,7 +20,7 @@ public sealed class ShellRenderTests(HeadlessSessionFixture fixture) : HeadlessT
     private static MainWindowViewModel CreateViewModel()
         => new(
             new InMemorySettingsStore(),
-            new ConnectionsPaneViewModel(),
+            new ConnectionsPaneViewModel(new FakeWorkspaceStore(), new FakeConnectionRegistry(), new FakeDialogService()),
             new ServiceExplorerViewModel(),
             new ConsoleViewModel(),
             new InspectorViewModel());

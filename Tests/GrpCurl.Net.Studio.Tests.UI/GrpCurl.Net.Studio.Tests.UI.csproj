@@ -32,6 +32,11 @@
         <ProjectReference Include="..\..\Src\GrpCurl.Net.Studio.ViewModels\GrpCurl.Net.Studio.ViewModels.csproj" />
     </ItemGroup>
 
+    <!-- Shared Studio test fakes, linked into both Studio test projects. -->
+    <ItemGroup>
+        <Compile Include="..\StudioShared\*.cs" LinkBase="Shared" />
+    </ItemGroup>
+
     <ItemGroup>
         <Using Include="Shouldly" />
         <Using Include="Xunit" />

@@ -52,6 +52,16 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         Inspector = inspector;
 
         _selectedTheme = ParseTheme(settingsStore.Current.Appearance.Theme);
+
+        // The welcome empty-state shows until the first connection exists (SPEC-020 §7).
+        _hasAnyConnection = connections.HasConnections;
+        connections.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(ConnectionsPaneViewModel.HasConnections))
+            {
+                HasAnyConnection = connections.HasConnections;
+            }
+        };
     }
 
     public string Title => "GrpCurl.Net Studio";

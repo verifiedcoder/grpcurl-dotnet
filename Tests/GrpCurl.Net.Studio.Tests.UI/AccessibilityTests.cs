@@ -4,8 +4,10 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using GrpCurl.Net.Studio.Services;
+using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.Tests.UI.Headless;
 using GrpCurl.Net.Studio.ViewModels;
+using GrpCurl.Net.Studio.ViewModels.Connections;
 using GrpCurl.Net.Studio.ViewModels.Panes;
 using GrpCurl.Net.Studio.Views;
 
@@ -22,7 +24,7 @@ public sealed class AccessibilityTests(HeadlessSessionFixture fixture) : Headles
     private static MainWindowViewModel CreateShellViewModel()
         => new(
             new InMemorySettingsStore(),
-            new ConnectionsPaneViewModel(),
+            new ConnectionsPaneViewModel(new FakeWorkspaceStore(), new FakeConnectionRegistry(), new FakeDialogService()),
             new ServiceExplorerViewModel(),
             new ConsoleViewModel(),
             new InspectorViewModel());
@@ -42,6 +44,26 @@ public sealed class AccessibilityTests(HeadlessSessionFixture fixture) : Headles
             .ToList();
 
         unnamed.ShouldBeEmpty("interactive controls without an accessible name: " + string.Join(", ", unnamed));
+    });
+
+    [Fact]
+    public Task Every_interactive_control_in_the_connection_editor_has_an_accessible_name() => RunOnUiThread(() =>
+    {
+        var editor = new ConnectionEditorViewModel(new FakeConnectionRegistry());
+        editor.AddHeaderCommand.Execute(null); // realize a header row's controls too
+
+        var window = new Window { Content = new Views.Connections.ConnectionEditorView { DataContext = editor }, DataContext = editor };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        var unnamed = window.GetVisualDescendants()
+            .OfType<Control>()
+            .Where(IsInteractive)
+            .Where(control => string.IsNullOrWhiteSpace(EffectiveName(control)))
+            .Select(Describe)
+            .ToList();
+
+        unnamed.ShouldBeEmpty("editor controls without an accessible name: " + string.Join(", ", unnamed));
     });
 
     private static bool IsInteractive(Control control) => control switch

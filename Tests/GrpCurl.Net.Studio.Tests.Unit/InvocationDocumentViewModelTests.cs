@@ -136,6 +136,20 @@ public sealed class InvocationDocumentViewModelTests
     }
 
     [Fact]
+    public async Task Copy_as_cli_writes_a_grpcn_invoke_command()
+    {
+        var doc = Create(out _, out _, out var clipboard);
+        doc.Deadline = "5s";
+
+        await doc.CopyAsCliCommand.ExecuteAsync(null);
+
+        clipboard.Text.ShouldNotBeNull();
+        clipboard.Text!.ShouldStartWith("grpcn invoke");
+        clipboard.Text.ShouldContain("pkg.Svc/Go");
+        clipboard.Text.ShouldContain("--max-time 5s");
+    }
+
+    [Fact]
     public void Add_and_remove_header_mutate_the_grid()
     {
         var doc = Create(out _, out _, out _);

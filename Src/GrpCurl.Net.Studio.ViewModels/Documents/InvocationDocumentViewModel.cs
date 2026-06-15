@@ -110,19 +110,9 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
             Timing.Clear();
         });
 
-        var request = new InvocationRequestModel(
-            Connection,
-            MethodSymbol,
-            RequestJson,
-            Headers.Select(h => h.ToEntry()).ToList(),
-            NullIfBlank(Deadline),
-            EmitDefaults,
-            AllowUnknownFields,
-            NullIfBlank(MaxMessageSize));
-
         try
         {
-            var result = await _runner.InvokeUnaryAsync(request, cancellationToken);
+            var result = await _runner.InvokeUnaryAsync(BuildRequest(), cancellationToken);
             await _dispatcher.InvokeAsync(() => Apply(result));
         }
         catch (OperationCanceledException)
@@ -170,6 +160,21 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
             await _clipboard.SetTextAsync(ResponseJson);
         }
     }
+
+    /// <summary>Copies the equivalent grpcn invoke command, secrets as ${VAR} placeholders (FR-160/161).</summary>
+    [RelayCommand]
+    private async Task CopyAsCli()
+        => await _clipboard.SetTextAsync(CliCommandBuilder.BuildCommand(BuildRequest()));
+
+    private InvocationRequestModel BuildRequest() => new(
+        Connection,
+        MethodSymbol,
+        RequestJson,
+        Headers.Select(h => h.ToEntry()).ToList(),
+        NullIfBlank(Deadline),
+        EmitDefaults,
+        AllowUnknownFields,
+        NullIfBlank(MaxMessageSize));
 
     [RelayCommand]
     private void AddHeader() => Headers.Add(new HeaderRowViewModel());

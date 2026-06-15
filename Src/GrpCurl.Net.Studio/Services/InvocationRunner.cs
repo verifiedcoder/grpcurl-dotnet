@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using Google.Protobuf.Reflection;
 using Grpc.Core;
 using GrpCurl.Net.DescriptorSources;
@@ -17,8 +18,11 @@ namespace GrpCurl.Net.Studio.Services;
 ///     later optimisation. User cancellation propagates; resolution/parse failures become a failed
 ///     <see cref="InvocationResultModel" />.
 /// </summary>
-internal sealed class InvocationRunner(IInvocationService invocation) : IInvocationRunner
+internal sealed partial class InvocationRunner(IInvocationService invocation) : IInvocationRunner
 {
+    [GeneratedRegex(@"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")]
+    private static partial Regex EnvVarPattern();
+
     public async Task<InvocationResultModel> InvokeUnaryAsync(InvocationRequestModel request, CancellationToken cancellationToken)
     {
         var connection = request.Connection;
@@ -46,8 +50,10 @@ internal sealed class InvocationRunner(IInvocationService invocation) : IInvocat
 
             resolve.Stop();
 
+            // FR-066: resolve ${ENV_VAR} placeholders in header values at send time; an undefined
+            // variable fails the call (never sent as empty).
             var callHeaders = GrpcChannelFactory.CreateMetadata(
-                request.Headers.Select(h => $"{h.Name}: {h.Value}"),
+                request.Headers.Select(h => $"{h.Name}: {ResolveEnvironmentVariables(h.Value)}"),
                 NullIfBlank(connection.UserAgent));
 
             var requestMessage = invocation.CreateMessageFromJson(method.InputType, request.RequestJson, request.AllowUnknownFields);
@@ -112,6 +118,14 @@ internal sealed class InvocationRunner(IInvocationService invocation) : IInvocat
 
         return items;
     }
+
+    private static string ResolveEnvironmentVariables(string value)
+        => EnvVarPattern().Replace(value, match =>
+        {
+            var name = match.Groups[1].Value;
+            return Environment.GetEnvironmentVariable(name)
+                   ?? throw new InvalidOperationException($"Environment variable '{name}' referenced by a header is not set.");
+        });
 
     private static DateTime? ParseDeadline(string? deadline)
         => string.IsNullOrWhiteSpace(deadline) ? null : DateTime.UtcNow.Add(GrpcChannelFactory.ParseDuration(deadline));

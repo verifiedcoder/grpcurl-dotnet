@@ -85,4 +85,35 @@ public sealed class InvocationRunnerTests(StudioPlaintextServerFixture server)
         await Should.ThrowAsync<OperationCanceledException>(
             async () => await Runner().InvokeUnaryAsync(Request("testing.TestService/EmptyCall", "{}"), cts.Token));
     }
+
+    [Fact]
+    public async Task Header_environment_variable_is_resolved_at_send_time()
+    {
+        Environment.SetEnvironmentVariable("STUDIO_TEST_TOKEN", "resolved-value");
+
+        try
+        {
+            var result = await Runner().InvokeUnaryAsync(
+                Request("testing.TestService/EmptyCall", "{}", new HeaderEntry { Name = "x-token", Value = "${STUDIO_TEST_TOKEN}" }),
+                TestContext.Current.CancellationToken);
+
+            result.Ok.ShouldBeTrue(result.ErrorMessage);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("STUDIO_TEST_TOKEN", null);
+        }
+    }
+
+    [Fact]
+    public async Task Undefined_header_environment_variable_fails_the_call()
+    {
+        var result = await Runner().InvokeUnaryAsync(
+            Request("testing.TestService/EmptyCall", "{}", new HeaderEntry { Name = "x-token", Value = "${STUDIO_NO_SUCH_VAR}" }),
+            TestContext.Current.CancellationToken);
+
+        result.Ok.ShouldBeFalse();
+        result.ErrorMessage.ShouldNotBeNull();
+        result.ErrorMessage!.ShouldContain("STUDIO_NO_SUCH_VAR");
+    }
 }

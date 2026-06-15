@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
+using GrpCurl.Net.Utilities;
 
 namespace GrpCurl.Net.Studio.ViewModels.Connections;
 
@@ -8,6 +9,7 @@ public sealed partial class HeaderRowViewModel : ViewModelBase
 {
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsBin))]
+    [NotifyPropertyChangedFor(nameof(IsSecret))]
     private string _name = string.Empty;
 
     [ObservableProperty]
@@ -24,6 +26,9 @@ public sealed partial class HeaderRowViewModel : ViewModelBase
     }
 
     public bool IsBin => Name.EndsWith("-bin", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>True for sensitive header names (per Core's <see cref="SecretRedactor" />) — masked in the UI (FR-068).</summary>
+    public bool IsSecret => SecretRedactor.ShouldRedact(Name);
 
     public HeaderEntry ToEntry() => new() { Name = Name, Value = Value, IsBin = IsBin };
 }

@@ -699,6 +699,14 @@
           "xunit.v3.runner.common": "[3.2.2]"
         }
       },
+      "grpcurl.net": {
+        "type": "Project",
+        "dependencies": {
+          "GrpCurl.Net.Core": "[1.0.0, )",
+          "Spectre.Console": "[0.55.2, )",
+          "System.CommandLine": "[2.0.6, )"
+        }
+      },
       "grpcurl.net.core": {
         "type": "Project",
         "dependencies": {
@@ -889,6 +897,12 @@
         "dependencies": {
           "Spectre.Console.Ansi": "0.55.2"
         }
+      },
+      "System.CommandLine": {
+        "type": "CentralTransitive",
+        "requested": "[2.0.6, )",
+        "resolved": "2.0.6",
+        "contentHash": "10CL/VxB7N5FXP5mJD5aROrfyT7g3VIk0GH9DaSR3/QlD0q+GzRD+3+HnicYI1f391IZZ41vC5t+i62NjvEbDg=="
       },
       "TextMateSharp": {
         "type": "CentralTransitive",

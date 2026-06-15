@@ -22,10 +22,15 @@
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
         <PackageReference Include="Shouldly" />
         <PackageReference Include="xunit.v3.mtp-v2" />
+        <!-- L2 integration: host the in-process TestServer for service-layer E2E (SPEC-070 §1). -->
+        <PackageReference Include="Grpc.AspNetCore" />
+        <PackageReference Include="Grpc.AspNetCore.Server.Reflection" />
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\Src\GrpCurl.Net.Studio\GrpCurl.Net.Studio.csproj" />
         <ProjectReference Include="..\..\Src\GrpCurl.Net.Studio.ViewModels\GrpCurl.Net.Studio.ViewModels.csproj" />
+        <ProjectReference Include="..\GrpCurl.Net.TestServer\GrpCurl.Net.TestServer.csproj" />
     </ItemGroup>
 
     <ItemGroup>

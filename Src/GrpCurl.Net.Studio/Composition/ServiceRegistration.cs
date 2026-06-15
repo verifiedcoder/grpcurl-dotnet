@@ -24,6 +24,10 @@ internal static class ServiceRegistration
         services.AddSingleton<IFilePickerService, NoopFilePickerService>();
         services.AddSingleton<IClipboardService, NoopClipboardService>();
 
+        // Connection layer (E1.1).
+        services.AddSingleton<IWorkspaceStore, JsonWorkspaceStore>();
+        services.AddSingleton<IConnectionRegistry, ConnectionRegistry>();
+
         // View models — shell root + pane placeholders.
         services.AddSingleton<ConnectionsPaneViewModel>();
         services.AddSingleton<ServiceExplorerViewModel>();

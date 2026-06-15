@@ -28,6 +28,10 @@ internal static class ServiceRegistration
         services.AddSingleton<IWorkspaceStore, JsonWorkspaceStore>();
         services.AddSingleton<IConnectionRegistry, ConnectionRegistry>();
 
+        // Descriptor/explorer layer (E1.2).
+        services.AddSingleton<IConnectionSelection, ConnectionSelection>();
+        services.AddSingleton<IDescriptorService, DescriptorService>();
+
         // View models — shell root + pane placeholders.
         services.AddSingleton<ConnectionsPaneViewModel>();
         services.AddSingleton<ServiceExplorerViewModel>();

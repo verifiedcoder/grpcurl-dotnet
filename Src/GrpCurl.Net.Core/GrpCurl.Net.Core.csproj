@@ -34,6 +34,7 @@
         <InternalsVisibleTo Include="Gql2Grpc" />
         <InternalsVisibleTo Include="Gql2Grpc.Tests" />
         <InternalsVisibleTo Include="GrpCurl.Net.Conformance" />
+        <InternalsVisibleTo Include="GrpCurl.Net.Studio.Conformance" />
         <InternalsVisibleTo Include="GrpCurl.Net.Studio" />
         <InternalsVisibleTo Include="GrpCurl.Net.Studio.ViewModels" />
         <InternalsVisibleTo Include="GrpCurl.Net.Studio.Tests.Unit" />

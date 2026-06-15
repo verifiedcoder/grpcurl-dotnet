@@ -17,4 +17,11 @@ public interface IDescriptorService
     ///     a failed <see cref="DescriptorLoadResult" />.
     /// </summary>
     Task<DescriptorLoadResult> LoadAsync(SavedConnection connection, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Describes a single symbol (service/method/message/enum) by fully-qualified name (FR-050),
+    ///     including the request-template JSON for messages and methods (FR-052). Same cancellation/
+    ///     error contract as <see cref="LoadAsync" />.
+    /// </summary>
+    Task<DescribeResult> DescribeAsync(SavedConnection connection, string symbol, CancellationToken cancellationToken = default);
 }

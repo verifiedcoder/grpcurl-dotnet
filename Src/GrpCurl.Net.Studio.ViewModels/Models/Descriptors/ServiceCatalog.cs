@@ -24,5 +24,8 @@ public sealed record ServiceEntry(string FullName, IReadOnlyList<ServiceMethod> 
 /// </summary>
 public sealed record ServiceCatalog(IReadOnlyList<ServiceEntry> Services, IReadOnlyList<string> Warnings)
 {
+    /// <summary>All message and enum types in the active set, grouped-by-package material for the Types branch (FR-022).</summary>
+    public IReadOnlyList<TypeEntry> Types { get; init; } = [];
+
     public static ServiceCatalog Empty { get; } = new([], []);
 }

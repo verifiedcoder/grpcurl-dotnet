@@ -17,7 +17,8 @@ public sealed class MainWindowViewModelTests
         => new(new FakeDescriptorService(), new ConnectionSelection(), new FakeClipboardService(), new ImmediateUiDispatcher(), new FakeDocumentHost());
 
     private static DocumentsViewModel EmptyDocuments()
-        => new(new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner());
+        => new(new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner(),
+            new FakeDialogService(), new FakeLauncherService());
 
     private static MainWindowViewModel CreateViewModel(FakeSettingsStore? settings = null)
         => new(

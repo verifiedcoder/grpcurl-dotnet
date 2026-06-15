@@ -16,16 +16,26 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     private readonly IUiDispatcher _dispatcher;
     private readonly IClipboardService _clipboard;
     private readonly IInvocationRunner _invocation;
+    private readonly IDialogService _dialogs;
+    private readonly ILauncherService _launcher;
 
     [ObservableProperty]
     private DocumentViewModel? _selectedDocument;
 
-    public DocumentsViewModel(IDescriptorService descriptors, IUiDispatcher dispatcher, IClipboardService clipboard, IInvocationRunner invocation)
+    public DocumentsViewModel(
+        IDescriptorService descriptors,
+        IUiDispatcher dispatcher,
+        IClipboardService clipboard,
+        IInvocationRunner invocation,
+        IDialogService dialogs,
+        ILauncherService launcher)
     {
         _descriptors = descriptors;
         _dispatcher = dispatcher;
         _clipboard = clipboard;
         _invocation = invocation;
+        _dialogs = dialogs;
+        _launcher = launcher;
     }
 
     public ObservableCollection<DocumentViewModel> Documents { get; } = [];
@@ -55,7 +65,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     public void OpenInvocation(SavedConnection connection, string methodSymbol, string? initialRequestJson = null)
     {
         var document = new InvocationDocumentViewModel(
-            connection, methodSymbol, initialRequestJson, _invocation, _descriptors, _dispatcher, _clipboard);
+            connection, methodSymbol, initialRequestJson, _invocation, _descriptors, _dispatcher, _clipboard, _dialogs, _launcher);
         document.CloseRequested += OnDocumentCloseRequested;
 
         Documents.Add(document);

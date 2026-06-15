@@ -15,13 +15,36 @@ public sealed class InvocationDocumentViewModelTests
         out FakeDescriptorService descriptors,
         out FakeClipboardService clipboard,
         string? initialJson = "{}")
+        => Create(out runner, out descriptors, out clipboard, out _, out _, initialJson);
+
+    private static InvocationDocumentViewModel Create(
+        out FakeInvocationRunner runner,
+        out FakeDescriptorService descriptors,
+        out FakeClipboardService clipboard,
+        out FakeDialogService dialogs,
+        out FakeLauncherService launcher,
+        string? initialJson = "{}")
     {
         runner = new FakeInvocationRunner();
         descriptors = new FakeDescriptorService();
         clipboard = new FakeClipboardService();
+        dialogs = new FakeDialogService();
+        launcher = new FakeLauncherService();
         return new InvocationDocumentViewModel(
-            Conn(), "pkg.Svc/Go", initialJson, runner, descriptors, new ImmediateUiDispatcher(), clipboard);
+            Conn(), "pkg.Svc/Go", initialJson, runner, descriptors, new ImmediateUiDispatcher(), clipboard, dialogs, launcher);
     }
+
+    private static ErrorModel SampleError(int code = 5, string name = "NotFound", string headline = "missing") => new(
+        ErrorCategoryKind.Rpc, code, name, StatusSeverityMap.FromCode(code), headline,
+        Hint: null, Address: "h:1", Method: "pkg.Svc/Go",
+        Suggestions: [new SuggestionModel("Check the method name.")],
+        Details: [new HelpDetail([new HelpLink("Docs", "https://example.com/help")])],
+        JsonEnvelope: "{\"kind\":\"error\"}");
+
+    private static InvocationResultModel ErrorResult(ErrorModel error) => new(
+        Ok: false, ResponseJson: null, ResponseHeaders: [], ResponseTrailers: [],
+        Status: new InvocationStatusModel(error.StatusCode, error.StatusName, error.Headline),
+        Timing: new TimingModel([], 0, 0), ErrorMessage: error.Headline, Error: error);
 
     private static InvocationResultModel OkResult() => new(
         Ok: true, ResponseJson: "{ \"ok\": true }",
@@ -52,7 +75,8 @@ public sealed class InvocationDocumentViewModelTests
         };
 
         var doc = new InvocationDocumentViewModel(
-            Conn(), "pkg.Svc/Go", initialRequestJson: null, new FakeInvocationRunner(), descriptors, new ImmediateUiDispatcher(), new FakeClipboardService());
+            Conn(), "pkg.Svc/Go", initialRequestJson: null, new FakeInvocationRunner(), descriptors, new ImmediateUiDispatcher(),
+            new FakeClipboardService(), new FakeDialogService(), new FakeLauncherService());
 
         doc.RequestJson.ShouldContain("seeded");
     }
@@ -79,15 +103,95 @@ public sealed class InvocationDocumentViewModelTests
     public async Task Invoke_failure_sets_the_failed_state_with_status()
     {
         var doc = Create(out var runner, out _, out _);
-        runner.Result = new InvocationResultModel(
-            false, null, [], [], new InvocationStatusModel(5, "NotFound", "missing"),
-            new TimingModel([], 0, 0), "missing");
+        runner.Result = ErrorResult(SampleError());
 
         await doc.InvokeCommand.ExecuteAsync(null);
 
         doc.State.ShouldBe(RunState.Failed);
         doc.StatusIsError.ShouldBeTrue();
-        doc.StatusText.ShouldBe("NotFound: missing");
+        doc.StatusText.ShouldBe("NotFound");            // FR-091: pill shows the status name only
+        doc.Severity.ShouldBe(StatusSeverity.Caller);
+    }
+
+    [Fact]
+    public async Task Invoke_failure_exposes_the_rich_error_model()
+    {
+        var doc = Create(out var runner, out _, out _);
+        runner.Result = ErrorResult(SampleError());
+
+        await doc.InvokeCommand.ExecuteAsync(null);
+
+        doc.HasError.ShouldBeTrue();
+        doc.Error.ShouldNotBeNull();
+        doc.Error!.Headline.ShouldBe("missing");
+        doc.HasErrorSuggestions.ShouldBeTrue();
+        doc.HasErrorDetails.ShouldBeTrue();
+        doc.RetryCommand.CanExecute(null).ShouldBeTrue();
+        doc.CopyErrorJsonCommand.CanExecute(null).ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task A_successful_invoke_clears_a_previous_error()
+    {
+        var doc = Create(out var runner, out _, out _);
+        runner.Result = ErrorResult(SampleError());
+        await doc.InvokeCommand.ExecuteAsync(null);
+        doc.HasError.ShouldBeTrue();
+
+        runner.Result = OkResult();
+        await doc.InvokeCommand.ExecuteAsync(null);
+
+        doc.HasError.ShouldBeFalse();
+        doc.Severity.ShouldBe(StatusSeverity.Ok);
+    }
+
+    [Fact]
+    public async Task Retry_reinvokes_the_call()
+    {
+        var doc = Create(out var runner, out _, out _);
+        runner.Result = ErrorResult(SampleError());
+        await doc.InvokeCommand.ExecuteAsync(null);
+
+        await doc.RetryCommand.ExecuteAsync(null);
+
+        runner.InvokeCount.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task Copy_error_json_writes_the_envelope()
+    {
+        var doc = Create(out var runner, out _, out var clipboard);
+        runner.Result = ErrorResult(SampleError());
+        await doc.InvokeCommand.ExecuteAsync(null);
+
+        await doc.CopyErrorJsonCommand.ExecuteAsync(null);
+
+        clipboard.Text.ShouldBe("{\"kind\":\"error\"}");
+    }
+
+    [Fact]
+    public async Task Open_help_link_confirms_then_launches()
+    {
+        var doc = Create(out _, out _, out _, out var dialogs, out var launcher);
+        dialogs.ConfirmResult = true;
+
+        await doc.OpenHelpLinkCommand.ExecuteAsync("https://example.com/help");
+
+        dialogs.ConfirmCount.ShouldBe(1);
+        launcher.LaunchCount.ShouldBe(1);
+        launcher.LastUri.ShouldBe("https://example.com/help");
+    }
+
+    [Fact]
+    public async Task Open_help_link_does_not_launch_when_declined()
+    {
+        var doc = Create(out _, out _, out _, out var dialogs, out var launcher);
+        dialogs.ConfirmResult = false;
+
+        await doc.OpenHelpLinkCommand.ExecuteAsync("https://example.com/help");
+
+        dialogs.ConfirmCount.ShouldBe(1);
+        launcher.LaunchCount.ShouldBe(0);
     }
 
     [Fact]

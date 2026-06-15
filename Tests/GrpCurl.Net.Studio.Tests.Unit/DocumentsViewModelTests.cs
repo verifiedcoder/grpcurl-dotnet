@@ -17,7 +17,7 @@ public sealed class DocumentsViewModelTests
                 DescribeResult.Success(new MessageDescription(symbol, symbol, "f.proto", [], [], "{}")))
         };
 
-        return new DocumentsViewModel(descriptors, new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner());
+        return new DocumentsViewModel(descriptors, new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService());
     }
 
     [Fact]

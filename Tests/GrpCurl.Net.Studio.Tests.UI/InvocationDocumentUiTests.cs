@@ -26,7 +26,8 @@ public sealed class InvocationDocumentUiTests(HeadlessSessionFixture fixture) : 
         new ImmediateUiDispatcher(),
         new FakeClipboardService(),
         new FakeDialogService(),
-        new FakeLauncherService());
+        new FakeLauncherService(),
+        new FakeRequestValidator());
 
     [Fact]
     public Task Invocation_tab_renders_the_editor_and_method_binding() => RunOnUiThread(() =>
@@ -108,5 +109,39 @@ public sealed class InvocationDocumentUiTests(HeadlessSessionFixture fixture) : 
         texts.ShouldContain("service is disabled");    // headline
         texts.ShouldContain("Bad request");            // rich-detail panel title rendered
         texts.ShouldContain("Try:");                   // suggestions section
+    });
+
+    private static InvocationDocumentViewModel ValidatingVm(FakeRequestValidator validator) => new(
+        new SavedConnection { Name = "c", Address = "h:1" },
+        "pkg.Svc/Go",
+        "{\n  \"x\": 1\n}",
+        new FakeInvocationRunner(),
+        new FakeDescriptorService(),
+        new ImmediateUiDispatcher(),
+        new FakeClipboardService(),
+        new FakeDialogService(),
+        new FakeLauncherService(),
+        validator);
+
+    [Fact]
+    public Task A_validation_problem_renders_in_the_problems_strip() => RunOnUiThread(() =>
+    {
+        var validator = new FakeRequestValidator
+        {
+            Problems = [new ViewModels.Models.Invocation.ValidationProblem("Unexpected character", 1, 3)]
+        };
+
+        var vm = ValidatingVm(validator);
+        var view = new InvocationDocumentView { DataContext = vm };
+        var window = new Window { Content = view, Width = 800, Height = 600 };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        vm.RunValidationAsync().GetAwaiter().GetResult();
+        Dispatcher.UIThread.RunJobs();
+
+        vm.HasProblems.ShouldBeTrue();
+        window.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text)
+            .ShouldContain("Unexpected character (line 1)");
     });
 }

@@ -93,6 +93,23 @@ public sealed class InvocationRunnerTests(StudioPlaintextServerFixture server)
     }
 
     [Fact]
+    public async Task Request_validator_flags_a_type_mismatch_but_accepts_valid_json()
+    {
+        var validator = new GrpCurl.Net.Studio.Services.RequestValidator(new InvocationService());
+        var conn = Conn(server.Address);
+
+        var bad = await validator.ValidateAsync(
+            conn, "testing.TestService/UnaryCall", """{ "response_size": "not-a-number" }""", allowUnknownFields: true,
+            TestContext.Current.CancellationToken);
+        bad.ShouldNotBeEmpty();
+
+        var ok = await validator.ValidateAsync(
+            conn, "testing.TestService/UnaryCall", """{ "response_size": 4 }""", allowUnknownFields: true,
+            TestContext.Current.CancellationToken);
+        ok.ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task Cancellation_is_honoured()
     {
         using var cts = new CancellationTokenSource();

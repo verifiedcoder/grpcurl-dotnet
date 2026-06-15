@@ -16,6 +16,15 @@ public sealed record InvocationRequestModel(
 /// <summary>A response/trailing metadata entry (binary <c>-bin</c> values are base64 in <see cref="Value" />).</summary>
 public sealed record MetadataItem(string Name, string Value, bool IsBinary);
 
+/// <summary>
+///     An advisory request-validation problem (FR-063). <see cref="Line" />/<see cref="Column" /> are
+///     1-based and present only for JSON syntax errors; semantic errors carry just a message.
+/// </summary>
+public sealed record ValidationProblem(string Message, int? Line, int? Column)
+{
+    public string Display => Line is { } line ? $"{Message} (line {line})" : Message;
+}
+
 /// <summary>The gRPC status of a completed call, model-side.</summary>
 public sealed record InvocationStatusModel(int Code, string CodeName, string Detail);
 

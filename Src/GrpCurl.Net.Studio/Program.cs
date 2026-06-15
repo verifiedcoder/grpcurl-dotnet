@@ -1,5 +1,7 @@
 using Avalonia;
 using GrpCurl.Net.Studio.Composition;
+using GrpCurl.Net.Studio.ViewModels.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace GrpCurl.Net.Studio;
@@ -18,6 +20,10 @@ internal static class Program
             .Build();
 
         host.Start();
+
+        // Load persisted settings before the shell view model is built, so the saved theme
+        // is reflected on first paint (the view model reads ISettingsStore.Current in its ctor).
+        host.Services.GetRequiredService<ISettingsStore>().LoadAsync().GetAwaiter().GetResult();
 
         try
         {

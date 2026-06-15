@@ -1,0 +1,13 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:GrpCurl.Net.Studio.ViewModels.Panes;assembly=GrpCurl.Net.Studio.ViewModels"
+             x:Class="GrpCurl.Net.Studio.Views.Panes.ServiceExplorerView"
+             x:DataType="vm:ServiceExplorerViewModel">
+    <Grid RowDefinitions="Auto,*">
+        <Border Grid.Row="0" Background="{DynamicResource Surface.PaneHeader}" Padding="8,6">
+            <TextBlock Text="{Binding Header}" FontWeight="SemiBold" />
+        </Border>
+        <TextBlock Grid.Row="1" Margin="8" Opacity="0.6"
+                   Text="Connect to browse services." />
+    </Grid>
+</UserControl>

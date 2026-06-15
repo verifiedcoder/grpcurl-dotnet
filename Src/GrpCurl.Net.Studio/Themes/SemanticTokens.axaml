@@ -1,0 +1,64 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+        Semantic design tokens (SPEC-020 §3). Controls reference these tokens, never raw hex.
+        Per-variant values live in ThemeDictionaries so they follow Light/Dark automatically.
+    -->
+    <ResourceDictionary.ThemeDictionaries>
+
+        <ResourceDictionary x:Key="Light">
+            <!-- Surfaces & structure -->
+            <Color x:Key="Surface.PaneHeaderColor">#F3F3F3</Color>
+            <Color x:Key="Surface.ConsoleBgColor">#FAFAFA</Color>
+            <Color x:Key="DividerColor">#E0E0E0</Color>
+            <Color x:Key="Focus.OutlineColor">#0E639C</Color>
+            <!-- Status -->
+            <Color x:Key="Status.SuccessColor">#107C10</Color>
+            <Color x:Key="Status.NeutralColor">#616161</Color>
+            <Color x:Key="Status.CallerColor">#B8860B</Color>
+            <Color x:Key="Status.TransientColor">#8A6D00</Color>
+            <Color x:Key="Status.ServerColor">#C42B1C</Color>
+            <!-- Connection-state dots -->
+            <Color x:Key="Conn.ConnectedColor">#107C10</Color>
+            <Color x:Key="Conn.IdleColor">#9E9E9E</Color>
+            <Color x:Key="Conn.ConnectingColor">#0E639C</Color>
+            <Color x:Key="Conn.FailedColor">#C42B1C</Color>
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="Dark">
+            <!-- Surfaces & structure -->
+            <Color x:Key="Surface.PaneHeaderColor">#2D2D2D</Color>
+            <Color x:Key="Surface.ConsoleBgColor">#1E1E1E</Color>
+            <Color x:Key="DividerColor">#3F3F3F</Color>
+            <Color x:Key="Focus.OutlineColor">#4CC2FF</Color>
+            <!-- Status -->
+            <Color x:Key="Status.SuccessColor">#6CCB5F</Color>
+            <Color x:Key="Status.NeutralColor">#B0B0B0</Color>
+            <Color x:Key="Status.CallerColor">#E2C541</Color>
+            <Color x:Key="Status.TransientColor">#D6B95C</Color>
+            <Color x:Key="Status.ServerColor">#FF99A4</Color>
+            <!-- Connection-state dots -->
+            <Color x:Key="Conn.ConnectedColor">#6CCB5F</Color>
+            <Color x:Key="Conn.IdleColor">#808080</Color>
+            <Color x:Key="Conn.ConnectingColor">#4CC2FF</Color>
+            <Color x:Key="Conn.FailedColor">#FF99A4</Color>
+        </ResourceDictionary>
+
+    </ResourceDictionary.ThemeDictionaries>
+
+    <!-- Brushes resolve the variant-specific colours above; views bind to these brushes. -->
+    <SolidColorBrush x:Key="Surface.PaneHeader" Color="{DynamicResource Surface.PaneHeaderColor}" />
+    <SolidColorBrush x:Key="Surface.ConsoleBg" Color="{DynamicResource Surface.ConsoleBgColor}" />
+    <SolidColorBrush x:Key="Divider" Color="{DynamicResource DividerColor}" />
+    <SolidColorBrush x:Key="Focus.Outline" Color="{DynamicResource Focus.OutlineColor}" />
+    <SolidColorBrush x:Key="Status.Success" Color="{DynamicResource Status.SuccessColor}" />
+    <SolidColorBrush x:Key="Status.Neutral" Color="{DynamicResource Status.NeutralColor}" />
+    <SolidColorBrush x:Key="Status.Caller" Color="{DynamicResource Status.CallerColor}" />
+    <SolidColorBrush x:Key="Status.Transient" Color="{DynamicResource Status.TransientColor}" />
+    <SolidColorBrush x:Key="Status.Server" Color="{DynamicResource Status.ServerColor}" />
+    <SolidColorBrush x:Key="Conn.Connected" Color="{DynamicResource Conn.ConnectedColor}" />
+    <SolidColorBrush x:Key="Conn.Idle" Color="{DynamicResource Conn.IdleColor}" />
+    <SolidColorBrush x:Key="Conn.Connecting" Color="{DynamicResource Conn.ConnectingColor}" />
+    <SolidColorBrush x:Key="Conn.Failed" Color="{DynamicResource Conn.FailedColor}" />
+
+</ResourceDictionary>

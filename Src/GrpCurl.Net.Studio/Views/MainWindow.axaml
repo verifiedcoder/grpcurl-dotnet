@@ -1,18 +1,128 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:GrpCurl.Net.Studio.ViewModels;assembly=GrpCurl.Net.Studio.ViewModels"
+        xmlns:models="clr-namespace:GrpCurl.Net.Studio.ViewModels.Models;assembly=GrpCurl.Net.Studio.ViewModels"
+        xmlns:panes="clr-namespace:GrpCurl.Net.Studio.Views.Panes"
+        xmlns:views="clr-namespace:GrpCurl.Net.Studio.Views"
         x:Class="GrpCurl.Net.Studio.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="{Binding Title}"
         Width="1280" Height="800"
         MinWidth="1024" MinHeight="640">
 
-    <!-- Skeleton placeholder (E0.2 PR-A). The full three-zone shell replaces this in PR-B. -->
-    <Panel x:Name="RootPanel">
-        <TextBlock Text="{Binding Title}"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   FontSize="20" />
-    </Panel>
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Ctrl+B" Command="{Binding ToggleSidebarCommand}" />
+        <KeyBinding Gesture="Ctrl+J" Command="{Binding ToggleConsoleCommand}" />
+        <KeyBinding Gesture="Ctrl+I" Command="{Binding ToggleInspectorCommand}" />
+        <KeyBinding Gesture="Ctrl+Shift+M" Command="{Binding ToggleFocusModeCommand}" />
+    </Window.KeyBindings>
+
+    <DockPanel>
+
+        <!-- Menu bar -->
+        <Menu DockPanel.Dock="Top" x:Name="MenuBar">
+            <MenuItem Header="_File">
+                <MenuItem Header="E_xit" Click="OnExitClicked" AutomationProperties.Name="Exit" />
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="_Undo" IsEnabled="False" />
+                <MenuItem Header="_Redo" IsEnabled="False" />
+            </MenuItem>
+            <MenuItem Header="_View">
+                <MenuItem Header="_Theme">
+                    <MenuItem Header="System" Command="{Binding SetThemeCommand}"
+                              CommandParameter="{x:Static models:AppTheme.System}"
+                              AutomationProperties.Name="System theme" />
+                    <MenuItem Header="Light" Command="{Binding SetThemeCommand}"
+                              CommandParameter="{x:Static models:AppTheme.Light}"
+                              AutomationProperties.Name="Light theme" />
+                    <MenuItem Header="Dark" Command="{Binding SetThemeCommand}"
+                              CommandParameter="{x:Static models:AppTheme.Dark}"
+                              AutomationProperties.Name="Dark theme" />
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="Toggle _Sidebar" InputGesture="Ctrl+B" Command="{Binding ToggleSidebarCommand}" />
+                <MenuItem Header="Toggle _Console" InputGesture="Ctrl+J" Command="{Binding ToggleConsoleCommand}" />
+                <MenuItem Header="Toggle _Inspector" InputGesture="Ctrl+I" Command="{Binding ToggleInspectorCommand}" />
+                <MenuItem Header="_Focus Mode" InputGesture="Ctrl+Shift+M" Command="{Binding ToggleFocusModeCommand}" />
+            </MenuItem>
+            <MenuItem Header="_Connection">
+                <MenuItem Header="_Add Connection…" IsEnabled="False" />
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About GrpCurl.Net Studio" IsEnabled="False" />
+            </MenuItem>
+        </Menu>
+
+        <!-- Status bar -->
+        <Border DockPanel.Dock="Bottom" x:Name="StatusBar" Height="24"
+                Background="{DynamicResource Surface.PaneHeader}"
+                BorderBrush="{DynamicResource Divider}" BorderThickness="0,1,0,0">
+            <DockPanel LastChildFill="False" Margin="8,0">
+                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" Opacity="0.7"
+                           Text="No workspace" />
+                <TextBlock DockPanel.Dock="Right" VerticalAlignment="Center" Opacity="0.7"
+                           Text="v1.0.0" />
+            </DockPanel>
+        </Border>
+
+        <!-- Three-zone shell: sidebar | centre | inspector, with a bottom console spanning all. -->
+        <Grid x:Name="ShellGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300" MinWidth="180" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" MinWidth="480" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="340" MinWidth="220" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="220" MinHeight="80" />
+            </Grid.RowDefinitions>
+
+            <!-- LEFT SIDEBAR: connections over explorer -->
+            <Border Grid.Row="0" Grid.Column="0" x:Name="SidebarZone"
+                    IsVisible="{Binding IsSidebarOpen}"
+                    BorderBrush="{DynamicResource Divider}" BorderThickness="0,0,1,0">
+                <Grid RowDefinitions="*,Auto,*">
+                    <ContentControl Grid.Row="0" Content="{Binding Connections}" />
+                    <GridSplitter Grid.Row="1" Height="4" HorizontalAlignment="Stretch"
+                                  Background="{DynamicResource Divider}" />
+                    <ContentControl Grid.Row="2" Content="{Binding Explorer}" />
+                </Grid>
+            </Border>
+            <GridSplitter Grid.Row="0" Grid.Column="1" Width="4"
+                          IsVisible="{Binding IsSidebarOpen}"
+                          Background="{DynamicResource Divider}" />
+
+            <!-- CENTRE: document tabs with the welcome empty-state overlay -->
+            <Panel Grid.Row="0" Grid.Column="2" x:Name="CentreZone">
+                <TabControl x:Name="DocumentTabs" IsVisible="{Binding HasAnyConnection}" />
+                <ContentControl x:Name="Welcome" IsVisible="{Binding !HasAnyConnection}">
+                    <views:WelcomeView />
+                </ContentControl>
+            </Panel>
+
+            <!-- RIGHT INSPECTOR (collapses entirely) -->
+            <GridSplitter Grid.Row="0" Grid.Column="3" Width="4"
+                          IsVisible="{Binding IsInspectorOpen}"
+                          Background="{DynamicResource Divider}" />
+            <Border Grid.Row="0" Grid.Column="4" x:Name="InspectorZone"
+                    IsVisible="{Binding IsInspectorOpen}"
+                    BorderBrush="{DynamicResource Divider}" BorderThickness="1,0,0,0">
+                <ContentControl Content="{Binding Inspector}" />
+            </Border>
+
+            <!-- BOTTOM CONSOLE spans all columns -->
+            <GridSplitter Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" Height="4"
+                          IsVisible="{Binding IsConsoleOpen}"
+                          Background="{DynamicResource Divider}" />
+            <ContentControl Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="5"
+                            x:Name="ConsoleZone" Content="{Binding Console}"
+                            IsVisible="{Binding IsConsoleOpen}" />
+        </Grid>
+
+    </DockPanel>
 
 </Window>

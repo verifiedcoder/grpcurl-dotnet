@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <RootNamespace>GrpCurl.Net.Studio.ViewModels</RootNamespace>
+        <AssemblyName>GrpCurl.Net.Studio.ViewModels</AssemblyName>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <!-- Hard rule (SPEC-030 §1): this project must be runnable and testable without a UI
+         thread. NO Avalonia.Controls reference; the AppTheme enum stays UI-free and the
+         enum -> ThemeVariant mapping lives in the app's ThemeManager. -->
+    <ItemGroup>
+        <PackageReference Include="CommunityToolkit.Mvvm" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\GrpCurl.Net.Core\GrpCurl.Net.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="GrpCurl.Net.Studio" />
+        <InternalsVisibleTo Include="GrpCurl.Net.Studio.Tests.Unit" />
+        <InternalsVisibleTo Include="GrpCurl.Net.Studio.Tests.UI" />
+    </ItemGroup>
+
+</Project>

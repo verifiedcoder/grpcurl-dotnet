@@ -89,8 +89,12 @@
     <Project Path="Scripts/ValidationRunner/ValidationRunner.csproj" />
     <Project Path="Tests/Gql2Grpc.Tests/Gql2Grpc.Tests.csproj" Id="2e3f4a5b-6c7d-8e9f-a0b1-c2d3e4f5a6b7" />
     <Project Path="Tests/GrpCurl.Net.Conformance/GrpCurl.Net.Conformance.csproj" />
+    <Project Path="Tests/GrpCurl.Net.Studio.Tests.Unit/GrpCurl.Net.Studio.Tests.Unit.csproj" />
+    <Project Path="Tests/GrpCurl.Net.Studio.Tests.UI/GrpCurl.Net.Studio.Tests.UI.csproj" />
   </Folder>
   <Project Path="Src/Gql2Grpc/Gql2Grpc.csproj" />
   <Project Path="Src/GrpCurl.Net.Core/GrpCurl.Net.Core.csproj" />
   <Project Path="Src/GrpCurl.Net/GrpCurl.Net.csproj" />
+  <Project Path="Src/GrpCurl.Net.Studio/GrpCurl.Net.Studio.csproj" />
+  <Project Path="Src/GrpCurl.Net.Studio.ViewModels/GrpCurl.Net.Studio.ViewModels.csproj" />
 </Solution>

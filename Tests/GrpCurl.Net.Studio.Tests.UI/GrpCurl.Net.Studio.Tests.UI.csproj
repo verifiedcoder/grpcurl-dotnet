@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <OutputType>Exe</OutputType>
+        <RootNamespace>GrpCurl.Net.Studio.Tests.UI</RootNamespace>
+        <AssemblyName>GrpCurl.Net.Studio.Tests.UI</AssemblyName>
+        <TargetFramework>net10.0</TargetFramework>
+        <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="coverlet.MTP">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>compile; runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Include="Shouldly" />
+        <PackageReference Include="xunit.v3.mtp-v2" />
+        <!-- Base headless package (no xUnit dependency); the xUnit-v3 harness is hand-rolled
+             in Headless/ because Avalonia.Headless.XUnit targets xUnit v2. -->
+        <PackageReference Include="Avalonia.Headless" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Src\GrpCurl.Net.Studio\GrpCurl.Net.Studio.csproj" />
+        <ProjectReference Include="..\..\Src\GrpCurl.Net.Studio.ViewModels\GrpCurl.Net.Studio.ViewModels.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Shouldly" />
+        <Using Include="Xunit" />
+    </ItemGroup>
+
+</Project>

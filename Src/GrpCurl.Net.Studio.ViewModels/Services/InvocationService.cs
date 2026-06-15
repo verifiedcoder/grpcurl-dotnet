@@ -34,11 +34,11 @@ public sealed class InvocationService : IInvocationService
         catch (RpcInvocationException ex)
         {
             // Failure that still produced response headers (e.g. server set metadata then errored).
-            return new UnaryOutcome(false, ex.ResponseHeaders, Response: null, ex.Trailers, ToStatus(ex.Status));
+            return new UnaryOutcome(false, ex.ResponseHeaders, Response: null, ex.Trailers, ToStatus(ex.Status), RichStatusDecoder.TryDecode(ex));
         }
         catch (RpcException ex)
         {
-            return new UnaryOutcome(false, [], Response: null, ex.Trailers, ToStatus(ex.Status));
+            return new UnaryOutcome(false, [], Response: null, ex.Trailers, ToStatus(ex.Status), RichStatusDecoder.TryDecode(ex));
         }
     }
 

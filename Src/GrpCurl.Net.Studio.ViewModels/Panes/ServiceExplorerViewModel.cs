@@ -107,6 +107,16 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
         }
     }
 
+    /// <summary>Opens a new invocation tab pre-filled from the method's template (FR-024/053).</summary>
+    [RelayCommand]
+    private void NewRequest(string? methodSymbol)
+    {
+        if (!string.IsNullOrWhiteSpace(methodSymbol) && _selection.Current is { } connection)
+        {
+            _documentHost.OpenInvocation(connection, methodSymbol);
+        }
+    }
+
     private void OnConnectionChanged(object? sender, EventArgs e) => _ = ReloadAsync();
 
     private async Task ReloadAsync()
@@ -202,7 +212,7 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
                 .Where(m => serviceMatches
                     || m.Name.Contains(filter, StringComparison.OrdinalIgnoreCase)
                     || m.FullName.Contains(filter, StringComparison.OrdinalIgnoreCase))
-                .Select(m => new MethodNodeViewModel(m, CopyFullNameCommand, DescribeCommand))
+                .Select(m => new MethodNodeViewModel(m, CopyFullNameCommand, DescribeCommand, NewRequestCommand))
                 .ToList();
 
             if (methods.Count == 0 && !serviceMatches)

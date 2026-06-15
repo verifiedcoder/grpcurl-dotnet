@@ -18,6 +18,8 @@
 
     <Application.Styles>
         <FluentTheme />
+        <!-- Code editor styling for request/response payloads (ADR-004). -->
+        <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
     </Application.Styles>
 
 </Application>

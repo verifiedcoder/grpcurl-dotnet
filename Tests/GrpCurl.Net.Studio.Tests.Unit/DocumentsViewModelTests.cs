@@ -17,7 +17,7 @@ public sealed class DocumentsViewModelTests
                 DescribeResult.Success(new MessageDescription(symbol, symbol, "f.proto", [], [], "{}")))
         };
 
-        return new DocumentsViewModel(descriptors, new ImmediateUiDispatcher(), new FakeClipboardService());
+        return new DocumentsViewModel(descriptors, new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner());
     }
 
     [Fact]
@@ -69,6 +69,17 @@ public sealed class DocumentsViewModelTests
 
         docs.Documents.ShouldHaveSingleItem();
         ((DescribeDocumentViewModel)docs.Documents[0]).CurrentSymbol.ShouldBe("pkg.Alpha");
+        docs.SelectedDocument.ShouldBe(docs.Documents[0]);
+    }
+
+    [Fact]
+    public void Open_invocation_adds_a_new_invocation_tab()
+    {
+        var docs = Create();
+
+        docs.OpenInvocation(Conn(), "pkg.Svc/Go", "{}");
+
+        docs.Documents.ShouldHaveSingleItem().ShouldBeOfType<InvocationDocumentViewModel>();
         docs.SelectedDocument.ShouldBe(docs.Documents[0]);
     }
 

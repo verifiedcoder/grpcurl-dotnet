@@ -119,6 +119,26 @@ public sealed class DescribeDocumentViewModelTests
     }
 
     [Fact]
+    public void Generate_request_opens_an_invocation_tab_for_a_method()
+    {
+        var descriptors = new FakeDescriptorService
+        {
+            OnDescribe = (_, symbol, _) => Task.FromResult(DescribeResult.Success(
+                new MethodDescription(symbol, ShortName(symbol), "f.proto", StreamingShape.Unary,
+                    new TypeRef("p.In", true), new TypeRef("p.Out", true), new TypeRef("p.Svc", true), "{}")))
+        };
+        var host = new FakeDocumentHost();
+        var doc = new DescribeDocumentViewModel(
+            Conn(), "p.Svc/Go", descriptors, new ImmediateUiDispatcher(), new FakeClipboardService(), host);
+
+        doc.IsMethod.ShouldBeTrue();
+        doc.GenerateRequestCommand.Execute(null);
+
+        host.LastInvocation.ShouldNotBeNull();
+        host.LastInvocation!.Value.Symbol.ShouldBe("p.Svc/Go");
+    }
+
+    [Fact]
     public void Failure_sets_the_error_state()
     {
         var descriptors = new FakeDescriptorService

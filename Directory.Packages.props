@@ -32,6 +32,12 @@
     <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.3.17" />
     <PackageVersion Include="Avalonia.Diagnostics" Version="11.3.17" />
     <PackageVersion Include="Avalonia.Headless" Version="11.3.17" />
+    <!-- Request/response code editor (ADR-004). AvaloniaEdit tracks Avalonia's minor line;
+         TextMateSharp stays on the 1.x line AvaloniaEdit.TextMate 11.3.0 targets. -->
+    <PackageVersion Include="Avalonia.AvaloniaEdit" Version="11.3.0" />
+    <PackageVersion Include="AvaloniaEdit.TextMate" Version="11.3.0" />
+    <PackageVersion Include="TextMateSharp" Version="1.0.70" />
+    <PackageVersion Include="TextMateSharp.Grammars" Version="1.0.70" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.9" />
 

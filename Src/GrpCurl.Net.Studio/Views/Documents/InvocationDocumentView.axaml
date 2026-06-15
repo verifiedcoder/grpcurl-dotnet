@@ -1,0 +1,148 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+             xmlns:docs="clr-namespace:GrpCurl.Net.Studio.ViewModels.Documents;assembly=GrpCurl.Net.Studio.ViewModels"
+             xmlns:conn="clr-namespace:GrpCurl.Net.Studio.ViewModels.Connections;assembly=GrpCurl.Net.Studio.ViewModels"
+             xmlns:inv="clr-namespace:GrpCurl.Net.Studio.ViewModels.Models.Invocation;assembly=GrpCurl.Net.Studio.ViewModels"
+             xmlns:conv="clr-namespace:GrpCurl.Net.Studio.Converters"
+             x:Class="GrpCurl.Net.Studio.Views.Documents.InvocationDocumentView"
+             x:Name="Root"
+             x:DataType="docs:InvocationDocumentViewModel">
+
+    <UserControl.Resources>
+        <conv:StatusBrushConverter x:Key="StatusBrush" />
+    </UserControl.Resources>
+
+    <Grid RowDefinitions="Auto,Auto,*,4,*">
+
+        <!-- Header: method + connection + Invoke/Cancel -->
+        <Border Grid.Row="0" Background="{DynamicResource Surface.PaneHeader}" Padding="10,6"
+                BorderBrush="{DynamicResource Divider}" BorderThickness="0,0,0,1">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6">
+                    <Button Content="Invoke" Command="{Binding InvokeCommand}"
+                            IsVisible="{Binding !IsInFlight}" AutomationProperties.Name="Invoke" />
+                    <Button Content="Cancel" Command="{Binding InvokeCancelCommand}"
+                            IsVisible="{Binding IsInFlight}" AutomationProperties.Name="Cancel invoke" />
+                    <ProgressBar IsIndeterminate="True" Width="80" VerticalAlignment="Center"
+                                 IsVisible="{Binding IsInFlight}" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="{Binding MethodSymbol}" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding Connection.Address}" Opacity="0.6" FontSize="12" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- Options bar -->
+        <Border Grid.Row="1" Padding="10,6" BorderBrush="{DynamicResource Divider}" BorderThickness="0,0,0,1">
+            <WrapPanel>
+                <TextBlock Text="Deadline" VerticalAlignment="Center" Margin="0,0,4,0" />
+                <TextBox Text="{Binding Deadline}" Watermark="e.g. 10s" Width="90" Margin="0,0,16,0"
+                         AutomationProperties.Name="Deadline" />
+                <TextBlock Text="Max msg size" VerticalAlignment="Center" Margin="0,0,4,0" />
+                <TextBox Text="{Binding MaxMessageSize}" Watermark="e.g. 4MB" Width="90" Margin="0,0,16,0"
+                         AutomationProperties.Name="Max message size" />
+                <CheckBox Content="Emit defaults" IsChecked="{Binding EmitDefaults}" Margin="0,0,12,0" />
+                <CheckBox Content="Allow unknown fields" IsChecked="{Binding AllowUnknownFields}" />
+            </WrapPanel>
+        </Border>
+
+        <!-- Request: headers + JSON editor -->
+        <Grid Grid.Row="2" RowDefinitions="Auto,*">
+            <Expander Grid.Row="0" Header="Request headers" Margin="8,6,8,0">
+                <StackPanel Spacing="4" Margin="0,4">
+                    <ItemsControl ItemsSource="{Binding Headers}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="conn:HeaderRowViewModel">
+                                <Grid ColumnDefinitions="*,*,Auto" Margin="0,2" ColumnSpacing="4">
+                                    <TextBox Grid.Column="0" Text="{Binding Name}" Watermark="name"
+                                             AutomationProperties.Name="Header name" />
+                                    <TextBox Grid.Column="1" Text="{Binding Value}" Watermark="value"
+                                             AutomationProperties.Name="Header value" />
+                                    <Button Grid.Column="2" Content="✕" Padding="6,0"
+                                            Command="{Binding #Root.((docs:InvocationDocumentViewModel)DataContext).RemoveHeaderCommand}"
+                                            CommandParameter="{Binding}" AutomationProperties.Name="Remove header" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Button Content="Add header" HorizontalAlignment="Left" Command="{Binding AddHeaderCommand}"
+                            AutomationProperties.Name="Add header" />
+                </StackPanel>
+            </Expander>
+
+            <Border Grid.Row="1" Margin="8,6" BorderBrush="{DynamicResource Divider}" BorderThickness="1" CornerRadius="3">
+                <ae:TextEditor x:Name="RequestEditor" ShowLineNumbers="True"
+                               FontFamily="Cascadia Code,Consolas,monospace" FontSize="13"
+                               AutomationProperties.Name="Request body" />
+            </Border>
+        </Grid>
+
+        <GridSplitter Grid.Row="3" Height="4" HorizontalAlignment="Stretch" Background="{DynamicResource Divider}" />
+
+        <!-- Response -->
+        <Grid Grid.Row="4" RowDefinitions="Auto,*">
+            <Border Grid.Row="0" Padding="10,6">
+                <DockPanel>
+                    <Border DockPanel.Dock="Left" CornerRadius="3" Padding="6,1" VerticalAlignment="Center"
+                            IsVisible="{Binding StatusText, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            Background="{Binding StatusIsError, Converter={StaticResource StatusBrush}}">
+                        <TextBlock Text="{Binding StatusText}" Foreground="White" FontWeight="SemiBold" FontSize="12" />
+                    </Border>
+                    <Button DockPanel.Dock="Right" HorizontalAlignment="Right" Content="Copy"
+                            Command="{Binding CopyResponseCommand}" AutomationProperties.Name="Copy response" />
+                    <TextBlock Text="Response" FontWeight="SemiBold" VerticalAlignment="Center" Margin="10,0" />
+                </DockPanel>
+            </Border>
+
+            <TabControl Grid.Row="1" Margin="8,0,8,8">
+                <TabItem Header="Body">
+                    <Border BorderBrush="{DynamicResource Divider}" BorderThickness="1" CornerRadius="3">
+                        <ae:TextEditor x:Name="ResponseEditor" ShowLineNumbers="True" IsReadOnly="True"
+                                       FontFamily="Cascadia Code,Consolas,monospace" FontSize="13"
+                                       AutomationProperties.Name="Response body" />
+                    </Border>
+                </TabItem>
+                <TabItem Header="Headers">
+                    <ItemsControl ItemsSource="{Binding ResponseHeaders}" Margin="4">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="inv:MetadataItem">
+                                <TextBlock Margin="0,1" FontFamily="Cascadia Code,Consolas,monospace" FontSize="12">
+                                    <Run Text="{Binding Name}" FontWeight="SemiBold" />
+                                    <Run Text=": " />
+                                    <Run Text="{Binding Value}" />
+                                </TextBlock>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </TabItem>
+                <TabItem Header="Trailers">
+                    <ItemsControl ItemsSource="{Binding ResponseTrailers}" Margin="4">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="inv:MetadataItem">
+                                <TextBlock Margin="0,1" FontFamily="Cascadia Code,Consolas,monospace" FontSize="12">
+                                    <Run Text="{Binding Name}" FontWeight="SemiBold" />
+                                    <Run Text=": " />
+                                    <Run Text="{Binding Value}" />
+                                </TextBlock>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </TabItem>
+                <TabItem Header="Timing">
+                    <ItemsControl ItemsSource="{Binding Timing}" Margin="4">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="inv:TimingPhase">
+                                <TextBlock Margin="0,1">
+                                    <Run Text="{Binding Phase}" FontWeight="SemiBold" />
+                                    <Run Text="{Binding Duration}" Foreground="{DynamicResource Status.Neutral}" />
+                                </TextBlock>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </TabItem>
+            </TabControl>
+        </Grid>
+    </Grid>
+</UserControl>

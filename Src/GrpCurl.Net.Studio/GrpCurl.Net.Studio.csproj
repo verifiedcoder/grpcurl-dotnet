@@ -24,6 +24,11 @@
         </PackageReference>
         <PackageReference Include="CommunityToolkit.Mvvm" />
         <PackageReference Include="Microsoft.Extensions.Hosting" />
+        <!-- Code editor for request/response payloads (ADR-004). -->
+        <PackageReference Include="Avalonia.AvaloniaEdit" />
+        <PackageReference Include="AvaloniaEdit.TextMate" />
+        <PackageReference Include="TextMateSharp" />
+        <PackageReference Include="TextMateSharp.Grammars" />
     </ItemGroup>
 
     <ItemGroup>

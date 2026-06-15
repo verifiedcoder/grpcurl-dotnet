@@ -13,6 +13,15 @@
           "MicroCom.Runtime": "0.11.0"
         }
       },
+      "Avalonia.AvaloniaEdit": {
+        "type": "Direct",
+        "requested": "[11.3.0, )",
+        "resolved": "11.3.0",
+        "contentHash": "9M/jJb4DPqQmKtNMZn6+vpqlf+ZGMtK8vEBpPVP3De1xRCu1hv4ZAtoA8hY6bYj2hgv/luete3ixoOsEQ++YJQ==",
+        "dependencies": {
+          "Avalonia": "11.0.0"
+        }
+      },
       "Avalonia.Desktop": {
         "type": "Direct",
         "requested": "[11.3.17, )",
@@ -55,6 +64,18 @@
           "Avalonia": "11.3.17"
         }
       },
+      "AvaloniaEdit.TextMate": {
+        "type": "Direct",
+        "requested": "[11.3.0, )",
+        "resolved": "11.3.0",
+        "contentHash": "9yDE7JUGZxWLo5eqhd6FXMHgj4EH2NOQxL030Vja6SBYX5wiLR8Pk67A8DtIabb0tpvEEDPWBBasN70OhjUiwg==",
+        "dependencies": {
+          "Avalonia": "11.0.0",
+          "Avalonia.AvaloniaEdit": "11.3.0",
+          "TextMateSharp": "1.0.65",
+          "TextMateSharp.Grammars": "1.0.65"
+        }
+      },
       "CommunityToolkit.Mvvm": {
         "type": "Direct",
         "requested": "[8.4.2, )",
@@ -89,6 +110,24 @@
           "Microsoft.Extensions.Logging.EventLog": "10.0.9",
           "Microsoft.Extensions.Logging.EventSource": "10.0.9",
           "Microsoft.Extensions.Options": "10.0.9"
+        }
+      },
+      "TextMateSharp": {
+        "type": "Direct",
+        "requested": "[1.0.70, )",
+        "resolved": "1.0.70",
+        "contentHash": "Bxvwx5lgu7TApl9MIEqb742ijRKqk7kD15YbzyVunC8+uZ1mAtswAaFGjNbq/apc1z2/3lpU3cxMovcMbhVJgg==",
+        "dependencies": {
+          "Onigwrap": "1.0.8"
+        }
+      },
+      "TextMateSharp.Grammars": {
+        "type": "Direct",
+        "requested": "[1.0.70, )",
+        "resolved": "1.0.70",
+        "contentHash": "BnvHDxUvxqo0D1/N9wiPtrYR9syJTB1TUR9NP5kmZBpvs4W1I2EI7rfjPIOIPwYtlN8fmqCGw4FmTMuQG4kAzQ==",
+        "dependencies": {
+          "TextMateSharp": "1.0.70"
         }
       },
       "Avalonia.Angle.Windows.Natives": {
@@ -469,6 +508,11 @@
         "type": "Transitive",
         "resolved": "10.0.9",
         "contentHash": "fmEbAUFsaIKirgLt/lYhuFRBwhcSJN31jjHgCdbQxJiWOum6EdLjkbgGuukSP9z/a+9LibaxII/kF+GwOXgC4g=="
+      },
+      "Onigwrap": {
+        "type": "Transitive",
+        "resolved": "1.0.8",
+        "contentHash": "PElH31TECN5e25yLS0NTvA0nkbgyuw2OKWY8DOWmbNnEU5O94UrcU33lQQUr0SVp8I0plpH93TY0yGduQsDizQ=="
       },
       "SkiaSharp": {
         "type": "Transitive",

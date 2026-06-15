@@ -28,6 +28,7 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel
     private DescribeState _state = DescribeState.Loading;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsMethod))]
     private SymbolDescription? _symbol;
 
     [ObservableProperty]
@@ -67,6 +68,9 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel
     public bool HasError => State == DescribeState.Error;
     public bool HasTemplate => TemplateJson is not null;
 
+    /// <summary>True when a method is shown, enabling "Generate request" (FR-053).</summary>
+    public bool IsMethod => Symbol is MethodDescription;
+
     private bool CanGoBack => _back.Count > 0;
     private bool CanGoForward => _forward.Count > 0;
 
@@ -91,6 +95,16 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel
         if (typeRef is { Resolvable: true })
         {
             _host.OpenDescribe(Connection, typeRef.FullName, newTab: true);
+        }
+    }
+
+    /// <summary>Opens a new invocation tab pre-filled with this method's request template (FR-053).</summary>
+    [RelayCommand]
+    private void GenerateRequest()
+    {
+        if (Symbol is MethodDescription method)
+        {
+            _host.OpenInvocation(Connection, method.FullName, method.TemplateJson);
         }
     }
 

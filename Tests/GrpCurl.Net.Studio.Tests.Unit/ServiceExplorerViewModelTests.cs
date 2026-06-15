@@ -241,4 +241,18 @@ public sealed class ServiceExplorerViewModelTests
 
         host.Opened.ShouldBeEmpty();
     }
+
+    [Fact]
+    public void New_request_command_opens_an_invocation_tab_for_the_active_connection()
+    {
+        var (vm, _, selection, _, host) = Create();
+        var connection = Conn();
+        selection.Set(connection);
+
+        vm.NewRequestCommand.Execute("pkg.Greeter/SayHello");
+
+        host.LastInvocation.ShouldNotBeNull();
+        host.LastInvocation!.Value.Symbol.ShouldBe("pkg.Greeter/SayHello");
+        host.LastInvocation.Value.Connection.ShouldBe(connection);
+    }
 }

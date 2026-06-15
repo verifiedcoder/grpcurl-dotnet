@@ -26,7 +26,8 @@ public sealed partial class ServiceExplorerView : UserControl
                 Execute(service.DescribeCommand, service.FullName);
                 break;
             case MethodNodeViewModel method:
-                Execute(method.DescribeCommand, method.Method.FullName);
+                // FR-027: double-click/Enter on a method opens a new request, not describe.
+                Execute(method.NewRequestCommand, method.Method.FullName);
                 break;
             case TypeLeafNodeViewModel type:
                 Execute(type.DescribeCommand, type.FullName);

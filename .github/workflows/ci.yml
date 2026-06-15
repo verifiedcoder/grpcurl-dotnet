@@ -125,6 +125,17 @@ jobs:
           path: ${{ github.workspace }}/coverage
           if-no-files-found: warn
 
+      # Studio view-model coverage gate (SPEC-070 §6): the ViewModels layer carries the
+      # app logic and must stay ≥ 80% line coverage. Scoped to that assembly only — the
+      # views project (XAML-generated) is not gated. The script unions the per-project
+      # Cobertura reports a solution-wide run produces.
+      - name: Coverage gate (GrpCurl.Net.Studio.ViewModels ≥ 80%)
+        run: >
+          python3 Scripts/check-coverage-gate.py
+          --coverage-dir ${{ github.workspace }}/coverage
+          --package GrpCurl.Net.Studio.ViewModels
+          --min 0.80
+
   docfx:
     name: docs (ubuntu-latest)
     runs-on: ubuntu-latest

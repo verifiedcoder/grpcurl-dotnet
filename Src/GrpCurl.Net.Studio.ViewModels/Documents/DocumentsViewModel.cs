@@ -19,6 +19,8 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     private readonly IDialogService _dialogs;
     private readonly ILauncherService _launcher;
     private readonly IRequestValidator _validator;
+    private readonly ISettingsStore _settings;
+    private readonly IThemeService _theme;
 
     [ObservableProperty]
     private DocumentViewModel? _selectedDocument;
@@ -30,7 +32,9 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         IInvocationRunner invocation,
         IDialogService dialogs,
         ILauncherService launcher,
-        IRequestValidator validator)
+        IRequestValidator validator,
+        ISettingsStore settings,
+        IThemeService theme)
     {
         _descriptors = descriptors;
         _dispatcher = dispatcher;
@@ -39,6 +43,8 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         _dialogs = dialogs;
         _launcher = launcher;
         _validator = validator;
+        _settings = settings;
+        _theme = theme;
     }
 
     public ObservableCollection<DocumentViewModel> Documents { get; } = [];
@@ -69,6 +75,23 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     {
         var document = new InvocationDocumentViewModel(
             connection, methodSymbol, initialRequestJson, _invocation, _descriptors, _dispatcher, _clipboard, _dialogs, _launcher, _validator);
+        document.CloseRequested += OnDocumentCloseRequested;
+
+        Documents.Add(document);
+        SelectedDocument = document;
+    }
+
+    public void OpenSettings()
+    {
+        var existing = Documents.OfType<SettingsDocumentViewModel>().FirstOrDefault();
+
+        if (existing is not null)
+        {
+            SelectedDocument = existing;
+            return;
+        }
+
+        var document = new SettingsDocumentViewModel(_settings, _theme);
         document.CloseRequested += OnDocumentCloseRequested;
 
         Documents.Add(document);

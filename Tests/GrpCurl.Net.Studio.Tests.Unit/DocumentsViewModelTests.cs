@@ -1,3 +1,4 @@
+using GrpCurl.Net.Studio.Services;
 using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
@@ -17,7 +18,19 @@ public sealed class DocumentsViewModelTests
                 DescribeResult.Success(new MessageDescription(symbol, symbol, "f.proto", [], [], "{}")))
         };
 
-        return new DocumentsViewModel(descriptors, new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator());
+        return new DocumentsViewModel(descriptors, new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator(), new InMemorySettingsStore(), new FakeThemeService());
+    }
+
+    [Fact]
+    public void Open_settings_adds_a_single_settings_tab()
+    {
+        var docs = Create();
+
+        docs.OpenSettings();
+        docs.OpenSettings();
+
+        docs.Documents.OfType<SettingsDocumentViewModel>().ShouldHaveSingleItem();
+        docs.SelectedDocument.ShouldBeOfType<SettingsDocumentViewModel>();
     }
 
     [Fact]

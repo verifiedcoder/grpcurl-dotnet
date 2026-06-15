@@ -1,16 +1,15 @@
-using System.ComponentModel;
 using Avalonia;
 using Avalonia.Styling;
-using GrpCurl.Net.Studio.ViewModels;
 using GrpCurl.Net.Studio.ViewModels.Models;
+using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.Theming;
 
 /// <summary>
-///     Bridges the UI-framework-agnostic <see cref="AppTheme" /> selection on
-///     <see cref="MainWindowViewModel" /> to Avalonia's <see cref="ThemeVariant" />. This is
-///     the only place the enum is mapped to a UI type, keeping the ViewModels project free of
-///     any Avalonia dependency. Applies the persisted theme on attach and live thereafter.
+///     Bridges the UI-framework-agnostic <see cref="AppTheme" /> from the shared
+///     <see cref="IThemeService" /> to Avalonia's <see cref="ThemeVariant" />. This is the only
+///     place the enum is mapped to a UI type, keeping the ViewModels project free of any Avalonia
+///     dependency. Applies the persisted theme on attach and live thereafter.
 /// </summary>
 internal sealed class ThemeManager
 {
@@ -18,15 +17,15 @@ internal sealed class ThemeManager
 
     public ThemeManager(Application application) => _application = application;
 
-    public void Attach(MainWindowViewModel viewModel)
+    public void Attach(IThemeService theme)
     {
-        Apply(viewModel.SelectedTheme);
+        Apply(theme.Current);
 
-        viewModel.PropertyChanged += (_, e) =>
+        theme.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName == nameof(MainWindowViewModel.SelectedTheme))
+            if (e.PropertyName == nameof(IThemeService.Current))
             {
-                Apply(viewModel.SelectedTheme);
+                Apply(theme.Current);
             }
         };
     }

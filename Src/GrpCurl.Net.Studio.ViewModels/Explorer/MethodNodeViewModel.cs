@@ -6,18 +6,21 @@ namespace GrpCurl.Net.Studio.ViewModels.Explorer;
 /// <summary>A method leaf in the explorer tree: name, streaming-shape badge, and signature (FR-020/021).</summary>
 public sealed class MethodNodeViewModel : ViewModelBase
 {
-    public MethodNodeViewModel(ServiceMethod method, ICommand copyFullNameCommand)
+    public MethodNodeViewModel(ServiceMethod method, ICommand copyFullNameCommand, ICommand describeCommand)
     {
         Method = method;
         CopyFullNameCommand = copyFullNameCommand;
+        DescribeCommand = describeCommand;
         Badge = method.Shape.Badge();
         ShapeLabel = method.Shape.Label();
     }
 
     public ServiceMethod Method { get; }
 
-    /// <summary>Shared explorer command, carried on the node so the context menu binds directly.</summary>
+    /// <summary>Shared explorer commands, carried on the node so the context menu binds directly.</summary>
     public ICommand CopyFullNameCommand { get; }
+
+    public ICommand DescribeCommand { get; }
 
     public string Name => Method.Name;
 

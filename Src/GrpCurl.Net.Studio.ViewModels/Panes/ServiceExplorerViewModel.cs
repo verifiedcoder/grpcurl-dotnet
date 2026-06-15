@@ -20,6 +20,7 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
     private readonly IConnectionSelection _selection;
     private readonly IClipboardService _clipboard;
     private readonly IUiDispatcher _dispatcher;
+    private readonly IDocumentHost _documentHost;
 
     private ServiceCatalog? _catalog;
     private CancellationTokenSource? _loadCts;
@@ -47,14 +48,17 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
         IDescriptorService descriptors,
         IConnectionSelection selection,
         IClipboardService clipboard,
-        IUiDispatcher dispatcher)
+        IUiDispatcher dispatcher,
+        IDocumentHost documentHost)
     {
         _descriptors = descriptors;
         _selection = selection;
         _clipboard = clipboard;
         _dispatcher = dispatcher;
+        _documentHost = documentHost;
 
         Services = [];
+        TypePackages = [];
         _selection.CurrentChanged += OnConnectionChanged;
 
         if (_selection.Current is not null)
@@ -66,6 +70,9 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
     public string Header => "Service Explorer";
 
     public ObservableCollection<ServiceNodeViewModel> Services { get; }
+
+    /// <summary>The Types branch: message/enum types grouped by package (FR-022).</summary>
+    public ObservableCollection<TypePackageNodeViewModel> TypePackages { get; }
 
     public bool IsNoConnection => State == ExplorerState.NoConnection;
     public bool IsLoading => State == ExplorerState.Loading;
@@ -87,6 +94,16 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
         if (!string.IsNullOrWhiteSpace(fullName))
         {
             await _clipboard.SetTextAsync(fullName);
+        }
+    }
+
+    /// <summary>Opens a describe tab for the symbol on the active connection (FR-024/027).</summary>
+    [RelayCommand]
+    private void Describe(string? symbol)
+    {
+        if (!string.IsNullOrWhiteSpace(symbol) && _selection.Current is { } connection)
+        {
+            _documentHost.OpenDescribe(connection, symbol);
         }
     }
 
@@ -167,6 +184,7 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
     private void ApplyFilter()
     {
         Services.Clear();
+        TypePackages.Clear();
 
         if (_catalog is null)
         {
@@ -184,7 +202,7 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
                 .Where(m => serviceMatches
                     || m.Name.Contains(filter, StringComparison.OrdinalIgnoreCase)
                     || m.FullName.Contains(filter, StringComparison.OrdinalIgnoreCase))
-                .Select(m => new MethodNodeViewModel(m, CopyFullNameCommand))
+                .Select(m => new MethodNodeViewModel(m, CopyFullNameCommand, DescribeCommand))
                 .ToList();
 
             if (methods.Count == 0 && !serviceMatches)
@@ -192,7 +210,22 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
                 continue;
             }
 
-            Services.Add(new ServiceNodeViewModel(service.FullName, methods, CopyFullNameCommand) { IsExpanded = filtering });
+            Services.Add(new ServiceNodeViewModel(service.FullName, methods, CopyFullNameCommand, DescribeCommand) { IsExpanded = filtering });
+        }
+
+        // Types branch (FR-022): message/enum types grouped by package, filtered by FQN.
+        var matchingTypes = _catalog.Types
+            .Where(t => !filtering || t.FullName.Contains(filter, StringComparison.OrdinalIgnoreCase));
+
+        foreach (var group in matchingTypes.GroupBy(t => t.Package).OrderBy(g => g.Key, StringComparer.Ordinal))
+        {
+            var leaves = group
+                .OrderBy(t => t.FullName, StringComparer.Ordinal)
+                .Select(t => new TypeLeafNodeViewModel(t, DescribeCommand, CopyFullNameCommand))
+                .ToList();
+
+            var packageName = string.IsNullOrEmpty(group.Key) ? "(default)" : group.Key;
+            TypePackages.Add(new TypePackageNodeViewModel(packageName, leaves) { IsExpanded = filtering });
         }
     }
 

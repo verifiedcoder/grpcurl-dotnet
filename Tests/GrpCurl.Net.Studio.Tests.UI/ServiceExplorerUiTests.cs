@@ -32,7 +32,7 @@ public sealed class ServiceExplorerUiTests(HeadlessSessionFixture fixture) : Hea
         };
 
         var selection = new ConnectionSelection();
-        var vm = new ServiceExplorerViewModel(descriptors, selection, new FakeClipboardService(), new ImmediateUiDispatcher());
+        var vm = new ServiceExplorerViewModel(descriptors, selection, new FakeClipboardService(), new ImmediateUiDispatcher(), new FakeDocumentHost());
         selection.Set(new SavedConnection { Name = "c", Address = "h:1" });
         return vm;
     }
@@ -47,10 +47,11 @@ public sealed class ServiceExplorerUiTests(HeadlessSessionFixture fixture) : Hea
         window.Show();
         Dispatcher.UIThread.RunJobs();
 
-        // The tree is visible (loaded state) and realizes its top-level service node.
-        var tree = window.GetVisualDescendants().OfType<TreeView>().Single();
-        tree.IsVisible.ShouldBeTrue();
-        tree.GetVisualDescendants().OfType<TreeViewItem>().ShouldNotBeEmpty();
+        // The loaded state shows the Services and Types trees; the service node is realized.
+        var serviceTree = window.GetVisualDescendants().OfType<TreeView>()
+            .Single(t => Equals(t.GetValue(Avalonia.Automation.AutomationProperties.NameProperty), "Service tree"));
+        serviceTree.IsVisible.ShouldBeTrue();
+        serviceTree.GetVisualDescendants().OfType<TreeViewItem>().ShouldNotBeEmpty();
 
         window.GetVisualDescendants()
             .OfType<TextBlock>()

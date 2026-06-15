@@ -1,6 +1,7 @@
 using GrpCurl.Net.Studio.Tests.Unit.Fakes;
 using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels;
+using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Panes;
 using GrpCurl.Net.Studio.ViewModels.Services;
@@ -13,7 +14,10 @@ public sealed class MainWindowViewModelTests
         => new(new FakeWorkspaceStore(), new FakeConnectionRegistry(), new FakeDialogService(), new ConnectionSelection());
 
     private static ServiceExplorerViewModel EmptyExplorer()
-        => new(new FakeDescriptorService(), new ConnectionSelection(), new FakeClipboardService(), new ImmediateUiDispatcher());
+        => new(new FakeDescriptorService(), new ConnectionSelection(), new FakeClipboardService(), new ImmediateUiDispatcher(), new FakeDocumentHost());
+
+    private static DocumentsViewModel EmptyDocuments()
+        => new(new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService());
 
     private static MainWindowViewModel CreateViewModel(FakeSettingsStore? settings = null)
         => new(
@@ -21,7 +25,8 @@ public sealed class MainWindowViewModelTests
             EmptyConnectionsPane(),
             EmptyExplorer(),
             new ConsoleViewModel(),
-            new InspectorViewModel());
+            new InspectorViewModel(),
+            EmptyDocuments());
 
     [Fact]
     public void Construction_exposes_title_and_default_pane_state()

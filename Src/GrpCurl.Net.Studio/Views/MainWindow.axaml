@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:GrpCurl.Net.Studio.ViewModels;assembly=GrpCurl.Net.Studio.ViewModels"
         xmlns:models="clr-namespace:GrpCurl.Net.Studio.ViewModels.Models;assembly=GrpCurl.Net.Studio.ViewModels"
+        xmlns:docs="clr-namespace:GrpCurl.Net.Studio.ViewModels.Documents;assembly=GrpCurl.Net.Studio.ViewModels"
         xmlns:panes="clr-namespace:GrpCurl.Net.Studio.Views.Panes"
         xmlns:views="clr-namespace:GrpCurl.Net.Studio.Views"
         x:Class="GrpCurl.Net.Studio.Views.MainWindow"
@@ -99,7 +100,20 @@
 
             <!-- CENTRE: document tabs with the welcome empty-state overlay -->
             <Panel Grid.Row="0" Grid.Column="2" x:Name="CentreZone">
-                <TabControl x:Name="DocumentTabs" IsVisible="{Binding HasAnyConnection}" />
+                <TabControl x:Name="DocumentTabs" IsVisible="{Binding HasAnyConnection}"
+                            ItemsSource="{Binding Documents.Documents}"
+                            SelectedItem="{Binding Documents.SelectedDocument}">
+                    <TabControl.ItemTemplate>
+                        <DataTemplate x:DataType="docs:DocumentViewModel">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
+                                <Button Content="✕" Command="{Binding CloseCommand}" Padding="3,0"
+                                        Background="Transparent" BorderThickness="0"
+                                        AutomationProperties.Name="Close tab" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </TabControl.ItemTemplate>
+                </TabControl>
                 <ContentControl x:Name="Welcome" IsVisible="{Binding !HasAnyConnection}">
                     <views:WelcomeView />
                 </ContentControl>

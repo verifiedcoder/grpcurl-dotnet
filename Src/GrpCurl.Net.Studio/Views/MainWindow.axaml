@@ -47,10 +47,11 @@
                 <MenuItem Header="_Focus Mode" InputGesture="Ctrl+Shift+M" Command="{Binding ToggleFocusModeCommand}" />
             </MenuItem>
             <MenuItem Header="_Connection">
-                <MenuItem Header="_Add Connection…" IsEnabled="False" />
+                <MenuItem Header="_Add Connection…" Command="{Binding Connections.AddConnectionCommand}"
+                          AutomationProperties.Name="Add Connection" />
             </MenuItem>
             <MenuItem Header="_Help">
-                <MenuItem Header="_About GrpCurl.Net Studio" IsEnabled="False" />
+                <MenuItem Header="_About" IsEnabled="False" />
             </MenuItem>
         </Menu>
 

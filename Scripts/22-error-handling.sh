@@ -18,20 +18,20 @@ echo ""
 echo "--- Invoke unimplemented service ---"
 echo "Command: grpcn invoke --plaintext --max-time 10s $SERVER testing.UnimplementedService/UnimplementedCall"
 echo ""
-grpcurl_net invoke --plaintext --max-time 10s $SERVER testing.UnimplementedService/UnimplementedCall 2>&1 || true
+grpcn invoke --plaintext --max-time 10s $SERVER testing.UnimplementedService/UnimplementedCall 2>&1 || true
 
 echo ""
 echo "--- Request custom error via response_status ---"
 echo "The TestService can return custom errors when response_status is set."
 echo "Command: grpcn invoke --plaintext --max-time 10s -d '{\"response_status\":{\"code\":3,\"message\":\"Invalid argument test\"}}' $SERVER testing.TestService/UnaryCall"
 echo ""
-grpcurl_net invoke --plaintext --max-time 10s -d '{"response_status":{"code":3,"message":"Invalid argument test"}}' $SERVER testing.TestService/UnaryCall 2>&1 || true
+grpcn invoke --plaintext --max-time 10s -d '{"response_status":{"code":3,"message":"Invalid argument test"}}' $SERVER testing.TestService/UnaryCall 2>&1 || true
 
 echo ""
 echo "--- Format error as JSON ---"
 echo "Command: grpcn invoke --plaintext --max-time 10s --output json -d '{\"response_status\":{\"code\":5,\"message\":\"Not found test\"}}' $SERVER testing.TestService/UnaryCall"
 echo ""
-grpcurl_net invoke --plaintext --max-time 10s --output json -d '{"response_status":{"code":5,"message":"Not found test"}}' $SERVER testing.TestService/UnaryCall 2>&1 || true
+grpcn invoke --plaintext --max-time 10s --output json -d '{"response_status":{"code":5,"message":"Not found test"}}' $SERVER testing.TestService/UnaryCall 2>&1 || true
 
 echo ""
 echo "=== Done ==="

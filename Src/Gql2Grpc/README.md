@@ -62,4 +62,4 @@ Failure (envelope + `extensions.grpcStatus`):
 }
 ```
 
-Exit codes follow `grpcurl-dotnet`'s convention: `0` success, `1` internal, `2` usage/JSON-parse (including bad CLI arguments), `3` schema/file, `64 + <grpc status code>` for RPC errors (`UNAVAILABLE=14` => `78`), `130` for Ctrl+C. Most transport failures surface as `64 + status` (connection refused => `78`).
+Exit codes follow `GrpCurl.Net`'s convention: `0` success, `1` internal, `2` usage/JSON-parse (including bad CLI arguments), `3` schema/file, `64 + <grpc status code>` for RPC errors (`UNAVAILABLE=14` => `78`), `130` for Ctrl+C. Most transport failures surface as `64 + status` (connection refused => `78`).

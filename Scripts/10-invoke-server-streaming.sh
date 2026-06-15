@@ -22,7 +22,7 @@ REQUEST='{"response_parameters":[{"size":10},{"size":20},{"size":30}]}'
 echo "Command: grpcn invoke --plaintext --max-time 10s -d '$REQUEST' $SERVER testing.TestService/StreamingOutputCall"
 echo ""
 
-grpcurl_net invoke --plaintext --max-time 10s -d "$REQUEST" $SERVER testing.TestService/StreamingOutputCall
+grpcn invoke --plaintext --max-time 10s -d "$REQUEST" $SERVER testing.TestService/StreamingOutputCall
 
 echo ""
 echo "=== Done ==="

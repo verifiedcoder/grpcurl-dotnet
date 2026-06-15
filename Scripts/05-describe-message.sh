@@ -17,19 +17,19 @@ echo ""
 echo "--- testing.SimpleRequest ---"
 echo "Command: grpcn describe --plaintext --max-time 10s $SERVER testing.SimpleRequest"
 echo ""
-grpcurl_net describe --plaintext --max-time 10s $SERVER testing.SimpleRequest
+grpcn describe --plaintext --max-time 10s $SERVER testing.SimpleRequest
 
 echo ""
 echo "--- testing.Payload ---"
 echo "Command: grpcn describe --plaintext --max-time 10s $SERVER testing.Payload"
 echo ""
-grpcurl_net describe --plaintext --max-time 10s $SERVER testing.Payload
+grpcn describe --plaintext --max-time 10s $SERVER testing.Payload
 
 echo ""
 echo "--- testing.PayloadType (enum) ---"
 echo "Command: grpcn describe --plaintext --max-time 10s $SERVER testing.PayloadType"
 echo ""
-grpcurl_net describe --plaintext --max-time 10s $SERVER testing.PayloadType
+grpcn describe --plaintext --max-time 10s $SERVER testing.PayloadType
 
 echo ""
 echo "=== Done ==="

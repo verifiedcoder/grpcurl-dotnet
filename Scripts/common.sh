@@ -59,7 +59,7 @@ grpcurl_dotnet_run_project() {
     "${GRPCURL_DOTNET_DOTNET}" run --project "$project" -- "${converted_args[@]}"
 }
 
-grpcurl_net() {
+grpcn() {
     grpcurl_dotnet_run_project "${GRPCURL_DOTNET_REPO_ROOT}/Src/GrpCurl.Net/GrpCurl.Net.csproj" "$@"
 }
 

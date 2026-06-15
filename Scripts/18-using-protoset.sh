@@ -26,19 +26,19 @@ echo ""
 echo "--- List services from protoset (no server needed for this) ---"
 echo "Command: grpcn list --max-time 10s --protoset $PROTOSET"
 echo ""
-grpcurl_net list --max-time 10s --protoset "$PROTOSET"
+grpcn list --max-time 10s --protoset "$PROTOSET"
 
 echo ""
 echo "--- Describe a message from protoset ---"
 echo "Command: grpcn describe --max-time 10s --protoset $PROTOSET testing.SimpleRequest"
 echo ""
-grpcurl_net describe --max-time 10s --protoset "$PROTOSET" testing.SimpleRequest
+grpcn describe --max-time 10s --protoset "$PROTOSET" testing.SimpleRequest
 
 echo ""
 echo "--- Invoke using protoset (still needs server for actual RPC) ---"
 echo "Command: grpcn invoke --plaintext --max-time 10s --protoset $PROTOSET $SERVER testing.TestService/EmptyCall"
 echo ""
-grpcurl_net invoke --plaintext --max-time 10s --protoset "$PROTOSET" $SERVER testing.TestService/EmptyCall
+grpcn invoke --plaintext --max-time 10s --protoset "$PROTOSET" $SERVER testing.TestService/EmptyCall
 
 echo ""
 echo "=== Done ==="

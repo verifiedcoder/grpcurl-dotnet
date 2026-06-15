@@ -22,20 +22,20 @@ echo ""
 echo "--- Using -H (sent to both reflection and RPC) ---"
 echo "Command: grpcn invoke --plaintext --max-time 10s -H 'X-All: both' -v $SERVER testing.TestService/EmptyCall"
 echo ""
-grpcurl_net invoke --plaintext --max-time 10s -H "X-All: both" -v $SERVER testing.TestService/EmptyCall
+grpcn invoke --plaintext --max-time 10s -H "X-All: both" -v $SERVER testing.TestService/EmptyCall
 
 echo ""
 echo "--- Using --rpc-header (sent only to RPC, not reflection) ---"
 echo "Command: grpcn invoke --plaintext --max-time 10s --rpc-header 'X-RPC-Only: value' -v $SERVER testing.TestService/EmptyCall"
 echo ""
-grpcurl_net invoke --plaintext --max-time 10s --rpc-header "X-RPC-Only: value" -v $SERVER testing.TestService/EmptyCall
+grpcn invoke --plaintext --max-time 10s --rpc-header "X-RPC-Only: value" -v $SERVER testing.TestService/EmptyCall
 
 echo ""
 echo "--- Using --reflect-header (sent only to reflection) ---"
 echo "This is useful when the reflection endpoint requires different authentication."
 echo "Command: grpcn list --plaintext --max-time 10s --reflect-header 'X-Reflect-Auth: secret' $SERVER"
 echo ""
-grpcurl_net list --plaintext --max-time 10s --reflect-header "X-Reflect-Auth: secret" $SERVER
+grpcn list --plaintext --max-time 10s --reflect-header "X-Reflect-Auth: secret" $SERVER
 
 echo ""
 echo "=== Done ==="

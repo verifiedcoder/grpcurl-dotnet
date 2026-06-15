@@ -20,13 +20,13 @@ echo ""
 echo "--- Without --emit-defaults ---"
 echo "Command: grpcn invoke --plaintext --max-time 10s $SERVER testing.TestService/UnaryCall"
 echo ""
-grpcurl_net invoke --plaintext --max-time 10s $SERVER testing.TestService/UnaryCall
+grpcn invoke --plaintext --max-time 10s $SERVER testing.TestService/UnaryCall
 
 echo ""
 echo "--- With --emit-defaults ---"
 echo "Command: grpcn invoke --plaintext --max-time 10s --emit-defaults $SERVER testing.TestService/UnaryCall"
 echo ""
-grpcurl_net invoke --plaintext --max-time 10s --emit-defaults $SERVER testing.TestService/UnaryCall
+grpcn invoke --plaintext --max-time 10s --emit-defaults $SERVER testing.TestService/UnaryCall
 
 echo ""
 echo "Notice the additional fields shown when --emit-defaults is used."

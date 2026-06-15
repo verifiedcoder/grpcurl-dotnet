@@ -38,7 +38,7 @@ echo "Command: echo '<requests>' | grpcn invoke --plaintext --max-time 10s --max
 echo "Uses --max-stdin-bytes to make the stdin budget explicit for scripts."
 echo ""
 
-echo "$REQUESTS" | grpcurl_net invoke --plaintext --max-time 10s --max-stdin-bytes 1048576 -d @ $SERVER testing.TestService/StreamingInputCall
+echo "$REQUESTS" | grpcn invoke --plaintext --max-time 10s --max-stdin-bytes 1048576 -d @ $SERVER testing.TestService/StreamingInputCall
 
 echo ""
 echo "Expected: aggregated_payload_size should be 6 (1+2+3 bytes)"

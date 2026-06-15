@@ -20,13 +20,13 @@ echo ""
 echo "--- Default User-Agent ---"
 echo "Command: grpcn invoke --plaintext --max-time 10s -v $SERVER testing.TestService/EmptyCall"
 echo ""
-grpcurl_net invoke --plaintext --max-time 10s -v $SERVER testing.TestService/EmptyCall 2>&1 | head -20
+grpcn invoke --plaintext --max-time 10s -v $SERVER testing.TestService/EmptyCall 2>&1 | head -20
 
 echo ""
 echo "--- Custom User-Agent ---"
 echo "Command: grpcn invoke --plaintext --max-time 10s --user-agent 'MyApp/1.0 (Demo Script)' -v $SERVER testing.TestService/EmptyCall"
 echo ""
-grpcurl_net invoke --plaintext --max-time 10s --user-agent "MyApp/1.0 (Demo Script)" -v $SERVER testing.TestService/EmptyCall 2>&1 | head -20
+grpcn invoke --plaintext --max-time 10s --user-agent "MyApp/1.0 (Demo Script)" -v $SERVER testing.TestService/EmptyCall 2>&1 | head -20
 
 echo ""
 echo "=== Done ==="

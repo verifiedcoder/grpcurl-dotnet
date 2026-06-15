@@ -11,7 +11,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$SCRIPT_DIR/common.sh"
 SERVER="localhost:9090"
 PROTOSET="$SCRIPT_DIR/../Tests/TestProtosets/test.protoset"
-EXPORT_FILE="$(mktemp "${TMPDIR:-/tmp}/grpcurl-dotnet-demo.XXXXXX")"
+EXPORT_FILE="$(mktemp "${TMPDIR:-/tmp}/grpcn-demo.XXXXXX")"
 rm -f "$EXPORT_FILE"
 trap 'rm -f "$EXPORT_FILE"' EXIT
 
@@ -27,15 +27,15 @@ echo "=== SECTION 1: Service Discovery ==="
 echo ""
 
 echo "1.1 List all services:"
-grpcurl_net list --plaintext --max-time 10s $SERVER
+grpcn list --plaintext --max-time 10s $SERVER
 echo ""
 
 echo "1.2 List methods for TestService:"
-grpcurl_net list --plaintext --max-time 10s $SERVER testing.TestService
+grpcn list --plaintext --max-time 10s $SERVER testing.TestService
 echo ""
 
 echo "1.3 Describe with JSON template:"
-grpcurl_net describe --plaintext --max-time 10s --msg-template $SERVER testing.SimpleRequest
+grpcn describe --plaintext --max-time 10s --msg-template $SERVER testing.SimpleRequest
 echo ""
 
 # ============================================================================
@@ -46,7 +46,7 @@ echo ""
 
 echo "2.1 UnaryCall with payload, headers, and verbose output:"
 echo "    Sensitive request and response metadata is redacted unless --unsafe-show-secrets is set."
-grpcurl_net invoke --plaintext \
+grpcn invoke --plaintext \
     --max-time 10s \
     -H "X-Request-Id: demo-12345" \
     -H "Authorization: Bearer demo-token" \
@@ -63,7 +63,7 @@ echo "=== SECTION 3: Streaming RPC ==="
 echo ""
 
 echo "3.1 Server streaming (3 responses):"
-grpcurl_net invoke --plaintext \
+grpcn invoke --plaintext \
     --max-time 10s \
     -d '{"response_parameters":[{"size":5},{"size":10},{"size":15}]}' \
     $SERVER testing.TestService/StreamingOutputCall
@@ -72,7 +72,7 @@ echo ""
 echo "3.2 Bidirectional streaming:"
 echo '{"response_parameters":[{"size":8}]}
 {"response_parameters":[{"size":16}]}' | \
-grpcurl_net invoke --plaintext --max-time 10s --max-stdin-bytes 1048576 -d @ $SERVER testing.TestService/FullDuplexCall
+grpcn invoke --plaintext --max-time 10s --max-stdin-bytes 1048576 -d @ $SERVER testing.TestService/FullDuplexCall
 echo ""
 
 # ============================================================================
@@ -82,12 +82,12 @@ echo "=== SECTION 4: Protoset Export ==="
 echo ""
 
 echo "4.1 Export protoset from server:"
-grpcurl_net list --plaintext --max-time 10s --protoset-out "$EXPORT_FILE" $SERVER
+grpcn list --plaintext --max-time 10s --protoset-out "$EXPORT_FILE" $SERVER
 echo "Exported to: $EXPORT_FILE"
 echo ""
 
 echo "4.2 Use exported protoset (offline):"
-grpcurl_net list --max-time 10s --protoset "$EXPORT_FILE"
+grpcn list --max-time 10s --protoset "$EXPORT_FILE"
 echo ""
 
 # ============================================================================
@@ -97,7 +97,7 @@ echo "=== SECTION 5: Timeouts and Limits ==="
 echo ""
 
 echo "5.1 With connection timeout and max operation time:"
-grpcurl_net invoke --plaintext \
+grpcn invoke --plaintext \
     --connect-timeout 5s \
     --max-time 30s \
     --max-msg-sz 10MB \
@@ -106,8 +106,8 @@ echo "Success with custom timeouts"
 echo ""
 
 echo "5.2 Discovery commands also accept --max-time:"
-grpcurl_net list --plaintext --max-time 10s $SERVER
-grpcurl_net describe --plaintext --max-time 10s $SERVER testing.TestService
+grpcn list --plaintext --max-time 10s $SERVER
+grpcn describe --plaintext --max-time 10s $SERVER testing.TestService
 echo ""
 
 # ============================================================================
@@ -117,7 +117,7 @@ echo "=== SECTION 6: Very Verbose Output (Timing) ==="
 echo ""
 
 echo "6.1 UnaryCall with very verbose timing:"
-grpcurl_net invoke --plaintext \
+grpcn invoke --plaintext \
     --max-time 10s \
     --vv \
     -d '{"response_size": 10}' \

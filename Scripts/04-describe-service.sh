@@ -16,7 +16,7 @@ echo ""
 echo "Command: grpcn describe --plaintext --max-time 10s $SERVER testing.TestService"
 echo ""
 
-grpcurl_net describe --plaintext --max-time 10s $SERVER testing.TestService
+grpcn describe --plaintext --max-time 10s $SERVER testing.TestService
 
 echo ""
 echo "=== Done ==="

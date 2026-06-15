@@ -20,13 +20,13 @@ echo ""
 echo "--- testing.SimpleRequest Template ---"
 echo "Command: grpcn describe --plaintext --max-time 10s --msg-template $SERVER testing.SimpleRequest"
 echo ""
-grpcurl_net describe --plaintext --max-time 10s --msg-template $SERVER testing.SimpleRequest
+grpcn describe --plaintext --max-time 10s --msg-template $SERVER testing.SimpleRequest
 
 echo ""
 echo "--- testing.StreamingOutputCallRequest Template ---"
 echo "Command: grpcn describe --plaintext --max-time 10s --msg-template $SERVER testing.StreamingOutputCallRequest"
 echo ""
-grpcurl_net describe --plaintext --max-time 10s --msg-template $SERVER testing.StreamingOutputCallRequest
+grpcn describe --plaintext --max-time 10s --msg-template $SERVER testing.StreamingOutputCallRequest
 
 echo ""
 echo "=== Done ==="

@@ -99,6 +99,9 @@
                 </Grid>
                 <TextBlock FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                            Text="System default validates against OS roots. Custom CA / mTLS / skip-verify live in a profile." />
+                <TextBlock FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                           IsVisible="{Binding IsUnixSocket}"
+                           Text="TLS is not used for Unix domain sockets." />
             </StackPanel>
 
             <!-- Descriptor source (FR-040..047) -->

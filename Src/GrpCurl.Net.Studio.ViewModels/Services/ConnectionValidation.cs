@@ -50,6 +50,10 @@ public static class ConnectionValidation
         return null;
     }
 
+    /// <summary>True when the address is a Unix domain socket path (<c>unix:///path</c>); TLS does not apply (FR-011).</summary>
+    public static bool IsUnixSocket(string? address)
+        => !string.IsNullOrWhiteSpace(address) && GrpcChannelFactory.TryExtractUnixSocketPath(address) is not null;
+
     /// <summary>Validates an optional CLI duration string (e.g. <c>500ms</c>, <c>10s</c>, <c>1.5m</c>). Empty is allowed.</summary>
     public static string? ValidateDuration(string? duration)
     {

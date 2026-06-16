@@ -24,6 +24,9 @@
         </PackageReference>
         <PackageReference Include="CommunityToolkit.Mvvm" />
         <PackageReference Include="Microsoft.Extensions.Hosting" />
+        <!-- Windows DPAPI secret backend (SEC-017); no-op reference on Linux/macOS. -->
+        <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+
         <!-- Code editor for request/response payloads (ADR-004). -->
         <PackageReference Include="Avalonia.AvaloniaEdit" />
         <PackageReference Include="AvaloniaEdit.TextMate" />

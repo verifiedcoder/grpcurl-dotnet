@@ -1,4 +1,5 @@
 using GrpCurl.Net.Studio.Services;
+using GrpCurl.Net.Studio.Services.Secrets;
 using GrpCurl.Net.Studio.ViewModels;
 using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Panes;
@@ -29,6 +30,9 @@ internal static class ServiceRegistration
         services.AddSingleton<IProtocService, ProtocService>();
 
         // Connection layer (E1.1).
+        services.AddSingleton<ISecretStore>(_ => new SecretStore(Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GrpCurlNet.Studio")));
+
         services.AddSingleton<IWorkspaceStore, JsonWorkspaceStore>();
         services.AddSingleton<IConnectionRegistry, ConnectionRegistry>();
 

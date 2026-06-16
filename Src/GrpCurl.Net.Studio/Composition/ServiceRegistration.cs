@@ -26,6 +26,7 @@ internal static class ServiceRegistration
         services.AddSingleton<IDialogService, DialogService>();
         services.AddSingleton<IFilePickerService, FilePickerService>();
         services.AddSingleton<IClipboardService, ClipboardService>();
+        services.AddSingleton<IRevealGate, RevealGate>();
         services.AddSingleton<ILauncherService, LauncherService>();
         services.AddSingleton<IProtocService, ProtocService>();
 

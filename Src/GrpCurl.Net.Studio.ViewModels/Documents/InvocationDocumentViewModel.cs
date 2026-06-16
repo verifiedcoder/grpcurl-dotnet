@@ -28,6 +28,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     private readonly ILauncherService _launcher;
     private readonly IRequestValidator _validator;
     private readonly IFilePickerService? _filePicker;
+    private readonly IRevealGate _revealGate;
     private readonly StreamDispatchPump _pump = new();
     private readonly Func<string, TextWriter> _writerFactory;
     private StreamCaptureWriter? _capture;
@@ -112,7 +113,8 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         IRequestValidator validator,
         IFilePickerService? filePicker = null,
         int ringCapacity = 10_000,
-        Func<string, TextWriter>? writerFactory = null)
+        Func<string, TextWriter>? writerFactory = null,
+        IRevealGate? revealGate = null)
     {
         Connection = connection;
         MethodSymbol = methodSymbol;
@@ -124,6 +126,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         _launcher = launcher;
         _validator = validator;
         _filePicker = filePicker;
+        _revealGate = revealGate ?? AlwaysRevealGate.Instance;
         _writerFactory = writerFactory ?? (path => new StreamWriter(path));
 
         Title = ShortName(methodSymbol);
@@ -142,8 +145,8 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     public ShellDialect CliDialect { get; set; } = ShellDialect.Bash;
 
     public ObservableCollection<HeaderRowViewModel> Headers { get; } = [];
-    public ObservableCollection<MetadataItem> ResponseHeaders { get; } = [];
-    public ObservableCollection<MetadataItem> ResponseTrailers { get; } = [];
+    public ObservableCollection<MetadataRowViewModel> ResponseHeaders { get; } = [];
+    public ObservableCollection<MetadataRowViewModel> ResponseTrailers { get; } = [];
     public ObservableCollection<TimingRow> Timing { get; } = [];
 
     /// <summary>The streaming event log (FR-081); empty for unary tabs.</summary>
@@ -426,12 +429,12 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
 
         foreach (var header in result.ResponseHeaders)
         {
-            ResponseHeaders.Add(header);
+            ResponseHeaders.Add(new MetadataRowViewModel(header, _revealGate));
         }
 
         foreach (var trailer in result.ResponseTrailers)
         {
-            ResponseTrailers.Add(trailer);
+            ResponseTrailers.Add(new MetadataRowViewModel(trailer, _revealGate));
         }
 
         AddTimingRows(result.Timing);

@@ -71,6 +71,33 @@ public sealed class InvocationDocumentUiTests(HeadlessSessionFixture fixture) : 
     });
 
     [Fact]
+    public Task A_successful_invoke_renders_the_save_response_button() => RunOnUiThread(() =>
+    {
+        // FR-074: a multi-line body exercises the brace-folding rebuild in SetResponseText and
+        // the Save… button materialises once a response exists.
+        var runner = new FakeInvocationRunner
+        {
+            Result = new ViewModels.Models.Invocation.InvocationResultModel(
+                true, "{\n  \"echo\": 42,\n  \"nested\": {\n    \"k\": \"v\"\n  }\n}", [], [],
+                new ViewModels.Models.Invocation.InvocationStatusModel(0, "OK", string.Empty),
+                new ViewModels.Models.Invocation.TimingModel([], 0, 0), null)
+        };
+
+        var vm = Vm(runner);
+        var view = new InvocationDocumentView { DataContext = vm };
+        var window = new Window { Content = view, Width = 800, Height = 600 };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        vm.InvokeCommand.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+
+        vm.HasResponse.ShouldBeTrue();
+        window.GetVisualDescendants().OfType<Button>().Select(b => b.Content as string)
+            .ShouldContain("Save…");
+    });
+
+    [Fact]
     public Task A_failed_invoke_renders_the_error_panel_with_pill_headline_and_a_rich_detail() => RunOnUiThread(() =>
     {
         var error = new ViewModels.Models.Invocation.ErrorModel(

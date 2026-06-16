@@ -164,6 +164,12 @@
                             IsVisible="{Binding IsStreaming}" AutomationProperties.Name="Stop stream" />
                     <ProgressBar IsIndeterminate="True" Width="80" VerticalAlignment="Center"
                                  IsVisible="{Binding IsInFlight}" />
+                    <!-- FR-073: live elapsed + deadline countdown while in flight. -->
+                    <TextBlock Text="{Binding ElapsedText}" VerticalAlignment="Center" FontSize="12" Opacity="0.7"
+                               IsVisible="{Binding IsInFlight}" AutomationProperties.Name="Elapsed time" />
+                    <TextBlock Text="{Binding DeadlineRemainingText}" VerticalAlignment="Center" FontSize="12"
+                               Foreground="{DynamicResource Status.Caller}"
+                               IsVisible="{Binding HasDeadlineRemaining}" AutomationProperties.Name="Deadline remaining" />
                 </StackPanel>
                 <StackPanel>
                     <TextBlock Text="{Binding MethodSymbol}" FontWeight="SemiBold" />
@@ -270,6 +276,8 @@
                     </Border>
                     <Button DockPanel.Dock="Right" HorizontalAlignment="Right" Content="Copy"
                             Command="{Binding CopyResponseCommand}" AutomationProperties.Name="Copy response" />
+                    <Button DockPanel.Dock="Right" Content="Save…" Margin="0,0,6,0"
+                            Command="{Binding SaveResponseCommand}" AutomationProperties.Name="Save response" />
                     <TextBlock Text="Response" FontWeight="SemiBold" VerticalAlignment="Center" Margin="10,0" />
                 </DockPanel>
             </Border>
@@ -304,10 +312,17 @@
                         <ItemsControl ItemsSource="{Binding Error.Suggestions}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="inv:SuggestionModel">
-                                    <TextBlock Margin="8,0,0,0" TextWrapping="Wrap">
-                                        <Run Text="•" />
-                                        <Run Text="{Binding Text}" />
-                                    </TextBlock>
+                                    <StackPanel Orientation="Horizontal" Spacing="6" Margin="8,0,0,0">
+                                        <TextBlock TextWrapping="Wrap">
+                                            <Run Text="•" />
+                                            <Run Text="{Binding Text}" />
+                                        </TextBlock>
+                                        <Button Content="Open settings" Padding="4,0" FontSize="12"
+                                                IsVisible="{Binding HasSettingLink}"
+                                                Command="{Binding $parent[ItemsControl].((docs:InvocationDocumentViewModel)DataContext).OpenSettingLinkCommand}"
+                                                CommandParameter="{Binding SettingLink}"
+                                                AutomationProperties.Name="Open related setting" />
+                                    </StackPanel>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>

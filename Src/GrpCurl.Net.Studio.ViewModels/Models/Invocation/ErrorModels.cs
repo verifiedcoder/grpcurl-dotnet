@@ -50,7 +50,10 @@ public static class StatusSeverityMap
 }
 
 /// <summary>A remediation hint (FR-095); <see cref="SettingLink" /> optionally deep-links to a settings page.</summary>
-public sealed record SuggestionModel(string Text, string? SettingLink = null);
+public sealed record SuggestionModel(string Text, string? SettingLink = null)
+{
+    public bool HasSettingLink => SettingLink is not null;
+}
 
 /// <summary>The complete, UI-ready description of a failed invocation (FR-090..099). No Core/Avalonia types leak in.</summary>
 public sealed record ErrorModel(

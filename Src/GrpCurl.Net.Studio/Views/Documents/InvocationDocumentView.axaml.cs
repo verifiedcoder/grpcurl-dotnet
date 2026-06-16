@@ -4,7 +4,10 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using AvaloniaEdit;
+using AvaloniaEdit.Document;
+using AvaloniaEdit.Folding;
 using AvaloniaEdit.Rendering;
+using AvaloniaEdit.Search;
 using AvaloniaEdit.TextMate;
 using GrpCurl.Net.Studio.ViewModels.Documents;
 using TextMateSharp.Grammars;
@@ -16,6 +19,7 @@ public sealed partial class InvocationDocumentView : UserControl
     private readonly SquiggleRenderer _squiggles = new();
     private TextEditor? _requestEditor;
     private TextEditor? _responseEditor;
+    private FoldingManager? _responseFolding;
     private InvocationDocumentViewModel? _viewModel;
     private bool _syncingRequest;
 
@@ -37,6 +41,13 @@ public sealed partial class InvocationDocumentView : UserControl
 
         ApplyIndentation(_requestEditor);
         ApplyIndentation(_responseEditor);
+
+        // FR-074: search (Ctrl+F) + collapse/expand folding on the response viewer.
+        if (_responseEditor is not null)
+        {
+            SearchPanel.Install(_responseEditor);
+            _responseFolding = FoldingManager.Install(_responseEditor.TextArea);
+        }
 
         DataContextChanged += OnDataContextChanged;
     }
@@ -161,9 +172,65 @@ public sealed partial class InvocationDocumentView : UserControl
 
     private void SetResponseText(string? text)
     {
-        if (_responseEditor is not null)
+        if (_responseEditor is null)
         {
-            _responseEditor.Text = text ?? string.Empty;
+            return;
         }
+
+        _responseEditor.Text = text ?? string.Empty;
+
+        // FR-074: rebuild the collapse/expand regions for the new body.
+        if (_responseFolding is not null)
+        {
+            _responseFolding.UpdateFoldings(CreateBraceFoldings(_responseEditor.Document), firstErrorOffset: -1);
+        }
+    }
+
+    /// <summary>FR-074: a minimal JSON brace/bracket folding strategy for multi-line { … } / [ … ] regions.</summary>
+    private static IEnumerable<NewFolding> CreateBraceFoldings(TextDocument document)
+    {
+        var foldings = new List<NewFolding>();
+        var openings = new Stack<int>();
+        var inString = false;
+
+        for (var offset = 0; offset < document.TextLength; offset++)
+        {
+            var c = document.GetCharAt(offset);
+
+            if (inString)
+            {
+                if (c == '\\')
+                {
+                    offset++; // skip the escaped character
+                }
+                else if (c == '"')
+                {
+                    inString = false;
+                }
+
+                continue;
+            }
+
+            switch (c)
+            {
+                case '"':
+                    inString = true;
+                    break;
+                case '{' or '[':
+                    openings.Push(offset);
+                    break;
+                case '}' or ']' when openings.Count > 0:
+                    var start = openings.Pop();
+                    if (document.GetLineByOffset(start).LineNumber != document.GetLineByOffset(offset).LineNumber)
+                    {
+                        foldings.Add(new NewFolding(start, offset + 1));
+                    }
+
+                    break;
+            }
+        }
+
+        foldings.Sort((a, b) => a.StartOffset.CompareTo(b.StartOffset)); // UpdateFoldings requires start-offset order
+        return foldings;
     }
 }

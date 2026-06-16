@@ -84,7 +84,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     {
         var document = new InvocationDocumentViewModel(
             connection, methodSymbol, initialRequestJson, _invocation, _descriptors, _dispatcher, _clipboard, _dialogs, _launcher, _validator,
-            _filePicker, _settings.Current.Network.RingBufferSize, revealGate: _revealGate);
+            _filePicker, _settings.Current.Network.RingBufferSize, revealGate: _revealGate, documentHost: this);
 
         // FR-153 / FR-163: seed new tabs from the Network/General defaults (initial values only).
         var network = _settings.Current.Network;

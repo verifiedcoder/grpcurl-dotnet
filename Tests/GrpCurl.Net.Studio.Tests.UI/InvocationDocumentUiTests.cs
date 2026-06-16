@@ -163,20 +163,14 @@ public sealed class InvocationDocumentUiTests(HeadlessSessionFixture fixture) : 
     }
 
     [Fact]
-    public Task A_server_streaming_tab_renders_the_event_log_and_runs_a_stream() => RunOnUiThread(() =>
+    public Task A_server_streaming_tab_renders_the_event_log_with_rows() => RunOnUiThread(() =>
     {
-        var runner = new FakeInvocationRunner
-        {
-            StreamEvents =
-            [
-                new ViewModels.Models.Invocation.StreamEventModel(ViewModels.Models.Invocation.StreamEventKind.Headers, -1, DateTimeOffset.Now, 0, "headers"),
-                new ViewModels.Models.Invocation.StreamEventModel(ViewModels.Models.Invocation.StreamEventKind.MessageReceived, 0, DateTimeOffset.Now, 0, "echo 1"),
-                new ViewModels.Models.Invocation.StreamEventModel(ViewModels.Models.Invocation.StreamEventKind.Status, -1, DateTimeOffset.Now, 0, "OK",
-                    Status: new ViewModels.Models.Invocation.InvocationStatusModel(0, "OK", string.Empty))
-            ]
-        };
-        var vm = StreamingVm(GrpCurl.Net.Studio.ViewModels.Models.Descriptors.StreamingShape.ServerStreaming, runner);
+        var vm = StreamingVm(GrpCurl.Net.Studio.ViewModels.Models.Descriptors.StreamingShape.ServerStreaming, new FakeInvocationRunner());
         vm.IsStreaming.ShouldBeTrue();
+
+        // Populate the log directly (the async StartStream pipeline is L1-tested); render the layout.
+        vm.Log.Append(new ViewModels.Models.Invocation.StreamEventModel(ViewModels.Models.Invocation.StreamEventKind.Headers, -1, DateTimeOffset.Now, 0, "headers"));
+        vm.Log.Append(new ViewModels.Models.Invocation.StreamEventModel(ViewModels.Models.Invocation.StreamEventKind.MessageReceived, 0, DateTimeOffset.Now, 0, "echo 1"));
 
         var window = new Window { Content = new InvocationDocumentView { DataContext = vm }, Width = 800, Height = 600 };
         window.Show();
@@ -185,12 +179,6 @@ public sealed class InvocationDocumentUiTests(HeadlessSessionFixture fixture) : 
         window.GetVisualDescendants().OfType<ListBox>()
             .Any(l => Equals(l.GetValue(Avalonia.Automation.AutomationProperties.NameProperty), "Event log"))
             .ShouldBeTrue();
-
-        vm.StartStreamCommand.Execute(null);
-        Dispatcher.UIThread.RunJobs();
-
-        vm.State.ShouldBe(RunState.Completed);
-        vm.Log.Rows.Count.ShouldBe(3);
         window.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text).ShouldContain("echo 1");
     });
 }

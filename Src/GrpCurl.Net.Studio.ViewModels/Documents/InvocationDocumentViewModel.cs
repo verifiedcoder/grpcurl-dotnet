@@ -46,6 +46,10 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     [ObservableProperty]
     private StreamComposerViewModel? _composer;
 
+    /// <summary>Request/response wire sizes for the Timing tab (FR-110).</summary>
+    [ObservableProperty]
+    private string? _timingBytesText;
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasError), nameof(HasErrorSuggestions), nameof(HasErrorDetails))]
     [NotifyCanExecuteChangedFor(nameof(RetryCommand), nameof(CopyErrorJsonCommand))]
@@ -134,7 +138,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     public ObservableCollection<HeaderRowViewModel> Headers { get; } = [];
     public ObservableCollection<MetadataItem> ResponseHeaders { get; } = [];
     public ObservableCollection<MetadataItem> ResponseTrailers { get; } = [];
-    public ObservableCollection<TimingPhase> Timing { get; } = [];
+    public ObservableCollection<TimingRow> Timing { get; } = [];
 
     /// <summary>The streaming event log (FR-081); empty for unary tabs.</summary>
     public StreamLogViewModel Log { get; }
@@ -230,6 +234,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
             ResponseHeaders.Clear();
             ResponseTrailers.Clear();
             Timing.Clear();
+            TimingBytesText = null;
         });
 
         try
@@ -422,16 +427,30 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
             ResponseTrailers.Add(trailer);
         }
 
-        foreach (var phase in result.Timing.Phases)
-        {
-            Timing.Add(phase);
-        }
+        AddTimingRows(result.Timing);
 
         Error = result.Error;
         Severity = result.Error?.Severity ?? StatusSeverityMap.FromCode(result.Status.Code);
         StatusIsError = !result.Ok;
         StatusText = result.Status.CodeName; // FR-091: pill text is always the status name
         State = result.Ok ? RunState.Completed : RunState.Failed;
+    }
+
+    /// <summary>Builds the Timing-tab rows with each phase's fraction of the total for the bar breakdown (FR-110).</summary>
+    private void AddTimingRows(TimingModel timing)
+    {
+        var total = timing.Phases.FirstOrDefault(p => p.Phase == "total")?.Duration
+                    ?? timing.Phases.Aggregate(TimeSpan.Zero, (acc, p) => acc + p.Duration);
+        var totalMs = total.TotalMilliseconds;
+
+        foreach (var phase in timing.Phases)
+        {
+            var isTotal = phase.Phase == "total";
+            var fraction = isTotal ? 1.0 : totalMs > 0 ? phase.Duration.TotalMilliseconds / totalMs : 0.0;
+            Timing.Add(new TimingRow(phase.Phase, phase.Duration, fraction, isTotal));
+        }
+
+        TimingBytesText = $"request {timing.RequestBytes} B · response {timing.ResponseBytes} B";
     }
 
     [RelayCommand(CanExecute = nameof(HasResponse))]

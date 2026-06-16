@@ -72,8 +72,15 @@ internal sealed partial class InvocationRunner(IInvocationService invocation, IT
                 ? null
                 : invocation.MessageToJson(outcome.Response, request.EmitDefaults, indent: true);
 
+            // FR-110 structured phases. "descriptor" = session create + symbol resolve; "call" = the RPC
+            // (gRPC connects lazily, so channel-establishment cost lands here — Studio can't split a
+            // distinct "channel" phase without Core changes); "total" = end-to-end.
             var timing = new TimingModel(
-                [new TimingPhase("Resolve", resolve.Elapsed), new TimingPhase("Call", call.Elapsed)],
+                [
+                    new TimingPhase("descriptor", resolve.Elapsed),
+                    new TimingPhase("call", call.Elapsed),
+                    new TimingPhase("total", resolve.Elapsed + call.Elapsed)
+                ],
                 RequestBytes: requestMessage.CalculateSize(),
                 ResponseBytes: outcome.Response?.CalculateSize() ?? 0);
 

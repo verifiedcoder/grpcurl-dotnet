@@ -47,6 +47,18 @@ public sealed class ConnectionEditorViewModelTests
     }
 
     [Fact]
+    public void A_unix_socket_address_disables_the_tls_profile_picker()
+    {
+        var vm = new ConnectionEditorViewModel(new FakeConnectionRegistry()) { Name = "uds", Address = "h:1" };
+        vm.IsTlsProfileEnabled.ShouldBeTrue(); // TLS over TCP
+
+        vm.Address = "unix:///tmp/grpc.sock";
+
+        vm.IsUnixSocket.ShouldBeTrue();
+        vm.IsTlsProfileEnabled.ShouldBeFalse(); // TLS doesn't apply to Unix sockets
+    }
+
+    [Fact]
     public void Invalid_address_disables_save_and_test_and_surfaces_error()
     {
         var vm = new ConnectionEditorViewModel(new FakeConnectionRegistry()) { Name = "x", Address = "bad" };

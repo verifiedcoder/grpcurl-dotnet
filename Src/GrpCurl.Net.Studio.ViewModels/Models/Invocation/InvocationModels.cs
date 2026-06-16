@@ -35,6 +35,17 @@ public sealed record TimingPhase(string Phase, TimeSpan Duration);
 public sealed record TimingModel(IReadOnlyList<TimingPhase> Phases, long RequestBytes, long ResponseBytes);
 
 /// <summary>
+///     A Timing-tab row: a phase, its duration, and its fraction of the total (0..1) for the
+///     horizontal-bar breakdown (FR-110). <see cref="IsTotal" /> marks the summary row.
+/// </summary>
+public sealed record TimingRow(string Phase, TimeSpan Duration, double Fraction, bool IsTotal)
+{
+    public string DurationText => $"{Duration.TotalMilliseconds:0.#} ms";
+
+    public string PercentText => IsTotal ? string.Empty : $"{Fraction * 100:0}%";
+}
+
+/// <summary>
 ///     The model-side result of a unary invoke: response JSON + metadata + status + timing. On
 ///     failure, <see cref="Error" /> carries the rich error presentation (FR-090..099); the legacy
 ///     <see cref="ErrorMessage" /> is retained as the one-line headline.

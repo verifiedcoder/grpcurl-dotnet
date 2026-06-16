@@ -31,6 +31,8 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(AddressError))]
+    [NotifyPropertyChangedFor(nameof(IsTlsProfileEnabled))]
+    [NotifyPropertyChangedFor(nameof(IsUnixSocket))]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     [NotifyCanExecuteChangedFor(nameof(TestConnectionCommand))]
     private string _address = string.Empty;
@@ -156,8 +158,11 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
     /// <summary>System-default sentinel plus every workspace TLS profile (FR-012/FR-030).</summary>
     public ObservableCollection<TlsProfileOption> TlsProfiles { get; }
 
-    /// <summary>TLS profiles apply only under TLS; the picker is disabled for plaintext targets.</summary>
-    public bool IsTlsProfileEnabled => !IsPlaintext;
+    /// <summary>TLS profiles apply only under TLS over TCP; the picker is disabled for plaintext and Unix sockets.</summary>
+    public bool IsTlsProfileEnabled => !IsPlaintext && !ConnectionValidation.IsUnixSocket(Address);
+
+    /// <summary>True when the address is a Unix socket — TLS doesn't apply (FR-011).</summary>
+    public bool IsUnixSocket => ConnectionValidation.IsUnixSocket(Address);
 
     /// <summary>Create/edit are only offered when the profile services are wired (they are in the app; not in bare unit ctors).</summary>
     public bool CanManageProfiles => _profileStore is not null && _filePicker is not null

@@ -147,6 +147,34 @@ public sealed class InvocationDocumentViewModelTests
     }
 
     [Fact]
+    public async Task Timing_rows_carry_each_phase_fraction_of_the_total()
+    {
+        var doc = Create(out var runner, out _, out _);
+        runner.Result = runner.Result with
+        {
+            Timing = new TimingModel(
+                [
+                    new TimingPhase("descriptor", TimeSpan.FromMilliseconds(30)),
+                    new TimingPhase("call", TimeSpan.FromMilliseconds(70)),
+                    new TimingPhase("total", TimeSpan.FromMilliseconds(100))
+                ],
+                RequestBytes: 12, ResponseBytes: 34)
+        };
+
+        await doc.InvokeCommand.ExecuteAsync(null);
+
+        doc.Timing.Count.ShouldBe(3);
+        doc.Timing[0].Phase.ShouldBe("descriptor");
+        doc.Timing[0].Fraction.ShouldBe(0.3, 0.001);
+        doc.Timing[1].Fraction.ShouldBe(0.7, 0.001);
+        doc.Timing[2].IsTotal.ShouldBeTrue();
+        doc.Timing[2].Fraction.ShouldBe(1.0);
+        doc.Timing[2].PercentText.ShouldBeEmpty();
+        doc.TimingBytesText!.ShouldContain("12");
+        doc.TimingBytesText!.ShouldContain("34");
+    }
+
+    [Fact]
     public async Task Invoke_failure_sets_the_failed_state_with_status()
     {
         var doc = Create(out var runner, out _, out _);

@@ -330,16 +330,27 @@
                     </ItemsControl>
                 </TabItem>
                 <TabItem Header="Timing">
-                    <ItemsControl ItemsSource="{Binding Timing}" Margin="4">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="inv:TimingPhase">
-                                <TextBlock Margin="0,1">
-                                    <Run Text="{Binding Phase}" FontWeight="SemiBold" />
-                                    <Run Text="{Binding Duration}" Foreground="{DynamicResource Status.Neutral}" />
-                                </TextBlock>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                    <StackPanel Margin="4" Spacing="6">
+                        <!-- FR-110: per-phase horizontal-bar breakdown + numeric table. -->
+                        <ItemsControl ItemsSource="{Binding Timing}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="inv:TimingRow">
+                                    <Grid ColumnDefinitions="90,*,70,46" Margin="0,2" ColumnSpacing="6">
+                                        <TextBlock Grid.Column="0" Text="{Binding Phase}" FontWeight="SemiBold"
+                                                   VerticalAlignment="Center" />
+                                        <ProgressBar Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding Fraction}"
+                                                     VerticalAlignment="Center" Height="8" />
+                                        <TextBlock Grid.Column="2" Text="{Binding DurationText}" HorizontalAlignment="Right"
+                                                   Foreground="{DynamicResource Status.Neutral}" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="3" Text="{Binding PercentText}" HorizontalAlignment="Right"
+                                                   Foreground="{DynamicResource Status.Neutral}" VerticalAlignment="Center" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="{Binding TimingBytesText}" FontSize="12"
+                                   Foreground="{DynamicResource Status.Neutral}" />
+                    </StackPanel>
                 </TabItem>
             </TabControl>
         </Grid>

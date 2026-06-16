@@ -24,6 +24,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
     private readonly ITlsProfileStore? _profileStore;
     private readonly IFilePickerService? _filePicker;
     private readonly ISecretStore? _secretStore;
+    private readonly IProtocService? _protocService;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(EditConnectionCommand))]
@@ -39,7 +40,8 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         ISettingsStore? settings = null,
         ITlsProfileStore? profileStore = null,
         IFilePickerService? filePicker = null,
-        ISecretStore? secretStore = null)
+        ISecretStore? secretStore = null,
+        IProtocService? protocService = null)
     {
         _workspaceStore = workspaceStore;
         _registry = registry;
@@ -49,6 +51,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         _profileStore = profileStore;
         _filePicker = filePicker;
         _secretStore = secretStore;
+        _protocService = protocService;
 
         Connections = [];
         Connections.CollectionChanged += OnConnectionsChanged;
@@ -76,7 +79,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
     private async Task AddConnection()
     {
         var editor = new ConnectionEditorViewModel(
-            _registry, existing: null, _settings?.Current.Network, _profileStore, _filePicker, _dialogService, _secretStore);
+            _registry, existing: null, _settings?.Current.Network, _profileStore, _filePicker, _dialogService, _secretStore, _protocService);
         var saved = await _dialogService.ShowDialogAsync(editor);
 
         if (saved is not null)
@@ -97,7 +100,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         }
 
         var editor = new ConnectionEditorViewModel(
-            _registry, item.Connection, networkDefaults: null, _profileStore, _filePicker, _dialogService, _secretStore);
+            _registry, item.Connection, networkDefaults: null, _profileStore, _filePicker, _dialogService, _secretStore, _protocService);
         var saved = await _dialogService.ShowDialogAsync(editor);
 
         if (saved is not null)

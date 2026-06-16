@@ -31,6 +31,16 @@ public sealed class StreamingRunnerTests(StudioPlaintextServerFixture server)
         await Task.CompletedTask;
     }
 
+    private static async IAsyncEnumerable<string> Many(params string[] jsons)
+    {
+        foreach (var json in jsons)
+        {
+            yield return json;
+        }
+
+        await Task.CompletedTask;
+    }
+
     private async Task<List<StreamEventModel>> Collect(StreamRequestModel request, string json, CancellationToken ct)
     {
         var events = new List<StreamEventModel>();
@@ -119,6 +129,41 @@ public sealed class StreamingRunnerTests(StudioPlaintextServerFixture server)
         });
 
         received.ShouldContain(e => e.Kind == StreamEventKind.MessageReceived); // preserved
+    }
+
+    [Fact]
+    public async Task Client_streaming_sends_many_then_yields_one_response_and_ok()
+    {
+        var events = new List<StreamEventModel>();
+        await foreach (var ev in Runner().InvokeStreamingAsync(
+                           Request("testing.TestService/StreamingInputCall"),
+                           Many("""{ "payload": { "body": "AAAA" } }""", """{ "payload": { "body": "AAAA" } }""", """{ "payload": { "body": "AAAA" } }"""),
+                           TestContext.Current.CancellationToken))
+        {
+            events.Add(ev);
+        }
+
+        events.Count(e => e.Kind == StreamEventKind.MessageSent).ShouldBe(3);
+        events.Count(e => e.Kind == StreamEventKind.MessageReceived).ShouldBe(1); // single aggregate response
+        events[^1].Kind.ShouldBe(StreamEventKind.Status);
+        events[^1].Status!.Code.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Duplex_interleaves_sends_and_receives_then_ok()
+    {
+        var events = new List<StreamEventModel>();
+        await foreach (var ev in Runner().InvokeStreamingAsync(
+                           Request("testing.TestService/FullDuplexCall"),
+                           Many("""{ "response_parameters": [{ "size": 4 }] }""", """{ "response_parameters": [{ "size": 8 }] }"""),
+                           TestContext.Current.CancellationToken))
+        {
+            events.Add(ev);
+        }
+
+        events.Count(e => e.Kind == StreamEventKind.MessageSent).ShouldBe(2);
+        events.Count(e => e.Kind == StreamEventKind.MessageReceived).ShouldBe(2);
+        events[^1].Status!.Code.ShouldBe(0);
     }
 
     [Fact]

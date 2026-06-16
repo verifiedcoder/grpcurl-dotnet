@@ -1,7 +1,7 @@
 # Feature declaration for the connectrpc/conformance suite, Studio adapter (client mode).
-# Unary subset (E1.4): every other axis (TLS, mTLS, gzip, h2c, trailers, receive-limit) is
-# exercised at full depth because the adapter builds its own channel per request. The remaining
-# stream types arrive with E2.1.
+# Every non-stream axis (TLS, mTLS, gzip, h2c, trailers, receive-limit) is exercised at full depth
+# because the adapter builds its own channel per request. Unary + server-streaming run through the
+# Studio IInvocationService (E2.1 PR-A); client/duplex arrive with PR-B.
 features:
   versions:
     - HTTP_VERSION_2          # gRPC requires HTTP/2
@@ -14,6 +14,7 @@ features:
     - COMPRESSION_GZIP        # via grpc-internal-encoding-request, Grpc.Net.Client's built-in
   stream_types:
     - STREAM_TYPE_UNARY
+    - STREAM_TYPE_SERVER_STREAM
   supports_h2c: true          # plaintext HTTP/2 (prior knowledge)
   supports_tls: true
   supports_tls_client_certs: true

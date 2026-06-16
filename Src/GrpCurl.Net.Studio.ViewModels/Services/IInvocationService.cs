@@ -39,6 +39,23 @@ public interface IInvocationService
         DateTime? deadline,
         CancellationToken cancellationToken);
 
+    /// <summary>
+    ///     Drives a streaming RPC (server / client / duplex — selected from the method's streaming
+    ///     flags) and yields a merged, ordered <see cref="StreamEvent" /> sequence (ADR-013). The
+    ///     caller supplies request messages via <paramref name="requests" /> (the composer's channel
+    ///     or the conformance source); each pulled request emits a <see cref="MessageSent" />. RPC
+    ///     errors become a terminal <see cref="StatusReceived" /> (never thrown); cancellation yields
+    ///     a terminal <see cref="StatusReceived" /> with <see cref="StatusCode.Cancelled" /> so
+    ///     already-received messages are preserved (FR-084). Internally bounded with backpressure.
+    /// </summary>
+    IAsyncEnumerable<StreamEvent> InvokeStreamingAsync(
+        GrpcChannel channel,
+        MethodDescriptor method,
+        IAsyncEnumerable<IMessage> requests,
+        Metadata headers,
+        DateTime? deadline,
+        CancellationToken cancellationToken);
+
     IMessage CreateMessageFromJson(MessageDescriptor descriptor, string? json, bool allowUnknownFields = true);
 
     string MessageToJson(IMessage message, bool includeDefaults = false, bool indent = true);

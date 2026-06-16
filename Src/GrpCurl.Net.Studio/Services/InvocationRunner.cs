@@ -1,5 +1,7 @@
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using Grpc.Core;
 using GrpCurl.Net.DescriptorSources;
@@ -95,6 +97,104 @@ internal sealed partial class InvocationRunner(IInvocationService invocation) : 
             // Malformed request JSON, etc. — server/Core stays the authority; advisory validation is E1.5 PR-C.
             return Failure(ErrorMapper.FromInternal(ex.Message, ctx));
         }
+    }
+
+    public async IAsyncEnumerable<StreamEventModel> InvokeStreamingAsync(
+        StreamRequestModel request,
+        IAsyncEnumerable<string> requestJson,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        var connection = request.Connection;
+        var options = ConnectionChannelMapper.ToChannelOptions(connection, ParseSizeOrNull(request.MaxMessageSize));
+        var reflectionMetadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
+        var deadline = ParseDeadline(request.Deadline);
+        var ctx = new ErrorContext(request.MethodSymbol, connection.Address, DeadlineSet: deadline is not null);
+
+        await using var session = await DescriptorSourceFactory.CreateAsync(
+            connection.Address, [], [], [],
+            channelOptions: options,
+            reflectionMetadata: reflectionMetadata,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        var symbol = request.MethodSymbol.Replace('/', '.');
+
+        if (await session.Source.FindSymbolAsync(symbol, cancellationToken).ConfigureAwait(false) is not MethodDescriptor method)
+        {
+            yield return StatusRow(ErrorMapper.FromSchema($"Method '{request.MethodSymbol}' was not found on the server.", ctx));
+            yield break;
+        }
+
+        // FR-066: resolve ${ENV_VAR} placeholders at send time; an undefined variable fails the call.
+        Metadata? callHeaders = null;
+        string? headerError = null;
+
+        try
+        {
+            callHeaders = GrpcChannelFactory.CreateMetadata(
+                request.Headers.Select(h => $"{h.Name}: {ResolveEnvironmentVariables(h.Value)}"),
+                NullIfBlank(connection.UserAgent));
+        }
+        catch (InvalidOperationException ex)
+        {
+            headerError = ex.Message;
+        }
+
+        if (callHeaders is null)
+        {
+            yield return StatusRow(ErrorMapper.FromInternal(headerError ?? "Failed to build request headers.", ctx));
+            yield break;
+        }
+
+        var messages = ToMessages(method, requestJson, request.AllowUnknownFields, cancellationToken);
+
+        await foreach (var ev in invocation
+                           .InvokeStreamingAsync(session.Channel!, method, messages, callHeaders, deadline, cancellationToken)
+                           .ConfigureAwait(false))
+        {
+            yield return MapEvent(ev, ctx);
+        }
+    }
+
+    private async IAsyncEnumerable<IMessage> ToMessages(
+        MethodDescriptor method, IAsyncEnumerable<string> requestJson, bool allowUnknownFields,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await foreach (var json in requestJson.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            yield return invocation.CreateMessageFromJson(method.InputType, json, allowUnknownFields);
+        }
+    }
+
+    private StreamEventModel MapEvent(StreamEvent ev, ErrorContext ctx) => ev switch
+    {
+        HeadersReceived h => new StreamEventModel(
+            StreamEventKind.Headers, -1, ev.WallClock, ev.ElapsedMs, $"headers ({h.Headers.Count})", Metadata: ToItems(h.Headers)),
+        MessageReceived m => new StreamEventModel(
+            StreamEventKind.MessageReceived, m.Index, ev.WallClock, ev.ElapsedMs, Preview(m.Message), RawMessage: m.Message),
+        MessageSent s => new StreamEventModel(
+            StreamEventKind.MessageSent, s.Index, ev.WallClock, ev.ElapsedMs, Preview(s.Message), RawMessage: s.Message),
+        StatusReceived st => StatusRow(st, ctx),
+        StreamWarning w => new StreamEventModel(StreamEventKind.Warning, -1, ev.WallClock, ev.ElapsedMs, w.Message),
+        _ => new StreamEventModel(StreamEventKind.Warning, -1, ev.WallClock, ev.ElapsedMs, "unknown event")
+    };
+
+    private StreamEventModel StatusRow(StatusReceived st, ErrorContext ctx)
+    {
+        var ok = st.Status.Code == 0;
+        var status = new InvocationStatusModel(st.Status.Code, st.Status.CodeName, st.Status.Detail);
+        var error = ok ? null : ErrorMapper.FromStreamStatus(st.Status.Code, st.Status.CodeName, st.Status.Detail, st.RichDetails, ctx);
+        var preview = ok ? "OK" : NonEmpty(st.Status.Detail, st.Status.CodeName);
+        return new StreamEventModel(StreamEventKind.Status, -1, st.WallClock, st.ElapsedMs, preview, Status: status, Error: error);
+    }
+
+    private static StreamEventModel StatusRow(ErrorModel error)
+        => new(StreamEventKind.Status, -1, DateTimeOffset.UtcNow, 0, error.Headline,
+            Status: new InvocationStatusModel(error.StatusCode, error.StatusName, error.Headline), Error: error);
+
+    private string Preview(IMessage message)
+    {
+        var json = invocation.MessageToJson(message, includeDefaults: false, indent: false).ReplaceLineEndings(" ");
+        return json.Length <= 120 ? json : json[..120] + "…";
     }
 
     private static InvocationResultModel Failure(ErrorModel error)

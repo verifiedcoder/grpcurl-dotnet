@@ -84,4 +84,18 @@ public sealed class ServiceExplorerUiTests(HeadlessSessionFixture fixture) : Hea
         texts.ShouldContain("Protoset");
         texts.ShouldContain(t => t != null && t.Contains("1 warning"));
     });
+
+    [Fact]
+    public Task Export_button_renders_in_the_header_when_loaded() => RunOnUiThread(() =>
+    {
+        var window = new Window { Content = new ServiceExplorerView { DataContext = LoadedExplorer() }, Width = 320, Height = 480 };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        var export = window.GetVisualDescendants().OfType<Button>()
+            .FirstOrDefault(b => Equals(b.GetValue(Avalonia.Automation.AutomationProperties.NameProperty), "Export schema"));
+
+        export.ShouldNotBeNull();
+        export!.IsEffectivelyVisible.ShouldBeTrue();
+    });
 }

@@ -24,4 +24,20 @@ public interface IDescriptorService
     ///     error contract as <see cref="LoadAsync" />.
     /// </summary>
     Task<DescribeResult> DescribeAsync(SavedConnection connection, string symbol, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Exports the connection's active descriptor set to a <c>.protoset</c> file (FR-100, CLI
+    ///     <c>--protoset-out</c> parity). Refuses to overwrite an existing file unless
+    ///     <paramref name="overwrite" /> is set, returning a <see cref="SchemaExportOutcome.Conflict" />
+    ///     so the caller can confirm and retry.
+    /// </summary>
+    Task<SchemaExportResult> ExportProtosetAsync(SavedConnection connection, string path, bool overwrite, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Reconstructs <c>.proto</c> source files from the connection's active descriptor set into a
+    ///     directory (FR-102, CLI <c>--proto-out-dir</c> parity). Returns a
+    ///     <see cref="SchemaExportOutcome.Conflict" /> listing every target that already exists unless
+    ///     <paramref name="overwrite" /> is set.
+    /// </summary>
+    Task<SchemaExportResult> ExportProtosAsync(SavedConnection connection, string directory, bool overwrite, CancellationToken cancellationToken = default);
 }

@@ -24,12 +24,16 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
     private readonly IDocumentHost _documentHost;
     private readonly IProtocService? _protoc;
     private readonly ConsoleViewModel? _console;
+    private readonly IFilePickerService? _filePicker;
+    private readonly IDialogService? _dialog;
+    private readonly ILauncherService? _launcher;
 
     private ServiceCatalog? _catalog;
     private CancellationTokenSource? _loadCts;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsNoConnection), nameof(IsLoading), nameof(IsLoaded), nameof(IsEmpty), nameof(HasError))]
+    [NotifyCanExecuteChangedFor(nameof(ExportProtosetCommand), nameof(ExportProtosCommand))]
     private ExplorerState _state = ExplorerState.NoConnection;
 
     [ObservableProperty]
@@ -71,7 +75,10 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
         IUiDispatcher dispatcher,
         IDocumentHost documentHost,
         IProtocService? protoc = null,
-        ConsoleViewModel? console = null)
+        ConsoleViewModel? console = null,
+        IFilePickerService? filePicker = null,
+        IDialogService? dialog = null,
+        ILauncherService? launcher = null)
     {
         _descriptors = descriptors;
         _selection = selection;
@@ -80,6 +87,9 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
         _documentHost = documentHost;
         _protoc = protoc;
         _console = console;
+        _filePicker = filePicker;
+        _dialog = dialog;
+        _launcher = launcher;
 
         Services = [];
         TypePackages = [];
@@ -151,6 +161,119 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
         {
             _documentHost.OpenInvocation(connection, methodSymbol);
         }
+    }
+
+    // ── schema export (FR-100..104) ──────────────────────────────────────────
+
+    /// <summary>Export is offered once a schema is loaded and the file picker + dialog services are wired.</summary>
+    public bool CanExport => IsLoaded && _filePicker is not null && _dialog is not null && _selection.Current is not null;
+
+    [RelayCommand(CanExecute = nameof(CanExport), IncludeCancelCommand = true)]
+    private async Task ExportProtoset(CancellationToken cancellationToken)
+    {
+        if (_selection.Current is not { } connection || _filePicker is null)
+        {
+            return;
+        }
+
+        var path = await _filePicker.SaveFileAsync("Export protoset", $"{SuggestedName(connection)}.protoset", ["protoset"], cancellationToken);
+
+        if (path is null)
+        {
+            return;
+        }
+
+        await RunExportAsync(
+            overwrite => _descriptors.ExportProtosetAsync(connection, path, overwrite, cancellationToken),
+            revealTarget: System.IO.Path.GetDirectoryName(path) ?? path);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanExport), IncludeCancelCommand = true)]
+    private async Task ExportProtos(CancellationToken cancellationToken)
+    {
+        if (_selection.Current is not { } connection || _filePicker is null)
+        {
+            return;
+        }
+
+        var directory = await _filePicker.OpenFolderAsync("Reconstruct .proto files into…", cancellationToken);
+
+        if (directory is null)
+        {
+            return;
+        }
+
+        await RunExportAsync(
+            overwrite => _descriptors.ExportProtosAsync(connection, directory, overwrite, cancellationToken),
+            revealTarget: directory);
+    }
+
+    /// <summary>
+    ///     Runs an export, gating an overwrite behind a refuse-by-default confirmation (FR-101/102) and
+    ///     presenting the result summary with a reveal-in-file-manager affordance (FR-103).
+    /// </summary>
+    private async Task RunExportAsync(Func<bool, Task<SchemaExportResult>> export, string revealTarget)
+    {
+        if (_dialog is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var result = await export(false);
+
+            if (result.Outcome == SchemaExportOutcome.Conflict)
+            {
+                if (!await _dialog.ConfirmAsync("Overwrite existing files?", ConflictMessage(result.Conflicts)))
+                {
+                    return;
+                }
+
+                result = await export(true);
+            }
+
+            await PresentResultAsync(result, revealTarget);
+        }
+        catch (OperationCanceledException)
+        {
+            await _dialog.ShowMessageAsync("Export cancelled", "The export was cancelled; any files already written were kept.");
+        }
+    }
+
+    private async Task PresentResultAsync(SchemaExportResult result, string revealTarget)
+    {
+        if (_dialog is null)
+        {
+            return;
+        }
+
+        if (result.Outcome == SchemaExportOutcome.Failure)
+        {
+            await _dialog.ShowMessageAsync("Export failed", result.ErrorMessage ?? "The schema could not be exported.");
+            return;
+        }
+
+        var summary = $"{result.Written.Count} file(s) written in {result.Duration.TotalMilliseconds:0} ms.";
+
+        // The dialog service is yes/no, so the reveal affordance rides on the confirmation (FR-103).
+        if (await _dialog.ConfirmAsync("Export complete", summary + "\n\nReveal in the file manager?") && _launcher is not null)
+        {
+            await _launcher.LaunchUriAsync(new Uri(revealTarget).AbsoluteUri);
+        }
+    }
+
+    private static string ConflictMessage(IReadOnlyList<FileConflict> conflicts)
+    {
+        var lines = conflicts.Take(10).Select(c => $"• {c.Path}  ({c.SizeBytes} bytes, modified {c.ModifiedUtc:yyyy-MM-dd HH:mm} UTC)");
+        var more = conflicts.Count > 10 ? $"\n…and {conflicts.Count - 10} more" : string.Empty;
+        return $"{conflicts.Count} file(s) already exist and will be overwritten:\n\n{string.Join("\n", lines)}{more}";
+    }
+
+    private static string SuggestedName(Models.Connections.SavedConnection connection)
+    {
+        var name = string.IsNullOrWhiteSpace(connection.Name) ? "schema" : connection.Name.Trim();
+        return string.Join("_", name.Split(System.IO.Path.GetInvalidFileNameChars()));
     }
 
     private void OnConnectionChanged(object? sender, EventArgs e) => _ = ReloadAsync();

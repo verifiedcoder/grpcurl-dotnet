@@ -11,9 +11,22 @@
         <Border Grid.Row="0" Background="{DynamicResource Surface.PaneHeader}" Padding="8,6">
             <DockPanel>
                 <TextBlock Text="{Binding Header}" FontWeight="SemiBold" VerticalAlignment="Center" />
-                <Button DockPanel.Dock="Right" HorizontalAlignment="Right" Content="⟳" Padding="6,0"
+                <Button DockPanel.Dock="Right" Content="⟳" Padding="6,0"
                         Command="{Binding RefreshCommand}"
                         ToolTip.Tip="Refresh" AutomationProperties.Name="Refresh services" />
+                <!-- Schema export (FR-100..104): the connection-level export entry point. -->
+                <Button DockPanel.Dock="Right" Content="Export ▾" Padding="6,0" Margin="0,0,6,0"
+                        IsVisible="{Binding IsLoaded}" ToolTip.Tip="Export schema"
+                        AutomationProperties.Name="Export schema">
+                    <Button.Flyout>
+                        <MenuFlyout>
+                            <MenuItem Header="Export protoset…" Command="{Binding ExportProtosetCommand}"
+                                      AutomationProperties.Name="Export protoset" />
+                            <MenuItem Header="Reconstruct .proto files…" Command="{Binding ExportProtosCommand}"
+                                      AutomationProperties.Name="Reconstruct proto files" />
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
             </DockPanel>
         </Border>
 

@@ -58,4 +58,30 @@ public sealed class ServiceExplorerUiTests(HeadlessSessionFixture fixture) : Hea
             .Select(t => t.Text)
             .ShouldContain("pkg.Greeter");
     });
+
+    [Fact]
+    public Task Source_badge_and_warnings_strip_render_when_loaded() => RunOnUiThread(() =>
+    {
+        var descriptors = new FakeDescriptorService
+        {
+            Result = DescriptorLoadResult.Success(new ServiceCatalog(
+                [new ServiceEntry("pkg.Greeter", [new ServiceMethod("Hi", "pkg.Greeter/Hi", StreamingShape.Unary, "pkg.A", "pkg.B")])],
+                ["duplicate file a.proto"]) { FileCount = 2, SymbolCount = 5, LoadDuration = TimeSpan.FromMilliseconds(10) })
+        };
+        var selection = new ConnectionSelection();
+        var vm = new ServiceExplorerViewModel(descriptors, selection, new FakeClipboardService(), new ImmediateUiDispatcher(), new FakeDocumentHost());
+        selection.Set(new SavedConnection
+        {
+            Name = "c", Address = "h:1",
+            DescriptorSource = new DescriptorSourceConfig { Mode = DescriptorMode.Protoset }
+        });
+
+        var window = new Window { Content = new ServiceExplorerView { DataContext = vm }, Width = 320, Height = 520 };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        var texts = window.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text).ToList();
+        texts.ShouldContain("Protoset");
+        texts.ShouldContain(t => t != null && t.Contains("1 warning"));
+    });
 }

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Google.Protobuf.Reflection;
 using Grpc.Core;
 using GrpCurl.Net.DescriptorSources;
@@ -24,6 +25,7 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null)
         var metadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
         var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
         var warnings = new CollectingWarningSink();
+        var stopwatch = Stopwatch.StartNew();
 
         try
         {
@@ -50,9 +52,15 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null)
                 }
             }
 
+            var types = CollectTypes(session.Source.FileDescriptorSet);
+            stopwatch.Stop();
+
             var catalog = new ServiceCatalog(services, warnings.Messages)
             {
-                Types = CollectTypes(session.Source.FileDescriptorSet)
+                Types = types,
+                FileCount = session.Source.FileDescriptorSet?.File.Count ?? 0,
+                SymbolCount = services.Sum(s => 1 + s.Methods.Count) + types.Count,
+                LoadDuration = stopwatch.Elapsed
             };
 
             return DescriptorLoadResult.Success(catalog);

@@ -27,5 +27,14 @@ public sealed record ServiceCatalog(IReadOnlyList<ServiceEntry> Services, IReadO
     /// <summary>All message and enum types in the active set, grouped-by-package material for the Types branch (FR-022).</summary>
     public IReadOnlyList<TypeEntry> Types { get; init; } = [];
 
+    /// <summary>Descriptor files in the loaded set (FR-048 load metadata).</summary>
+    public int FileCount { get; init; }
+
+    /// <summary>Resolved symbols — services + methods + message/enum types (FR-048).</summary>
+    public int SymbolCount { get; init; }
+
+    /// <summary>Wall-clock time the descriptor load/compile took (FR-048).</summary>
+    public TimeSpan LoadDuration { get; init; }
+
     public static ServiceCatalog Empty { get; } = new([], []);
 }

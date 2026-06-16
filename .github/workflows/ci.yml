@@ -38,7 +38,7 @@ jobs:
       # protoc lets the proto-source tests (CLI --proto + Studio Proto descriptor mode) actually run
       # on every OS instead of skipping; without it the proto compilation path gets no CI coverage.
       - name: Setup protoc
-        uses: arduino/setup-protoc@v3
+        uses: arduino/setup-protoc@c65c819552d16ad3c9b72d9dfd5ba5237b9c906b # v3.0.0
         with:
           version: "28.3"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -110,7 +110,7 @@ jobs:
 
       # Run (not skip) the proto-source tests under coverage too.
       - name: Setup protoc
-        uses: arduino/setup-protoc@v3
+        uses: arduino/setup-protoc@c65c819552d16ad3c9b72d9dfd5ba5237b9c906b # v3.0.0
         with:
           version: "28.3"
           repo-token: ${{ secrets.GITHUB_TOKEN }}

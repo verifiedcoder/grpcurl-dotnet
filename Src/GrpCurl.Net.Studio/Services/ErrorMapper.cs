@@ -50,6 +50,10 @@ internal static class ErrorMapper
     public static ErrorModel FromInternal(string message, ErrorContext ctx)
         => FromLocal(ErrorCategoryKind.Internal, ErrorCategory.Internal, exitCode: 70, statusName: "Error", message, ctx);
 
+    /// <summary>A streaming terminal status (already decoded) → the rich error model.</summary>
+    public static ErrorModel FromStreamStatus(int code, string statusName, string detail, StatusDetails? rich, ErrorContext ctx)
+        => FromStatus(code, statusName, detail, rich, ctx);
+
     private static ErrorModel FromStatus(int code, string statusName, string detail, StatusDetails? rich, ErrorContext ctx)
     {
         var severity = StatusSeverityMap.FromCode(code);

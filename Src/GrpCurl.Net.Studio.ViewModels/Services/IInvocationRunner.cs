@@ -12,4 +12,16 @@ namespace GrpCurl.Net.Studio.ViewModels.Services;
 public interface IInvocationRunner
 {
     Task<InvocationResultModel> InvokeUnaryAsync(InvocationRequestModel request, CancellationToken cancellationToken);
+
+    /// <summary>
+    ///     Drives a streaming RPC and yields UI-model events (FR-080..084). Request bodies are fed as
+    ///     JSON strings via <paramref name="requestJson" /> (the composer's channel; a single-element
+    ///     source for server-streaming). Each yielded <see cref="StreamEventModel" /> is a log row.
+    ///     User cancellation surfaces as <see cref="OperationCanceledException" /> after already-yielded
+    ///     rows are preserved.
+    /// </summary>
+    IAsyncEnumerable<StreamEventModel> InvokeStreamingAsync(
+        StreamRequestModel request,
+        IAsyncEnumerable<string> requestJson,
+        CancellationToken cancellationToken);
 }

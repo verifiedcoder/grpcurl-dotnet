@@ -12,11 +12,11 @@ using System.Security.Cryptography.X509Certificates;
 namespace GrpCurl.Net.Studio.Conformance;
 
 /// <summary>
-///     Executes one unary <see cref="ClientCompatRequest" /> by driving the Studio
+///     Executes one <see cref="ClientCompatRequest" /> by driving the Studio
 ///     <see cref="IInvocationService" /> — the exact invoke path the app uses — so a passing suite
-///     certifies the desktop application's invocation path. The channel, method resolution, header
-///     parsing, and request unpacking mirror the CLI adapter; the single difference is the call
-///     itself. Unary only (E1.4); streaming arrives with E2.1.
+///     certifies the desktop application's invocation path. Unary and server-streaming are routed
+///     here (E2.1 PR-A); client/duplex arrive with PR-B. Channel, method resolution, header parsing,
+///     and request unpacking mirror the CLI adapter; only the invoke calls differ.
 /// </summary>
 internal static class TestCaseRunner
 {
@@ -27,11 +27,6 @@ internal static class TestCaseRunner
     public static async Task<ClientResponseResult> RunAsync(ClientCompatRequest request)
     {
         Validate(request);
-
-        if (request.StreamType is not (StreamType.Unary or StreamType.Unspecified))
-        {
-            throw new ArgumentException($"The Studio conformance adapter is unary-only; got '{request.StreamType}'.");
-        }
 
         var method = ResolveMethod(request);
 
@@ -44,11 +39,22 @@ internal static class TestCaseRunner
             ? DateTime.UtcNow.AddMilliseconds(request.TimeoutMs)
             : null;
 
-        // For unary, the send side closes implicitly when the call is issued, so "after close-send"
-        // cancellation is armed once the request is on its way.
-        var allSent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        ScheduleCancellation(request, allSent, cts);
+        var context = new StreamContext();
+        ScheduleAfterCloseSendCancellation(request, context, cts);
 
+        return request.StreamType switch
+        {
+            StreamType.Unary or StreamType.Unspecified => await RunUnaryAsync(request, method, channel, metadata, deadline, context, cts),
+            StreamType.ServerStream => await RunServerStreamAsync(request, method, channel, metadata, deadline, context, cts),
+            _ => throw new ArgumentException(
+                $"The Studio conformance adapter does not yet support '{request.StreamType}' (client/duplex arrive with E2.1 PR-B).")
+        };
+    }
+
+    private static async Task<ClientResponseResult> RunUnaryAsync(
+        ClientCompatRequest request, MethodDescriptor method, GrpcChannel channel,
+        Metadata metadata, DateTime? deadline, StreamContext context, CancellationTokenSource cts)
+    {
         var message = SingleRequestMessage(request, method);
 
         if (request.RequestDelayMs > 0)
@@ -56,8 +62,10 @@ internal static class TestCaseRunner
             await Task.Delay((int)request.RequestDelayMs);
         }
 
+        // The single request is sent implicitly when the call is issued, which closes the send side.
+        context.AllSent.TrySetResult();
+
         var result = new ClientResponseResult();
-        allSent.TrySetResult();
 
         try
         {
@@ -71,10 +79,7 @@ internal static class TestCaseRunner
             }
             else
             {
-                // Reconstruct an RpcException carrying the captured trailers so the shared
-                // ResultBuilder decodes rich google.rpc.Status details identically to the CLI.
-                var status = new Status((StatusCode)outcome.Status.Code, outcome.Status.Detail);
-                ResultBuilder.ApplyError(result, new RpcException(status, outcome.ResponseTrailers ?? []));
+                ResultBuilder.ApplyError(result, Reconstruct(outcome.Status, outcome.ResponseTrailers));
 
                 if (result.ResponseHeaders.Count == 0)
                 {
@@ -88,6 +93,76 @@ internal static class TestCaseRunner
         }
 
         return result;
+    }
+
+    private static async Task<ClientResponseResult> RunServerStreamAsync(
+        ClientCompatRequest request, MethodDescriptor method, GrpcChannel channel,
+        Metadata metadata, DateTime? deadline, StreamContext context, CancellationTokenSource cts)
+    {
+        var message = SingleRequestMessage(request, method);
+
+        if (request.RequestDelayMs > 0)
+        {
+            await Task.Delay((int)request.RequestDelayMs);
+        }
+
+        context.AllSent.TrySetResult();
+
+        var result = new ClientResponseResult();
+        var afterNumResponses = AfterNumResponses(request);
+        var received = 0u;
+
+        try
+        {
+            await foreach (var ev in Invocation.InvokeStreamingAsync(channel, method, Single(message), metadata, deadline, cts.Token))
+            {
+                switch (ev)
+                {
+                    case HeadersReceived headers:
+                        ResultBuilder.AddHeaders(result.ResponseHeaders, headers.Headers);
+                        break;
+
+                    case MessageReceived msg:
+                        ResultBuilder.AddPayload(result.Payloads, msg.Message, method);
+                        received++;
+                        if (afterNumResponses > 0 && received >= afterNumResponses)
+                        {
+                            cts.Cancel();
+                        }
+
+                        break;
+
+                    case StatusReceived status:
+                        if (status.Status.Code == 0)
+                        {
+                            ResultBuilder.AddHeaders(result.ResponseTrailers, status.Trailers);
+                        }
+                        else
+                        {
+                            ResultBuilder.ApplyError(result, Reconstruct(status.Status, status.Trailers));
+                        }
+
+                        break;
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            ResultBuilder.ApplyCanceled(result);
+        }
+
+        return result;
+    }
+
+    // Reconstruct an RpcException carrying the captured trailers so the shared ResultBuilder decodes
+    // rich google.rpc.Status details identically to the CLI.
+    private static RpcException Reconstruct(InvocationStatus status, Metadata? trailers)
+        => new(new Status((StatusCode)status.Code, status.Detail), trailers ?? []);
+
+    private static async IAsyncEnumerable<IMessage> Single(IMessage message)
+    {
+        yield return message;
+        await Task.CompletedTask;
     }
 
     private static void Validate(ClientCompatRequest request)
@@ -145,7 +220,6 @@ internal static class TestCaseRunner
 
         var options = new GrpcChannelFactory.ChannelOptions
         {
-            // No TLS cert means H2C: the factory dials http:// with HTTP/2 prior knowledge.
             Plaintext = !useTls,
             CaCertPem = useTls ? request.ServerTlsCert.ToStringUtf8() : null,
             ClientCertPem = request.ClientTlsCreds is { Cert.IsEmpty: false }
@@ -154,7 +228,6 @@ internal static class TestCaseRunner
             ClientKeyPem = request.ClientTlsCreds is { Key.IsEmpty: false }
                 ? request.ClientTlsCreds.Key.ToStringUtf8()
                 : null,
-            // The runner's certificates are ephemeral with no CRL/OCSP endpoints.
             RevocationMode = useTls ? X509RevocationMode.NoCheck : null,
             MaxReceiveMessageSize = request.MessageReceiveLimit > 0 ? (int)request.MessageReceiveLimit : null
         };
@@ -178,14 +251,13 @@ internal static class TestCaseRunner
 
         if (request.Compression == Compression.Gzip)
         {
-            // Grpc.Net.Client special-cases this key: it gzip-compresses request messages.
             metadata.Add("grpc-internal-encoding-request", "gzip");
         }
 
         return metadata;
     }
 
-    private static void ScheduleCancellation(ClientCompatRequest request, TaskCompletionSource allSent, CancellationTokenSource cts)
+    private static void ScheduleAfterCloseSendCancellation(ClientCompatRequest request, StreamContext context, CancellationTokenSource cts)
     {
         if (request.Cancel is null)
         {
@@ -208,7 +280,7 @@ internal static class TestCaseRunner
         {
             try
             {
-                await allSent.Task.ConfigureAwait(false);
+                await context.AllSent.Task.ConfigureAwait(false);
                 await Task.Delay(delayMs).ConfigureAwait(false);
                 cts.Cancel();
             }
@@ -219,12 +291,17 @@ internal static class TestCaseRunner
         });
     }
 
+    private static uint AfterNumResponses(ClientCompatRequest request) =>
+        request.Cancel?.CancelTimingCase == ClientCompatRequest.Types.Cancel.CancelTimingOneofCase.AfterNumResponses
+            ? request.Cancel.AfterNumResponses
+            : 0;
+
     private static IMessage SingleRequestMessage(ClientCompatRequest request, MethodDescriptor method)
     {
         if (request.RequestMessages.Count != 1)
         {
             throw new ArgumentException(
-                $"Unary requires exactly one request message, got {request.RequestMessages.Count}.");
+                $"This shape requires exactly one request message, got {request.RequestMessages.Count}.");
         }
 
         return UnpackToDynamic(request.RequestMessages[0], method.InputType);
@@ -248,5 +325,11 @@ internal static class TestCaseRunner
         message.MergeFrom(input);
 
         return message;
+    }
+
+    /// <summary>Streaming bookkeeping (PR-A: send-close signalling; the full-duplex gates land in PR-B).</summary>
+    private sealed class StreamContext
+    {
+        public readonly TaskCompletionSource AllSent = new(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 }

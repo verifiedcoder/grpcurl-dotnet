@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.Studio.ViewModels.Explorer;
+using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Descriptors;
 using GrpCurl.Net.Studio.ViewModels.Services;
 
@@ -21,6 +22,8 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
     private readonly IClipboardService _clipboard;
     private readonly IUiDispatcher _dispatcher;
     private readonly IDocumentHost _documentHost;
+    private readonly IProtocService? _protoc;
+    private readonly ConsoleViewModel? _console;
 
     private ServiceCatalog? _catalog;
     private CancellationTokenSource? _loadCts;
@@ -44,21 +47,43 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
     [ObservableProperty]
     private MethodNodeViewModel? _selectedMethod;
 
+    /// <summary>The active descriptor source kind, e.g. "Server reflection" / "Protoset" / "Proto (protoc)" (FR-040/048).</summary>
+    [ObservableProperty]
+    private string? _sourceKind;
+
+    /// <summary>One-line load metadata: file/symbol counts + load duration (FR-048).</summary>
+    [ObservableProperty]
+    private string? _sourceSummary;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(LastRefreshedText))]
+    private DateTimeOffset? _lastRefreshed;
+
+    /// <summary>FR-043: the protoc binary in use (resolved path + version), shown when the source is Proto.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasProtocDetail))]
+    private string? _protocDetail;
+
     public ServiceExplorerViewModel(
         IDescriptorService descriptors,
         IConnectionSelection selection,
         IClipboardService clipboard,
         IUiDispatcher dispatcher,
-        IDocumentHost documentHost)
+        IDocumentHost documentHost,
+        IProtocService? protoc = null,
+        ConsoleViewModel? console = null)
     {
         _descriptors = descriptors;
         _selection = selection;
         _clipboard = clipboard;
         _dispatcher = dispatcher;
         _documentHost = documentHost;
+        _protoc = protoc;
+        _console = console;
 
         Services = [];
         TypePackages = [];
+        Warnings = [];
         _selection.CurrentChanged += OnConnectionChanged;
 
         if (_selection.Current is not null)
@@ -73,6 +98,17 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
 
     /// <summary>The Types branch: message/enum types grouped by package (FR-022).</summary>
     public ObservableCollection<TypePackageNodeViewModel> TypePackages { get; }
+
+    /// <summary>Non-fatal descriptor-load warnings (FR-046); also mirrored to the console.</summary>
+    public ObservableCollection<string> Warnings { get; }
+
+    public int WarningCount => Warnings.Count;
+
+    public bool HasWarnings => Warnings.Count > 0;
+
+    public string? LastRefreshedText => LastRefreshed is { } t ? $"Refreshed {t:HH:mm:ss}" : null;
+
+    public bool HasProtocDetail => ProtocDetail is not null;
 
     public bool IsNoConnection => State == ExplorerState.NoConnection;
     public bool IsLoading => State == ExplorerState.Loading;
@@ -132,6 +168,7 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
             {
                 Services.Clear();
                 ClearError();
+                ClearSourceMetadata();
                 State = ExplorerState.NoConnection;
             });
             return;
@@ -144,6 +181,7 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
         {
             Services.Clear();
             ClearError();
+            ClearSourceMetadata();
             State = ExplorerState.Loading;
         });
 
@@ -181,7 +219,50 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
 
         _catalog = result.Catalog;
         ApplyFilter();
+        ApplySourceMetadata(_catalog!);
         State = _catalog!.Services.Count == 0 ? ExplorerState.Empty : ExplorerState.Loaded;
+    }
+
+    /// <summary>Populates the explorer-header source badge + warnings strip from a loaded catalog (FR-040/043/046/048).</summary>
+    private void ApplySourceMetadata(ServiceCatalog catalog)
+    {
+        var mode = _selection.Current?.DescriptorSource.Mode ?? DescriptorMode.Reflection;
+        SourceKind = mode switch
+        {
+            DescriptorMode.Protoset => "Protoset",
+            DescriptorMode.Proto => "Proto (protoc)",
+            _ => "Server reflection"
+        };
+        SourceSummary = $"{catalog.FileCount} file(s) · {catalog.SymbolCount} symbol(s) · {catalog.LoadDuration.TotalMilliseconds:0} ms";
+        LastRefreshed = DateTimeOffset.Now;
+
+        Warnings.Clear();
+        foreach (var warning in catalog.Warnings)
+        {
+            Warnings.Add(warning);
+            _console?.Append($"[descriptor] {warning}"); // FR-046 mirror to the bottom console
+        }
+
+        OnPropertyChanged(nameof(WarningCount));
+        OnPropertyChanged(nameof(HasWarnings));
+
+        // FR-043: surface the protoc binary in use for proto sources.
+        ProtocDetail = null;
+        if (mode == DescriptorMode.Proto)
+        {
+            _ = UpdateProtocDetailAsync();
+        }
+    }
+
+    private async Task UpdateProtocDetailAsync()
+    {
+        if (_protoc is null)
+        {
+            return;
+        }
+
+        var info = await _protoc.DetectAsync();
+        await _dispatcher.InvokeAsync(() => ProtocDetail = info.Found ? $"protoc: {info.Message}" : null);
     }
 
     partial void OnFilterTextChanged(string value) => ApplyFilter();
@@ -244,5 +325,16 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
         ErrorMessage = null;
         ErrorHint = null;
         ReflectionUnavailable = false;
+    }
+
+    private void ClearSourceMetadata()
+    {
+        SourceKind = null;
+        SourceSummary = null;
+        LastRefreshed = null;
+        ProtocDetail = null;
+        Warnings.Clear();
+        OnPropertyChanged(nameof(WarningCount));
+        OnPropertyChanged(nameof(HasWarnings));
     }
 }

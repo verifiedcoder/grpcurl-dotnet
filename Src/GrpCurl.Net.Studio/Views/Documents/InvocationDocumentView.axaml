@@ -408,16 +408,25 @@
                 </ListBox.ItemTemplate>
             </ListBox>
 
-            <!-- Footer: counters + truncation notice + final status pill (FR-085/089) -->
+            <!-- Footer: capture/export + counters + truncation notice + final status pill (FR-085/086/087/089) -->
             <Border Grid.Row="2" Padding="10,5" BorderBrush="{DynamicResource Divider}" BorderThickness="0,1,0,0">
                 <DockPanel>
-                    <Border DockPanel.Dock="Right" CornerRadius="3" Padding="6,1" VerticalAlignment="Center"
+                    <Border DockPanel.Dock="Right" CornerRadius="3" Padding="6,1" VerticalAlignment="Center" Margin="8,0,0,0"
                             IsVisible="{Binding StatusText, Converter={x:Static ObjectConverters.IsNotNull}}"
                             Background="{Binding Severity, Converter={StaticResource SeverityBrush}}">
                         <TextBlock Text="{Binding StatusText}" Foreground="White" FontWeight="SemiBold" FontSize="12"
                                    AutomationProperties.Name="Stream status" />
                     </Border>
-                    <StackPanel Orientation="Horizontal" Spacing="16">
+                    <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <Button Content="Export…" Command="{Binding ExportStreamCommand}" AutomationProperties.Name="Export stream" />
+                        <Button Content="Capture to disk" Command="{Binding ToggleCaptureCommand}"
+                                AutomationProperties.Name="Capture to disk" />
+                        <TextBlock Text="capturing" VerticalAlignment="Center" FontSize="11" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource Status.Success}" IsVisible="{Binding IsCapturing}" />
+                        <TextBlock VerticalAlignment="Center" FontSize="11" Opacity="0.75" IsVisible="{Binding IsCapturing}">
+                            <Run Text="{Binding CapturePath}" />
+                            <Run Text=" (" /><Run Text="{Binding CaptureBytes}" /><Run Text=" bytes)" />
+                        </TextBlock>
                         <TextBlock VerticalAlignment="Center">
                             <Run Text="received" Foreground="{DynamicResource Status.Neutral}" />
                             <Run Text="{Binding Log.TotalReceived}" FontWeight="SemiBold" />

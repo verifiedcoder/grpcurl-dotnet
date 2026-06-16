@@ -55,6 +55,32 @@ public sealed class InvocationDocumentViewModelTests
     private static StreamEventModel Ev(StreamEventKind kind, long index = -1, InvocationStatusModel? status = null)
         => new(kind, index, DateTimeOffset.Now, 0, kind.ToString(), Status: status);
 
+    private static InvocationDocumentViewModel CreateStreamingWithCapture(
+        out FakeInvocationRunner runner, out FakeFilePickerService picker, out StringWriter sink, int ringCapacity = 10)
+    {
+        var captured = new FakeInvocationRunner();
+        var captPicker = new FakeFilePickerService();
+        var captSink = new StringWriter();
+        runner = captured;
+        picker = captPicker;
+        sink = captSink;
+        var descriptors = new FakeDescriptorService
+        {
+            OnDescribe = (_, symbol, _) => Task.FromResult(DescribeResult.Success(
+                new MethodDescription(symbol, "Go", "f.proto", StreamingShape.ServerStreaming,
+                    new TypeRef("pkg.In", true), new TypeRef("pkg.Out", true), new TypeRef("pkg.Svc", true), "{}")))
+        };
+
+        return new InvocationDocumentViewModel(
+            Conn(), "pkg.Svc/Go", "{}", captured, descriptors, new ImmediateUiDispatcher(),
+            new FakeClipboardService(), new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator(),
+            captPicker, ringCapacity, _ => captSink);
+    }
+
+    private static StreamEventModel Msg(long index)
+        => new(StreamEventKind.MessageReceived, index, DateTimeOffset.Now, 0, $"msg {index}",
+            RawMessage: new Google.Protobuf.WellKnownTypes.Empty());
+
     private static ErrorModel SampleError(int code = 5, string name = "NotFound", string headline = "missing") => new(
         ErrorCategoryKind.Rpc, code, name, StatusSeverityMap.FromCode(code), headline,
         Hint: null, Address: "h:1", Method: "pkg.Svc/Go",
@@ -386,5 +412,52 @@ public sealed class InvocationDocumentViewModelTests
         yield return new StreamEventModel(StreamEventKind.MessageReceived, 0, DateTimeOffset.Now, 0, "msg");
         await Task.Yield();
         throw new OperationCanceledException();
+    }
+
+    [Fact]
+    public async Task Export_stream_writes_the_retained_rows_as_ndjson()
+    {
+        var doc = CreateStreamingWithCapture(out var runner, out var picker, out var sink);
+        runner.StreamEvents = [Msg(0), Msg(1), Ev(StreamEventKind.Status, status: new InvocationStatusModel(0, "OK", string.Empty))];
+        await doc.StartStreamCommand.ExecuteAsync(null);
+        picker.SaveResult = "/tmp/export.ndjson";
+
+        await doc.ExportStreamCommand.ExecuteAsync(null);
+
+        var lines = sink.ToString().Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        lines.Length.ShouldBe(3); // two messages + the status row
+        lines[0].ShouldContain("\"kind\":\"message\"");
+    }
+
+    [Fact]
+    public async Task Capture_writes_every_event_including_rows_evicted_from_the_ring()
+    {
+        var doc = CreateStreamingWithCapture(out var runner, out var picker, out var sink, ringCapacity: 2);
+        picker.SaveResult = "/tmp/capture.ndjson";
+        runner.StreamEvents = [Msg(0), Msg(1), Msg(2), Msg(3), Ev(StreamEventKind.Status, status: new InvocationStatusModel(0, "OK", string.Empty))];
+
+        await doc.ToggleCaptureCommand.ExecuteAsync(null);
+        doc.IsCapturing.ShouldBeTrue();
+
+        await doc.StartStreamCommand.ExecuteAsync(null);
+
+        doc.Log.Rows.Count.ShouldBe(2);            // ring kept only the last 2
+        doc.Log.TotalReceived.ShouldBe(4);
+        var lines = sink.ToString().Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        lines.Length.ShouldBe(5);                  // capture lost nothing (4 messages + status)
+        doc.CaptureBytes.ShouldBeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task Toggling_capture_off_stops_capturing()
+    {
+        var doc = CreateStreamingWithCapture(out _, out var picker, out _);
+        picker.SaveResult = "/tmp/c.ndjson";
+
+        await doc.ToggleCaptureCommand.ExecuteAsync(null);
+        doc.IsCapturing.ShouldBeTrue();
+
+        await doc.ToggleCaptureCommand.ExecuteAsync(null);
+        doc.IsCapturing.ShouldBeFalse();
     }
 }

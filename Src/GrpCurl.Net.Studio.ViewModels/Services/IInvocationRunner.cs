@@ -27,4 +27,7 @@ public interface IInvocationRunner
 
     /// <summary>Pretty-prints a retained streaming message on demand (FR-081 lazy formatting).</summary>
     string FormatMessage(Google.Protobuf.IMessage message);
+
+    /// <summary>Compact single-line JSON for a message (FR-087 NDJSON parity).</summary>
+    string FormatMessageCompact(Google.Protobuf.IMessage message);
 }

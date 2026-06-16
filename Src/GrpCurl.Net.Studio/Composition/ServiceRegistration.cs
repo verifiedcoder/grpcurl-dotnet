@@ -23,7 +23,7 @@ internal static class ServiceRegistration
         services.AddSingleton<ISettingsStore, JsonSettingsStore>();
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<IDialogService, DialogService>();
-        services.AddSingleton<IFilePickerService, NoopFilePickerService>();
+        services.AddSingleton<IFilePickerService, FilePickerService>();
         services.AddSingleton<IClipboardService, ClipboardService>();
         services.AddSingleton<ILauncherService, LauncherService>();
         services.AddSingleton<IProtocService, ProtocService>();

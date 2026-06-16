@@ -50,6 +50,12 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     [ObservableProperty]
     private string? _timingBytesText;
 
+    /// <summary>The verbose call transcript for the Raw tab (FR-111); header values are redacted (FR-112).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasRawTranscript))]
+    [NotifyCanExecuteChangedFor(nameof(CopyRawTranscriptCommand))]
+    private string? _rawTranscript;
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasError), nameof(HasErrorSuggestions), nameof(HasErrorDetails))]
     [NotifyCanExecuteChangedFor(nameof(RetryCommand), nameof(CopyErrorJsonCommand))]
@@ -235,6 +241,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
             ResponseTrailers.Clear();
             Timing.Clear();
             TimingBytesText = null;
+            RawTranscript = null;
         });
 
         try
@@ -428,6 +435,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         }
 
         AddTimingRows(result.Timing);
+        RawTranscript = result.Transcript is { } transcript ? VerboseTranscriptFormatter.Format(transcript) : null;
 
         Error = result.Error;
         Severity = result.Error?.Severity ?? StatusSeverityMap.FromCode(result.Status.Code);
@@ -466,6 +474,18 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     [RelayCommand]
     private async Task CopyAsCli()
         => await _clipboard.SetTextAsync(CliCommandBuilder.BuildCommand(BuildRequest(), CliDialect));
+
+    public bool HasRawTranscript => !string.IsNullOrEmpty(RawTranscript);
+
+    /// <summary>Copies the verbose transcript (FR-111); redaction already applied — no secret literals.</summary>
+    [RelayCommand(CanExecute = nameof(HasRawTranscript))]
+    private async Task CopyRawTranscript()
+    {
+        if (RawTranscript is not null)
+        {
+            await _clipboard.SetTextAsync(RawTranscript);
+        }
+    }
 
     /// <summary>FR-093: re-run the call that failed.</summary>
     [RelayCommand(CanExecute = nameof(HasError))]

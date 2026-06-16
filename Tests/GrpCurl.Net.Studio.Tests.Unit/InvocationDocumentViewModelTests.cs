@@ -147,6 +147,30 @@ public sealed class InvocationDocumentViewModelTests
     }
 
     [Fact]
+    public async Task A_verbose_transcript_populates_the_raw_tab()
+    {
+        var doc = Create(out var runner, out _, out var clipboard);
+        runner.Result = runner.Result with
+        {
+            Transcript = new VerboseTranscript(
+                "localhost:443", "edge",
+                RequestHeaders: [new MetadataItem("x-trace", "abc", false)],
+                ResponseHeaders: [], ResponseTrailers: [],
+                RequestMessages: 1, ResponseMessages: 1,
+                Status: new InvocationStatusModel(0, "OK", string.Empty))
+        };
+
+        await doc.InvokeCommand.ExecuteAsync(null);
+
+        doc.HasRawTranscript.ShouldBeTrue();
+        doc.RawTranscript!.ShouldContain("localhost:443");
+        doc.RawTranscript!.ShouldContain("x-trace: abc");
+
+        await doc.CopyRawTranscriptCommand.ExecuteAsync(null);
+        clipboard.Text.ShouldBe(doc.RawTranscript);
+    }
+
+    [Fact]
     public async Task Timing_rows_carry_each_phase_fraction_of_the_total()
     {
         var doc = Create(out var runner, out _, out _);

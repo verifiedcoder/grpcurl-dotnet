@@ -84,15 +84,30 @@ internal sealed partial class InvocationRunner(IInvocationService invocation, IT
                 RequestBytes: requestMessage.CalculateSize(),
                 ResponseBytes: outcome.Response?.CalculateSize() ?? 0);
 
+            var status = new InvocationStatusModel(outcome.Status.Code, outcome.Status.CodeName, outcome.Status.Detail);
+
+            // FR-111: capture the verbose transcript (resolved target/authority, sent + received headers,
+            // message counts, status) unconditionally — the Raw tab renders it on demand.
+            var transcript = new VerboseTranscript(
+                Target: connection.Address,
+                Authority: NullIfBlank(connection.Authority),
+                RequestHeaders: ToItems(callHeaders),
+                ResponseHeaders: ToItems(outcome.ResponseHeaders),
+                ResponseTrailers: ToItems(outcome.ResponseTrailers),
+                RequestMessages: 1,
+                ResponseMessages: outcome.Response is null ? 0 : 1,
+                Status: status);
+
             return new InvocationResultModel(
                 Ok: outcome.Ok,
                 ResponseJson: responseJson,
                 ResponseHeaders: ToItems(outcome.ResponseHeaders),
                 ResponseTrailers: ToItems(outcome.ResponseTrailers),
-                Status: new InvocationStatusModel(outcome.Status.Code, outcome.Status.CodeName, outcome.Status.Detail),
+                Status: status,
                 Timing: timing,
                 ErrorMessage: outcome.Ok ? null : NonEmpty(outcome.Status.Detail, outcome.Status.CodeName),
-                Error: outcome.Ok ? null : ErrorMapper.FromOutcome(outcome, ctx));
+                Error: outcome.Ok ? null : ErrorMapper.FromOutcome(outcome, ctx),
+                Transcript: transcript);
         }
         catch (OperationCanceledException)
         {

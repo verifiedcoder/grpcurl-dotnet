@@ -59,6 +59,22 @@
                 </StackPanel>
             </Grid>
 
+            <!-- TLS profile (FR-012/FR-030) — applies only under TLS -->
+            <StackPanel Spacing="4" IsEnabled="{Binding IsTlsProfileEnabled}">
+                <TextBlock Text="TLS profile" />
+                <Grid ColumnDefinitions="*,Auto,Auto">
+                    <ComboBox Grid.Column="0" ItemsSource="{Binding TlsProfiles}" SelectedItem="{Binding SelectedTlsProfile}"
+                              DisplayMemberBinding="{Binding Display}" HorizontalAlignment="Stretch"
+                              AutomationProperties.Name="TLS profile" />
+                    <Button Grid.Column="1" Content="New…" Margin="6,0,0,0" Command="{Binding NewProfileCommand}"
+                            IsVisible="{Binding CanManageProfiles}" AutomationProperties.Name="New TLS profile" />
+                    <Button Grid.Column="2" Content="Edit…" Margin="6,0,0,0" Command="{Binding EditProfileCommand}"
+                            IsVisible="{Binding CanManageProfiles}" AutomationProperties.Name="Edit TLS profile" />
+                </Grid>
+                <TextBlock FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                           Text="System default validates against OS roots. Custom CA / mTLS / skip-verify live in a profile." />
+            </StackPanel>
+
             <StackPanel Spacing="4">
                 <TextBlock Text="User-Agent" />
                 <TextBox Text="{Binding UserAgent}" AutomationProperties.Name="User agent" />

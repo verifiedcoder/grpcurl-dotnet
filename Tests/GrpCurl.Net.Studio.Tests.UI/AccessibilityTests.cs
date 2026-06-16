@@ -42,6 +42,9 @@ public sealed class AccessibilityTests(HeadlessSessionFixture fixture) : Headles
         var unnamed = window.GetVisualDescendants()
             .OfType<Control>()
             .Where(IsInteractive)
+            // Templated sub-parts (e.g. a ComboBox's PART_EditableTextBox) carry the parent's
+            // accessible name, not their own — only user-placed controls are required to be named.
+            .Where(control => control.TemplatedParent is null)
             .Where(control => string.IsNullOrWhiteSpace(EffectiveName(control)))
             .Select(Describe)
             .ToList();
@@ -62,6 +65,9 @@ public sealed class AccessibilityTests(HeadlessSessionFixture fixture) : Headles
         var unnamed = window.GetVisualDescendants()
             .OfType<Control>()
             .Where(IsInteractive)
+            // Templated sub-parts (e.g. a ComboBox's PART_EditableTextBox) carry the parent's
+            // accessible name, not their own — only user-placed controls are required to be named.
+            .Where(control => control.TemplatedParent is null)
             .Where(control => string.IsNullOrWhiteSpace(EffectiveName(control)))
             .Select(Describe)
             .ToList();

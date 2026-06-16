@@ -8,12 +8,47 @@ public enum TransportMode
 }
 
 /// <summary>
-///     How a connection discovers its schema. Phase 1 supports reflection only; protoset/proto
-///     sources arrive with E2.3.
+///     How a connection discovers its schema (CLI parity). When more than one is configured the
+///     effective source follows Core's <c>DescriptorSourceFactory</c> precedence: proto &gt; protoset
+///     &gt; reflection (FR-040).
 /// </summary>
 public enum DescriptorMode
 {
-    Reflection
+    /// <summary>Server reflection (default; CLI uses the address alone).</summary>
+    Reflection,
+
+    /// <summary>Pre-compiled <c>FileDescriptorSet</c> protoset file(s) (CLI <c>--protoset</c>).</summary>
+    Protoset,
+
+    /// <summary><c>.proto</c> files compiled via <c>protoc</c> (CLI <c>--proto</c> + <c>-I</c>).</summary>
+    Proto
+}
+
+/// <summary>
+///     A connection's descriptor-source configuration (SPEC-040 §3.2, FR-040..049). Cert/proto/protoset
+///     files are referenced <em>by path only</em>, never copied (SEC-016). All three path lists may be
+///     populated at once; Core picks the effective source by precedence.
+/// </summary>
+public sealed class DescriptorSourceConfig
+{
+    public DescriptorMode Mode { get; set; } = DescriptorMode.Reflection;
+
+    /// <summary>Ordered protoset file paths (CLI <c>--protoset</c>, repeatable).</summary>
+    public List<string> ProtosetPaths { get; set; } = [];
+
+    /// <summary>Ordered <c>.proto</c> file paths (CLI <c>--proto</c>, repeatable).</summary>
+    public List<string> ProtoFiles { get; set; } = [];
+
+    /// <summary>Ordered import directories passed to <c>protoc</c> (CLI <c>-I</c>/<c>--import-path</c>).</summary>
+    public List<string> ImportPaths { get; set; } = [];
+
+    public DescriptorSourceConfig Clone() => new()
+    {
+        Mode = Mode,
+        ProtosetPaths = [.. ProtosetPaths],
+        ProtoFiles = [.. ProtoFiles],
+        ImportPaths = [.. ImportPaths]
+    };
 }
 
 /// <summary>A single metadata header entry (name/value, with <c>-bin</c> binary marker).</summary>
@@ -70,7 +105,8 @@ public sealed class SavedConnection
     /// <summary>Headers sent only on server-reflection RPCs (CLI <c>--reflect-header</c>).</summary>
     public List<HeaderEntry> ReflectionHeaders { get; set; } = [];
 
-    public DescriptorMode DescriptorMode { get; set; } = DescriptorMode.Reflection;
+    /// <summary>Descriptor source: reflection (default), protoset file(s), or proto files + import paths (FR-040).</summary>
+    public DescriptorSourceConfig DescriptorSource { get; set; } = new();
 
     public string? Notes { get; set; }
 
@@ -91,7 +127,7 @@ public sealed class SavedConnection
             ReflectionHeaders = ReflectionHeaders
                 .Select(h => new HeaderEntry { Name = h.Name, Value = h.Value, IsBin = h.IsBin })
                 .ToList(),
-            DescriptorMode = DescriptorMode,
+            DescriptorSource = DescriptorSource.Clone(),
             Notes = Notes
         };
     }

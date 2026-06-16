@@ -29,6 +29,7 @@ internal sealed class ConnectionRegistry(ITlsProfileResolver? tlsResolver = null
             : await tlsResolver.ResolveAsync(connection, cancellationToken).ConfigureAwait(false);
         var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password);
         var metadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
+        var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
 
         using var deadlineCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         deadlineCts.CancelAfter(ProbeDeadline);
@@ -37,9 +38,9 @@ internal sealed class ConnectionRegistry(ITlsProfileResolver? tlsResolver = null
         {
             await using var session = await DescriptorSourceFactory.CreateAsync(
                 connection.Address,
-                protosetPaths: [],
-                protoFiles: [],
-                importPaths: [],
+                protosetPaths: protosets,
+                protoFiles: protos,
+                importPaths: imports,
                 channelOptions: options,
                 reflectionMetadata: metadata,
                 cancellationToken: deadlineCts.Token).ConfigureAwait(false);

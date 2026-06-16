@@ -21,6 +21,7 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
     private readonly IDialogService? _dialogService;
     private readonly ISecretStore? _secretStore;
     private readonly string _id;
+    private readonly DescriptorSourceConfig _descriptorSource;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(NameError))]
@@ -98,6 +99,9 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
         _name = c.Name;
         _address = c.Address;
         _isPlaintext = c.Transport == TransportMode.Plaintext;
+
+        // Round-tripped here in PR-A (plumbing); the descriptor-source editor section wires into it in PR-B.
+        _descriptorSource = c.DescriptorSource.Clone();
 
         TlsProfiles = [];
         RebuildProfileOptions(c.TlsProfileId);
@@ -273,7 +277,7 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
             .Where(h => !string.IsNullOrWhiteSpace(h.Name))
             .Select(h => h.ToEntry())
             .ToList(),
-        DescriptorMode = DescriptorMode.Reflection,
+        DescriptorSource = _descriptorSource.Clone(),
         Notes = NullIfBlank(Notes)
     };
 

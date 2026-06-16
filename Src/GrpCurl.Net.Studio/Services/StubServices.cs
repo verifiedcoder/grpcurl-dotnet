@@ -12,6 +12,12 @@ internal sealed class NoopFilePickerService : IFilePickerService
     public Task<string?> OpenFileAsync(string title, IReadOnlyList<string>? extensions = null, CancellationToken cancellationToken = default)
         => Task.FromResult<string?>(null);
 
+    public Task<IReadOnlyList<string>> OpenFilesAsync(string title, IReadOnlyList<string>? extensions = null, CancellationToken cancellationToken = default)
+        => Task.FromResult<IReadOnlyList<string>>([]);
+
+    public Task<string?> OpenFolderAsync(string title, CancellationToken cancellationToken = default)
+        => Task.FromResult<string?>(null);
+
     public Task<string?> SaveFileAsync(string title, string? suggestedName = null, IReadOnlyList<string>? extensions = null, CancellationToken cancellationToken = default)
         => Task.FromResult<string?>(null);
 }

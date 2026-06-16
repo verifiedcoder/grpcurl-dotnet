@@ -18,7 +18,7 @@ public sealed class ConnectionRegistryTests(StudioPlaintextServerFixture server)
         Name = "test",
         Address = address,
         Transport = TransportMode.Plaintext,
-        DescriptorMode = DescriptorMode.Reflection
+        DescriptorSource = new DescriptorSourceConfig()
     };
 
     [Fact]

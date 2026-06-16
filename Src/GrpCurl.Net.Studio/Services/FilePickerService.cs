@@ -30,6 +30,39 @@ internal sealed class FilePickerService : IFilePickerService
         return files.Count > 0 ? files[0].TryGetLocalPath() : null;
     }
 
+    public async Task<IReadOnlyList<string>> OpenFilesAsync(string title, IReadOnlyList<string>? extensions = null, CancellationToken cancellationToken = default)
+    {
+        if (TopLevel() is not { StorageProvider: { } storage })
+        {
+            return [];
+        }
+
+        var files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = title,
+            AllowMultiple = true,
+            FileTypeFilter = FileTypes(extensions)
+        });
+
+        return files.Select(f => f.TryGetLocalPath()).Where(p => p is not null).Select(p => p!).ToList();
+    }
+
+    public async Task<string?> OpenFolderAsync(string title, CancellationToken cancellationToken = default)
+    {
+        if (TopLevel() is not { StorageProvider: { } storage })
+        {
+            return null;
+        }
+
+        var folders = await storage.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = title,
+            AllowMultiple = false
+        });
+
+        return folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
+    }
+
     public async Task<string?> SaveFileAsync(string title, string? suggestedName = null, IReadOnlyList<string>? extensions = null, CancellationToken cancellationToken = default)
     {
         if (TopLevel() is not { StorageProvider: { } storage })

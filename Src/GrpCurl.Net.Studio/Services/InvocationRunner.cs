@@ -32,6 +32,7 @@ internal sealed partial class InvocationRunner(IInvocationService invocation, IT
         var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
         var options = ConnectionChannelMapper.ToChannelOptions(connection, ParseSizeOrNull(request.MaxMessageSize), profile, password);
         var reflectionMetadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
+        var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
         var deadline = ParseDeadline(request.Deadline);
         var ctx = new ErrorContext(request.MethodSymbol, connection.Address, DeadlineSet: deadline is not null);
 
@@ -40,7 +41,7 @@ internal sealed partial class InvocationRunner(IInvocationService invocation, IT
             var resolve = Stopwatch.StartNew();
 
             await using var session = await DescriptorSourceFactory.CreateAsync(
-                connection.Address, [], [], [],
+                connection.Address, protosets, protos, imports,
                 channelOptions: options,
                 reflectionMetadata: reflectionMetadata,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -110,11 +111,12 @@ internal sealed partial class InvocationRunner(IInvocationService invocation, IT
         var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
         var options = ConnectionChannelMapper.ToChannelOptions(connection, ParseSizeOrNull(request.MaxMessageSize), profile, password);
         var reflectionMetadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
+        var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
         var deadline = ParseDeadline(request.Deadline);
         var ctx = new ErrorContext(request.MethodSymbol, connection.Address, DeadlineSet: deadline is not null);
 
         await using var session = await DescriptorSourceFactory.CreateAsync(
-            connection.Address, [], [], [],
+            connection.Address, protosets, protos, imports,
             channelOptions: options,
             reflectionMetadata: reflectionMetadata,
             cancellationToken: cancellationToken).ConfigureAwait(false);

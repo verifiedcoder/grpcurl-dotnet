@@ -41,7 +41,7 @@ public sealed class MTlsProfileTests(StudioMTlsServerFixture server)
             ServerName = "localhost",
             ConnectTimeout = "10s",
             TlsProfileId = profile.Id,
-            DescriptorMode = DescriptorMode.Reflection
+            DescriptorSource = new DescriptorSourceConfig()
         };
 
         return (new ConnectionRegistry(resolver), new InvocationRunner(new InvocationService(), resolver), connection);

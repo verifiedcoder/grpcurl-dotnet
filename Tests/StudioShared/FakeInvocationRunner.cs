@@ -51,6 +51,8 @@ public sealed class FakeInvocationRunner : IInvocationRunner
 
     public string FormatMessage(Google.Protobuf.IMessage message) => message.ToString() ?? string.Empty;
 
+    public string FormatMessageCompact(Google.Protobuf.IMessage message) => message.ToString() ?? "{}";
+
     private async IAsyncEnumerable<StreamEventModel> Canned(
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken)
     {

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.Studio.ViewModels.Connections;
@@ -28,6 +29,8 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     private readonly IRequestValidator _validator;
     private readonly IFilePickerService? _filePicker;
     private readonly StreamDispatchPump _pump = new();
+    private readonly Func<string, TextWriter> _writerFactory;
+    private StreamCaptureWriter? _capture;
     private CancellationTokenSource? _validationCts;
 
     [ObservableProperty]
@@ -50,6 +53,15 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
 
     [ObservableProperty]
     private StatusSeverity _severity = StatusSeverity.Ok;
+
+    [ObservableProperty]
+    private bool _isCapturing;
+
+    [ObservableProperty]
+    private string? _capturePath;
+
+    [ObservableProperty]
+    private long _captureBytes;
 
     [ObservableProperty]
     private string _requestJson = string.Empty;
@@ -89,7 +101,8 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         ILauncherService launcher,
         IRequestValidator validator,
         IFilePickerService? filePicker = null,
-        int ringCapacity = 10_000)
+        int ringCapacity = 10_000,
+        Func<string, TextWriter>? writerFactory = null)
     {
         Connection = connection;
         MethodSymbol = methodSymbol;
@@ -101,6 +114,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         _launcher = launcher;
         _validator = validator;
         _filePicker = filePicker;
+        _writerFactory = writerFactory ?? (path => new StreamWriter(path));
 
         Title = ShortName(methodSymbol);
         Log = new StreamLogViewModel(ringCapacity, _runner.FormatMessage);
@@ -252,7 +266,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         try
         {
             await _pump.RunAsync(
-                _runner.InvokeStreamingAsync(BuildStreamRequest(), requestJson, cancellationToken),
+                CaptureTap(_runner.InvokeStreamingAsync(BuildStreamRequest(), requestJson, cancellationToken), cancellationToken),
                 batch => _dispatcher.InvokeAsync(() => ApplyStreamBatch(batch)),
                 cancellationToken);
 
@@ -289,6 +303,11 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     {
         Log.Append(batch);
 
+        if (_capture is not null)
+        {
+            CaptureBytes = _capture.BytesWritten; // live capture-size readout (FR-086)
+        }
+
         foreach (var ev in batch)
         {
             if (ev.Kind != StreamEventKind.Status)
@@ -300,6 +319,75 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
             Severity = ev.Error?.Severity ?? (ev.Status is { } s ? StatusSeverityMap.FromCode(s.Code) : StatusSeverity.Ok);
             StatusIsError = ev.Status is { Code: not 0 };
             StatusText = ev.Status?.CodeName;
+        }
+    }
+
+    // FR-086: spill every event to NDJSON as it arrives (before the ring buffer), if capture is on.
+    private async IAsyncEnumerable<StreamEventModel> CaptureTap(
+        IAsyncEnumerable<StreamEventModel> source, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await foreach (var ev in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            if (_capture is { } capture)
+            {
+                await capture.WriteAsync(ev).ConfigureAwait(false);
+            }
+
+            yield return ev;
+        }
+    }
+
+    /// <summary>FR-086: toggle NDJSON capture-to-disk (available before and during a stream).</summary>
+    [RelayCommand]
+    private async Task ToggleCapture()
+    {
+        if (IsCapturing)
+        {
+            _capture?.Dispose();
+            _capture = null;
+            IsCapturing = false;
+            return;
+        }
+
+        if (_filePicker is null)
+        {
+            return;
+        }
+
+        var path = await _filePicker.SaveFileAsync("Capture stream to disk", "capture.ndjson", [".ndjson"]);
+
+        if (path is null)
+        {
+            return;
+        }
+
+        _capture = new StreamCaptureWriter(_writerFactory(path), _runner.FormatMessageCompact);
+        CapturePath = path;
+        CaptureBytes = 0;
+        IsCapturing = true;
+    }
+
+    /// <summary>FR-087: export the retained event rows as an NDJSON file.</summary>
+    [RelayCommand]
+    private async Task ExportStream()
+    {
+        if (_filePicker is null)
+        {
+            return;
+        }
+
+        var path = await _filePicker.SaveFileAsync("Export stream", "stream.ndjson", [".ndjson", ".json"]);
+
+        if (path is null)
+        {
+            return;
+        }
+
+        await using var writer = _writerFactory(path);
+
+        foreach (var row in Log.Rows)
+        {
+            await writer.WriteLineAsync(NdjsonStreamFormatter.Format(row.Event, _runner.FormatMessageCompact));
         }
     }
 

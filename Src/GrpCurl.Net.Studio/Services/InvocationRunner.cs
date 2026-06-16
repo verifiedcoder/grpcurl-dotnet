@@ -193,6 +193,8 @@ internal sealed partial class InvocationRunner(IInvocationService invocation) : 
 
     public string FormatMessage(IMessage message) => invocation.MessageToJson(message, includeDefaults: false, indent: true);
 
+    public string FormatMessageCompact(IMessage message) => invocation.MessageToJson(message, includeDefaults: false, indent: false);
+
     private string Preview(IMessage message)
     {
         var json = invocation.MessageToJson(message, includeDefaults: false, indent: false).ReplaceLineEndings(" ");

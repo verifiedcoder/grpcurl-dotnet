@@ -4,6 +4,30 @@
              x:Class="GrpCurl.Net.Studio.Views.Connections.ConnectionEditorView"
              x:DataType="vm:ConnectionEditorViewModel"
              Width="460">
+    <UserControl.Resources>
+        <!-- One ordered descriptor-path row: path + size/warning, with reorder + remove. Keyed (not
+             implicit) so it can be shared by the protoset / proto / import-path lists. -->
+        <DataTemplate x:Key="DescriptorRowTemplate" x:DataType="vm:DescriptorPathRow">
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto" Margin="0,2">
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="{Binding Display}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding SizeText}" FontSize="11" IsVisible="{Binding HasSize}"
+                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                    <TextBlock Text="{Binding Warning}" FontSize="11" IsVisible="{Binding HasWarning}"
+                               Foreground="{DynamicResource Status.Server}" />
+                </StackPanel>
+                <Button Grid.Column="1" Content="↑" Margin="4,0,0,0"
+                        Command="{Binding $parent[ItemsControl].((vm:ConnectionEditorViewModel)DataContext).MoveDescriptorRowUpCommand}"
+                        CommandParameter="{Binding}" AutomationProperties.Name="Move up" />
+                <Button Grid.Column="2" Content="↓" Margin="4,0,0,0"
+                        Command="{Binding $parent[ItemsControl].((vm:ConnectionEditorViewModel)DataContext).MoveDescriptorRowDownCommand}"
+                        CommandParameter="{Binding}" AutomationProperties.Name="Move down" />
+                <Button Grid.Column="3" Content="✕" Margin="4,0,0,0"
+                        Command="{Binding $parent[ItemsControl].((vm:ConnectionEditorViewModel)DataContext).RemoveDescriptorRowCommand}"
+                        CommandParameter="{Binding}" AutomationProperties.Name="Remove path" />
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
     <ScrollViewer MaxHeight="620">
         <StackPanel Margin="20" Spacing="12">
 
@@ -75,6 +99,58 @@
                 </Grid>
                 <TextBlock FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                            Text="System default validates against OS roots. Custom CA / mTLS / skip-verify live in a profile." />
+            </StackPanel>
+
+            <!-- Descriptor source (FR-040..047) -->
+            <StackPanel Spacing="6">
+                <TextBlock Text="Descriptor source" />
+                <ComboBox ItemsSource="{Binding DescriptorModes}" SelectedItem="{Binding SelectedDescriptorMode}"
+                          MinWidth="200" HorizontalAlignment="Left" AutomationProperties.Name="Descriptor source mode" />
+                <TextBlock Text="{Binding EffectiveSourceText}" FontSize="12"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" TextWrapping="Wrap" />
+
+                <!-- Protoset files -->
+                <StackPanel Spacing="4" IsVisible="{Binding IsProtosetMode}">
+                    <Button Content="Add protoset(s)…" Command="{Binding AddProtosetsCommand}" HorizontalAlignment="Left"
+                            IsVisible="{Binding CanPickFiles}" AutomationProperties.Name="Add protosets" />
+                    <ItemsControl ItemsSource="{Binding ProtosetRows}" ItemTemplate="{StaticResource DescriptorRowTemplate}" />
+                </StackPanel>
+
+                <!-- Proto files + import paths -->
+                <StackPanel Spacing="4" IsVisible="{Binding IsProtoMode}">
+                    <Border IsVisible="{Binding ShowProtocRemediation}" Background="{DynamicResource Banner.DangerBg}"
+                            CornerRadius="4" Padding="10">
+                        <StackPanel Spacing="6">
+                            <TextBlock Foreground="{DynamicResource Status.Server}" TextWrapping="Wrap"
+                                       Text="protoc was not found. Set a protoc path in Settings → protoc, or use a protoset instead." />
+                            <TextBlock Text="{Binding ProtocStatus}" FontSize="11" TextWrapping="Wrap" />
+                            <Button Content="Use a protoset instead" Command="{Binding SwitchToProtosetCommand}"
+                                    HorizontalAlignment="Left" AutomationProperties.Name="Switch to protoset" />
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Text=".proto files" FontSize="12" />
+                    <Button Content="Add .proto file(s)…" Command="{Binding AddProtoFilesCommand}" HorizontalAlignment="Left"
+                            IsVisible="{Binding CanPickFiles}" AutomationProperties.Name="Add proto files" />
+                    <ItemsControl ItemsSource="{Binding ProtoFileRows}" ItemTemplate="{StaticResource DescriptorRowTemplate}" />
+
+                    <TextBlock Text="Import directories (-I)" FontSize="12" Margin="0,6,0,0" />
+                    <Button Content="Add import directory…" Command="{Binding AddImportPathCommand}" HorizontalAlignment="Left"
+                            IsVisible="{Binding CanPickFiles}" AutomationProperties.Name="Add import directory" />
+                    <ItemsControl ItemsSource="{Binding ImportPathRows}" ItemTemplate="{StaticResource DescriptorRowTemplate}" />
+                </StackPanel>
+
+                <!-- Limits (FR-047) -->
+                <Expander Header="Limits">
+                    <ItemsControl ItemsSource="{Binding DescriptorLimits}" Margin="4">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <TextBlock Text="{Binding}" FontSize="12"
+                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Expander>
             </StackPanel>
 
             <StackPanel Spacing="4">

@@ -20,6 +20,7 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
     private readonly IFilePickerService? _filePicker;
     private readonly IDialogService? _dialogService;
     private readonly ISecretStore? _secretStore;
+    private readonly IProtocService? _protocService;
     private readonly string _id;
     private readonly DescriptorSourceConfig _descriptorSource;
 
@@ -78,6 +79,22 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
     [NotifyCanExecuteChangedFor(nameof(EditProfileCommand))]
     private TlsProfileOption? _selectedTlsProfile;
 
+    /// <summary>Reflection (default) / Protoset / Proto — the descriptor source (FR-040).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsReflectionMode))]
+    [NotifyPropertyChangedFor(nameof(IsProtosetMode))]
+    [NotifyPropertyChangedFor(nameof(IsProtoMode))]
+    [NotifyPropertyChangedFor(nameof(EffectiveSourceText))]
+    private DescriptorMode _selectedDescriptorMode;
+
+    /// <summary>Set when Proto mode is selected but protoc can't be found (FR-044 remediation).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowProtocRemediation))]
+    private bool _protocMissing;
+
+    [ObservableProperty]
+    private string? _protocStatus;
+
     public ConnectionEditorViewModel(
         IConnectionRegistry registry,
         SavedConnection? existing = null,
@@ -85,13 +102,15 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
         ITlsProfileStore? profileStore = null,
         IFilePickerService? filePicker = null,
         IDialogService? dialogService = null,
-        ISecretStore? secretStore = null)
+        ISecretStore? secretStore = null,
+        IProtocService? protocService = null)
     {
         _registry = registry;
         _profileStore = profileStore;
         _filePicker = filePicker;
         _dialogService = dialogService;
         _secretStore = secretStore;
+        _protocService = protocService;
         IsEdit = existing is not null;
 
         var c = existing ?? new SavedConnection();
@@ -100,8 +119,16 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
         _address = c.Address;
         _isPlaintext = c.Transport == TransportMode.Plaintext;
 
-        // Round-tripped here in PR-A (plumbing); the descriptor-source editor section wires into it in PR-B.
         _descriptorSource = c.DescriptorSource.Clone();
+        _selectedDescriptorMode = _descriptorSource.Mode;
+        ProtosetRows = new ObservableCollection<DescriptorPathRow>(_descriptorSource.ProtosetPaths.Select(DescriptorPathRow.ForProtoset));
+        ProtoFileRows = new ObservableCollection<DescriptorPathRow>(_descriptorSource.ProtoFiles.Select(DescriptorPathRow.ForProtoFile));
+        ImportPathRows = new ObservableCollection<DescriptorPathRow>(_descriptorSource.ImportPaths.Select(DescriptorPathRow.ForImportPath));
+
+        if (_selectedDescriptorMode == DescriptorMode.Proto)
+        {
+            _ = DetectProtocAsync();
+        }
 
         TlsProfiles = [];
         RebuildProfileOptions(c.TlsProfileId);
@@ -222,6 +249,141 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
         SelectedTlsProfile = TlsProfiles.FirstOrDefault(o => o.Profile?.Id == selectedProfileId) ?? TlsProfiles[0];
     }
 
+    // ── descriptor source (FR-040..047) ──────────────────────────────────────
+
+    public ObservableCollection<DescriptorPathRow> ProtosetRows { get; }
+
+    public ObservableCollection<DescriptorPathRow> ProtoFileRows { get; }
+
+    public ObservableCollection<DescriptorPathRow> ImportPathRows { get; }
+
+    public IReadOnlyList<DescriptorMode> DescriptorModes { get; } =
+        [DescriptorMode.Reflection, DescriptorMode.Protoset, DescriptorMode.Proto];
+
+    public bool IsReflectionMode => SelectedDescriptorMode == DescriptorMode.Reflection;
+
+    public bool IsProtosetMode => SelectedDescriptorMode == DescriptorMode.Protoset;
+
+    public bool IsProtoMode => SelectedDescriptorMode == DescriptorMode.Proto;
+
+    /// <summary>Whether file management is wired (the picker is present); false in bare unit ctors.</summary>
+    public bool CanPickFiles => _filePicker is not null;
+
+    public bool ShowProtocRemediation => IsProtoMode && ProtocMissing;
+
+    /// <summary>FR-040: states the effective source so the user knows which settings apply.</summary>
+    public string EffectiveSourceText => SelectedDescriptorMode switch
+    {
+        DescriptorMode.Protoset => "Using protoset file(s); reflection is not contacted.",
+        DescriptorMode.Proto => "Using .proto compilation (protoc); protoset and reflection are ignored.",
+        _ => "Using server reflection."
+    };
+
+    /// <summary>FR-047: Core's DoS limits, surfaced read-only.</summary>
+    public IReadOnlyList<string> DescriptorLimits { get; } =
+    [
+        "Max protoset file size: 64 MiB",
+        "Max reflection response: 16 MiB",
+        "Max file descriptors: 2,048",
+        "Max import depth: 128",
+        "Max symbols: 65,536"
+    ];
+
+    partial void OnSelectedDescriptorModeChanged(DescriptorMode value)
+    {
+        if (value == DescriptorMode.Proto)
+        {
+            _ = DetectProtocAsync();
+        }
+        else
+        {
+            ProtocMissing = false;
+            ProtocStatus = null;
+        }
+    }
+
+    private async Task DetectProtocAsync()
+    {
+        if (_protocService is null)
+        {
+            return;
+        }
+
+        var info = await _protocService.DetectAsync();
+        ProtocMissing = !info.Found;
+        ProtocStatus = info.Message;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanPickFiles))]
+    private async Task AddProtosets()
+    {
+        foreach (var path in await _filePicker!.OpenFilesAsync("Select protoset file(s)", ["protoset", "bin"]))
+        {
+            ProtosetRows.Add(DescriptorPathRow.ForProtoset(path));
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanPickFiles))]
+    private async Task AddProtoFiles()
+    {
+        foreach (var path in await _filePicker!.OpenFilesAsync("Select .proto file(s)", ["proto"]))
+        {
+            ProtoFileRows.Add(DescriptorPathRow.ForProtoFile(path));
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanPickFiles))]
+    private async Task AddImportPath()
+    {
+        if (await _filePicker!.OpenFolderAsync("Select an import directory") is { } dir)
+        {
+            ImportPathRows.Add(DescriptorPathRow.ForImportPath(dir));
+        }
+    }
+
+    [RelayCommand]
+    private void RemoveDescriptorRow(DescriptorPathRow? row)
+    {
+        if (row is null)
+        {
+            return;
+        }
+
+        ProtosetRows.Remove(row);
+        ProtoFileRows.Remove(row);
+        ImportPathRows.Remove(row);
+    }
+
+    [RelayCommand]
+    private void MoveDescriptorRowUp(DescriptorPathRow? row) => Move(row, -1);
+
+    [RelayCommand]
+    private void MoveDescriptorRowDown(DescriptorPathRow? row) => Move(row, +1);
+
+    /// <summary>FR-044 remediation: switch a protoc-less Proto config to a protoset instead.</summary>
+    [RelayCommand]
+    private void SwitchToProtoset() => SelectedDescriptorMode = DescriptorMode.Protoset;
+
+    private void Move(DescriptorPathRow? row, int delta)
+    {
+        if (row is null)
+        {
+            return;
+        }
+
+        foreach (var collection in new[] { ProtosetRows, ProtoFileRows, ImportPathRows })
+        {
+            var index = collection.IndexOf(row);
+            var target = index + delta;
+
+            if (index >= 0 && target >= 0 && target < collection.Count)
+            {
+                collection.Move(index, target);
+                return;
+            }
+        }
+    }
+
     [RelayCommand]
     private void AddHeader() => ReflectionHeaders.Add(new HeaderRowViewModel());
 
@@ -260,26 +422,35 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
     [RelayCommand]
     private void Cancel() => Close(null);
 
-    public SavedConnection BuildConnection() => new()
+    public SavedConnection BuildConnection()
     {
-        Id = _id,
-        Name = Name.Trim(),
-        Address = Address.Trim(),
-        Transport = IsPlaintext ? TransportMode.Plaintext : TransportMode.Tls,
-        ConnectTimeout = NullIfBlank(ConnectTimeout),
-        Keepalive = new KeepaliveSettings { Time = NullIfBlank(KeepaliveTime), Timeout = NullIfBlank(KeepaliveTimeout) },
-        Authority = NullIfBlank(Authority),
-        ServerName = NullIfBlank(ServerName),
-        // A profile reference is meaningful only under TLS; a plaintext target carries none.
-        TlsProfileId = IsPlaintext ? null : SelectedTlsProfile?.Profile?.Id,
-        UserAgent = NullIfBlank(UserAgent),
-        ReflectionHeaders = ReflectionHeaders
-            .Where(h => !string.IsNullOrWhiteSpace(h.Name))
-            .Select(h => h.ToEntry())
-            .ToList(),
-        DescriptorSource = _descriptorSource.Clone(),
-        Notes = NullIfBlank(Notes)
-    };
+        // Sync the descriptor-source config from the editor's mode + ordered path rows.
+        _descriptorSource.Mode = SelectedDescriptorMode;
+        _descriptorSource.ProtosetPaths = ProtosetRows.Select(r => r.Path).ToList();
+        _descriptorSource.ProtoFiles = ProtoFileRows.Select(r => r.Path).ToList();
+        _descriptorSource.ImportPaths = ImportPathRows.Select(r => r.Path).ToList();
+
+        return new SavedConnection
+        {
+            Id = _id,
+            Name = Name.Trim(),
+            Address = Address.Trim(),
+            Transport = IsPlaintext ? TransportMode.Plaintext : TransportMode.Tls,
+            ConnectTimeout = NullIfBlank(ConnectTimeout),
+            Keepalive = new KeepaliveSettings { Time = NullIfBlank(KeepaliveTime), Timeout = NullIfBlank(KeepaliveTimeout) },
+            Authority = NullIfBlank(Authority),
+            ServerName = NullIfBlank(ServerName),
+            // A profile reference is meaningful only under TLS; a plaintext target carries none.
+            TlsProfileId = IsPlaintext ? null : SelectedTlsProfile?.Profile?.Id,
+            UserAgent = NullIfBlank(UserAgent),
+            ReflectionHeaders = ReflectionHeaders
+                .Where(h => !string.IsNullOrWhiteSpace(h.Name))
+                .Select(h => h.ToEntry())
+                .ToList(),
+            DescriptorSource = _descriptorSource.Clone(),
+            Notes = NullIfBlank(Notes)
+        };
+    }
 
     private static string? NullIfBlank(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;
 }

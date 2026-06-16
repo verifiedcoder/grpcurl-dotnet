@@ -27,6 +27,20 @@ public sealed class FakeDescriptorService : IDescriptorService
 
     public int DescribeCount { get; private set; }
 
+    /// <summary>Result returned by <see cref="ExportProtosetAsync" /> unless <see cref="OnExportProtoset" /> is set.</summary>
+    public SchemaExportResult ExportProtosetResult { get; set; } = SchemaExportResult.Success([], TimeSpan.Zero);
+
+    public SchemaExportResult ExportProtosResult { get; set; } = SchemaExportResult.Success([], TimeSpan.Zero);
+
+    /// <summary>Custom per-call behaviour keyed on (path, overwrite) — e.g. conflict-then-success.</summary>
+    public Func<string, bool, SchemaExportResult>? OnExportProtoset { get; set; }
+
+    public Func<string, bool, SchemaExportResult>? OnExportProtos { get; set; }
+
+    public string? LastExportProtosetPath { get; private set; }
+
+    public string? LastExportProtosDirectory { get; private set; }
+
     public Task<DescriptorLoadResult> LoadAsync(SavedConnection connection, CancellationToken cancellationToken = default)
     {
         LastLoaded = connection;
@@ -53,5 +67,19 @@ public sealed class FakeDescriptorService : IDescriptorService
 
         cancellationToken.ThrowIfCancellationRequested();
         return Task.FromResult(DescribeResult);
+    }
+
+    public Task<SchemaExportResult> ExportProtosetAsync(SavedConnection connection, string path, bool overwrite, CancellationToken cancellationToken = default)
+    {
+        LastExportProtosetPath = path;
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(OnExportProtoset?.Invoke(path, overwrite) ?? ExportProtosetResult);
+    }
+
+    public Task<SchemaExportResult> ExportProtosAsync(SavedConnection connection, string directory, bool overwrite, CancellationToken cancellationToken = default)
+    {
+        LastExportProtosDirectory = directory;
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(OnExportProtos?.Invoke(directory, overwrite) ?? ExportProtosResult);
     }
 }

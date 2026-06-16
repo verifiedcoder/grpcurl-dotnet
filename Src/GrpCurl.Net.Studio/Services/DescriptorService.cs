@@ -3,6 +3,8 @@ using Google.Protobuf.Reflection;
 using Grpc.Core;
 using GrpCurl.Net.DescriptorSources;
 using GrpCurl.Net.Invocation;
+using GrpCurl.Net.Output;
+using GrpCurl.Net.Utilities;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Descriptors;
 using GrpCurl.Net.Studio.ViewModels.Services;
@@ -127,6 +129,114 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null)
         {
             return DescribeResult.Failure(MapDescriptorSourceError(ex));
         }
+    }
+
+    public async Task<SchemaExportResult> ExportProtosetAsync(SavedConnection connection, string path, bool overwrite, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Refuse-by-default: gate the overwrite at the app layer so we can report size/mtime (FR-101).
+            if (!overwrite && File.Exists(path))
+            {
+                return SchemaExportResult.Conflict([ToConflict(path)]);
+            }
+
+            var stopwatch = Stopwatch.StartNew();
+            await using var session = await OpenSessionAsync(connection, cancellationToken).ConfigureAwait(false);
+
+            // Empty symbols => the whole active set, byte-parity with the CLI's --protoset-out.
+            await ProtosetExporter.WriteProtosetAsync(session.Source, path, force: true, symbols: [], cancellationToken)
+                .ConfigureAwait(false);
+
+            stopwatch.Stop();
+            return SchemaExportResult.Success([ToExported(path)], stopwatch.Elapsed);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex) when (IsExportError(ex))
+        {
+            return SchemaExportResult.Failure(ex.Message);
+        }
+    }
+
+    public async Task<SchemaExportResult> ExportProtosAsync(SavedConnection connection, string directory, bool overwrite, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var stopwatch = Stopwatch.StartNew();
+            await using var session = await OpenSessionAsync(connection, cancellationToken).ConfigureAwait(false);
+
+            // Warm the source so a reflection set populates its FileDescriptorSet before we read it.
+            await session.Source.ListServicesAsync(cancellationToken).ConfigureAwait(false);
+
+            if (!overwrite)
+            {
+                var conflicts = WouldBeProtoPaths(session.Source, directory)
+                    .Where(File.Exists)
+                    .Select(ToConflict)
+                    .ToList();
+
+                if (conflicts.Count > 0)
+                {
+                    return SchemaExportResult.Conflict(conflicts);
+                }
+            }
+
+            await ProtoFileEmitter.WriteAsync(session.Source, directory, force: true, cancellationToken).ConfigureAwait(false);
+
+            stopwatch.Stop();
+
+            var written = Directory.Exists(directory)
+                ? Directory.GetFiles(directory, "*.proto", SearchOption.AllDirectories).Select(ToExported).ToList()
+                : [];
+
+            return SchemaExportResult.Success(written, stopwatch.Elapsed);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex) when (IsExportError(ex))
+        {
+            return SchemaExportResult.Failure(ex.Message);
+        }
+    }
+
+    /// <summary>Opens a descriptor session with the connection's full channel + descriptor-source config.</summary>
+    private async Task<DescriptorSourceFactory> OpenSessionAsync(SavedConnection connection, CancellationToken cancellationToken)
+    {
+        var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
+        var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password);
+        var metadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
+        var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
+
+        return await DescriptorSourceFactory.CreateAsync(
+            connection.Address, protosets, protos, imports, options, metadata, cancellationToken).ConfigureAwait(false);
+    }
+
+    // ProtoFileEmitter writes one .proto per descriptor file at dir/<file.Name>; mirror that to pre-flight
+    // the conflict list (a superset of the service-reachable files is fine — it only over-warns).
+    private static IEnumerable<string> WouldBeProtoPaths(IDescriptorSource source, string directory)
+        => source.FileDescriptorSet is { } set
+            ? set.File.Select(f => Path.GetFullPath(Path.Combine(directory, f.Name)))
+            : [];
+
+    private static bool IsExportError(Exception ex)
+        => ex is IOException or UnauthorizedAccessException or InvalidOperationException
+            or RpcException or ProtocNotFoundException;
+
+    private static ExportedFile ToExported(string path)
+    {
+        var info = new FileInfo(path);
+        return new ExportedFile(path, info.Exists ? info.Length : 0);
+    }
+
+    private static FileConflict ToConflict(string path)
+    {
+        var info = new FileInfo(path);
+        return new FileConflict(path, info.Exists ? info.Length : 0, info.Exists ? info.LastWriteTimeUtc : DateTime.MinValue);
     }
 
     private async Task<(TlsProfile? Profile, string? Password)> ResolveTlsAsync(SavedConnection connection, CancellationToken cancellationToken)

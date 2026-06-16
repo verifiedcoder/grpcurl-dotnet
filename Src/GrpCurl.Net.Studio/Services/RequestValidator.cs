@@ -13,7 +13,7 @@ namespace GrpCurl.Net.Studio.Services;
 ///     the channel) and probes <c>CreateMessageFromJson</c>. JSON syntax errors surface a line/column;
 ///     semantic errors surface a message only. Advisory: an unresolvable schema yields no problems.
 /// </summary>
-internal sealed class RequestValidator(IInvocationService invocation) : IRequestValidator
+internal sealed class RequestValidator(IInvocationService invocation, ITlsProfileResolver? tlsResolver = null) : IRequestValidator
 {
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly Dictionary<string, MessageDescriptor> _inputCache = [];
@@ -67,7 +67,10 @@ internal sealed class RequestValidator(IInvocationService invocation) : IRequest
                 return cached;
             }
 
-            var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null);
+            var (profile, password) = tlsResolver is null
+                ? default
+                : await tlsResolver.ResolveAsync(connection, cancellationToken).ConfigureAwait(false);
+            var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password);
             var reflectionMetadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
 
             await using var session = await DescriptorSourceFactory.CreateAsync(

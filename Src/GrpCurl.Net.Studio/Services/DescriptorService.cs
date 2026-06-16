@@ -15,11 +15,12 @@ namespace GrpCurl.Net.Studio.Services;
 ///     session (and its channel) is disposed once read; the long-lived business channel for
 ///     invocation arrives with E1.4.
 /// </summary>
-internal sealed class DescriptorService : IDescriptorService
+internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null) : IDescriptorService
 {
     public async Task<DescriptorLoadResult> LoadAsync(SavedConnection connection, CancellationToken cancellationToken = default)
     {
-        var options = ConnectionChannelMapper.ToChannelOptions(connection);
+        var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
+        var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password);
         var metadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
         var warnings = new CollectingWarningSink();
 
@@ -67,7 +68,8 @@ internal sealed class DescriptorService : IDescriptorService
 
     public async Task<DescribeResult> DescribeAsync(SavedConnection connection, string symbol, CancellationToken cancellationToken = default)
     {
-        var options = ConnectionChannelMapper.ToChannelOptions(connection);
+        var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
+        var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password);
         var metadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
         var warnings = new CollectingWarningSink();
 
@@ -108,6 +110,9 @@ internal sealed class DescriptorService : IDescriptorService
             return DescribeResult.Failure(MapRpcError(ex));
         }
     }
+
+    private async Task<(TlsProfile? Profile, string? Password)> ResolveTlsAsync(SavedConnection connection, CancellationToken cancellationToken)
+        => tlsResolver is null ? default : await tlsResolver.ResolveAsync(connection, cancellationToken).ConfigureAwait(false);
 
     private static ServiceEntry MapService(ServiceDescriptor descriptor)
     {

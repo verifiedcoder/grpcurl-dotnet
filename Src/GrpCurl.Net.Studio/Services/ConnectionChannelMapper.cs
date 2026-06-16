@@ -7,24 +7,46 @@ namespace GrpCurl.Net.Studio.Services;
 /// <summary>
 ///     Translates a <see cref="SavedConnection" /> into the Core channel options and reflection
 ///     metadata, so a probe or call uses exactly the wire configuration the CLI would for the
-///     same fields. TLS profile material (custom CA, client certs) is deferred to E2.2; Phase 1
-///     uses system-default validation under TLS.
+///     same fields. When the connection references a <see cref="TlsProfile" /> (resolved by
+///     <see cref="ITlsProfileResolver" />, E2.2) its custom-CA / client-cert / revocation material is
+///     applied under TLS; with no profile, TLS uses system-default validation.
 /// </summary>
 internal static class ConnectionChannelMapper
 {
-    public static GrpcChannelFactory.ChannelOptions ToChannelOptions(SavedConnection connection, int? maxMessageSize = null) => new()
+    public static GrpcChannelFactory.ChannelOptions ToChannelOptions(
+        SavedConnection connection,
+        int? maxMessageSize = null,
+        TlsProfile? profile = null,
+        string? clientCertPassword = null)
     {
-        Plaintext = connection.Transport == TransportMode.Plaintext,
-        ConnectTimeout = ParseOrNull(connection.ConnectTimeout),
-        KeepaliveTime = ParseOrNull(connection.Keepalive.Time),
-        KeepaliveTimeout = ParseOrNull(connection.Keepalive.Timeout),
-        Authority = NullIfBlank(connection.Authority),
-        // SNI only applies under TLS.
-        ServerName = connection.Transport == TransportMode.Tls ? NullIfBlank(connection.ServerName) : null,
-        // Applies to both send and receive limits, mirroring the CLI's --max-msg-sz (FR-071).
-        MaxReceiveMessageSize = maxMessageSize,
-        MaxSendMessageSize = maxMessageSize
-    };
+        var tls = connection.Transport == TransportMode.Tls;
+
+        // Profile material only has meaning under TLS; a profile attached to a plaintext target is ignored.
+        var applyProfile = tls && profile is not null;
+
+        return new GrpcChannelFactory.ChannelOptions
+        {
+            Plaintext = connection.Transport == TransportMode.Plaintext,
+            ConnectTimeout = ParseOrNull(connection.ConnectTimeout),
+            KeepaliveTime = ParseOrNull(connection.Keepalive.Time),
+            KeepaliveTimeout = ParseOrNull(connection.Keepalive.Timeout),
+            Authority = NullIfBlank(connection.Authority),
+            // SNI only applies under TLS.
+            ServerName = tls ? NullIfBlank(connection.ServerName) : null,
+            // Applies to both send and receive limits, mirroring the CLI's --max-msg-sz (FR-071).
+            MaxReceiveMessageSize = maxMessageSize,
+            MaxSendMessageSize = maxMessageSize,
+
+            // TLS profile material (FR-030..039 / SEC-014..018) — Core stays the single TLS engine.
+            InsecureSkipVerify = applyProfile && profile!.InsecureSkipVerify,
+            CaCertPath = applyProfile ? NullIfBlank(profile!.CaCertPath) : null,
+            ClientCertPath = applyProfile ? NullIfBlank(profile!.ClientCertPath) : null,
+            ClientKeyPath = applyProfile ? NullIfBlank(profile!.ClientKeyPath) : null,
+            ClientCertPassword = applyProfile ? clientCertPassword : null,
+            RevocationMode = applyProfile ? GrpcChannelFactory.ParseRevocationMode(profile!.RevocationMode) : null,
+            ExportableClientKey = applyProfile && profile!.ExportableClientKey
+        };
+    }
 
     public static Metadata BuildReflectionMetadata(SavedConnection connection)
         => GrpcChannelFactory.CreateMetadata(

@@ -16,6 +16,7 @@ public sealed class ConnectionModelTests
             Keepalive = new KeepaliveSettings { Time = "60s", Timeout = "30s" },
             Authority = "edge",
             ServerName = "sni",
+            TlsProfileId = "profile-1",
             UserAgent = "ua",
             ReflectionHeaders = [new HeaderEntry { Name = "authorization", Value = "Bearer x", IsBin = false }],
             Notes = "note"
@@ -31,6 +32,7 @@ public sealed class ConnectionModelTests
         clone.Keepalive.Time.ShouldBe("60s");
         clone.Authority.ShouldBe("edge");
         clone.ServerName.ShouldBe("sni");
+        clone.TlsProfileId.ShouldBe("profile-1");
         clone.UserAgent.ShouldBe("ua");
         clone.Notes.ShouldBe("note");
 

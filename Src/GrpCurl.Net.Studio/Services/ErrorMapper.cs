@@ -175,6 +175,15 @@ internal static class ErrorMapper
             list.Add(new("The TLS certificate may be revoked or its revocation status unreachable; review the connection's TLS settings."));
         }
 
+        // SEC-013: a custom-CA chain whose revocation status can't be reached (no CRL/OCSP endpoint, the
+        // common private-CA case) fails validation. Point the user at the revocation-mode escape hatch.
+        if (MentionsRevocationUnknown(detail))
+        {
+            list.Add(new(
+                "If this server uses a private CA without CRL/OCSP endpoints, set revocation mode "
+                + "'offline' or 'nocheck' in the connection's TLS profile."));
+        }
+
         // FR-097: a proxy environment variable may be intercepting a transport failure.
         if ((code == 14 || code == 2) && ProxyEnvActive() is { } proxyVar)
         {
@@ -187,6 +196,15 @@ internal static class ErrorMapper
     private static bool MentionsRevocation(string detail)
         => detail.Contains("revoc", StringComparison.OrdinalIgnoreCase)
            || detail.Contains("revoked", StringComparison.OrdinalIgnoreCase);
+
+    // The chain-status text Core/SslStream surface when the revocation endpoint is unreachable
+    // (RevocationStatusUnknown / OfflineRevocation) — the private-CA-without-CRL signature.
+    private static bool MentionsRevocationUnknown(string detail)
+        => detail.Contains("RevocationStatusUnknown", StringComparison.OrdinalIgnoreCase)
+           || detail.Contains("OfflineRevocation", StringComparison.OrdinalIgnoreCase)
+           || detail.Contains("unable to determine", StringComparison.OrdinalIgnoreCase)
+           || (detail.Contains("revocation", StringComparison.OrdinalIgnoreCase)
+               && detail.Contains("offline", StringComparison.OrdinalIgnoreCase));
 
     private static string? ProxyEnvActive()
     {

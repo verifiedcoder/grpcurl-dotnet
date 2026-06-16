@@ -60,6 +60,21 @@
             </MenuItem>
         </Menu>
 
+        <!-- Insecure-skip-verify banner (SEC-014 / SPEC-020 §3.4): pinned below the menu, full-width,
+             non-dismissable while any open tab uses a skip-verify TLS profile. -->
+        <Border DockPanel.Dock="Top" x:Name="InsecureBanner" IsVisible="{Binding IsInsecureBannerVisible}"
+                Background="{DynamicResource Banner.DangerBg}" BorderBrush="{DynamicResource Status.Server}"
+                BorderThickness="3,0,0,0" Padding="12,8">
+            <DockPanel LastChildFill="False">
+                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontWeight="SemiBold"
+                           Foreground="{DynamicResource Status.Server}" TextWrapping="Wrap"
+                           Text="{Binding InsecureBannerText}" />
+                <Button DockPanel.Dock="Right" Content="Review connection…" VerticalAlignment="Center"
+                        Command="{Binding ReviewInsecureConnectionCommand}"
+                        AutomationProperties.Name="Review insecure connection" />
+            </DockPanel>
+        </Border>
+
         <!-- Status bar -->
         <Border DockPanel.Dock="Bottom" x:Name="StatusBar" Height="24"
                 Background="{DynamicResource Surface.PaneHeader}"

@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:GrpCurl.Net.Studio.ViewModels.Connections;assembly=GrpCurl.Net.Studio.ViewModels"
+             x:Class="GrpCurl.Net.Studio.Views.Connections.TlsProfileManagerView"
+             x:DataType="vm:TlsProfileManagerViewModel"
+             Width="520">
+    <StackPanel Margin="20" Spacing="12">
+
+        <DockPanel>
+            <TextBlock Text="TLS profiles" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" />
+            <Button Content="New profile…" Command="{Binding NewProfileCommand}" HorizontalAlignment="Right"
+                    DockPanel.Dock="Right" AutomationProperties.Name="New TLS profile" />
+        </DockPanel>
+
+        <TextBlock Text="No TLS profiles yet. Create one to use a custom CA, client certificate, or skip verification."
+                   IsVisible="{Binding !HasProfiles}" TextWrapping="Wrap"
+                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+
+        <ItemsControl ItemsSource="{Binding Profiles}" MaxHeight="360">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:TlsProfileRow">
+                    <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="0,0,0,1"
+                            Padding="0,8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="{Binding Display}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding UsageText}" FontSize="12"
+                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <Button Content="Edit"
+                                        Command="{Binding $parent[ItemsControl].((vm:TlsProfileManagerViewModel)DataContext).EditProfileCommand}"
+                                        CommandParameter="{Binding}" AutomationProperties.Name="Edit profile" />
+                                <Button Content="Duplicate"
+                                        Command="{Binding $parent[ItemsControl].((vm:TlsProfileManagerViewModel)DataContext).DuplicateProfileCommand}"
+                                        CommandParameter="{Binding}" AutomationProperties.Name="Duplicate profile" />
+                                <Button Content="Delete"
+                                        Command="{Binding $parent[ItemsControl].((vm:TlsProfileManagerViewModel)DataContext).DeleteProfileCommand}"
+                                        CommandParameter="{Binding}" AutomationProperties.Name="Delete profile" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
+            <Button Content="Close" Command="{Binding CloseCommand}" MinWidth="80" IsDefault="True"
+                    AutomationProperties.Name="Close manager" />
+        </StackPanel>
+
+    </StackPanel>
+</UserControl>

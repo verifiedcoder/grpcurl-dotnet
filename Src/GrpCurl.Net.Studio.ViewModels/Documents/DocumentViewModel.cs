@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 
 namespace GrpCurl.Net.Studio.ViewModels.Documents;
 
@@ -13,6 +14,12 @@ public abstract partial class DocumentViewModel : ViewModelBase
 {
     [ObservableProperty]
     private string _title = string.Empty;
+
+    /// <summary>
+    ///     The connection this tab targets, or null for connection-less tabs (e.g. settings). Used by the
+    ///     shell to detect when an open tab uses an insecure TLS profile (SEC-014).
+    /// </summary>
+    public virtual SavedConnection? TabConnection => null;
 
     /// <summary>Raised when the document asks to be closed (its tab's × button).</summary>
     public event EventHandler? CloseRequested;

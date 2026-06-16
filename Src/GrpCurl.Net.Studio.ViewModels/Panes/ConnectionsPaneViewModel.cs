@@ -146,6 +146,18 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         }
     }
 
+    /// <summary>Opens the editor for a connection by identity (the insecure banner's "Review connection…").</summary>
+    public async Task ReviewConnectionAsync(SavedConnection connection)
+    {
+        var item = Connections.FirstOrDefault(i => i.Connection.Id == connection.Id);
+
+        if (item is not null)
+        {
+            SelectedConnection = item;
+            await EditConnectionCommand.ExecuteAsync(item);
+        }
+    }
+
     private void OnConnectionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         => OnPropertyChanged(nameof(HasConnections));
 

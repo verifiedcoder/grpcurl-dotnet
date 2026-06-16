@@ -18,7 +18,7 @@ public sealed class ConnectionEditorProfilePickerTests
     {
         dialog = new FakeDialogService();
         var workspace = new FakeWorkspaceStore(new WorkspaceModel { TlsProfiles = [.. profiles] });
-        store = new TlsProfileStore(workspace);
+        store = new TlsProfileStore(workspace, new FakeSecretStore());
 
         return new ConnectionEditorViewModel(
             new FakeConnectionRegistry(), existing, networkDefaults: null,

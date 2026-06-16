@@ -147,6 +147,47 @@ public sealed class InvocationDocumentViewModelTests
     }
 
     [Fact]
+    public void An_invalid_bin_header_blocks_invoke()
+    {
+        var doc = Create(out _, out _, out _);
+        doc.AddHeaderCommand.Execute(null);
+        var row = doc.Headers[0];
+
+        row.Name = "trace-bin";
+        row.Value = "not base64!!";
+
+        doc.HasHeaderErrors.ShouldBeTrue();
+        doc.InvokeCommand.CanExecute(null).ShouldBeFalse();
+
+        row.Value = "AAEC"; // fixed
+        doc.HasHeaderErrors.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Switching_body_format_with_content_warns_and_clears_when_confirmed()
+    {
+        var doc = Create(out _, out _, out _, out var dialogs, out _, out _, initialJson: "{ \"x\": 1 }");
+        dialogs.ConfirmResult = true; // "clear it"
+
+        doc.BodyFormat = RequestBodyFormat.Text;
+
+        dialogs.ConfirmCount.ShouldBe(1);
+        doc.RequestJson.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Switching_body_format_keeps_content_when_declined()
+    {
+        var doc = Create(out _, out _, out _, out var dialogs, out _, out _, initialJson: "value: 1");
+        dialogs.ConfirmResult = false; // keep
+
+        doc.BodyFormat = RequestBodyFormat.Text;
+
+        dialogs.ConfirmCount.ShouldBe(1);
+        doc.RequestJson.ShouldBe("value: 1");
+    }
+
+    [Fact]
     public async Task A_verbose_transcript_populates_the_raw_tab()
     {
         var doc = Create(out var runner, out _, out var clipboard);

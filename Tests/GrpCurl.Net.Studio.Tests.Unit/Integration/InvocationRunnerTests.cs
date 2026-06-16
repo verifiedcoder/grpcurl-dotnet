@@ -28,6 +28,21 @@ public sealed class InvocationRunnerTests(StudioPlaintextServerFixture server)
         Conn(server.Address), method, json, headers, Deadline: null);
 
     [Fact]
+    public async Task A_protobuf_text_body_is_parsed_and_invoked()
+    {
+        // FR-062: text-format body ("response_size: 4") goes through DynamicTextFormat, not JSON.
+        var request = new InvocationRequestModel(
+            Conn(server.Address), "testing.TestService/UnaryCall", "response_size: 4",
+            [], BodyFormat: RequestBodyFormat.Text);
+
+        var result = await Runner().InvokeUnaryAsync(request, TestContext.Current.CancellationToken);
+
+        result.Ok.ShouldBeTrue(result.ErrorMessage);
+        result.Status.Code.ShouldBe(0);
+        result.ResponseJson!.ShouldContain("payload");
+    }
+
+    [Fact]
     public async Task Unary_call_succeeds_and_returns_a_response()
     {
         var result = await Runner().InvokeUnaryAsync(

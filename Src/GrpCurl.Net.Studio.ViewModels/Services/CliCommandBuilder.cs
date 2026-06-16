@@ -62,6 +62,13 @@ public static class CliCommandBuilder
 
         AddValue(args, "--max-msg-sz", request.MaxMessageSize);
 
+        // FR-062: reproduce the request-body grammar so the pasted command parses the same body.
+        if (request.BodyFormat == RequestBodyFormat.Text)
+        {
+            args.Add("--format");
+            args.Add("text");
+        }
+
         args.Add("-d");
         args.Add(request.RequestJson);
 

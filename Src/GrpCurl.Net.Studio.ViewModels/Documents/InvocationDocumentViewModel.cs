@@ -51,6 +51,10 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     [ObservableProperty]
     private string? _timingBytesText;
 
+    /// <summary>FR-062: the request-body grammar/parser — JSON (default) or protobuf text format.</summary>
+    [ObservableProperty]
+    private RequestBodyFormat _bodyFormat = RequestBodyFormat.Json;
+
     /// <summary>The verbose call transcript for the Raw tab (FR-111); header values are redacted (FR-112).</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasRawTranscript))]
@@ -132,7 +136,35 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         Title = ShortName(methodSymbol);
         Log = new StreamLogViewModel(ringCapacity, _runner.FormatMessage);
 
+        // FR-067: a header row's -bin validity gates Invoke, so re-evaluate when rows or values change.
+        Headers.CollectionChanged += OnHeadersChanged;
+
         _ = ResolveMethodAsync(initialRequestJson);
+    }
+
+    private void OnHeadersChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        foreach (var row in e.OldItems?.OfType<HeaderRowViewModel>() ?? [])
+        {
+            row.PropertyChanged -= OnHeaderRowChanged;
+        }
+
+        foreach (var row in e.NewItems?.OfType<HeaderRowViewModel>() ?? [])
+        {
+            row.PropertyChanged += OnHeaderRowChanged;
+        }
+
+        OnPropertyChanged(nameof(HasHeaderErrors));
+        InvokeCommand.NotifyCanExecuteChanged();
+    }
+
+    private void OnHeaderRowChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(HeaderRowViewModel.HasBinError))
+        {
+            OnPropertyChanged(nameof(HasHeaderErrors));
+            InvokeCommand.NotifyCanExecuteChanged();
+        }
     }
 
     public SavedConnection Connection { get; }
@@ -170,7 +202,10 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     public bool HasErrorDetails => Error is { Details.Count: > 0 };
     public bool HasProblems => Problems.Count > 0;
 
-    private bool CanInvoke => !IsStreaming && State != RunState.InFlight;
+    /// <summary>FR-067: any header with an invalid <c>-bin</c> value blocks the call.</summary>
+    public bool HasHeaderErrors => Headers.Any(h => h.HasBinError);
+
+    private bool CanInvoke => !IsStreaming && State != RunState.InFlight && !HasHeaderErrors;
     private bool CanStartStream => IsStreaming && State != RunState.InFlight;
 
     // FR-063: re-validate (debounced, off-thread) whenever the body or the unknown-fields toggle changes.
@@ -207,6 +242,18 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
 
     internal async Task RunValidationAsync(CancellationToken cancellationToken = default)
     {
+        // FR-062/063: the validator is JSON-aware; in protobuf-text mode it would only emit spurious
+        // findings, so clear problems and let Core/the server stay the authority.
+        if (BodyFormat == RequestBodyFormat.Text)
+        {
+            await _dispatcher.InvokeAsync(() =>
+            {
+                Problems.Clear();
+                OnPropertyChanged(nameof(HasProblems));
+            });
+            return;
+        }
+
         var problems = await _validator
             .ValidateAsync(Connection, MethodSymbol, RequestJson, AllowUnknownFields, cancellationToken)
             .ConfigureAwait(false);
@@ -227,6 +274,33 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
 
             OnPropertyChanged(nameof(HasProblems));
         });
+    }
+
+    /// <summary>The two request-body grammars for the editor toggle (FR-062).</summary>
+    public IReadOnlyList<RequestBodyFormat> BodyFormats { get; } = [RequestBodyFormat.Json, RequestBodyFormat.Text];
+
+    partial void OnBodyFormatChanged(RequestBodyFormat value)
+    {
+        // Re-run (or clear) validation for the new grammar.
+        _ = RunValidationAsync();
+
+        // FR-062: a non-empty body is reinterpreted in the new format on send; offer to clear it.
+        if (!string.IsNullOrWhiteSpace(RequestJson))
+        {
+            _ = WarnBodyReinterpretAsync();
+        }
+    }
+
+    private async Task WarnBodyReinterpretAsync()
+    {
+        var clear = await _dialogs.ConfirmAsync(
+            "Reinterpret request body?",
+            "The request body will be parsed in the new format on send. Clear it now? (Cancel keeps the current text.)");
+
+        if (clear)
+        {
+            await _dispatcher.InvokeAsync(() => RequestJson = string.Empty);
+        }
     }
 
     [RelayCommand(CanExecute = nameof(CanInvoke), IncludeCancelCommand = true)]
@@ -421,7 +495,8 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         NullIfBlank(Deadline),
         EmitDefaults,
         AllowUnknownFields,
-        NullIfBlank(MaxMessageSize));
+        NullIfBlank(MaxMessageSize),
+        BodyFormat);
 
     private void Apply(InvocationResultModel result)
     {
@@ -527,7 +602,8 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         NullIfBlank(Deadline),
         EmitDefaults,
         AllowUnknownFields,
-        NullIfBlank(MaxMessageSize));
+        NullIfBlank(MaxMessageSize),
+        BodyFormat);
 
     [RelayCommand]
     private void AddHeader() => Headers.Add(new HeaderRowViewModel());

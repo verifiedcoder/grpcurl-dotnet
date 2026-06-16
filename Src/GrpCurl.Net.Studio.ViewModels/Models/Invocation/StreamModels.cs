@@ -38,4 +38,5 @@ public sealed record StreamRequestModel(
     string? Deadline = null,
     bool EmitDefaults = false,
     bool AllowUnknownFields = true,
-    string? MaxMessageSize = null);
+    string? MaxMessageSize = null,
+    RequestBodyFormat BodyFormat = RequestBodyFormat.Json);

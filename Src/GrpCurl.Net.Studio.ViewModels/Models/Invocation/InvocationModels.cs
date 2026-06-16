@@ -28,6 +28,22 @@ public sealed record ValidationProblem(string Message, int? Line, int? Column)
 /// <summary>The gRPC status of a completed call, model-side.</summary>
 public sealed record InvocationStatusModel(int Code, string CodeName, string Detail);
 
+/// <summary>
+///     The verbose call transcript (FR-111, CLI <c>-v</c> parity): resolved target + authority, the
+///     headers sent and received, message counts, and the final status — captured unconditionally for
+///     every call (capture is cheap; the Raw tab displays it on demand). Header values are redacted
+///     where they render (FR-112).
+/// </summary>
+public sealed record VerboseTranscript(
+    string Target,
+    string? Authority,
+    IReadOnlyList<MetadataItem> RequestHeaders,
+    IReadOnlyList<MetadataItem> ResponseHeaders,
+    IReadOnlyList<MetadataItem> ResponseTrailers,
+    int RequestMessages,
+    int ResponseMessages,
+    InvocationStatusModel Status);
+
 /// <summary>One timing phase and its duration.</summary>
 public sealed record TimingPhase(string Phase, TimeSpan Duration);
 
@@ -58,4 +74,5 @@ public sealed record InvocationResultModel(
     InvocationStatusModel Status,
     TimingModel Timing,
     string? ErrorMessage,
-    ErrorModel? Error = null);
+    ErrorModel? Error = null,
+    VerboseTranscript? Transcript = null);

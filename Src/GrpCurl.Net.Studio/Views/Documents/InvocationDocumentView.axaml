@@ -352,6 +352,18 @@
                                    Foreground="{DynamicResource Status.Neutral}" />
                     </StackPanel>
                 </TabItem>
+
+                <!-- Raw / verbose transcript (FR-111): -v equivalent, header values redacted (FR-112). -->
+                <TabItem Header="Raw">
+                    <Grid RowDefinitions="Auto,*" Margin="4" RowSpacing="6">
+                        <Button Grid.Row="0" Content="Copy transcript" HorizontalAlignment="Left"
+                                Command="{Binding CopyRawTranscriptCommand}"
+                                AutomationProperties.Name="Copy verbose transcript" />
+                        <TextBox Grid.Row="1" Text="{Binding RawTranscript, Mode=OneWay}" IsReadOnly="True"
+                                 AcceptsReturn="True" TextWrapping="NoWrap" FontFamily="{DynamicResource Editor.FontFamily}"
+                                 VerticalAlignment="Stretch" AutomationProperties.Name="Verbose transcript" />
+                    </Grid>
+                </TabItem>
             </TabControl>
         </Grid>
 

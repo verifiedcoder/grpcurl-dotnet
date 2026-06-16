@@ -18,7 +18,7 @@ public sealed class SettingsDocumentUiTests(HeadlessSessionFixture fixture) : He
     public Task Settings_tab_renders_general_and_editor_sections() => RunOnUiThread(() =>
     {
         var store = new InMemorySettingsStore();
-        var vm = new SettingsDocumentViewModel(store, new FakeThemeService());
+        var vm = new SettingsDocumentViewModel(store, new FakeThemeService(), new FakeDialogService(), new FakeProtocService());
 
         var window = new Window { Content = new SettingsDocumentView { DataContext = vm }, Width = 700, Height = 600 };
         window.Show();
@@ -28,13 +28,21 @@ public sealed class SettingsDocumentUiTests(HeadlessSessionFixture fixture) : He
         texts.ShouldContain("General");
         texts.ShouldContain("Editor");
         texts.ShouldContain("Theme");
+        texts.ShouldContain("Network defaults");
+        texts.ShouldContain("protoc");
+        texts.ShouldContain("Diagnostics");   // disabled placeholder
+        texts.ShouldContain("Updates");       // disabled placeholder
+
+        window.GetVisualDescendants().OfType<Button>()
+            .Any(b => Equals(b.GetValue(Avalonia.Automation.AutomationProperties.NameProperty), "Reset all settings"))
+            .ShouldBeTrue();
     });
 
     [Fact]
     public Task Toggling_format_on_paste_in_the_view_persists() => RunOnUiThread(() =>
     {
         var store = new InMemorySettingsStore();
-        var vm = new SettingsDocumentViewModel(store, new FakeThemeService());
+        var vm = new SettingsDocumentViewModel(store, new FakeThemeService(), new FakeDialogService(), new FakeProtocService());
 
         var window = new Window { Content = new SettingsDocumentView { DataContext = vm }, Width = 700, Height = 600 };
         window.Show();

@@ -21,6 +21,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     private readonly IRequestValidator _validator;
     private readonly ISettingsStore _settings;
     private readonly IThemeService _theme;
+    private readonly IProtocService? _protoc;
 
     [ObservableProperty]
     private DocumentViewModel? _selectedDocument;
@@ -34,7 +35,8 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         ILauncherService launcher,
         IRequestValidator validator,
         ISettingsStore settings,
-        IThemeService theme)
+        IThemeService theme,
+        IProtocService? protoc = null)
     {
         _descriptors = descriptors;
         _dispatcher = dispatcher;
@@ -45,6 +47,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         _validator = validator;
         _settings = settings;
         _theme = theme;
+        _protoc = protoc;
     }
 
     public ObservableCollection<DocumentViewModel> Documents { get; } = [];
@@ -106,7 +109,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
             return;
         }
 
-        var document = new SettingsDocumentViewModel(_settings, _theme);
+        var document = new SettingsDocumentViewModel(_settings, _theme, _dialogs, _protoc);
         document.CloseRequested += OnDocumentCloseRequested;
 
         Documents.Add(document);

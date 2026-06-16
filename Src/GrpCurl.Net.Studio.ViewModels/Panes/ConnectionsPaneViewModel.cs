@@ -21,6 +21,9 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
     private readonly IDialogService _dialogService;
     private readonly IConnectionSelection _selection;
     private readonly ISettingsStore? _settings;
+    private readonly ITlsProfileStore? _profileStore;
+    private readonly IFilePickerService? _filePicker;
+    private readonly ISecretStore? _secretStore;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(EditConnectionCommand))]
@@ -33,13 +36,19 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         IConnectionRegistry registry,
         IDialogService dialogService,
         IConnectionSelection selection,
-        ISettingsStore? settings = null)
+        ISettingsStore? settings = null,
+        ITlsProfileStore? profileStore = null,
+        IFilePickerService? filePicker = null,
+        ISecretStore? secretStore = null)
     {
         _workspaceStore = workspaceStore;
         _registry = registry;
         _dialogService = dialogService;
         _selection = selection;
         _settings = settings;
+        _profileStore = profileStore;
+        _filePicker = filePicker;
+        _secretStore = secretStore;
 
         Connections = [];
         Connections.CollectionChanged += OnConnectionsChanged;
@@ -66,7 +75,8 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
     [RelayCommand]
     private async Task AddConnection()
     {
-        var editor = new ConnectionEditorViewModel(_registry, existing: null, _settings?.Current.Network);
+        var editor = new ConnectionEditorViewModel(
+            _registry, existing: null, _settings?.Current.Network, _profileStore, _filePicker, _dialogService, _secretStore);
         var saved = await _dialogService.ShowDialogAsync(editor);
 
         if (saved is not null)
@@ -86,7 +96,8 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
             return;
         }
 
-        var editor = new ConnectionEditorViewModel(_registry, item.Connection);
+        var editor = new ConnectionEditorViewModel(
+            _registry, item.Connection, networkDefaults: null, _profileStore, _filePicker, _dialogService, _secretStore);
         var saved = await _dialogService.ShowDialogAsync(editor);
 
         if (saved is not null)
@@ -140,9 +151,15 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
 
     private Task PersistAsync()
     {
+        // Carry the rest of the workspace forward — TLS profiles are workspace-level (E2.2) and must
+        // survive a connection-list save, just as a profile save must preserve the connection list.
+        var current = _workspaceStore.Current;
+
         var workspace = new WorkspaceModel
         {
-            Connections = Connections.Select(i => i.Connection).ToList()
+            SchemaVersion = current.SchemaVersion,
+            Connections = Connections.Select(i => i.Connection).ToList(),
+            TlsProfiles = [.. current.TlsProfiles]
         };
 
         return _workspaceStore.SaveAsync(workspace);

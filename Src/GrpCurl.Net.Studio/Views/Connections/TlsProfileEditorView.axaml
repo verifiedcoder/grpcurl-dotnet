@@ -1,0 +1,102 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:GrpCurl.Net.Studio.ViewModels.Connections;assembly=GrpCurl.Net.Studio.ViewModels"
+             xmlns:conv="clr-namespace:GrpCurl.Net.Studio.Converters"
+             x:Class="GrpCurl.Net.Studio.Views.Connections.TlsProfileEditorView"
+             x:DataType="vm:TlsProfileEditorViewModel"
+             Width="480">
+    <ScrollViewer MaxHeight="640">
+        <StackPanel Margin="20" Spacing="12">
+
+            <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold" />
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="Name" />
+                <TextBox Text="{Binding Name}" Watermark="Production mTLS"
+                         AutomationProperties.Name="Profile name" />
+                <TextBlock Text="{Binding NameError}" Foreground="{DynamicResource Status.Server}" FontSize="12" />
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="Server validation" />
+                <ComboBox ItemsSource="{Binding ValidationModes}" SelectedItem="{Binding SelectedValidationMode}"
+                          MinWidth="200" HorizontalAlignment="Left" AutomationProperties.Name="Server validation mode" />
+            </StackPanel>
+
+            <!-- Custom CA (FR-031/FR-032) -->
+            <StackPanel Spacing="4" IsVisible="{Binding IsCustomCa}">
+                <TextBlock Text="CA certificate (PEM)" />
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Grid.Column="0" Text="{Binding CaCertPath}" Watermark="/path/to/ca.pem"
+                             AutomationProperties.Name="CA certificate path" />
+                    <Button Grid.Column="1" Content="Browse…" Margin="6,0,0,0" Command="{Binding BrowseCaCertCommand}"
+                            AutomationProperties.Name="Browse CA certificate" />
+                </Grid>
+                <TextBlock Text="{Binding CaCertError}" Foreground="{DynamicResource Status.Server}" FontSize="12" />
+
+                <TextBlock Text="Revocation mode" Margin="0,6,0,0" />
+                <ComboBox ItemsSource="{Binding RevocationModeOptions}" SelectedItem="{Binding SelectedRevocationMode}"
+                          MinWidth="160" HorizontalAlignment="Left" AutomationProperties.Name="Revocation mode" />
+                <TextBlock FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                           TextWrapping="Wrap"
+                           Text="Use nocheck only against self-signed test fixtures with no CRL distribution point." />
+            </StackPanel>
+
+            <!-- Skip verification (FR-031) -->
+            <Border IsVisible="{Binding IsSkipVerification}" Background="{DynamicResource Status.Server}"
+                    CornerRadius="4" Padding="10">
+                <TextBlock Foreground="White" TextWrapping="Wrap"
+                           Text="TLS verification disabled — test/diagnostic only. Connections using this profile do not validate the server certificate." />
+            </Border>
+
+            <!-- Client certificate (mTLS, FR-033..036) -->
+            <StackPanel Spacing="4">
+                <TextBlock Text="Client certificate (optional — PEM or PKCS12)" />
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Grid.Column="0" Text="{Binding ClientCertPath}" Watermark="/path/to/client.pem or .p12"
+                             AutomationProperties.Name="Client certificate path" />
+                    <Button Grid.Column="1" Content="Browse…" Margin="6,0,0,0" Command="{Binding BrowseClientCertCommand}"
+                            AutomationProperties.Name="Browse client certificate" />
+                </Grid>
+                <TextBlock Text="{Binding DetectedFormatDisplay}" FontSize="12"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+            </StackPanel>
+
+            <!-- PEM key (hidden once a PKCS12 bundle is detected) -->
+            <StackPanel Spacing="4" IsVisible="{Binding !IsPkcs12}">
+                <TextBlock Text="Client private key (PEM)" />
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Grid.Column="0" Text="{Binding ClientKeyPath}" Watermark="/path/to/client.key"
+                             AutomationProperties.Name="Client key path" />
+                    <Button Grid.Column="1" Content="Browse…" Margin="6,0,0,0" Command="{Binding BrowseClientKeyCommand}"
+                            AutomationProperties.Name="Browse client key" />
+                </Grid>
+            </StackPanel>
+
+            <!-- PKCS12 password (FR-034) + exportable (FR-036) -->
+            <StackPanel Spacing="4" IsVisible="{Binding IsPkcs12}">
+                <TextBlock Text="PKCS12 password" />
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Grid.Column="0" Text="{Binding ClientCertPassword}"
+                             PasswordChar="{Binding !IsPasswordRevealed, Converter={x:Static conv:SecretMaskConverter.Instance}}"
+                             AutomationProperties.Name="PKCS12 password" />
+                    <CheckBox Grid.Column="1" Content="Show" Margin="6,0,0,0" IsChecked="{Binding IsPasswordRevealed}"
+                              AutomationProperties.Name="Reveal password" />
+                </Grid>
+                <CheckBox Content="Exportable key (advanced)" IsChecked="{Binding ExportableClientKey}"
+                          AutomationProperties.Name="Exportable key" />
+                <TextBlock FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                           TextWrapping="Wrap"
+                           Text="Linux uses an ephemeral key set, macOS the platform keychain, Windows a non-exportable user key set (Schannel mTLS cannot use ephemeral keys). Enable only when an operation must re-export the private key." />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
+                <Button Content="Cancel" Command="{Binding CancelCommand}" MinWidth="80"
+                        AutomationProperties.Name="Cancel profile" />
+                <Button Content="Save" Command="{Binding SaveCommand}" MinWidth="80" IsDefault="True"
+                        AutomationProperties.Name="Save profile" />
+            </StackPanel>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

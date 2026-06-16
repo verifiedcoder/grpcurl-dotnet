@@ -16,6 +16,10 @@ namespace GrpCurl.Net.Studio.ViewModels.Connections;
 public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedConnection>
 {
     private readonly IConnectionRegistry _registry;
+    private readonly ITlsProfileStore? _profileStore;
+    private readonly IFilePickerService? _filePicker;
+    private readonly IDialogService? _dialogService;
+    private readonly ISecretStore? _secretStore;
     private readonly string _id;
 
     [ObservableProperty]
@@ -31,6 +35,7 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
 
     /// <summary>True = plaintext; false = TLS (default).</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsTlsProfileEnabled))]
     private bool _isPlaintext;
 
     [ObservableProperty]
@@ -67,9 +72,25 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
     [NotifyPropertyChangedFor(nameof(IsTesting))]
     private bool _isTestRunning;
 
-    public ConnectionEditorViewModel(IConnectionRegistry registry, SavedConnection? existing = null, NetworkSettings? networkDefaults = null)
+    /// <summary>The picked TLS profile (or the system-default sentinel); only meaningful under TLS.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(EditProfileCommand))]
+    private TlsProfileOption? _selectedTlsProfile;
+
+    public ConnectionEditorViewModel(
+        IConnectionRegistry registry,
+        SavedConnection? existing = null,
+        NetworkSettings? networkDefaults = null,
+        ITlsProfileStore? profileStore = null,
+        IFilePickerService? filePicker = null,
+        IDialogService? dialogService = null,
+        ISecretStore? secretStore = null)
     {
         _registry = registry;
+        _profileStore = profileStore;
+        _filePicker = filePicker;
+        _dialogService = dialogService;
+        _secretStore = secretStore;
         IsEdit = existing is not null;
 
         var c = existing ?? new SavedConnection();
@@ -77,6 +98,9 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
         _name = c.Name;
         _address = c.Address;
         _isPlaintext = c.Transport == TransportMode.Plaintext;
+
+        TlsProfiles = [];
+        RebuildProfileOptions(c.TlsProfileId);
 
         // FR-153: a brand-new connection seeds its network fields from the app defaults; editing an
         // existing one keeps that connection's own values.
@@ -98,6 +122,16 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
 
     public ObservableCollection<HeaderRowViewModel> ReflectionHeaders { get; }
 
+    /// <summary>System-default sentinel plus every workspace TLS profile (FR-012/FR-030).</summary>
+    public ObservableCollection<TlsProfileOption> TlsProfiles { get; }
+
+    /// <summary>TLS profiles apply only under TLS; the picker is disabled for plaintext targets.</summary>
+    public bool IsTlsProfileEnabled => !IsPlaintext;
+
+    /// <summary>Create/edit are only offered when the profile services are wired (they are in the app; not in bare unit ctors).</summary>
+    public bool CanManageProfiles => _profileStore is not null && _filePicker is not null
+                                     && _dialogService is not null && _secretStore is not null;
+
     public bool IsTesting => IsTestRunning;
 
     public string? NameError => string.IsNullOrWhiteSpace(Name) ? "Name is required." : null;
@@ -115,6 +149,58 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
            && KeepaliveTimeError is null && KeepaliveTimeoutError is null;
 
     private bool CanTest => AddressError is null && !string.IsNullOrWhiteSpace(Address);
+
+    private bool CanEditProfile => CanManageProfiles && SelectedTlsProfile?.Profile is not null;
+
+    [RelayCommand(CanExecute = nameof(CanManageProfiles))]
+    private async Task NewProfile()
+    {
+        if (!CanManageProfiles)
+        {
+            return;
+        }
+
+        var editor = new TlsProfileEditorViewModel(_filePicker!, _dialogService!, _secretStore!);
+        var saved = await _dialogService!.ShowDialogAsync(editor);
+
+        if (saved is not null)
+        {
+            await _profileStore!.SaveAsync(saved);
+            RebuildProfileOptions(saved.Id);
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanEditProfile))]
+    private async Task EditProfile()
+    {
+        if (!CanManageProfiles || SelectedTlsProfile?.Profile is not { } existing)
+        {
+            return;
+        }
+
+        var editor = new TlsProfileEditorViewModel(_filePicker!, _dialogService!, _secretStore!, existing);
+        var saved = await _dialogService!.ShowDialogAsync(editor);
+
+        if (saved is not null)
+        {
+            await _profileStore!.SaveAsync(saved);
+            RebuildProfileOptions(saved.Id);
+        }
+    }
+
+    /// <summary>Reloads the picker from the store, preserving (or moving to) the given profile id.</summary>
+    private void RebuildProfileOptions(string? selectedProfileId)
+    {
+        TlsProfiles.Clear();
+        TlsProfiles.Add(new TlsProfileOption(null)); // system default
+
+        foreach (var profile in _profileStore?.Profiles ?? [])
+        {
+            TlsProfiles.Add(new TlsProfileOption(profile));
+        }
+
+        SelectedTlsProfile = TlsProfiles.FirstOrDefault(o => o.Profile?.Id == selectedProfileId) ?? TlsProfiles[0];
+    }
 
     [RelayCommand]
     private void AddHeader() => ReflectionHeaders.Add(new HeaderRowViewModel());
@@ -164,6 +250,8 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
         Keepalive = new KeepaliveSettings { Time = NullIfBlank(KeepaliveTime), Timeout = NullIfBlank(KeepaliveTimeout) },
         Authority = NullIfBlank(Authority),
         ServerName = NullIfBlank(ServerName),
+        // A profile reference is meaningful only under TLS; a plaintext target carries none.
+        TlsProfileId = IsPlaintext ? null : SelectedTlsProfile?.Profile?.Id,
         UserAgent = NullIfBlank(UserAgent),
         ReflectionHeaders = ReflectionHeaders
             .Where(h => !string.IsNullOrWhiteSpace(h.Name))

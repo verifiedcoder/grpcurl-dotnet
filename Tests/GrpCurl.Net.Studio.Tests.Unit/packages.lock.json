@@ -730,6 +730,7 @@
           "GrpCurl.Net.Core": "[1.0.0, )",
           "GrpCurl.Net.Studio.ViewModels": "[1.0.0, )",
           "Microsoft.Extensions.Hosting": "[10.0.9, )",
+          "System.Security.Cryptography.ProtectedData": "[10.0.0, )",
           "TextMateSharp": "[1.0.70, )",
           "TextMateSharp.Grammars": "[1.0.70, )"
         }
@@ -903,6 +904,12 @@
         "requested": "[2.0.6, )",
         "resolved": "2.0.6",
         "contentHash": "10CL/VxB7N5FXP5mJD5aROrfyT7g3VIk0GH9DaSR3/QlD0q+GzRD+3+HnicYI1f391IZZ41vC5t+i62NjvEbDg=="
+      },
+      "System.Security.Cryptography.ProtectedData": {
+        "type": "CentralTransitive",
+        "requested": "[10.0.0, )",
+        "resolved": "10.0.0",
+        "contentHash": "qy6C3gQRTrfhFfuiIYU1jNwWfFdJpBVo1BARW7jgMm1zTEm3LRzLLyOLJGaAuKE+nZCGkEP71y4rj9NWjqLGdQ=="
       },
       "TextMateSharp": {
         "type": "CentralTransitive",

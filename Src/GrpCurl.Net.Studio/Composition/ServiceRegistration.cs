@@ -34,6 +34,10 @@ internal static class ServiceRegistration
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GrpCurlNet.Studio")));
 
         services.AddSingleton<IWorkspaceStore, JsonWorkspaceStore>();
+
+        // TLS profile resolution (E2.2): turns a connection's profile reference + the PKCS12
+        // password secret into the (profile, password) pair the channel mapper consumes.
+        services.AddSingleton<ITlsProfileResolver, TlsProfileResolver>();
         services.AddSingleton<IConnectionRegistry, ConnectionRegistry>();
 
         // Descriptor/explorer layer (E1.2).

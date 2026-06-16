@@ -12,6 +12,8 @@
 
     <ItemGroup>
         <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+        <!-- mTLS L2 fixture (E2.2): the checked-in self-signed CA / server / client cert bundle. -->
+        <Content Include="..\TestCertificates\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="TestCertificates" />
     </ItemGroup>
 
     <ItemGroup>

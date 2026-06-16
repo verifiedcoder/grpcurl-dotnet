@@ -62,6 +62,9 @@ public sealed class SavedConnection
     /// <summary>Optional TLS SNI / target host for cert validation (CLI <c>--servername</c>).</summary>
     public string? ServerName { get; set; }
 
+    /// <summary>Optional reference to a workspace <see cref="TlsProfile" /> (FR-012); null = system-default validation.</summary>
+    public string? TlsProfileId { get; set; }
+
     public string? UserAgent { get; set; }
 
     /// <summary>Headers sent only on server-reflection RPCs (CLI <c>--reflect-header</c>).</summary>
@@ -83,6 +86,7 @@ public sealed class SavedConnection
             Keepalive = new KeepaliveSettings { Time = Keepalive.Time, Timeout = Keepalive.Timeout },
             Authority = Authority,
             ServerName = ServerName,
+            TlsProfileId = TlsProfileId,
             UserAgent = UserAgent,
             ReflectionHeaders = ReflectionHeaders
                 .Select(h => new HeaderEntry { Name = h.Name, Value = h.Value, IsBin = h.IsBin })

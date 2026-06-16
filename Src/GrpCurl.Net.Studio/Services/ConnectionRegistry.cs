@@ -11,7 +11,7 @@ namespace GrpCurl.Net.Studio.Services;
 ///     <c>ListServices</c> round-trip bounded by a 10s deadline (SPEC-030 §7, FR-018). The cached
 ///     business channel used by invocation is added with E1.4.
 /// </summary>
-internal sealed class ConnectionRegistry : IConnectionRegistry
+internal sealed class ConnectionRegistry(ITlsProfileResolver? tlsResolver = null) : IConnectionRegistry
 {
     private static readonly TimeSpan ProbeDeadline = TimeSpan.FromSeconds(10);
 
@@ -24,7 +24,10 @@ internal sealed class ConnectionRegistry : IConnectionRegistry
             return TestConnectionResult.Failure(addressError);
         }
 
-        var options = ConnectionChannelMapper.ToChannelOptions(connection);
+        var (profile, password) = tlsResolver is null
+            ? default
+            : await tlsResolver.ResolveAsync(connection, cancellationToken).ConfigureAwait(false);
+        var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password);
         var metadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
 
         using var deadlineCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);

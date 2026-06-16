@@ -5,6 +5,7 @@ using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using Grpc.Core;
 using GrpCurl.Net.DescriptorSources;
+using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Services;
 using GrpCurl.Net.Utilities;
@@ -20,7 +21,7 @@ namespace GrpCurl.Net.Studio.Services;
 ///     later optimisation. User cancellation propagates; resolution/parse failures become a failed
 ///     <see cref="InvocationResultModel" />.
 /// </summary>
-internal sealed partial class InvocationRunner(IInvocationService invocation) : IInvocationRunner
+internal sealed partial class InvocationRunner(IInvocationService invocation, ITlsProfileResolver? tlsResolver = null) : IInvocationRunner
 {
     [GeneratedRegex(@"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")]
     private static partial Regex EnvVarPattern();
@@ -28,7 +29,8 @@ internal sealed partial class InvocationRunner(IInvocationService invocation) : 
     public async Task<InvocationResultModel> InvokeUnaryAsync(InvocationRequestModel request, CancellationToken cancellationToken)
     {
         var connection = request.Connection;
-        var options = ConnectionChannelMapper.ToChannelOptions(connection, ParseSizeOrNull(request.MaxMessageSize));
+        var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
+        var options = ConnectionChannelMapper.ToChannelOptions(connection, ParseSizeOrNull(request.MaxMessageSize), profile, password);
         var reflectionMetadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
         var deadline = ParseDeadline(request.Deadline);
         var ctx = new ErrorContext(request.MethodSymbol, connection.Address, DeadlineSet: deadline is not null);
@@ -105,7 +107,8 @@ internal sealed partial class InvocationRunner(IInvocationService invocation) : 
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var connection = request.Connection;
-        var options = ConnectionChannelMapper.ToChannelOptions(connection, ParseSizeOrNull(request.MaxMessageSize));
+        var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
+        var options = ConnectionChannelMapper.ToChannelOptions(connection, ParseSizeOrNull(request.MaxMessageSize), profile, password);
         var reflectionMetadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
         var deadline = ParseDeadline(request.Deadline);
         var ctx = new ErrorContext(request.MethodSymbol, connection.Address, DeadlineSet: deadline is not null);
@@ -232,6 +235,9 @@ internal sealed partial class InvocationRunner(IInvocationService invocation) : 
             return Environment.GetEnvironmentVariable(name)
                    ?? throw new InvalidOperationException($"Environment variable '{name}' referenced by a header is not set.");
         });
+
+    private async Task<(TlsProfile? Profile, string? Password)> ResolveTlsAsync(SavedConnection connection, CancellationToken cancellationToken)
+        => tlsResolver is null ? default : await tlsResolver.ResolveAsync(connection, cancellationToken).ConfigureAwait(false);
 
     private static DateTime? ParseDeadline(string? deadline)
         => string.IsNullOrWhiteSpace(deadline) ? null : DateTime.UtcNow.Add(GrpcChannelFactory.ParseDuration(deadline));

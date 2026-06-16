@@ -19,6 +19,19 @@ public sealed class DescriptorSourceTests(StudioPlaintextServerFixture server)
 
     private static string ProtoPath => Path.Combine(AppContext.BaseDirectory, "Protos", "test.proto");
 
+    // Proto-source tests compile with the external protoc; skip where it's absent (e.g. CI runners
+    // without protobuf-compiler), matching the CLI's ListDescribeProtoOptionTests.
+    private static bool ProtocOnPath()
+    {
+        var executable = OperatingSystem.IsWindows() ? "protoc.exe" : "protoc";
+        var pathVar = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+
+        return pathVar
+            .Split(Path.PathSeparator)
+            .Where(dir => !string.IsNullOrWhiteSpace(dir))
+            .Any(dir => File.Exists(Path.Combine(dir, executable)));
+    }
+
     private SavedConnection Protoset() => new()
     {
         Name = "protoset",
@@ -72,6 +85,8 @@ public sealed class DescriptorSourceTests(StudioPlaintextServerFixture server)
     [Fact]
     public async Task Proto_source_compiles_and_lists_services()
     {
+        Assert.SkipUnless(ProtocOnPath(), "protoc is not installed on PATH");
+
         var result = await new DescriptorService().LoadAsync(Proto(), TestContext.Current.CancellationToken);
 
         result.Ok.ShouldBeTrue(result.Error?.Message);
@@ -81,6 +96,8 @@ public sealed class DescriptorSourceTests(StudioPlaintextServerFixture server)
     [Fact]
     public async Task Proto_source_invokes_against_the_server()
     {
+        Assert.SkipUnless(ProtocOnPath(), "protoc is not installed on PATH");
+
         var runner = new InvocationRunner(new InvocationService());
         var request = new InvocationRequestModel(Proto(), "testing.TestService/EmptyCall", "{}", []);
 

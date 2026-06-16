@@ -58,5 +58,8 @@ public interface IInvocationService
 
     IMessage CreateMessageFromJson(MessageDescriptor descriptor, string? json, bool allowUnknownFields = true);
 
+    /// <summary>Parses a protobuf text-format body (FR-062, CLI <c>--format text</c>) into a message.</summary>
+    IMessage CreateMessageFromText(MessageDescriptor descriptor, string? text);
+
     string MessageToJson(IMessage message, bool includeDefaults = false, bool indent = true);
 }

@@ -238,6 +238,9 @@ public sealed class InvocationService : IInvocationService
     public IMessage CreateMessageFromJson(MessageDescriptor descriptor, string? json, bool allowUnknownFields = true)
         => DynamicInvoker.CreateMessageFromJson(descriptor, json, allowUnknownFields);
 
+    public IMessage CreateMessageFromText(MessageDescriptor descriptor, string? text)
+        => DynamicTextFormat.Parse(descriptor, text ?? string.Empty);
+
     public string MessageToJson(IMessage message, bool includeDefaults = false, bool indent = true)
         => DynamicInvoker.MessageToJson(message, includeDefaults, indent);
 

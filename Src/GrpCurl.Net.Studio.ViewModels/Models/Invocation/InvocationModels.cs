@@ -3,6 +3,13 @@ using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 namespace GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 
 /// <summary>A unary invoke request expressed in UI-friendly terms (no Core types).</summary>
+/// <summary>The request-body grammar/parser (FR-062): JSON (default) or protobuf text format (CLI <c>--format text</c>).</summary>
+public enum RequestBodyFormat
+{
+    Json,
+    Text
+}
+
 public sealed record InvocationRequestModel(
     SavedConnection Connection,
     string MethodSymbol,
@@ -11,7 +18,8 @@ public sealed record InvocationRequestModel(
     string? Deadline = null,
     bool EmitDefaults = false,
     bool AllowUnknownFields = true,
-    string? MaxMessageSize = null);
+    string? MaxMessageSize = null,
+    RequestBodyFormat BodyFormat = RequestBodyFormat.Json);
 
 /// <summary>A response/trailing metadata entry (binary <c>-bin</c> values are base64 in <see cref="Value" />).</summary>
 public sealed record MetadataItem(string Name, string Value, bool IsBinary);

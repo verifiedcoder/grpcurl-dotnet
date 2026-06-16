@@ -62,7 +62,7 @@ internal sealed partial class InvocationRunner(IInvocationService invocation, IT
                 request.Headers.Select(h => $"{h.Name}: {ResolveEnvironmentVariables(h.Value)}"),
                 NullIfBlank(connection.UserAgent));
 
-            var requestMessage = invocation.CreateMessageFromJson(method.InputType, request.RequestJson, request.AllowUnknownFields);
+            var requestMessage = ParseRequest(method.InputType, request.RequestJson, request.AllowUnknownFields, request.BodyFormat);
 
             var call = Stopwatch.StartNew();
             var outcome = await invocation.InvokeUnaryAsync(session.Channel!, method, requestMessage, callHeaders, deadline, cancellationToken).ConfigureAwait(false);
@@ -172,7 +172,7 @@ internal sealed partial class InvocationRunner(IInvocationService invocation, IT
             yield break;
         }
 
-        var messages = ToMessages(method, requestJson, request.AllowUnknownFields, cancellationToken);
+        var messages = ToMessages(method, requestJson, request.AllowUnknownFields, request.BodyFormat, cancellationToken);
 
         await foreach (var ev in invocation
                            .InvokeStreamingAsync(session.Channel!, method, messages, callHeaders, deadline, cancellationToken)
@@ -183,14 +183,20 @@ internal sealed partial class InvocationRunner(IInvocationService invocation, IT
     }
 
     private async IAsyncEnumerable<IMessage> ToMessages(
-        MethodDescriptor method, IAsyncEnumerable<string> requestJson, bool allowUnknownFields,
+        MethodDescriptor method, IAsyncEnumerable<string> requestJson, bool allowUnknownFields, RequestBodyFormat format,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        await foreach (var json in requestJson.WithCancellation(cancellationToken).ConfigureAwait(false))
+        await foreach (var body in requestJson.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
-            yield return invocation.CreateMessageFromJson(method.InputType, json, allowUnknownFields);
+            yield return ParseRequest(method.InputType, body, allowUnknownFields, format);
         }
     }
+
+    // FR-062: parse the request body per the selected grammar — JSON (default) or protobuf text format.
+    private IMessage ParseRequest(MessageDescriptor descriptor, string body, bool allowUnknownFields, RequestBodyFormat format)
+        => format == RequestBodyFormat.Text
+            ? invocation.CreateMessageFromText(descriptor, body)
+            : invocation.CreateMessageFromJson(descriptor, body, allowUnknownFields);
 
     private StreamEventModel MapEvent(StreamEvent ev, ErrorContext ctx) => ev switch
     {

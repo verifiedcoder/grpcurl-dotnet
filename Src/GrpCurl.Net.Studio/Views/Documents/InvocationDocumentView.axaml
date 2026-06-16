@@ -12,6 +12,21 @@
     <UserControl.Resources>
         <conv:SeverityToBrushConverter x:Key="SeverityBrush" />
         <conv:SecretMaskConverter x:Key="SecretMask" />
+        <!-- Response header/trailer row: name + redacted/revealed value + per-field reveal (FR-112/113). -->
+        <DataTemplate x:Key="MetadataRowTemplate" x:DataType="docs:MetadataRowViewModel">
+            <Grid ColumnDefinitions="*,Auto" Margin="0,1">
+                <TextBlock Grid.Column="0" FontFamily="Cascadia Code,Consolas,monospace" FontSize="12"
+                           TextWrapping="Wrap">
+                    <Run Text="{Binding Name}" FontWeight="SemiBold" />
+                    <Run Text=": " />
+                    <Run Text="{Binding DisplayValue}" />
+                </TextBlock>
+                <Button Grid.Column="1" Content="👁" Padding="3,0" Margin="6,0,0,0"
+                        Background="Transparent" BorderThickness="0" IsVisible="{Binding IsSecret}"
+                        Command="{Binding ToggleRevealCommand}"
+                        ToolTip.Tip="Reveal / hide value" AutomationProperties.Name="Reveal value" />
+            </Grid>
+        </DataTemplate>
     </UserControl.Resources>
 
     <!-- Rich google.rpc.Status detail panels (implicit templates, resolved by data type). -->
@@ -304,30 +319,12 @@
                     </Border>
                 </TabItem>
                 <TabItem Header="Headers">
-                    <ItemsControl ItemsSource="{Binding ResponseHeaders}" Margin="4">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="inv:MetadataItem">
-                                <TextBlock Margin="0,1" FontFamily="Cascadia Code,Consolas,monospace" FontSize="12">
-                                    <Run Text="{Binding Name}" FontWeight="SemiBold" />
-                                    <Run Text=": " />
-                                    <Run Text="{Binding Value}" />
-                                </TextBlock>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                    <ItemsControl ItemsSource="{Binding ResponseHeaders}" Margin="4"
+                                  ItemTemplate="{StaticResource MetadataRowTemplate}" />
                 </TabItem>
                 <TabItem Header="Trailers">
-                    <ItemsControl ItemsSource="{Binding ResponseTrailers}" Margin="4">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="inv:MetadataItem">
-                                <TextBlock Margin="0,1" FontFamily="Cascadia Code,Consolas,monospace" FontSize="12">
-                                    <Run Text="{Binding Name}" FontWeight="SemiBold" />
-                                    <Run Text=": " />
-                                    <Run Text="{Binding Value}" />
-                                </TextBlock>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                    <ItemsControl ItemsSource="{Binding ResponseTrailers}" Margin="4"
+                                  ItemTemplate="{StaticResource MetadataRowTemplate}" />
                 </TabItem>
                 <TabItem Header="Timing">
                     <StackPanel Margin="4" Spacing="6">

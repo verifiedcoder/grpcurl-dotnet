@@ -26,12 +26,22 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     private readonly IDialogService _dialogs;
     private readonly ILauncherService _launcher;
     private readonly IRequestValidator _validator;
+    private readonly IFilePickerService? _filePicker;
+    private readonly StreamDispatchPump _pump = new();
     private CancellationTokenSource? _validationCts;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsInFlight), nameof(IsCompleted), nameof(HasResponse))]
-    [NotifyCanExecuteChangedFor(nameof(InvokeCommand))]
+    [NotifyCanExecuteChangedFor(nameof(InvokeCommand), nameof(StartStreamCommand))]
     private RunState _state = RunState.Idle;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsStreaming), nameof(HasComposer), nameof(ShowMergedToggle))]
+    [NotifyCanExecuteChangedFor(nameof(InvokeCommand), nameof(StartStreamCommand))]
+    private StreamingShape _shape = StreamingShape.Unary;
+
+    [ObservableProperty]
+    private StreamComposerViewModel? _composer;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasError), nameof(HasErrorSuggestions), nameof(HasErrorDetails))]
@@ -77,7 +87,9 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         IClipboardService clipboard,
         IDialogService dialogs,
         ILauncherService launcher,
-        IRequestValidator validator)
+        IRequestValidator validator,
+        IFilePickerService? filePicker = null,
+        int ringCapacity = 10_000)
     {
         Connection = connection;
         MethodSymbol = methodSymbol;
@@ -88,17 +100,12 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         _dialogs = dialogs;
         _launcher = launcher;
         _validator = validator;
+        _filePicker = filePicker;
 
         Title = ShortName(methodSymbol);
+        Log = new StreamLogViewModel(ringCapacity, _runner.FormatMessage);
 
-        if (initialRequestJson is not null)
-        {
-            RequestJson = initialRequestJson;
-        }
-        else
-        {
-            _ = LoadTemplateAsync();
-        }
+        _ = ResolveMethodAsync(initialRequestJson);
     }
 
     public SavedConnection Connection { get; }
@@ -112,6 +119,13 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     public ObservableCollection<MetadataItem> ResponseHeaders { get; } = [];
     public ObservableCollection<MetadataItem> ResponseTrailers { get; } = [];
     public ObservableCollection<TimingPhase> Timing { get; } = [];
+
+    /// <summary>The streaming event log (FR-081); empty for unary tabs.</summary>
+    public StreamLogViewModel Log { get; }
+
+    public bool IsStreaming => Shape != StreamingShape.Unary;
+    public bool HasComposer => Shape is StreamingShape.ClientStreaming or StreamingShape.BidiStreaming; // FR-082
+    public bool ShowMergedToggle => Shape == StreamingShape.BidiStreaming;                              // FR-083
 
     /// <summary>FR-063 advisory request-validation problems (never block Invoke).</summary>
     public ObservableCollection<ValidationProblem> Problems { get; } = [];
@@ -127,7 +141,8 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     public bool HasErrorDetails => Error is { Details.Count: > 0 };
     public bool HasProblems => Problems.Count > 0;
 
-    private bool CanInvoke => State != RunState.InFlight;
+    private bool CanInvoke => !IsStreaming && State != RunState.InFlight;
+    private bool CanStartStream => IsStreaming && State != RunState.InFlight;
 
     // FR-063: re-validate (debounced, off-thread) whenever the body or the unknown-fields toggle changes.
     partial void OnRequestJsonChanged(string value) => ScheduleValidation();
@@ -217,6 +232,91 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
             });
         }
     }
+
+    [RelayCommand(CanExecute = nameof(CanStartStream), IncludeCancelCommand = true)]
+    private async Task StartStream(CancellationToken cancellationToken)
+    {
+        await _dispatcher.InvokeAsync(() =>
+        {
+            State = RunState.InFlight;
+            Error = null;
+            StatusText = null;
+            StatusIsError = false;
+            Severity = StatusSeverity.Ok;
+            Log.Reset();
+        });
+
+        // Client/duplex stream request bodies from the composer; server-streaming sends the editor body once.
+        var requestJson = HasComposer && Composer is not null ? Composer.Begin() : Once(RequestJson);
+
+        try
+        {
+            await _pump.RunAsync(
+                _runner.InvokeStreamingAsync(BuildStreamRequest(), requestJson, cancellationToken),
+                batch => _dispatcher.InvokeAsync(() => ApplyStreamBatch(batch)),
+                cancellationToken);
+
+            await _dispatcher.InvokeAsync(() =>
+            {
+                if (State == RunState.InFlight)
+                {
+                    State = RunState.Completed;
+                }
+            });
+        }
+        catch (OperationCanceledException)
+        {
+            await _dispatcher.InvokeAsync(() =>
+            {
+                // FR-084: received rows are preserved; the final row records the cancellation.
+                var detail = string.IsNullOrWhiteSpace(Deadline) ? "Cancelled" : "Deadline reached (client).";
+                Log.Append(new StreamEventModel(
+                    StreamEventKind.Status, -1, DateTimeOffset.Now, 0, detail,
+                    Status: new InvocationStatusModel(1, "Cancelled", detail)));
+                State = RunState.Cancelled;
+                StatusText = "Cancelled";
+                StatusIsError = true;
+                Severity = StatusSeverity.Cancelled;
+            });
+        }
+        finally
+        {
+            Composer?.End();
+        }
+    }
+
+    private void ApplyStreamBatch(IReadOnlyList<StreamEventModel> batch)
+    {
+        Log.Append(batch);
+
+        foreach (var ev in batch)
+        {
+            if (ev.Kind != StreamEventKind.Status)
+            {
+                continue;
+            }
+
+            Error = ev.Error;
+            Severity = ev.Error?.Severity ?? (ev.Status is { } s ? StatusSeverityMap.FromCode(s.Code) : StatusSeverity.Ok);
+            StatusIsError = ev.Status is { Code: not 0 };
+            StatusText = ev.Status?.CodeName;
+        }
+    }
+
+    private static async IAsyncEnumerable<string> Once(string json)
+    {
+        yield return json;
+        await Task.CompletedTask;
+    }
+
+    private StreamRequestModel BuildStreamRequest() => new(
+        Connection,
+        MethodSymbol,
+        Headers.Select(h => h.ToEntry()).ToList(),
+        NullIfBlank(Deadline),
+        EmitDefaults,
+        AllowUnknownFields,
+        NullIfBlank(MaxMessageSize));
 
     private void Apply(InvocationResultModel result)
     {
@@ -309,15 +409,33 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         }
     }
 
-    private async Task LoadTemplateAsync()
+    private async Task ResolveMethodAsync(string? initialRequestJson)
     {
+        if (initialRequestJson is not null)
+        {
+            RequestJson = initialRequestJson;
+        }
+
         var result = await _descriptors.DescribeAsync(Connection, MethodSymbol, CancellationToken.None);
 
         await _dispatcher.InvokeAsync(() =>
         {
-            if (result is { Ok: true, Symbol: MethodDescription method })
+            if (result is not { Ok: true, Symbol: MethodDescription method })
+            {
+                return;
+            }
+
+            Shape = method.Shape;
+
+            if (initialRequestJson is null)
             {
                 RequestJson = method.TemplateJson;
+            }
+
+            if (HasComposer)
+            {
+                Composer = new StreamComposerViewModel(
+                    Connection, MethodSymbol, AllowUnknownFields, _validator, _dispatcher, _filePicker);
             }
         });
     }

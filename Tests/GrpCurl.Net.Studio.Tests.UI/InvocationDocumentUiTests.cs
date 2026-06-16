@@ -144,4 +144,53 @@ public sealed class InvocationDocumentUiTests(HeadlessSessionFixture fixture) : 
         window.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text)
             .ShouldContain("Unexpected character (line 1)");
     });
+
+    private static InvocationDocumentViewModel StreamingVm(GrpCurl.Net.Studio.ViewModels.Models.Descriptors.StreamingShape shape, FakeInvocationRunner runner)
+    {
+        var descriptors = new FakeDescriptorService
+        {
+            OnDescribe = (_, symbol, _) => Task.FromResult(GrpCurl.Net.Studio.ViewModels.Models.Descriptors.DescribeResult.Success(
+                new GrpCurl.Net.Studio.ViewModels.Models.Descriptors.MethodDescription(symbol, "Go", "f.proto", shape,
+                    new GrpCurl.Net.Studio.ViewModels.Models.Descriptors.TypeRef("pkg.In", true),
+                    new GrpCurl.Net.Studio.ViewModels.Models.Descriptors.TypeRef("pkg.Out", true),
+                    new GrpCurl.Net.Studio.ViewModels.Models.Descriptors.TypeRef("pkg.Svc", true), "{}")))
+        };
+
+        return new InvocationDocumentViewModel(
+            new SavedConnection { Name = "c", Address = "h:1" }, "pkg.Svc/Go", "{}", runner, descriptors,
+            new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeDialogService(), new FakeLauncherService(),
+            new FakeRequestValidator());
+    }
+
+    [Fact]
+    public Task A_server_streaming_tab_renders_the_event_log_and_runs_a_stream() => RunOnUiThread(() =>
+    {
+        var runner = new FakeInvocationRunner
+        {
+            StreamEvents =
+            [
+                new ViewModels.Models.Invocation.StreamEventModel(ViewModels.Models.Invocation.StreamEventKind.Headers, -1, DateTimeOffset.Now, 0, "headers"),
+                new ViewModels.Models.Invocation.StreamEventModel(ViewModels.Models.Invocation.StreamEventKind.MessageReceived, 0, DateTimeOffset.Now, 0, "echo 1"),
+                new ViewModels.Models.Invocation.StreamEventModel(ViewModels.Models.Invocation.StreamEventKind.Status, -1, DateTimeOffset.Now, 0, "OK",
+                    Status: new ViewModels.Models.Invocation.InvocationStatusModel(0, "OK", string.Empty))
+            ]
+        };
+        var vm = StreamingVm(GrpCurl.Net.Studio.ViewModels.Models.Descriptors.StreamingShape.ServerStreaming, runner);
+        vm.IsStreaming.ShouldBeTrue();
+
+        var window = new Window { Content = new InvocationDocumentView { DataContext = vm }, Width = 800, Height = 600 };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        window.GetVisualDescendants().OfType<ListBox>()
+            .Any(l => Equals(l.GetValue(Avalonia.Automation.AutomationProperties.NameProperty), "Event log"))
+            .ShouldBeTrue();
+
+        vm.StartStreamCommand.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+
+        vm.State.ShouldBe(RunState.Completed);
+        vm.Log.Rows.Count.ShouldBe(3);
+        window.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text).ShouldContain("echo 1");
+    });
 }

@@ -24,4 +24,7 @@ public interface IInvocationRunner
         StreamRequestModel request,
         IAsyncEnumerable<string> requestJson,
         CancellationToken cancellationToken);
+
+    /// <summary>Pretty-prints a retained streaming message on demand (FR-081 lazy formatting).</summary>
+    string FormatMessage(Google.Protobuf.IMessage message);
 }

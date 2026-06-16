@@ -135,10 +135,18 @@
                     <Button Content="Copy as CLI" Command="{Binding CopyAsCliCommand}"
                             ToolTip.Tip="Copy an equivalent grpcn command (secrets as ${VAR})"
                             AutomationProperties.Name="Copy as CLI command" />
+                    <!-- Unary controls -->
                     <Button Content="Invoke" Command="{Binding InvokeCommand}"
-                            IsVisible="{Binding !IsInFlight}" AutomationProperties.Name="Invoke" />
+                            IsVisible="{Binding !IsInFlight}" AutomationProperties.Name="Invoke"
+                            IsEnabled="{Binding !IsStreaming}" />
                     <Button Content="Cancel" Command="{Binding InvokeCancelCommand}"
-                            IsVisible="{Binding IsInFlight}" AutomationProperties.Name="Cancel invoke" />
+                            IsVisible="{Binding IsInFlight}" AutomationProperties.Name="Cancel invoke"
+                            IsEnabled="{Binding !IsStreaming}" />
+                    <!-- Streaming controls -->
+                    <Button Content="Start" Command="{Binding StartStreamCommand}"
+                            IsVisible="{Binding IsStreaming}" AutomationProperties.Name="Start stream" />
+                    <Button Content="Stop" Command="{Binding StartStreamCancelCommand}"
+                            IsVisible="{Binding IsStreaming}" AutomationProperties.Name="Stop stream" />
                     <ProgressBar IsIndeterminate="True" Width="80" VerticalAlignment="Center"
                                  IsVisible="{Binding IsInFlight}" />
                 </StackPanel>
@@ -163,8 +171,8 @@
             </WrapPanel>
         </Border>
 
-        <!-- Request: headers + JSON editor + advisory problems strip -->
-        <Grid Grid.Row="2" RowDefinitions="Auto,*,Auto">
+        <!-- Request: headers + JSON editor + advisory problems strip (unary + server-streaming body) -->
+        <Grid Grid.Row="2" RowDefinitions="Auto,*,Auto" IsVisible="{Binding !IsStreaming}">
             <Expander Grid.Row="0" Header="Request headers" Margin="8,6,8,0">
                 <StackPanel Spacing="4" Margin="0,4">
                     <ItemsControl ItemsSource="{Binding Headers}">
@@ -212,10 +220,11 @@
             </Border>
         </Grid>
 
-        <GridSplitter Grid.Row="3" Height="4" HorizontalAlignment="Stretch" Background="{DynamicResource Divider}" />
+        <GridSplitter Grid.Row="3" Height="4" HorizontalAlignment="Stretch" Background="{DynamicResource Divider}"
+                      IsVisible="{Binding !IsStreaming}" />
 
         <!-- Response -->
-        <Grid Grid.Row="4" RowDefinitions="Auto,Auto,*">
+        <Grid Grid.Row="4" RowDefinitions="Auto,Auto,*" IsVisible="{Binding !IsStreaming}">
             <Border Grid.Row="0" Padding="10,6">
                 <DockPanel>
                     <Border DockPanel.Dock="Left" CornerRadius="3" Padding="6,1" VerticalAlignment="Center"
@@ -333,6 +342,95 @@
                     </ItemsControl>
                 </TabItem>
             </TabControl>
+        </Grid>
+
+        <!-- Streaming console (FR-080..089): input (editor or composer) + event log + footer. -->
+        <Grid Grid.Row="2" Grid.RowSpan="3" RowDefinitions="Auto,*,Auto" IsVisible="{Binding IsStreaming}">
+
+            <!-- Input: server-streaming = single request editor; client/duplex = composer -->
+            <Border Grid.Row="0" Padding="8,6" BorderBrush="{DynamicResource Divider}" BorderThickness="0,0,0,1">
+                <StackPanel>
+                    <StackPanel Spacing="4" IsVisible="{Binding !HasComposer}">
+                        <TextBlock Text="Request" FontWeight="SemiBold" />
+                        <TextBox Text="{Binding RequestJson}" AcceptsReturn="True" MinHeight="70" MaxHeight="180"
+                                 FontFamily="{DynamicResource Editor.FontFamily}"
+                                 AutomationProperties.Name="Stream request body" />
+                    </StackPanel>
+
+                    <StackPanel IsVisible="{Binding HasComposer}">
+                    <StackPanel Spacing="4" DataContext="{Binding Composer}">
+                        <TextBlock Text="Compose message" FontWeight="SemiBold" />
+                        <TextBox Text="{Binding MessageJson}" AcceptsReturn="True" MinHeight="56" MaxHeight="160"
+                                 FontFamily="{DynamicResource Editor.FontFamily}"
+                                 AutomationProperties.Name="Compose message" />
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <Button Content="Send" Command="{Binding SendCommand}" AutomationProperties.Name="Send message" />
+                            <Button Content="Complete sending" Command="{Binding CompleteSendingCommand}"
+                                    AutomationProperties.Name="Complete sending" />
+                            <Button Content="Load batch…" Command="{Binding LoadBatchCommand}" AutomationProperties.Name="Load batch" />
+                            <CheckBox Content="Clear after send" IsChecked="{Binding ClearAfterSend}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <ItemsControl ItemsSource="{Binding SentQueue}" MaxHeight="72">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="docs:SentMessageRow">
+                                    <TextBlock Margin="0,1" FontFamily="Cascadia Code,Consolas,monospace" FontSize="11" Opacity="0.8">
+                                        <Run Text="▶" />
+                                        <Run Text="{Binding Preview}" />
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Virtualized event log -->
+            <ListBox Grid.Row="1" ItemsSource="{Binding Log.Rows}" Margin="8,4"
+                     AutomationProperties.Name="Event log">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="docs:StreamRowViewModel">
+                        <StackPanel>
+                            <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="8">
+                                <TextBlock Grid.Column="0" Text="{Binding Glyph}" Width="14"
+                                           Foreground="{DynamicResource Status.Neutral}" />
+                                <TextBlock Grid.Column="1" Text="{Binding Index}" Width="40" Opacity="0.5" FontSize="11"
+                                           IsVisible="{Binding IsMessage}" />
+                                <TextBlock Grid.Column="2" Text="{Binding Preview}" TextTrimming="CharacterEllipsis"
+                                           FontFamily="Cascadia Code,Consolas,monospace" FontSize="12" />
+                                <ToggleButton Grid.Column="3" Content="⋯" Padding="6,0" IsChecked="{Binding IsExpanded}"
+                                              IsVisible="{Binding IsMessage}" AutomationProperties.Name="Expand row" />
+                            </Grid>
+                            <TextBlock IsVisible="{Binding IsExpanded}" Text="{Binding FullJson}" Margin="22,2,0,4"
+                                       FontFamily="Cascadia Code,Consolas,monospace" FontSize="12" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <!-- Footer: counters + truncation notice + final status pill (FR-085/089) -->
+            <Border Grid.Row="2" Padding="10,5" BorderBrush="{DynamicResource Divider}" BorderThickness="0,1,0,0">
+                <DockPanel>
+                    <Border DockPanel.Dock="Right" CornerRadius="3" Padding="6,1" VerticalAlignment="Center"
+                            IsVisible="{Binding StatusText, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            Background="{Binding Severity, Converter={StaticResource SeverityBrush}}">
+                        <TextBlock Text="{Binding StatusText}" Foreground="White" FontWeight="SemiBold" FontSize="12"
+                                   AutomationProperties.Name="Stream status" />
+                    </Border>
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                        <TextBlock VerticalAlignment="Center">
+                            <Run Text="received" Foreground="{DynamicResource Status.Neutral}" />
+                            <Run Text="{Binding Log.TotalReceived}" FontWeight="SemiBold" />
+                        </TextBlock>
+                        <TextBlock VerticalAlignment="Center">
+                            <Run Text="sent" Foreground="{DynamicResource Status.Neutral}" />
+                            <Run Text="{Binding Log.TotalSent}" FontWeight="SemiBold" />
+                        </TextBlock>
+                        <TextBlock Text="{Binding Log.TruncationNotice}" VerticalAlignment="Center" FontSize="11"
+                                   Foreground="{DynamicResource Status.Server}" IsVisible="{Binding Log.IsTruncated}" />
+                    </StackPanel>
+                </DockPanel>
+            </Border>
         </Grid>
     </Grid>
 </UserControl>

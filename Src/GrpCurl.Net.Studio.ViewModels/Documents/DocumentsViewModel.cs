@@ -22,6 +22,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     private readonly ISettingsStore _settings;
     private readonly IThemeService _theme;
     private readonly IProtocService? _protoc;
+    private readonly IFilePickerService? _filePicker;
 
     [ObservableProperty]
     private DocumentViewModel? _selectedDocument;
@@ -36,7 +37,8 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         IRequestValidator validator,
         ISettingsStore settings,
         IThemeService theme,
-        IProtocService? protoc = null)
+        IProtocService? protoc = null,
+        IFilePickerService? filePicker = null)
     {
         _descriptors = descriptors;
         _dispatcher = dispatcher;
@@ -48,6 +50,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         _settings = settings;
         _theme = theme;
         _protoc = protoc;
+        _filePicker = filePicker;
     }
 
     public ObservableCollection<DocumentViewModel> Documents { get; } = [];
@@ -77,7 +80,8 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     public void OpenInvocation(SavedConnection connection, string methodSymbol, string? initialRequestJson = null)
     {
         var document = new InvocationDocumentViewModel(
-            connection, methodSymbol, initialRequestJson, _invocation, _descriptors, _dispatcher, _clipboard, _dialogs, _launcher, _validator);
+            connection, methodSymbol, initialRequestJson, _invocation, _descriptors, _dispatcher, _clipboard, _dialogs, _launcher, _validator,
+            _filePicker, _settings.Current.Network.RingBufferSize);
 
         // FR-153 / FR-163: seed new tabs from the Network/General defaults (initial values only).
         var network = _settings.Current.Network;

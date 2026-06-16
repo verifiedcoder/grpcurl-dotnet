@@ -36,6 +36,25 @@ public sealed class InvocationDocumentViewModelTests
             Conn(), "pkg.Svc/Go", initialJson, runner, descriptors, new ImmediateUiDispatcher(), clipboard, dialogs, launcher, validator);
     }
 
+    private static InvocationDocumentViewModel CreateStreaming(StreamingShape shape, out FakeInvocationRunner runner)
+    {
+        var captured = new FakeInvocationRunner();
+        runner = captured;
+        var descriptors = new FakeDescriptorService
+        {
+            OnDescribe = (_, symbol, _) => Task.FromResult(DescribeResult.Success(
+                new MethodDescription(symbol, "Go", "f.proto", shape,
+                    new TypeRef("pkg.In", true), new TypeRef("pkg.Out", true), new TypeRef("pkg.Svc", true), "{}")))
+        };
+
+        return new InvocationDocumentViewModel(
+            Conn(), "pkg.Svc/Go", initialRequestJson: "{}", captured, descriptors, new ImmediateUiDispatcher(),
+            new FakeClipboardService(), new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator());
+    }
+
+    private static StreamEventModel Ev(StreamEventKind kind, long index = -1, InvocationStatusModel? status = null)
+        => new(kind, index, DateTimeOffset.Now, 0, kind.ToString(), Status: status);
+
     private static ErrorModel SampleError(int code = 5, string name = "NotFound", string headline = "missing") => new(
         ErrorCategoryKind.Rpc, code, name, StatusSeverityMap.FromCode(code), headline,
         Hint: null, Address: "h:1", Method: "pkg.Svc/Go",
@@ -305,5 +324,67 @@ public sealed class InvocationDocumentViewModelTests
         await doc.InvokeCommand.ExecuteAsync(null);
 
         doc.State.ShouldBe(RunState.Completed);
+    }
+
+    [Fact]
+    public void Server_streaming_shape_is_detected_and_invoke_is_disabled()
+    {
+        var doc = CreateStreaming(StreamingShape.ServerStreaming, out _);
+
+        doc.Shape.ShouldBe(StreamingShape.ServerStreaming);
+        doc.IsStreaming.ShouldBeTrue();
+        doc.HasComposer.ShouldBeFalse();
+        doc.InvokeCommand.CanExecute(null).ShouldBeFalse();
+        doc.StartStreamCommand.CanExecute(null).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Client_streaming_shape_creates_a_composer()
+    {
+        var doc = CreateStreaming(StreamingShape.ClientStreaming, out _);
+
+        doc.HasComposer.ShouldBeTrue();
+        doc.Composer.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task Start_stream_populates_the_event_log_and_final_status()
+    {
+        var doc = CreateStreaming(StreamingShape.ServerStreaming, out var runner);
+        runner.StreamEvents =
+        [
+            Ev(StreamEventKind.Headers),
+            Ev(StreamEventKind.MessageReceived, 0),
+            Ev(StreamEventKind.MessageReceived, 1),
+            Ev(StreamEventKind.Status, status: new InvocationStatusModel(0, "OK", string.Empty))
+        ];
+
+        await doc.StartStreamCommand.ExecuteAsync(null);
+
+        doc.State.ShouldBe(RunState.Completed);
+        doc.Log.TotalReceived.ShouldBe(2);
+        doc.Log.Rows.Count.ShouldBe(4);
+        doc.StatusText.ShouldBe("OK");
+    }
+
+    [Fact]
+    public async Task Stream_cancellation_preserves_received_rows_and_records_a_cancel_row()
+    {
+        var doc = CreateStreaming(StreamingShape.ServerStreaming, out var runner);
+        runner.OnStream = (_, _, _) => OneMessageThenCancel();
+
+        await doc.StartStreamCommand.ExecuteAsync(null);
+
+        doc.State.ShouldBe(RunState.Cancelled);
+        doc.Log.TotalReceived.ShouldBe(1);                                  // preserved
+        doc.Log.Rows[^1].Kind.ShouldBe(StreamEventKind.Status);             // final cancel row
+        doc.Log.Rows[^1].Preview.ShouldContain("Cancelled");
+    }
+
+    private static async IAsyncEnumerable<StreamEventModel> OneMessageThenCancel()
+    {
+        yield return new StreamEventModel(StreamEventKind.MessageReceived, 0, DateTimeOffset.Now, 0, "msg");
+        await Task.Yield();
+        throw new OperationCanceledException();
     }
 }

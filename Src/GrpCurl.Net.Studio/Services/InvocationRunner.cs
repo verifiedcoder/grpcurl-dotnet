@@ -191,6 +191,8 @@ internal sealed partial class InvocationRunner(IInvocationService invocation) : 
         => new(StreamEventKind.Status, -1, DateTimeOffset.UtcNow, 0, error.Headline,
             Status: new InvocationStatusModel(error.StatusCode, error.StatusName, error.Headline), Error: error);
 
+    public string FormatMessage(IMessage message) => invocation.MessageToJson(message, includeDefaults: false, indent: true);
+
     private string Preview(IMessage message)
     {
         var json = invocation.MessageToJson(message, includeDefaults: false, indent: false).ReplaceLineEndings(" ");

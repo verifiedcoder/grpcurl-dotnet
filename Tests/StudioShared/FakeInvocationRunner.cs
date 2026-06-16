@@ -49,6 +49,8 @@ public sealed class FakeInvocationRunner : IInvocationRunner
         return OnStream is not null ? OnStream(request, requestJson, cancellationToken) : Canned(cancellationToken);
     }
 
+    public string FormatMessage(Google.Protobuf.IMessage message) => message.ToString() ?? string.Empty;
+
     private async IAsyncEnumerable<StreamEventModel> Canned(
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken)
     {

@@ -25,7 +25,7 @@ public sealed partial class StreamComposerViewModel : ViewModelBase
     private readonly bool _allowUnknownFields;
     private readonly IRequestValidator _validator;
     private readonly IUiDispatcher _dispatcher;
-    private readonly IFilePickerService _filePicker;
+    private readonly IFilePickerService? _filePicker;
     private readonly Func<string, Task<string>> _readFile;
 
     private Channel<string>? _channel;
@@ -53,7 +53,7 @@ public sealed partial class StreamComposerViewModel : ViewModelBase
         bool allowUnknownFields,
         IRequestValidator validator,
         IUiDispatcher dispatcher,
-        IFilePickerService filePicker,
+        IFilePickerService? filePicker,
         Func<string, Task<string>>? readFile = null)
     {
         _connection = connection;
@@ -111,6 +111,11 @@ public sealed partial class StreamComposerViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanSend))]
     private async Task LoadBatch()
     {
+        if (_filePicker is null)
+        {
+            return;
+        }
+
         var path = await _filePicker.OpenFileAsync("Load batch", [".json", ".txt"]);
 
         if (path is null)

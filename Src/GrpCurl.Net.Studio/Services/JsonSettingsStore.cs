@@ -29,6 +29,8 @@ internal sealed class JsonSettingsStore : ISettingsStore
     // Test seam: lets a test point the store at a temp file instead of the real config dir.
     internal JsonSettingsStore(string path) => _path = path;
 
+    public event EventHandler? Changed;
+
     public StudioSettings Current { get; private set; } = StudioSettings.Defaults();
 
     public async Task<StudioSettings> LoadAsync(CancellationToken cancellationToken = default)
@@ -75,6 +77,7 @@ internal sealed class JsonSettingsStore : ISettingsStore
 
         File.Move(tempPath, _path, overwrite: true);
         Current = settings;
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 
     private void TryQuarantine()

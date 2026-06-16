@@ -1,6 +1,7 @@
 using System.CommandLine;
 using GrpCurl.Net.Commands;
 using GrpCurl.Net.Studio.ViewModels.Connections;
+using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Services;
@@ -71,4 +72,32 @@ public sealed class CliCommandBuilderTests
     [InlineData("x-custom", false)]
     public void Header_rows_flag_secret_names(string name, bool secret)
         => new HeaderRowViewModel { Name = name }.IsSecret.ShouldBe(secret);
+
+    [Fact]
+    public void Powershell_dialect_quotes_json_with_doubled_single_quotes()
+    {
+        var request = new InvocationRequestModel(Conn(), "p.S/M", "{ \"a\": 1 }", [], AllowUnknownFields: false);
+
+        var command = CliCommandBuilder.BuildCommand(request, ShellDialect.PowerShell);
+
+        command.ShouldContain("'{ \"a\": 1 }'");   // PowerShell single-quote literal
+    }
+
+    [Fact]
+    public void Cmd_dialect_quotes_json_with_double_quotes()
+    {
+        var request = new InvocationRequestModel(Conn(), "p.S/M", "{ \"a\": 1 }", [], AllowUnknownFields: false);
+
+        var command = CliCommandBuilder.BuildCommand(request, ShellDialect.Cmd);
+
+        command.ShouldContain("\"{ \"\"a\"\": 1 }\"");   // cmd doubles inner quotes
+    }
+
+    [Fact]
+    public void Default_dialect_is_bash()
+    {
+        var request = new InvocationRequestModel(Conn(), "p.S/M", "{}", [], AllowUnknownFields: false);
+
+        CliCommandBuilder.BuildCommand(request).ShouldBe(CliCommandBuilder.BuildCommand(request, ShellDialect.Bash));
+    }
 }

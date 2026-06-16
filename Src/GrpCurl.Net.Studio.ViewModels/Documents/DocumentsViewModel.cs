@@ -75,6 +75,21 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     {
         var document = new InvocationDocumentViewModel(
             connection, methodSymbol, initialRequestJson, _invocation, _descriptors, _dispatcher, _clipboard, _dialogs, _launcher, _validator);
+
+        // FR-153 / FR-163: seed new tabs from the Network/General defaults (initial values only).
+        var network = _settings.Current.Network;
+        document.CliDialect = _settings.Current.General.CliShellDialect;
+
+        if (!string.IsNullOrWhiteSpace(network.DefaultDeadline))
+        {
+            document.Deadline = network.DefaultDeadline;
+        }
+
+        if (!string.IsNullOrWhiteSpace(network.MaxMessageSize))
+        {
+            document.MaxMessageSize = network.MaxMessageSize;
+        }
+
         document.CloseRequested += OnDocumentCloseRequested;
 
         Documents.Add(document);

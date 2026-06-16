@@ -190,7 +190,7 @@
 
             <Border Grid.Row="1" Margin="8,6" BorderBrush="{DynamicResource Divider}" BorderThickness="1" CornerRadius="3">
                 <ae:TextEditor x:Name="RequestEditor" ShowLineNumbers="True"
-                               FontFamily="Cascadia Code,Consolas,monospace" FontSize="13"
+                               FontFamily="{DynamicResource Editor.FontFamily}" FontSize="{DynamicResource Editor.FontSize}"
                                AutomationProperties.Name="Request body" />
             </Border>
 
@@ -290,7 +290,7 @@
                 <TabItem Header="Body">
                     <Border BorderBrush="{DynamicResource Divider}" BorderThickness="1" CornerRadius="3">
                         <ae:TextEditor x:Name="ResponseEditor" ShowLineNumbers="True" IsReadOnly="True"
-                                       FontFamily="Cascadia Code,Consolas,monospace" FontSize="13"
+                                       FontFamily="{DynamicResource Editor.FontFamily}" FontSize="{DynamicResource Editor.FontSize}"
                                        AutomationProperties.Name="Response body" />
                     </Border>
                 </TabItem>

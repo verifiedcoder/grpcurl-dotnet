@@ -1,4 +1,5 @@
 using System.Text;
+using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Utilities;
@@ -70,14 +71,14 @@ public static class CliCommandBuilder
         return args;
     }
 
-    /// <summary>A single shell-pasteable <c>grpcn invoke …</c> command line.</summary>
-    public static string BuildCommand(InvocationRequestModel request)
+    /// <summary>A single shell-pasteable <c>grpcn invoke …</c> command line for the given dialect (FR-163).</summary>
+    public static string BuildCommand(InvocationRequestModel request, ShellDialect dialect = ShellDialect.Bash)
     {
         var sb = new StringBuilder("grpcn");
 
         foreach (var arg in BuildArgs(request))
         {
-            sb.Append(' ').Append(ShellQuote(arg));
+            sb.Append(' ').Append(ShellQuote(arg, dialect));
         }
 
         return sb.ToString();
@@ -106,14 +107,21 @@ public static class CliCommandBuilder
         return new string(chars.ToArray());
     }
 
-    private static string ShellQuote(string value)
+    private static string ShellQuote(string value, ShellDialect dialect)
     {
         if (value.Length > 0 && value.All(c => char.IsLetterOrDigit(c) || c is '-' or '_' or '.' or '/' or ':'))
         {
             return value;
         }
 
-        // POSIX single-quoting: ' -> '\''
-        return "'" + value.Replace("'", "'\\''") + "'";
+        return dialect switch
+        {
+            // PowerShell single-quoted literal: ' -> ''
+            ShellDialect.PowerShell => "'" + value.Replace("'", "''") + "'",
+            // cmd.exe double-quoted: " -> "" (best-effort; cmd quoting is limited)
+            ShellDialect.Cmd => "\"" + value.Replace("\"", "\"\"") + "\"",
+            // POSIX single-quoting: ' -> '\''
+            _ => "'" + value.Replace("'", "'\\''") + "'"
+        };
     }
 }

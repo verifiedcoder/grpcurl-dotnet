@@ -33,6 +33,9 @@ public sealed partial class App : Application
             // Apply the persisted theme and keep it live as the shared service changes.
             new ThemeManager(this).Attach(_services.GetRequiredService<IThemeService>());
 
+            // Apply editor font/size/indent to all AvaloniaEdit instances, live (FR-152).
+            new EditorOptionsManager(this, _services.GetRequiredService<ISettingsStore>()).Attach();
+
             desktop.MainWindow = new MainWindow { DataContext = viewModel };
         }
 

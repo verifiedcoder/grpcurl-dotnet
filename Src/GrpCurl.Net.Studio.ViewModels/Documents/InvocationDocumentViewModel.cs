@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.Studio.ViewModels.Connections;
+using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Descriptors;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
@@ -103,6 +104,9 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     public SavedConnection Connection { get; }
 
     public string MethodSymbol { get; }
+
+    /// <summary>FR-163: the shell dialect used by "Copy as CLI" (seeded from settings when the tab opens).</summary>
+    public ShellDialect CliDialect { get; set; } = ShellDialect.Bash;
 
     public ObservableCollection<HeaderRowViewModel> Headers { get; } = [];
     public ObservableCollection<MetadataItem> ResponseHeaders { get; } = [];
@@ -252,7 +256,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     /// <summary>Copies the equivalent grpcn invoke command, secrets as ${VAR} placeholders (FR-160/161).</summary>
     [RelayCommand]
     private async Task CopyAsCli()
-        => await _clipboard.SetTextAsync(CliCommandBuilder.BuildCommand(BuildRequest()));
+        => await _clipboard.SetTextAsync(CliCommandBuilder.BuildCommand(BuildRequest(), CliDialect));
 
     /// <summary>FR-093: re-run the call that failed.</summary>
     [RelayCommand(CanExecute = nameof(HasError))]

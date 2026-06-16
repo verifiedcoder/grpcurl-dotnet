@@ -1,7 +1,9 @@
+using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Models;
+using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Panes;
 using GrpCurl.Net.Studio.ViewModels.Services;
 
@@ -17,6 +19,17 @@ namespace GrpCurl.Net.Studio.ViewModels;
 public sealed partial class MainWindowViewModel : ViewModelBase
 {
     private readonly IThemeService _theme;
+    private readonly ITlsProfileStore? _profileStore;
+
+    private SavedConnection? _insecureConnection;
+
+    /// <summary>SEC-014: full-width, non-dismissable banner while an open tab uses a skip-verify profile.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ReviewInsecureConnectionCommand))]
+    private bool _isInsecureBannerVisible;
+
+    [ObservableProperty]
+    private string _insecureBannerText = string.Empty;
 
     [ObservableProperty]
     private bool _isSidebarOpen = true;
@@ -45,9 +58,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         ServiceExplorerViewModel explorer,
         ConsoleViewModel console,
         InspectorViewModel inspector,
-        DocumentsViewModel documents)
+        DocumentsViewModel documents,
+        ITlsProfileStore? profileStore = null)
     {
         _theme = theme;
+        _profileStore = profileStore;
         Connections = connections;
         Explorer = explorer;
         Console = console;
@@ -72,7 +87,54 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                 HasAnyConnection = connections.HasConnections;
             }
         };
+
+        // SEC-014: the insecure banner appears/disappears as tabs open and close.
+        documents.Documents.CollectionChanged += OnDocumentsChanged;
+        RefreshInsecureBanner();
     }
+
+    private void OnDocumentsChanged(object? sender, NotifyCollectionChangedEventArgs e) => RefreshInsecureBanner();
+
+    /// <summary>
+    ///     Recomputes the insecure-skip-verify banner: visible when any open tab targets a TLS connection
+    ///     whose referenced profile has verification disabled (SEC-014 / SPEC-020 §3.4).
+    /// </summary>
+    public void RefreshInsecureBanner()
+    {
+        _insecureConnection = Documents.Documents
+            .Select(d => d.TabConnection)
+            .FirstOrDefault(IsInsecure);
+
+        if (_insecureConnection is { } connection)
+        {
+            IsInsecureBannerVisible = true;
+            InsecureBannerText =
+                $"INSECURE: certificate verification disabled for connection \"{connection.Name}\". "
+                + "Traffic is exposed to interception.";
+        }
+        else
+        {
+            IsInsecureBannerVisible = false;
+            InsecureBannerText = string.Empty;
+        }
+    }
+
+    private bool IsInsecure(SavedConnection? connection)
+    {
+        if (_profileStore is null || connection is not { Transport: TransportMode.Tls, TlsProfileId: { } id })
+        {
+            return false;
+        }
+
+        return _profileStore.Profiles.FirstOrDefault(p => p.Id == id) is { InsecureSkipVerify: true };
+    }
+
+    private bool CanReviewInsecureConnection => IsInsecureBannerVisible;
+
+    /// <summary>"Review connection…" on the banner opens the offending connection's editor (SPEC-020 §3.4).</summary>
+    [RelayCommand(CanExecute = nameof(CanReviewInsecureConnection))]
+    private Task ReviewInsecureConnection()
+        => _insecureConnection is { } connection ? Connections.ReviewConnectionAsync(connection) : Task.CompletedTask;
 
     public string Title => "GrpCurl.Net Studio";
 

@@ -60,6 +60,8 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel
 
     public SavedConnection Connection { get; }
 
+    public override SavedConnection? TabConnection => Connection;
+
     /// <summary>The symbol currently shown (changes as the user navigates type links).</summary>
     public string CurrentSymbol { get; private set; }
 

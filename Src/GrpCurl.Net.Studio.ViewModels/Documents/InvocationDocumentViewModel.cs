@@ -124,6 +124,8 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
 
     public SavedConnection Connection { get; }
 
+    public override SavedConnection? TabConnection => Connection;
+
     public string MethodSymbol { get; }
 
     /// <summary>FR-163: the shell dialect used by "Copy as CLI" (seeded from settings when the tab opens).</summary>

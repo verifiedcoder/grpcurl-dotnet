@@ -138,6 +138,25 @@ public sealed class ErrorMapperTests
     }
 
     [Fact]
+    public void Custom_ca_revocation_failure_suggests_offline_or_nocheck_SEC013()
+    {
+        var model = ErrorMapper.FromOutcome(
+            FailedOutcome(14, "Unavailable", "The certificate revocation status could not be determined (RevocationStatusUnknown)."),
+            Ctx);
+
+        model.Suggestions.ShouldContain(s =>
+            s.Text.Contains("revocation mode") && s.Text.Contains("offline") && s.Text.Contains("nocheck"));
+    }
+
+    [Fact]
+    public void Non_revocation_failure_does_not_add_the_revocation_hint()
+    {
+        var model = ErrorMapper.FromOutcome(FailedOutcome(14, "Unavailable", "connection refused"), Ctx);
+
+        model.Suggestions.ShouldNotContain(s => s.Text.Contains("revocation mode"));
+    }
+
+    [Fact]
     public void Empty_detail_uses_a_default_headline()
     {
         var model = ErrorMapper.FromOutcome(FailedOutcome(5, "NotFound", string.Empty), Ctx);

@@ -188,6 +188,22 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
         }
     }
 
+    [RelayCommand(CanExecute = nameof(CanManageProfiles))]
+    private async Task ManageProfiles()
+    {
+        if (!CanManageProfiles)
+        {
+            return;
+        }
+
+        var keepId = SelectedTlsProfile?.Profile?.Id;
+        await _dialogService!.ShowDialogAsync(
+            new TlsProfileManagerViewModel(_profileStore!, _filePicker!, _dialogService!, _secretStore!));
+
+        // The manager may have added, edited, or deleted profiles — re-sync the picker.
+        RebuildProfileOptions(keepId);
+    }
+
     /// <summary>Reloads the picker from the store, preserving (or moving to) the given profile id.</summary>
     private void RebuildProfileOptions(string? selectedProfileId)
     {

@@ -18,6 +18,8 @@
             <Color x:Key="Status.CallerColor">#B8860B</Color>
             <Color x:Key="Status.TransientColor">#8A6D00</Color>
             <Color x:Key="Status.ServerColor">#C42B1C</Color>
+            <!-- Danger banner (SEC-014 insecure-skip-verify) -->
+            <Color x:Key="Banner.DangerBgColor">#FDE7E9</Color>
             <!-- Connection-state dots -->
             <Color x:Key="Conn.ConnectedColor">#107C10</Color>
             <Color x:Key="Conn.IdleColor">#9E9E9E</Color>
@@ -37,6 +39,8 @@
             <Color x:Key="Status.CallerColor">#E2C541</Color>
             <Color x:Key="Status.TransientColor">#D6B95C</Color>
             <Color x:Key="Status.ServerColor">#FF99A4</Color>
+            <!-- Danger banner (SEC-014 insecure-skip-verify) -->
+            <Color x:Key="Banner.DangerBgColor">#442726</Color>
             <!-- Connection-state dots -->
             <Color x:Key="Conn.ConnectedColor">#6CCB5F</Color>
             <Color x:Key="Conn.IdleColor">#808080</Color>
@@ -56,6 +60,7 @@
     <SolidColorBrush x:Key="Status.Caller" Color="{DynamicResource Status.CallerColor}" />
     <SolidColorBrush x:Key="Status.Transient" Color="{DynamicResource Status.TransientColor}" />
     <SolidColorBrush x:Key="Status.Server" Color="{DynamicResource Status.ServerColor}" />
+    <SolidColorBrush x:Key="Banner.DangerBg" Color="{DynamicResource Banner.DangerBgColor}" />
     <SolidColorBrush x:Key="Conn.Connected" Color="{DynamicResource Conn.ConnectedColor}" />
     <SolidColorBrush x:Key="Conn.Idle" Color="{DynamicResource Conn.IdleColor}" />
     <SolidColorBrush x:Key="Conn.Connecting" Color="{DynamicResource Conn.ConnectingColor}" />

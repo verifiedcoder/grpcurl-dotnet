@@ -29,7 +29,8 @@ public sealed class ViewLocatorTests(HeadlessSessionFixture fixture) : HeadlessT
         typeof(MethodNodeViewModel),
         typeof(TypePackageNodeViewModel),
         typeof(TypeLeafNodeViewModel),
-        typeof(DocumentsViewModel)
+        typeof(DocumentsViewModel),
+        typeof(StreamComposerViewModel) // a sub-view-model rendered inline inside the invocation tab
     ];
 
     public static TheoryData<Type> ContentViewModels()

@@ -7,6 +7,7 @@ using Grpc.Net.Client;
 using GrpCurl.Net.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Services;
 using GrpCurl.Net.Utilities;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 
 namespace GrpCurl.Net.Studio.Conformance;
@@ -46,8 +47,10 @@ internal static class TestCaseRunner
         {
             StreamType.Unary or StreamType.Unspecified => await RunUnaryAsync(request, method, channel, metadata, deadline, context, cts),
             StreamType.ServerStream => await RunServerStreamAsync(request, method, channel, metadata, deadline, context, cts),
-            _ => throw new ArgumentException(
-                $"The Studio conformance adapter does not yet support '{request.StreamType}' (client/duplex arrive with E2.1 PR-B).")
+            StreamType.ClientStream => await RunClientStreamAsync(request, method, channel, metadata, deadline, context, cts),
+            StreamType.HalfDuplexBidiStream => await RunBidiAsync(request, method, channel, metadata, deadline, context, cts, fullDuplex: false),
+            StreamType.FullDuplexBidiStream => await RunBidiAsync(request, method, channel, metadata, deadline, context, cts, fullDuplex: true),
+            _ => throw new ArgumentException($"Unsupported stream type '{request.StreamType}'.")
         };
     }
 
@@ -152,6 +155,146 @@ internal static class TestCaseRunner
         }
 
         return result;
+    }
+
+    private static async Task<ClientResponseResult> RunClientStreamAsync(
+        ClientCompatRequest request, MethodDescriptor method, GrpcChannel channel,
+        Metadata metadata, DateTime? deadline, StreamContext context, CancellationTokenSource cts)
+    {
+        var result = new ClientResponseResult();
+        var source = BuildRequestSource(request, method, context, cts, fullDuplex: false);
+
+        try
+        {
+            await foreach (var ev in Invocation.InvokeStreamingAsync(channel, method, source, metadata, deadline, cts.Token))
+            {
+                switch (ev)
+                {
+                    case HeadersReceived headers:
+                        ResultBuilder.AddHeaders(result.ResponseHeaders, headers.Headers);
+                        break;
+
+                    case MessageReceived msg:
+                        ResultBuilder.AddPayload(result.Payloads, msg.Message, method);
+                        break;
+
+                    case StatusReceived status when status.Status.Code == 0:
+                        ResultBuilder.AddHeaders(result.ResponseTrailers, status.Trailers);
+                        break;
+
+                    case StatusReceived status:
+                        ResultBuilder.ApplyError(result, Reconstruct(status.Status, status.Trailers));
+                        break;
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            ResultBuilder.ApplyCanceled(result);
+        }
+        finally
+        {
+            context.StreamDone = true;
+            context.ResponseGate.Release(1_000_000);
+        }
+
+        result.NumUnsentRequests = request.RequestMessages.Count - Volatile.Read(ref context.Sent);
+        return result;
+    }
+
+    private static async Task<ClientResponseResult> RunBidiAsync(
+        ClientCompatRequest request, MethodDescriptor method, GrpcChannel channel,
+        Metadata metadata, DateTime? deadline, StreamContext context, CancellationTokenSource cts, bool fullDuplex)
+    {
+        var result = new ClientResponseResult();
+        var source = BuildRequestSource(request, method, context, cts, fullDuplex);
+        var afterNumResponses = AfterNumResponses(request);
+        var received = 0u;
+
+        try
+        {
+            await foreach (var ev in Invocation.InvokeStreamingAsync(channel, method, source, metadata, deadline, cts.Token))
+            {
+                switch (ev)
+                {
+                    case HeadersReceived headers:
+                        ResultBuilder.AddHeaders(result.ResponseHeaders, headers.Headers);
+                        break;
+
+                    case MessageReceived msg:
+                        ResultBuilder.AddPayload(result.Payloads, msg.Message, method);
+                        received++;
+                        context.ResponseGate.Release(); // unblock the next full-duplex send
+                        if (afterNumResponses > 0 && received >= afterNumResponses)
+                        {
+                            cts.Cancel();
+                        }
+
+                        break;
+
+                    case StatusReceived status when status.Status.Code == 0:
+                        ResultBuilder.AddHeaders(result.ResponseTrailers, status.Trailers);
+                        break;
+
+                    case StatusReceived status:
+                        ResultBuilder.ApplyError(result, Reconstruct(status.Status, status.Trailers));
+                        break;
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            ResultBuilder.ApplyCanceled(result);
+        }
+        finally
+        {
+            context.StreamDone = true;
+            context.ResponseGate.Release(1_000_000);
+        }
+
+        result.NumUnsentRequests = request.RequestMessages.Count - Volatile.Read(ref context.Sent);
+        return result;
+    }
+
+    // The request stream is the send-side control surface: per-message delay, full-duplex
+    // interleaving (wait for response N-1 before sending N), the sent count behind
+    // num_unsent_requests, and before_close_send cancellation (cancel instead of closing send).
+    private static async IAsyncEnumerable<IMessage> BuildRequestSource(
+        ClientCompatRequest request, MethodDescriptor method, StreamContext context, CancellationTokenSource cts,
+        bool fullDuplex, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        foreach (var any in request.RequestMessages)
+        {
+            if (context.StreamDone)
+            {
+                yield break; // response stream ended — remaining messages count as unsent
+            }
+
+            if (request.RequestDelayMs > 0)
+            {
+                await Task.Delay((int)request.RequestDelayMs, cancellationToken);
+            }
+
+            yield return UnpackToDynamic(any, method.InputType);
+
+            // Post-yield runs after the write was confirmed and the next message is pulled.
+            Interlocked.Increment(ref context.Sent);
+
+            if (fullDuplex)
+            {
+                await context.ResponseGate.WaitAsync(cancellationToken);
+            }
+        }
+
+        if (request.Cancel?.CancelTimingCase == ClientCompatRequest.Types.Cancel.CancelTimingOneofCase.BeforeCloseSend)
+        {
+            // Cancel instead of close-send: trip the token, then hold the enumerable open so the
+            // invoker never reaches CompleteAsync. The cancelled token unblocks the delay at once.
+            cts.Cancel();
+            await Task.Delay(Timeout.Infinite, cancellationToken);
+        }
+
+        context.AllSent.TrySetResult();
     }
 
     // Reconstruct an RpcException carrying the captured trailers so the shared ResultBuilder decodes
@@ -327,9 +470,12 @@ internal static class TestCaseRunner
         return message;
     }
 
-    /// <summary>Streaming bookkeeping (PR-A: send-close signalling; the full-duplex gates land in PR-B).</summary>
+    /// <summary>Streaming bookkeeping shared by the request source and the response consumer.</summary>
     private sealed class StreamContext
     {
         public readonly TaskCompletionSource AllSent = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public readonly SemaphoreSlim ResponseGate = new(0);
+        public volatile bool StreamDone;
+        public int Sent;
     }
 }

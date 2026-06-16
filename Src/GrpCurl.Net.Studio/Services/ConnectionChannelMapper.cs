@@ -53,6 +53,25 @@ internal static class ConnectionChannelMapper
             connection.ReflectionHeaders.Select(h => $"{h.Name}: {h.Value}"),
             NullIfBlank(connection.UserAgent));
 
+    /// <summary>
+    ///     The descriptor-source path lists Core's <c>DescriptorSourceFactory</c> consumes (FR-040). All
+    ///     three are passed regardless of <see cref="DescriptorSourceConfig.Mode" />; Core applies the
+    ///     proto &gt; protoset &gt; reflection precedence. The configured mode just decides which lists are
+    ///     populated, so a connection can keep, say, protoset paths while reflecting.
+    /// </summary>
+    public static (IReadOnlyList<string> ProtosetPaths, IReadOnlyList<string> ProtoFiles, IReadOnlyList<string> ImportPaths)
+        DescriptorPaths(SavedConnection connection)
+    {
+        var source = connection.DescriptorSource;
+
+        return source.Mode switch
+        {
+            DescriptorMode.Protoset => (source.ProtosetPaths, [], []),
+            DescriptorMode.Proto => ([], source.ProtoFiles, source.ImportPaths),
+            _ => ([], [], [])
+        };
+    }
+
     private static TimeSpan? ParseOrNull(string? duration)
         => string.IsNullOrWhiteSpace(duration) ? null : GrpcChannelFactory.ParseDuration(duration);
 

@@ -19,7 +19,7 @@ public sealed class DescriptorServiceTests(StudioPlaintextServerFixture server)
         Name = "test",
         Address = address,
         Transport = TransportMode.Plaintext,
-        DescriptorMode = DescriptorMode.Reflection
+        DescriptorSource = new DescriptorSourceConfig()
     };
 
     [Fact]

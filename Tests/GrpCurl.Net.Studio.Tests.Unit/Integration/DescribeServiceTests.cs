@@ -19,7 +19,7 @@ public sealed class DescribeServiceTests(StudioPlaintextServerFixture server)
         Name = "test",
         Address = address,
         Transport = TransportMode.Plaintext,
-        DescriptorMode = DescriptorMode.Reflection
+        DescriptorSource = new DescriptorSourceConfig()
     };
 
     private async Task<SymbolDescription> Describe(string symbol)

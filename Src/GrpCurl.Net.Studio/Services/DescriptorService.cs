@@ -22,15 +22,16 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null)
         var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
         var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password);
         var metadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
+        var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
         var warnings = new CollectingWarningSink();
 
         try
         {
             await using var session = await DescriptorSourceFactory.CreateAsync(
                 connection.Address,
-                protosetPaths: [],
-                protoFiles: [],
-                importPaths: [],
+                protosetPaths: protosets,
+                protoFiles: protos,
+                importPaths: imports,
                 channelOptions: options,
                 reflectionMetadata: metadata,
                 cancellationToken: cancellationToken,
@@ -64,6 +65,10 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null)
         {
             return DescriptorLoadResult.Failure(MapRpcError(ex));
         }
+        catch (Exception ex) when (IsDescriptorSourceError(ex))
+        {
+            return DescriptorLoadResult.Failure(MapDescriptorSourceError(ex));
+        }
     }
 
     public async Task<DescribeResult> DescribeAsync(SavedConnection connection, string symbol, CancellationToken cancellationToken = default)
@@ -71,15 +76,16 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null)
         var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
         var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password);
         var metadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
+        var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
         var warnings = new CollectingWarningSink();
 
         try
         {
             await using var session = await DescriptorSourceFactory.CreateAsync(
                 connection.Address,
-                protosetPaths: [],
-                protoFiles: [],
-                importPaths: [],
+                protosetPaths: protosets,
+                protoFiles: protos,
+                importPaths: imports,
                 channelOptions: options,
                 reflectionMetadata: metadata,
                 cancellationToken: cancellationToken,
@@ -109,10 +115,27 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null)
         {
             return DescribeResult.Failure(MapRpcError(ex));
         }
+        catch (Exception ex) when (IsDescriptorSourceError(ex))
+        {
+            return DescribeResult.Failure(MapDescriptorSourceError(ex));
+        }
     }
 
     private async Task<(TlsProfile? Profile, string? Password)> ResolveTlsAsync(SavedConnection connection, CancellationToken cancellationToken)
         => tlsResolver is null ? default : await tlsResolver.ResolveAsync(connection, cancellationToken).ConfigureAwait(false);
+
+    // Local descriptor-source failures (FR-042/FR-044): protoc missing, proto compile error, or an
+    // unreadable/invalid protoset file — all schema-category, surfaced with the verbatim detail.
+    private static bool IsDescriptorSourceError(Exception ex)
+        => ex is ProtocNotFoundException or InvalidOperationException or IOException;
+
+    private static DescriptorLoadError MapDescriptorSourceError(Exception ex)
+        => new(
+            ex.Message,
+            ex is ProtocNotFoundException
+                ? "Set a protoc path in Settings → protoc, or configure a protoset instead."
+                : null,
+            ReflectionUnavailable: false);
 
     private static ServiceEntry MapService(ServiceDescriptor descriptor)
     {

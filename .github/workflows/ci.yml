@@ -35,6 +35,14 @@ jobs:
         with:
           global-json-file: global.json
 
+      # protoc lets the proto-source tests (CLI --proto + Studio Proto descriptor mode) actually run
+      # on every OS instead of skipping; without it the proto compilation path gets no CI coverage.
+      - name: Setup protoc
+        uses: arduino/setup-protoc@c65c819552d16ad3c9b72d9dfd5ba5237b9c906b # v3.0.0
+        with:
+          version: "28.3"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Verify SDK
         run: dotnet --info
 
@@ -99,6 +107,13 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
+
+      # Run (not skip) the proto-source tests under coverage too.
+      - name: Setup protoc
+        uses: arduino/setup-protoc@c65c819552d16ad3c9b72d9dfd5ba5237b9c906b # v3.0.0
+        with:
+          version: "28.3"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Restore (locked mode)
         run: dotnet restore --locked-mode GrpCurl.Net.slnx

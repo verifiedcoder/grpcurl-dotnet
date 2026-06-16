@@ -9,5 +9,11 @@ public interface IFilePickerService
 {
     Task<string?> OpenFileAsync(string title, IReadOnlyList<string>? extensions = null, CancellationToken cancellationToken = default);
 
+    /// <summary>Picks one or more files (e.g. multiple protosets or .proto files); empty list on cancel.</summary>
+    Task<IReadOnlyList<string>> OpenFilesAsync(string title, IReadOnlyList<string>? extensions = null, CancellationToken cancellationToken = default);
+
+    /// <summary>Picks a single directory (e.g. a protoc import path); null on cancel.</summary>
+    Task<string?> OpenFolderAsync(string title, CancellationToken cancellationToken = default);
+
     Task<string?> SaveFileAsync(string title, string? suggestedName = null, IReadOnlyList<string>? extensions = null, CancellationToken cancellationToken = default);
 }

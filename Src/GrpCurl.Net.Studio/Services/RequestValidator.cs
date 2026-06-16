@@ -72,9 +72,10 @@ internal sealed class RequestValidator(IInvocationService invocation, ITlsProfil
                 : await tlsResolver.ResolveAsync(connection, cancellationToken).ConfigureAwait(false);
             var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password);
             var reflectionMetadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
+            var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
 
             await using var session = await DescriptorSourceFactory.CreateAsync(
-                connection.Address, [], [], [],
+                connection.Address, protosets, protos, imports,
                 channelOptions: options,
                 reflectionMetadata: reflectionMetadata,
                 cancellationToken: cancellationToken).ConfigureAwait(false);

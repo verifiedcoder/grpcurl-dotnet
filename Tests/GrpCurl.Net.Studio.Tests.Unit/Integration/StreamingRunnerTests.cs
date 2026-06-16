@@ -19,7 +19,7 @@ public sealed class StreamingRunnerTests(StudioPlaintextServerFixture server)
 
     private static SavedConnection Conn(string address) => new()
     {
-        Name = "test", Address = address, Transport = TransportMode.Plaintext, DescriptorMode = DescriptorMode.Reflection
+        Name = "test", Address = address, Transport = TransportMode.Plaintext, DescriptorSource = new DescriptorSourceConfig()
     };
 
     private StreamRequestModel Request(string method, params HeaderEntry[] headers)

@@ -21,7 +21,7 @@ public sealed class InvocationRunnerTests(StudioPlaintextServerFixture server)
         Name = "test",
         Address = address,
         Transport = TransportMode.Plaintext,
-        DescriptorMode = DescriptorMode.Reflection
+        DescriptorSource = new DescriptorSourceConfig()
     };
 
     private InvocationRequestModel Request(string method, string json, params HeaderEntry[] headers) => new(

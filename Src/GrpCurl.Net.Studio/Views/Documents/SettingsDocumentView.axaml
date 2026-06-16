@@ -116,6 +116,113 @@
                 <TextBlock Classes="settingHint" Text="Re-indent pasted JSON (default: on)." />
             </StackPanel>
 
+            <!-- ───────── Network defaults ───────── -->
+            <TextBlock Classes="sectionHeader" Text="Network defaults" />
+            <TextBlock Classes="settingHint"
+                       Text="Applied to new connections and invocation tabs as initial values; existing ones are never changed." />
+
+            <StackPanel Spacing="2">
+                <TextBlock Classes="settingLabel" Text="Connect timeout" />
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Reset" Margin="8,0,0,0"
+                            Command="{Binding ResetSettingCommand}" CommandParameter="connectTimeout"
+                            AutomationProperties.Name="Reset connect timeout" />
+                    <TextBox Text="{Binding NetworkConnectTimeout}" Watermark="e.g. 10s" MinWidth="160"
+                             HorizontalAlignment="Left" AutomationProperties.Name="Connect timeout" />
+                </DockPanel>
+                <TextBlock Classes="settingHint" Text="Duration grammar (500ms, 10s, 1.5m). Default: 10s." />
+            </StackPanel>
+
+            <StackPanel Spacing="2">
+                <TextBlock Classes="settingLabel" Text="Keepalive time" />
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Reset" Margin="8,0,0,0"
+                            Command="{Binding ResetSettingCommand}" CommandParameter="keepaliveTime"
+                            AutomationProperties.Name="Reset keepalive time" />
+                    <TextBox Text="{Binding NetworkKeepaliveTime}" Watermark="e.g. 60s" MinWidth="160"
+                             HorizontalAlignment="Left" AutomationProperties.Name="Keepalive time" />
+                </DockPanel>
+                <TextBlock Classes="settingHint" Text="Default: 60s." />
+            </StackPanel>
+
+            <StackPanel Spacing="2">
+                <TextBlock Classes="settingLabel" Text="Keepalive timeout" />
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Reset" Margin="8,0,0,0"
+                            Command="{Binding ResetSettingCommand}" CommandParameter="keepaliveTimeout"
+                            AutomationProperties.Name="Reset keepalive timeout" />
+                    <TextBox Text="{Binding NetworkKeepaliveTimeout}" Watermark="e.g. 30s" MinWidth="160"
+                             HorizontalAlignment="Left" AutomationProperties.Name="Keepalive timeout" />
+                </DockPanel>
+                <TextBlock Classes="settingHint" Text="Default: 30s." />
+            </StackPanel>
+
+            <StackPanel Spacing="2">
+                <TextBlock Classes="settingLabel" Text="Max message size" />
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Reset" Margin="8,0,0,0"
+                            Command="{Binding ResetSettingCommand}" CommandParameter="maxMessageSize"
+                            AutomationProperties.Name="Reset max message size" />
+                    <TextBox Text="{Binding NetworkMaxMessageSize}" Watermark="e.g. 4MB (empty = client default)"
+                             MinWidth="260" HorizontalAlignment="Left" AutomationProperties.Name="Max message size" />
+                </DockPanel>
+                <TextBlock Classes="settingHint" Text="Empty uses the gRPC client default." />
+            </StackPanel>
+
+            <StackPanel Spacing="2">
+                <TextBlock Classes="settingLabel" Text="Default deadline" />
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Reset" Margin="8,0,0,0"
+                            Command="{Binding ResetSettingCommand}" CommandParameter="defaultDeadline"
+                            AutomationProperties.Name="Reset default deadline" />
+                    <TextBox Text="{Binding NetworkDefaultDeadline}" Watermark="empty = none" MinWidth="160"
+                             HorizontalAlignment="Left" AutomationProperties.Name="Default deadline" />
+                </DockPanel>
+                <TextBlock Classes="settingHint" Text="Initial deadline for new invocation tabs. Default: none (opt-in)." />
+            </StackPanel>
+
+            <!-- ───────── protoc (FR-154) ───────── -->
+            <TextBlock Classes="sectionHeader" Text="protoc" />
+
+            <StackPanel Spacing="2">
+                <TextBlock Classes="settingLabel" Text="protoc path override" />
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Reset" Margin="8,0,0,0"
+                            Command="{Binding ResetSettingCommand}" CommandParameter="protocPath"
+                            AutomationProperties.Name="Reset protoc path" />
+                    <TextBox Text="{Binding ProtocPath}" Watermark="empty = use PATH" MinWidth="320"
+                             HorizontalAlignment="Left" AutomationProperties.Name="protoc path" />
+                </DockPanel>
+                <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
+                    <Button Content="Detect" Command="{Binding DetectProtocCommand}"
+                            AutomationProperties.Name="Detect protoc" />
+                    <Button Content="Verify" Command="{Binding VerifyProtocCommand}"
+                            AutomationProperties.Name="Verify protoc" />
+                    <TextBlock Text="{Binding ProtocStatus}" VerticalAlignment="Center" Opacity="0.8"
+                               IsVisible="{Binding ProtocStatus, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                </StackPanel>
+                <TextBlock Classes="settingHint"
+                           Text="Explicit protoc used instead of PATH lookup. Detect reports what PATH resolves; Verify runs --version on the override." />
+            </StackPanel>
+
+            <!-- ───────── Phase-2 placeholders (disabled) ───────── -->
+            <StackPanel IsEnabled="False" Spacing="6" Opacity="0.55">
+                <TextBlock Classes="sectionHeader" Text="Diagnostics" />
+                <TextBlock Classes="settingHint" Text="In-app log viewer, level filter, and diagnostics bundle — arrives in a later release." />
+                <TextBlock Classes="sectionHeader" Text="Updates" />
+                <TextBlock Classes="settingHint" Text="Update channel, check-on-launch, and consent-to-apply — arrives in a later release." />
+                <TextBlock Classes="sectionHeader" Text="Descriptor limits" />
+                <TextBlock Classes="settingHint" Text="App-wide defaults for descriptor caps — arrives in a later release." />
+                <TextBlock Classes="sectionHeader" Text="History" />
+                <TextBlock Classes="settingHint" Text="Retention caps and capture toggle — arrives in a later release." />
+            </StackPanel>
+
+            <!-- ───────── Reset all (FR-159) ───────── -->
+            <Border Margin="0,16,0,0" Padding="0,12,0,0" BorderBrush="{DynamicResource Divider}" BorderThickness="0,1,0,0">
+                <Button Content="Reset all settings…" Command="{Binding ResetAllCommand}"
+                        AutomationProperties.Name="Reset all settings" />
+            </Border>
+
         </StackPanel>
     </ScrollViewer>
 </UserControl>

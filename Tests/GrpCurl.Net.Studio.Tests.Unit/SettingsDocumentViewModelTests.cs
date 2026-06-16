@@ -2,16 +2,23 @@ using GrpCurl.Net.Studio.Tests.Unit.Fakes;
 using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Models;
+using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
 
 public sealed class SettingsDocumentViewModelTests
 {
     private static SettingsDocumentViewModel Create(out FakeSettingsStore store, out FakeThemeService theme)
+        => Create(out store, out theme, out _, out _);
+
+    private static SettingsDocumentViewModel Create(
+        out FakeSettingsStore store, out FakeThemeService theme, out FakeDialogService dialogs, out FakeProtocService protoc)
     {
         store = new FakeSettingsStore();
         theme = new FakeThemeService();
-        return new SettingsDocumentViewModel(store, theme);
+        dialogs = new FakeDialogService();
+        protoc = new FakeProtocService();
+        return new SettingsDocumentViewModel(store, theme, dialogs, protoc);
     }
 
     [Fact]
@@ -21,7 +28,7 @@ public sealed class SettingsDocumentViewModelTests
         store.Current.General.CliShellDialect = ShellDialect.PowerShell;
         store.Current.Editor.FontSize = 16;
 
-        var vm = new SettingsDocumentViewModel(store, new FakeThemeService());
+        var vm = new SettingsDocumentViewModel(store, new FakeThemeService(), new FakeDialogService(), new FakeProtocService());
 
         vm.Title.ShouldBe("Settings");
         vm.CliShellDialect.ShouldBe(ShellDialect.PowerShell);
@@ -85,5 +92,88 @@ public sealed class SettingsDocumentViewModelTests
         theme.Current = AppTheme.Light; // e.g. the View menu changed it
 
         vm.Theme.ShouldBe(AppTheme.Light);
+    }
+
+    [Fact]
+    public void Network_default_change_persists()
+    {
+        var vm = Create(out var store, out _);
+
+        vm.NetworkConnectTimeout = "7s";
+
+        store.SaveCount.ShouldBe(1);
+        store.Current.Network.ConnectTimeout.ShouldBe("7s");
+    }
+
+    [Fact]
+    public void Protoc_path_change_persists()
+    {
+        var vm = Create(out var store, out _);
+
+        vm.ProtocPath = "/opt/protoc/bin/protoc";
+
+        store.SaveCount.ShouldBe(1);
+        store.Current.Protoc.Path.ShouldBe("/opt/protoc/bin/protoc");
+    }
+
+    [Fact]
+    public async Task Detect_protoc_reports_the_probe_result()
+    {
+        var vm = Create(out _, out _, out _, out var protoc);
+        protoc.DetectResult = ProtocInfo.Ok("/usr/bin/protoc", "libprotoc 4.25");
+
+        await vm.DetectProtocCommand.ExecuteAsync(null);
+
+        protoc.DetectCount.ShouldBe(1);
+        vm.ProtocStatus!.ShouldContain("libprotoc 4.25");
+    }
+
+    [Fact]
+    public async Task Verify_protoc_runs_against_the_current_path()
+    {
+        var vm = Create(out _, out _, out _, out var protoc);
+        vm.ProtocPath = "/opt/protoc";
+        protoc.VerifyResult = ProtocInfo.NotFound("'/opt/protoc' did not respond to --version.");
+
+        await vm.VerifyProtocCommand.ExecuteAsync(null);
+
+        protoc.VerifyCount.ShouldBe(1);
+        protoc.LastVerifiedPath.ShouldBe("/opt/protoc");
+        vm.ProtocStatus!.ShouldContain("did not respond");
+    }
+
+    [Fact]
+    public async Task Reset_all_confirms_then_restores_defaults_and_persists_once()
+    {
+        var vm = Create(out var store, out var theme, out var dialogs, out _);
+        dialogs.ConfirmResult = true;
+        vm.NetworkConnectTimeout = "99s";
+        vm.EditorFontSize = 22;
+        await theme.SetAsync(AppTheme.Dark, TestContext.Current.CancellationToken);
+        var savesBefore = store.SaveCount;
+
+        await vm.ResetAllCommand.ExecuteAsync(null);
+
+        dialogs.ConfirmCount.ShouldBe(1);
+        var d = StudioSettings.Defaults();
+        vm.NetworkConnectTimeout.ShouldBe(d.Network.ConnectTimeout);
+        vm.EditorFontSize.ShouldBe(d.Editor.FontSize);
+        vm.Theme.ShouldBe(ThemeService.Parse(d.Appearance.Theme));
+        store.Current.Network.ConnectTimeout.ShouldBe(d.Network.ConnectTimeout);
+        (store.SaveCount - savesBefore).ShouldBe(1); // one batched save (theme persists via the service)
+    }
+
+    [Fact]
+    public async Task Reset_all_does_nothing_when_declined()
+    {
+        var vm = Create(out var store, out _, out var dialogs, out _);
+        dialogs.ConfirmResult = false;
+        vm.NetworkConnectTimeout = "99s";
+        var savesBefore = store.SaveCount;
+
+        await vm.ResetAllCommand.ExecuteAsync(null);
+
+        vm.NetworkConnectTimeout.ShouldBe("99s");
+        (store.SaveCount - savesBefore).ShouldBe(0);
     }
 }

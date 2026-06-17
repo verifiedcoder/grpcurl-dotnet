@@ -36,7 +36,8 @@ public sealed class ViewLocatorTests(HeadlessSessionFixture fixture) : HeadlessT
         typeof(StreamRowViewModel),
         typeof(MetadataRowViewModel),
         typeof(ConsoleCallRowViewModel), // console call rows render via an inline DataTemplate (FR-114)
-        typeof(WorkspaceSessionViewModel) // status/command host bound inline into the shell, no view of its own (E3.1)
+        typeof(WorkspaceSessionViewModel), // status/command host bound inline into the shell, no view of its own (E3.1)
+        typeof(HistoryRowViewModel) // history rows render via an inline DataTemplate (FR-122)
     ];
 
     public static TheoryData<Type> ContentViewModels()

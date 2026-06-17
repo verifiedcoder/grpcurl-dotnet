@@ -28,6 +28,8 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     private readonly ConsoleViewModel? _console;
     private readonly IInspector? _inspector;
     private readonly IHistoryRecorder? _recorder;
+    private readonly IHistoryStore? _history;
+    private readonly IWorkspaceStore? _workspace;
 
     [ObservableProperty]
     private DocumentViewModel? _selectedDocument;
@@ -47,7 +49,9 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         IRevealGate? revealGate = null,
         ConsoleViewModel? console = null,
         IInspector? inspector = null,
-        IHistoryRecorder? recorder = null)
+        IHistoryRecorder? recorder = null,
+        IHistoryStore? history = null,
+        IWorkspaceStore? workspace = null)
     {
         _descriptors = descriptors;
         _dispatcher = dispatcher;
@@ -64,6 +68,8 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         _console = console;
         _inspector = inspector;
         _recorder = recorder;
+        _history = history;
+        _workspace = workspace;
     }
 
     public ObservableCollection<DocumentViewModel> Documents { get; } = [];
@@ -128,6 +134,28 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         }
 
         var document = new SettingsDocumentViewModel(_settings, _theme, _dialogs, _protoc);
+        document.CloseRequested += OnDocumentCloseRequested;
+
+        Documents.Add(document);
+        SelectedDocument = document;
+    }
+
+    public void OpenHistory()
+    {
+        if (_history is null || _workspace is null)
+        {
+            return; // history services not wired (bare unit construction)
+        }
+
+        var existing = Documents.OfType<HistoryDocumentViewModel>().FirstOrDefault();
+
+        if (existing is not null)
+        {
+            SelectedDocument = existing;
+            return;
+        }
+
+        var document = new HistoryDocumentViewModel(_history, _settings, _workspace, this, _dialogs, _dispatcher, _filePicker);
         document.CloseRequested += OnDocumentCloseRequested;
 
         Documents.Add(document);

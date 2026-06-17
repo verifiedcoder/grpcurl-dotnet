@@ -26,4 +26,10 @@ public interface IHistoryStore
 
     /// <summary>Clears entries: all of them, or only the unpinned ones (FR-125).</summary>
     Task ClearAsync(bool keepPinned = false, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Writes the given entries (already redacted, as stored) to <paramref name="path" /> as NDJSON,
+    ///     for sharing/attaching to a ticket (FR-128).
+    /// </summary>
+    Task ExportAsync(string path, IReadOnlyList<HistoryEntry> entries, CancellationToken cancellationToken = default);
 }

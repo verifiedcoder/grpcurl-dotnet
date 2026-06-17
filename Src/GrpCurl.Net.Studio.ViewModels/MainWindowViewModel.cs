@@ -48,6 +48,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>Drives the welcome empty-state: shown until the first connection exists (SPEC-020 §7).</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowDocuments), nameof(ShowWelcome))]
     private bool _hasAnyConnection;
 
     private (bool Sidebar, bool Inspector, bool Console)? _preFocusState;
@@ -93,7 +94,23 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         RefreshInsecureBanner();
     }
 
-    private void OnDocumentsChanged(object? sender, NotifyCollectionChangedEventArgs e) => RefreshInsecureBanner();
+    /// <summary>
+    ///     The document area is shown once there is anything to render in it — a connection exists (the
+    ///     normal flow) <em>or</em> a tab is already open. Without the second condition, a document opened
+    ///     before the first connection (e.g. File → Settings on a fresh workspace) lands behind the welcome
+    ///     overlay and appears to do nothing.
+    /// </summary>
+    public bool ShowDocuments => HasAnyConnection || Documents.Documents.Count > 0;
+
+    /// <summary>The welcome empty-state is shown only when the document area has nothing to show.</summary>
+    public bool ShowWelcome => !ShowDocuments;
+
+    private void OnDocumentsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        RefreshInsecureBanner();
+        OnPropertyChanged(nameof(ShowDocuments));
+        OnPropertyChanged(nameof(ShowWelcome));
+    }
 
     /// <summary>
     ///     Recomputes the insecure-skip-verify banner: visible when any open tab targets a TLS connection

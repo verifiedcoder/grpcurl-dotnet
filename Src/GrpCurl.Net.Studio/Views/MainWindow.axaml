@@ -119,7 +119,7 @@
 
             <!-- CENTRE: document tabs with the welcome empty-state overlay -->
             <Panel Grid.Row="0" Grid.Column="2" x:Name="CentreZone">
-                <TabControl x:Name="DocumentTabs" IsVisible="{Binding HasAnyConnection}"
+                <TabControl x:Name="DocumentTabs" IsVisible="{Binding ShowDocuments}"
                             ItemsSource="{Binding Documents.Documents}"
                             SelectedItem="{Binding Documents.SelectedDocument}">
                     <TabControl.ItemTemplate>
@@ -133,7 +133,7 @@
                         </DataTemplate>
                     </TabControl.ItemTemplate>
                 </TabControl>
-                <ContentControl x:Name="Welcome" IsVisible="{Binding !HasAnyConnection}">
+                <ContentControl x:Name="Welcome" IsVisible="{Binding ShowWelcome}">
                     <views:WelcomeView />
                 </ContentControl>
             </Panel>

@@ -36,6 +36,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     private readonly IInspector? _inspector;
     private readonly IHistoryRecorder? _recorder;
     private readonly ISavedRequestStore? _savedRequests;
+    private readonly IEnvironmentService? _environment;
     private InvocationStatusModel? _streamTerminalStatus;
 
     // FR-145/FR-002: the saved request this tab is bound to (null = unsaved draft) and the baseline
@@ -150,7 +151,8 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         ConsoleViewModel? console = null,
         IInspector? inspector = null,
         IHistoryRecorder? recorder = null,
-        ISavedRequestStore? savedRequests = null)
+        ISavedRequestStore? savedRequests = null,
+        IEnvironmentService? environment = null)
     {
         Connection = connection;
         MethodSymbol = methodSymbol;
@@ -167,6 +169,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         _inspector = inspector;
         _recorder = recorder;
         _savedRequests = savedRequests;
+        _environment = environment;
         _revealGate = revealGate ?? AlwaysRevealGate.Instance;
         _writerFactory = writerFactory ?? (path => new StreamWriter(path));
 
@@ -174,6 +177,12 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
 
         // FR-002: editing any persistable field re-evaluates divergence from the saved copy.
         PropertyChanged += OnTrackedPropertyChanged;
+
+        // FR-133: switching the active environment refreshes every header's resolved-value preview.
+        if (_environment is not null)
+        {
+            _environment.ActiveChanged += OnActiveEnvironmentChanged;
+        }
 
         // FR-088: rows carry the clipboard + inspector so their context actions (copy JSON / NDJSON /
         // open in viewer) work without reaching back into this tab.
@@ -196,11 +205,24 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         foreach (var row in e.NewItems?.OfType<HeaderRowViewModel>() ?? [])
         {
             row.PropertyChanged += OnHeaderRowChanged;
+            row.ActiveEnvironmentResolver = ResolveActiveEnvironmentVariable; // FR-066: env-aware preview
         }
 
         OnPropertyChanged(nameof(HasHeaderErrors));
         InvokeCommand.NotifyCanExecuteChanged();
         RefreshDirty(); // FR-002: adding/removing a header row diverges from the saved copy
+    }
+
+    /// <summary>FR-066/FR-131: the active environment's plain value for a variable (secrets stay redacted), or null.</summary>
+    private string? ResolveActiveEnvironmentVariable(string name)
+        => _environment?.Active?.Variables.FirstOrDefault(v => v.Name == name && !v.IsSecret)?.Value.Literal;
+
+    private void OnActiveEnvironmentChanged(object? sender, EventArgs e)
+    {
+        foreach (var row in Headers)
+        {
+            row.RefreshResolvedPreview();
+        }
     }
 
     private void OnHeaderRowChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

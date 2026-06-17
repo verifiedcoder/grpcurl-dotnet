@@ -80,4 +80,58 @@ public sealed class HeaderRowViewModelTests
         row.HasResolvedPreview.ShouldBeFalse();
         row.ResolvedPreview.ShouldBeNull();
     }
+
+    // ── FR-066/FR-133: active-environment-aware preview ──────────────────────
+
+    [Fact]
+    public void Resolved_preview_prefers_the_active_environment_over_the_os()
+    {
+        Environment.SetEnvironmentVariable("FU7_HOST", "os-value");
+        try
+        {
+            var row = new HeaderRowViewModel
+            {
+                Name = "x-region", Value = "${FU7_HOST}",
+                ActiveEnvironmentResolver = name => name == "FU7_HOST" ? "env-value" : null
+            };
+
+            row.ResolvedPreview.ShouldBe("env-value"); // active env wins over OS
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("FU7_HOST", null);
+        }
+    }
+
+    [Fact]
+    public void Resolved_preview_falls_back_to_the_os_when_the_active_environment_lacks_the_variable()
+    {
+        Environment.SetEnvironmentVariable("FU7_ONLY_OS", "os-value");
+        try
+        {
+            var row = new HeaderRowViewModel
+            {
+                Name = "x-region", Value = "${FU7_ONLY_OS}",
+                ActiveEnvironmentResolver = _ => null // not in the active env
+            };
+
+            row.ResolvedPreview.ShouldBe("os-value");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("FU7_ONLY_OS", null);
+        }
+    }
+
+    [Fact]
+    public void Refresh_resolved_preview_raises_change_notification()
+    {
+        var row = new HeaderRowViewModel { Name = "x-region", Value = "${FU7_X}" };
+        var raised = false;
+        row.PropertyChanged += (_, e) => raised |= e.PropertyName == nameof(HeaderRowViewModel.ResolvedPreview);
+
+        row.RefreshResolvedPreview();
+
+        raised.ShouldBeTrue();
+    }
 }

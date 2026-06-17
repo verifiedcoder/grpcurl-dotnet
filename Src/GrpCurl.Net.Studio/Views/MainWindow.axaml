@@ -108,7 +108,7 @@
         </Border>
 
         <!-- Status bar -->
-        <Border DockPanel.Dock="Bottom" x:Name="StatusBar" Height="24"
+        <Border DockPanel.Dock="Bottom" x:Name="StatusBar" Height="28"
                 Background="{DynamicResource Surface.PaneHeader}"
                 BorderBrush="{DynamicResource Divider}" BorderThickness="0,1,0,0">
             <DockPanel LastChildFill="False" Margin="8,0">
@@ -116,8 +116,35 @@
                 <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" Opacity="0.7"
                            Text="{Binding Session.StatusText, FallbackValue='No workspace'}"
                            AutomationProperties.Name="Workspace status" />
-                <TextBlock DockPanel.Dock="Right" VerticalAlignment="Center" Opacity="0.7"
-                           Text="v1.0.0" />
+
+                <!-- E3.2 (FR-133/138): the active-environment switcher + manager entry, beside the version. -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <TextBlock Text="Env:" VerticalAlignment="Center" Opacity="0.7" />
+                    <ComboBox x:Name="EnvironmentSwitcher" MinWidth="150" FontSize="12" Padding="6,1"
+                              VerticalAlignment="Center" MinHeight="0"
+                              Classes.noEnv="{Binding Environment.IsNoEnvironment, FallbackValue=True}"
+                              ItemsSource="{Binding Environment.Options}"
+                              SelectedItem="{Binding Environment.SelectedOption}"
+                              AutomationProperties.Name="Active environment"
+                              ToolTip.Tip="Environment for ${VAR} resolution. Switching applies to subsequent sends; an in-flight call keeps the environment it was sent with.">
+                        <ComboBox.Styles>
+                            <!-- FR-138: the "No environment" state reads distinctly (muted + italic). -->
+                            <Style Selector="ComboBox.noEnv">
+                                <Setter Property="FontStyle" Value="Italic" />
+                                <Setter Property="Opacity" Value="0.7" />
+                            </Style>
+                        </ComboBox.Styles>
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:EnvironmentOption">
+                                <TextBlock Text="{Binding Name}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Button Content="Manage…" FontSize="12" Padding="8,1" VerticalAlignment="Center"
+                            Command="{Binding Environment.ManageCommand}"
+                            AutomationProperties.Name="Manage environments" />
+                    <TextBlock Text="v1.0.0" VerticalAlignment="Center" Opacity="0.7" Margin="4,0,0,0" />
+                </StackPanel>
             </DockPanel>
         </Border>
 

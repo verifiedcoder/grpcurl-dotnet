@@ -1,0 +1,77 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:GrpCurl.Net.Studio.ViewModels.Connections;assembly=GrpCurl.Net.Studio.ViewModels"
+             xmlns:conv="clr-namespace:GrpCurl.Net.Studio.Converters"
+             x:Class="GrpCurl.Net.Studio.Views.Connections.EnvironmentEditorView"
+             x:DataType="vm:EnvironmentEditorViewModel"
+             Width="560">
+    <ScrollViewer MaxHeight="640">
+        <StackPanel Margin="20" Spacing="12">
+
+            <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold" />
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="Name" />
+                <TextBox Text="{Binding Name}" Watermark="staging" AutomationProperties.Name="Environment name" />
+                <TextBlock Text="{Binding NameError}" Foreground="{DynamicResource Status.Server}" FontSize="12" />
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+                <DockPanel>
+                    <TextBlock Text="Variables" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <Button Content="Add variable" Command="{Binding AddVariableCommand}" DockPanel.Dock="Right"
+                            HorizontalAlignment="Right" AutomationProperties.Name="Add variable" />
+                </DockPanel>
+
+                <TextBlock Text="No variables. Add one to define a ${VAR} placeholder for header values."
+                           IsVisible="{Binding !HasVariables}" TextWrapping="Wrap" FontSize="12"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+
+                <ItemsControl ItemsSource="{Binding Variables}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:EnvironmentVariableRowViewModel">
+                            <Grid ColumnDefinitions="170,Auto,*,Auto,Auto" Margin="0,4" ColumnSpacing="6">
+                                <TextBox Grid.Column="0" Text="{Binding Name}" Watermark="VAR_NAME"
+                                         VerticalAlignment="Center" AutomationProperties.Name="Variable name" />
+                                <CheckBox Grid.Column="1" Content="Secret" IsChecked="{Binding IsSecret}"
+                                          VerticalAlignment="Center" AutomationProperties.Name="Secret variable" />
+
+                                <Panel Grid.Column="2">
+                                    <!-- Plain value: shown and editable directly. -->
+                                    <TextBox Text="{Binding Value}" Watermark="{Binding ValueWatermark}"
+                                             IsVisible="{Binding !IsSecret}" VerticalAlignment="Center"
+                                             AutomationProperties.Name="Variable value" />
+                                    <!-- Secret value: masked (FR-132) with per-field reveal (FR-113). -->
+                                    <TextBox Text="{Binding Value}" Watermark="{Binding ValueWatermark}"
+                                             IsVisible="{Binding IsSecret}" VerticalAlignment="Center"
+                                             PasswordChar="{Binding !IsRevealed, Converter={x:Static conv:SecretMaskConverter.Instance}}"
+                                             AutomationProperties.Name="Secret value" />
+                                </Panel>
+
+                                <CheckBox Grid.Column="3" Content="Show" IsChecked="{Binding IsRevealed}"
+                                          IsVisible="{Binding IsSecret}" VerticalAlignment="Center"
+                                          AutomationProperties.Name="Reveal value" />
+                                <Button Grid.Column="4" Content="✕" Padding="6,0" VerticalAlignment="Center"
+                                        Command="{Binding $parent[ItemsControl].((vm:EnvironmentEditorViewModel)DataContext).RemoveVariableCommand}"
+                                        CommandParameter="{Binding}" AutomationProperties.Name="Remove variable" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBlock Text="{Binding VariableError}" Foreground="{DynamicResource Status.Server}" FontSize="12" />
+                <TextBlock FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                           TextWrapping="Wrap"
+                           Text="Secret values are stored in the OS secret store, never in the workspace file. An existing secret's value is not shown — leave it blank to keep it unchanged." />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
+                <Button Content="Cancel" Command="{Binding CancelCommand}" MinWidth="80"
+                        AutomationProperties.Name="Cancel environment" />
+                <Button Content="Save" Command="{Binding SaveCommand}" MinWidth="80" IsDefault="True"
+                        AutomationProperties.Name="Save environment" />
+            </StackPanel>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -208,4 +208,87 @@ public sealed class JsonWorkspaceStoreTests : IDisposable
         first.Id.ShouldNotBeNullOrWhiteSpace();
         store.CurrentPath.ShouldBeNull(); // untitled until Save As
     }
+
+    // ── E3.1 PR-C: dirty tracking + debounced autosave + reload ──────────────
+
+    [Fact]
+    public async Task A_zero_debounce_autosave_flushes_synchronously_and_stays_clean()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var store = new JsonWorkspaceStore(Path_); // tests default to a zero debounce
+
+        await store.SaveAsync(Named("clean"), ct);
+
+        store.IsDirty.ShouldBeFalse();
+        File.Exists(Path_).ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task A_debounced_autosave_marks_dirty_until_it_flushes()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var store = new JsonWorkspaceStore(Path_, TimeSpan.FromMinutes(5)); // never auto-fires during the test
+        var dirtyEvents = 0;
+        store.DirtyChanged += (_, _) => dirtyEvents++;
+
+        await store.SaveAsync(Named("pending"), ct);
+
+        store.IsDirty.ShouldBeTrue();       // mutation registered, flush still pending
+        File.Exists(Path_).ShouldBeFalse(); // not yet written
+        dirtyEvents.ShouldBe(1);
+
+        await store.SaveNowAsync(ct);        // explicit Save forces the flush
+
+        store.IsDirty.ShouldBeFalse();
+        File.Exists(Path_).ShouldBeTrue();
+        dirtyEvents.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task A_short_debounce_eventually_autosaves_on_its_own()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var store = new JsonWorkspaceStore(Path_, TimeSpan.FromMilliseconds(20));
+
+        await store.SaveAsync(Named("auto"), ct);
+
+        // The debounced flush runs shortly after; poll briefly for it.
+        var deadline = DateTime.UtcNow.AddSeconds(2);
+        while (store.IsDirty && DateTime.UtcNow < deadline)
+        {
+            await Task.Delay(10, ct);
+        }
+
+        store.IsDirty.ShouldBeFalse();
+        File.Exists(Path_).ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task An_untitled_workspace_stays_dirty_with_nowhere_to_autosave()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var store = new JsonWorkspaceStore(Path_);
+        store.NewWorkspace(); // CurrentPath becomes null
+
+        await store.SaveAsync(Named("untitled-edit"), ct);
+
+        store.IsDirty.ShouldBeTrue(); // no path → cannot autosave; awaits a Save As
+    }
+
+    [Fact]
+    public async Task Reload_re_reads_the_file_and_discards_in_memory_changes()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await new JsonWorkspaceStore(Path_).SaveAsync(Named("on-disk"), ct); // seed the file (zero debounce)
+
+        var store = new JsonWorkspaceStore(Path_, TimeSpan.FromMinutes(5));
+        await store.SaveAsync(Named("in-memory-only"), ct); // pending edit, never flushed
+        store.IsDirty.ShouldBeTrue();
+        store.Current.Name.ShouldBe("in-memory-only");
+
+        await store.ReloadAsync(ct);
+
+        store.Current.Name.ShouldBe("on-disk"); // disk state wins
+        store.IsDirty.ShouldBeFalse();
+    }
 }

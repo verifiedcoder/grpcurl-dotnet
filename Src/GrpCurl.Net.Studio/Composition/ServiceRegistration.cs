@@ -61,6 +61,7 @@ internal static class ServiceRegistration
         services.AddSingleton<InspectorViewModel>();
         services.AddSingleton<IInspector>(sp => sp.GetRequiredService<InspectorViewModel>());
         services.AddSingleton<ConsoleViewModel>();
+        services.AddSingleton<WorkspaceSessionViewModel>(); // E3.1: workspace status + save/reload (wired to the shell in PR-D)
         services.AddSingleton<MainWindowViewModel>();
 
         return builder;

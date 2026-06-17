@@ -46,8 +46,9 @@ internal sealed class DescriptorSourceFactory : IAsyncDisposable
         GrpcChannelFactory.ChannelOptions channelOptions,
         Metadata reflectionMetadata,
         CancellationToken cancellationToken,
-        IDescriptorWarningSink? warningSink = null)
-        => CreateAsync(address, protosetPaths, [], [], channelOptions, reflectionMetadata, cancellationToken, warningSink);
+        IDescriptorWarningSink? warningSink = null,
+        DescriptorSourceOptions? descriptorOptions = null)
+        => CreateAsync(address, protosetPaths, [], [], channelOptions, reflectionMetadata, cancellationToken, warningSink, descriptorOptions);
 
     public static async Task<DescriptorSourceFactory> CreateAsync(
         string? address,
@@ -57,7 +58,8 @@ internal sealed class DescriptorSourceFactory : IAsyncDisposable
         GrpcChannelFactory.ChannelOptions channelOptions,
         Metadata reflectionMetadata,
         CancellationToken cancellationToken,
-        IDescriptorWarningSink? warningSink = null)
+        IDescriptorWarningSink? warningSink = null,
+        DescriptorSourceOptions? descriptorOptions = null)
     {
         var hasProtosets = protosetPaths.Count > 0;
         var hasProtoFiles = protoFiles.Count > 0;
@@ -77,20 +79,21 @@ internal sealed class DescriptorSourceFactory : IAsyncDisposable
             channel = GrpcChannelFactory.Create(address!, channelOptions);
         }
 
+        var options = descriptorOptions ?? DescriptorSourceOptions.Default;
         IDescriptorSource source;
 
         if (hasProtoFiles)
         {
             // Highest precedence: shell out to protoc and use the resulting protoset.
-            source = await ProtoSource.LoadFromProtoFilesAsync(protoFiles, importPaths, cancellationToken, warningSink).ConfigureAwait(false);
+            source = await ProtoSource.LoadFromProtoFilesAsync(protoFiles, importPaths, cancellationToken, warningSink, options).ConfigureAwait(false);
         }
         else if (hasProtosets)
         {
-            source = await ProtosetSource.LoadFromFilesAsync(protosetPaths, DescriptorSourceOptions.Default, cancellationToken, warningSink).ConfigureAwait(false);
+            source = await ProtosetSource.LoadFromFilesAsync(protosetPaths, options, cancellationToken, warningSink).ConfigureAwait(false);
         }
         else
         {
-            source = new ReflectionSource(channel!, reflectionMetadata, warningSink: warningSink);
+            source = new ReflectionSource(channel!, reflectionMetadata, options: options, warningSink: warningSink);
         }
 
         return new DescriptorSourceFactory(channel, source);

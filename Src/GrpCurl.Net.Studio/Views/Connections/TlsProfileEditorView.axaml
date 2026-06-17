@@ -5,6 +5,13 @@
              x:Class="GrpCurl.Net.Studio.Views.Connections.TlsProfileEditorView"
              x:DataType="vm:TlsProfileEditorViewModel"
              Width="480">
+    <UserControl.Styles>
+        <!-- FR-037: an out-of-validity certificate window is flagged in the alert colour. -->
+        <Style Selector="TextBlock.warn">
+            <Setter Property="Foreground" Value="{DynamicResource Status.Server}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+    </UserControl.Styles>
     <ScrollViewer MaxHeight="640">
         <StackPanel Margin="20" Spacing="12">
 
@@ -34,6 +41,18 @@
                 </Grid>
                 <TextBlock Text="{Binding CaCertError}" Foreground="{DynamicResource Status.Server}" FontSize="12" />
 
+                <!-- FR-037: parsed certificate facts (display only; non-blocking). -->
+                <Border IsVisible="{Binding HasCaCertFacts}" Background="{DynamicResource Surface.PaneHeader}"
+                        CornerRadius="4" Padding="8" Margin="0,4,0,0">
+                    <StackPanel Spacing="2" DataContext="{Binding CaCertFacts}">
+                        <TextBlock Text="{Binding Subject}" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Issuer, StringFormat='Issuer: {0}'}" FontSize="11" Opacity="0.7" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding ValidityText}" FontSize="11" Classes.warn="{Binding IsOutOfValidity}" />
+                        <TextBlock Text="{Binding Sha256Fingerprint, StringFormat='SHA-256: {0}'}" FontSize="11"
+                                   FontFamily="Cascadia Code,Consolas,monospace" Opacity="0.7" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
                 <TextBlock Text="Revocation mode" Margin="0,6,0,0" />
                 <ComboBox ItemsSource="{Binding RevocationModeOptions}" SelectedItem="{Binding SelectedRevocationMode}"
                           MinWidth="160" HorizontalAlignment="Left" AutomationProperties.Name="Revocation mode" />
@@ -60,6 +79,18 @@
                 </Grid>
                 <TextBlock Text="{Binding DetectedFormatDisplay}" FontSize="12"
                            Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+
+                <!-- FR-037: parsed facts for the client certificate (PEM/DER; PKCS12 needs its password, so none shown). -->
+                <Border IsVisible="{Binding HasClientCertFacts}" Background="{DynamicResource Surface.PaneHeader}"
+                        CornerRadius="4" Padding="8" Margin="0,4,0,0">
+                    <StackPanel Spacing="2" DataContext="{Binding ClientCertFacts}">
+                        <TextBlock Text="{Binding Subject}" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Issuer, StringFormat='Issuer: {0}'}" FontSize="11" Opacity="0.7" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding ValidityText}" FontSize="11" Classes.warn="{Binding IsOutOfValidity}" />
+                        <TextBlock Text="{Binding Sha256Fingerprint, StringFormat='SHA-256: {0}'}" FontSize="11"
+                                   FontFamily="Cascadia Code,Consolas,monospace" Opacity="0.7" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
             </StackPanel>
 
             <!-- PEM key (hidden once a PKCS12 bundle is detected) -->

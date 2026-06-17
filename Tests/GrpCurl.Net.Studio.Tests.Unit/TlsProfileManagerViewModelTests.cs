@@ -104,4 +104,44 @@ public sealed class TlsProfileManagerViewModelTests
 
         result.ShouldBe(false); // nothing changed
     }
+
+    // ── FR-038: usage click-through lists the referencing connections ─────────
+
+    [Fact]
+    public async Task Showing_usage_lists_the_referencing_connections()
+    {
+        var profile = new TlsProfile { Name = "mtls" };
+        var workspace = new WorkspaceModel
+        {
+            TlsProfiles = [profile],
+            Connections =
+            [
+                new SavedConnection { Name = "alpha", TlsProfileId = profile.Id },
+                new SavedConnection { Name = "beta", TlsProfileId = profile.Id }
+            ]
+        };
+        var vm = Create(out var dialog, out _, out _, workspace);
+        var row = vm.Profiles.Single();
+        row.HasUsage.ShouldBeTrue();
+
+        await vm.ShowUsageCommand.ExecuteAsync(row);
+
+        dialog.MessageCount.ShouldBe(1);
+        var body = dialog.LastMessageBody.ShouldNotBeNull();
+        body.ShouldContain("alpha");
+        body.ShouldContain("beta");
+    }
+
+    [Fact]
+    public async Task Showing_usage_for_an_unused_profile_is_a_no_op()
+    {
+        var profile = new TlsProfile { Name = "spare" };
+        var vm = Create(out var dialog, out _, out _, new WorkspaceModel { TlsProfiles = [profile] });
+        var row = vm.Profiles.Single();
+        row.HasUsage.ShouldBeFalse();
+
+        await vm.ShowUsageCommand.ExecuteAsync(row);
+
+        dialog.MessageCount.ShouldBe(0);
+    }
 }

@@ -143,16 +143,32 @@
                     <ItemsControl ItemsSource="{Binding ImportPathRows}" ItemTemplate="{StaticResource DescriptorRowTemplate}" />
                 </StackPanel>
 
-                <!-- Limits (FR-047) -->
+                <!-- Limits (FR-047 defaults; FR-049 per-connection overrides) -->
                 <Expander Header="Limits">
-                    <ItemsControl ItemsSource="{Binding DescriptorLimits}" Margin="4">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="x:String">
-                                <TextBlock Text="{Binding}" FontSize="12"
-                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                    <StackPanel Margin="4" Spacing="6">
+                        <TextBlock FontSize="12" TextWrapping="Wrap"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                   Text="Override Core's descriptor DoS limits for this connection. Leave blank to use the default." />
+                        <Grid ColumnDefinitions="*,160" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="8">
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Max protoset file size (bytes)" VerticalAlignment="Center" FontSize="12" />
+                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding MaxProtosetFileBytesOverride}"
+                                     Watermark="{Binding DefaultMaxProtosetFileBytes}" AutomationProperties.Name="Max protoset file size" />
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Max reflection response (bytes)" VerticalAlignment="Center" FontSize="12" />
+                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding MaxReflectionDescriptorBytesOverride}"
+                                     Watermark="{Binding DefaultMaxReflectionDescriptorBytes}" AutomationProperties.Name="Max reflection response" />
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Max file descriptors" VerticalAlignment="Center" FontSize="12" />
+                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding MaxFileDescriptorsOverride}"
+                                     Watermark="{Binding DefaultMaxFileDescriptors}" AutomationProperties.Name="Max file descriptors" />
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Max import depth" VerticalAlignment="Center" FontSize="12" />
+                            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding MaxDependencyDepthOverride}"
+                                     Watermark="{Binding DefaultMaxDependencyDepth}" AutomationProperties.Name="Max import depth" />
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Max symbols" VerticalAlignment="Center" FontSize="12" />
+                            <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding MaxSymbolsOverride}"
+                                     Watermark="{Binding DefaultMaxSymbols}" AutomationProperties.Name="Max symbols" />
+                        </Grid>
+                        <TextBlock Text="{Binding LimitsError}" Foreground="{DynamicResource Status.Server}" FontSize="12"
+                                   IsVisible="{Binding LimitsError, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                    </StackPanel>
                 </Expander>
             </StackPanel>
 

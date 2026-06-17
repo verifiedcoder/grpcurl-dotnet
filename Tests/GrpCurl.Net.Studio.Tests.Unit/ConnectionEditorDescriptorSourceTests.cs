@@ -202,4 +202,79 @@ public sealed class ConnectionEditorDescriptorSourceTests : IDisposable
         vm.SelectedDescriptorMode.ShouldBe(DescriptorMode.Protoset);
         vm.ProtosetRows.Single().Path.ShouldBe("x.protoset");
     }
+
+    // ── FR-039: path re-validation at probe ──────────────────────────────────
+
+    [Fact]
+    public async Task Testing_with_a_missing_protoset_path_fails_before_probing()
+    {
+        var existing = new SavedConnection
+        {
+            Name = "c", Address = "localhost:9090",
+            DescriptorSource = new DescriptorSourceConfig
+            {
+                Mode = DescriptorMode.Protoset, ProtosetPaths = ["/no/such/schema.protoset"]
+            }
+        };
+        var vm = Create(out _, out _, existing);
+
+        await vm.TestConnectionCommand.ExecuteAsync(null);
+
+        vm.LastTestResult.ShouldNotBeNull();
+        vm.LastTestResult!.Ok.ShouldBeFalse();
+        vm.LastTestResult.Message.ShouldContain("Protoset file not found");
+        vm.LastTestResult.Message.ShouldContain("/no/such/schema.protoset");
+    }
+
+    // ── FR-049: per-connection descriptor-limit overrides ────────────────────
+
+    [Fact]
+    public void Limit_overrides_round_trip_through_build_connection()
+    {
+        var vm = Create(out _, out _);
+        vm.Name = "c";
+        vm.Address = "localhost:9090";
+        vm.MaxFileDescriptorsOverride = "100";
+        vm.MaxSymbolsOverride = "5000";
+
+        vm.LimitsError.ShouldBeNull();
+        var built = vm.BuildConnection();
+
+        built.DescriptorSource.MaxFileDescriptors.ShouldBe(100);
+        built.DescriptorSource.MaxSymbols.ShouldBe(5000);
+        built.DescriptorSource.MaxDependencyDepth.ShouldBeNull(); // blank → Core default
+    }
+
+    [Fact]
+    public void A_non_positive_override_is_an_error_and_blocks_save()
+    {
+        var vm = Create(out _, out _);
+        vm.Name = "c";
+        vm.Address = "localhost:9090";
+        vm.SaveCommand.CanExecute(null).ShouldBeTrue();
+
+        vm.MaxFileDescriptorsOverride = "-5";
+
+        vm.LimitsError.ShouldNotBeNull();
+        vm.SaveCommand.CanExecute(null).ShouldBeFalse();
+
+        vm.MaxFileDescriptorsOverride = "abc";
+        vm.LimitsError.ShouldNotBeNull();
+
+        vm.MaxFileDescriptorsOverride = ""; // blank clears the error (use default)
+        vm.LimitsError.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Existing_limit_overrides_seed_the_editor_fields()
+    {
+        var existing = new SavedConnection
+        {
+            Name = "c",
+            DescriptorSource = new DescriptorSourceConfig { MaxFileDescriptors = 256 }
+        };
+        var vm = Create(out _, out _, existing);
+
+        vm.MaxFileDescriptorsOverride.ShouldBe("256");
+    }
 }

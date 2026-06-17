@@ -16,6 +16,9 @@ public sealed record TlsProfileRow(TlsProfile Profile, int UsageCount)
         1 => "used by 1 connection",
         _ => $"used by {UsageCount} connections"
     };
+
+    /// <summary>FR-038: the usage count is a click-through only when at least one connection references it.</summary>
+    public bool HasUsage => UsageCount > 0;
 }
 
 /// <summary>
@@ -136,6 +139,21 @@ public sealed partial class TlsProfileManagerViewModel : DialogViewModel<bool>
             await _store.DeleteAsync(row.Profile.Id);
             MarkChangedAndReload();
         }
+    }
+
+    /// <summary>FR-038: list the connections that reference this profile (click-through on the usage count).</summary>
+    [RelayCommand]
+    private async Task ShowUsage(TlsProfileRow? row)
+    {
+        if (row is null || !row.HasUsage)
+        {
+            return;
+        }
+
+        var names = _store.ReferencingConnections(row.Profile.Id);
+        await _dialogService.ShowMessageAsync(
+            $"'{row.Profile.Name}' — {row.UsageText}",
+            string.Join(Environment.NewLine, names.Select(n => $"• {n}")));
     }
 
     [RelayCommand]

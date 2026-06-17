@@ -53,6 +53,20 @@
                                                 <TextBlock Text="▸" Opacity="0.5" VerticalAlignment="Center" />
                                                 <TextBlock Text="{Binding Name}" />
                                             </StackPanel>
+                                            <!-- FR-145: rename / duplicate / delete a saved request. -->
+                                            <Button.ContextMenu>
+                                                <ContextMenu x:DataType="items:SavedRequestItemViewModel">
+                                                    <MenuItem Header="Open" Command="{Binding OpenCommand}"
+                                                              AutomationProperties.Name="Open saved request" />
+                                                    <MenuItem Header="Rename…" Command="{Binding RenameCommand}"
+                                                              AutomationProperties.Name="Rename saved request" />
+                                                    <MenuItem Header="Duplicate" Command="{Binding DuplicateCommand}"
+                                                              AutomationProperties.Name="Duplicate saved request" />
+                                                    <Separator />
+                                                    <MenuItem Header="Delete" Command="{Binding DeleteCommand}"
+                                                              AutomationProperties.Name="Delete saved request" />
+                                                </ContextMenu>
+                                            </Button.ContextMenu>
                                         </Button>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>

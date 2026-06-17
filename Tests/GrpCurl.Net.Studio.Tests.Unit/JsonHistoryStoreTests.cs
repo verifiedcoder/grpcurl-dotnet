@@ -143,4 +143,25 @@ public sealed class JsonHistoryStoreTests : IDisposable
 
         (await store.ReadAllAsync(Ct)).Select(e => e.Id).ShouldBe(["old-pinned", "e2"]);
     }
+
+    [Fact]
+    public async Task Retention_follows_the_live_max_entries_setting()
+    {
+        // FR-158: the cap comes from settings, so changing it changes eviction without rebuilding the store.
+        var settings = new GrpCurl.Net.Studio.Tests.Unit.Fakes.FakeSettingsStore();
+        settings.Current.History.MaxEntries = 2;
+        settings.Current.History.MaxBytes = long.MaxValue; // isolate the entry-count cap
+        var store = new JsonHistoryStore(Path_, settings);
+
+        await store.AppendAsync(Entry("e1"), Ct);
+        await store.AppendAsync(Entry("e2"), Ct);
+        await store.AppendAsync(Entry("e3"), Ct);
+
+        (await store.ReadAllAsync(Ct)).Select(e => e.Id).ShouldBe(["e2", "e3"]); // honours the setting
+
+        settings.Current.History.MaxEntries = 1;
+        await store.AppendAsync(Entry("e4"), Ct);
+
+        (await store.ReadAllAsync(Ct)).Select(e => e.Id).ShouldBe(["e4"]); // tighter cap applied live
+    }
 }

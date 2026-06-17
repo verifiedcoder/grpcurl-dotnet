@@ -19,15 +19,16 @@ internal sealed class JsonHistoryStore : IHistoryStore
     private readonly string _path;
     private readonly int _maxEntries;
     private readonly long _maxBytes;
+    private readonly ISettingsStore? _settings;
     private readonly SemaphoreSlim _gate = new(1, 1);
 
-    public JsonHistoryStore()
+    public JsonHistoryStore(ISettingsStore settings)
         : this(Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             AppFolderName,
             FileName))
-    {
-    }
+        // FR-158: retention caps come from the live settings (the fixed fields back the test seam).
+        => _settings = settings;
 
     // Test seam: point at a temp file with (optionally) tighter caps to exercise retention.
     internal JsonHistoryStore(string path, int maxEntries = 1000, long maxBytes = 50L * 1024 * 1024)
@@ -36,6 +37,15 @@ internal sealed class JsonHistoryStore : IHistoryStore
         _maxEntries = Math.Max(1, maxEntries);
         _maxBytes = Math.Max(1, maxBytes);
     }
+
+    // Test seam: a temp file whose retention caps follow the live settings (FR-158).
+    internal JsonHistoryStore(string path, ISettingsStore settings)
+        : this(path)
+        => _settings = settings;
+
+    private int MaxEntries => _settings is not null ? Math.Max(1, _settings.Current.History.MaxEntries) : _maxEntries;
+
+    private long MaxBytes => _settings is not null ? Math.Max(1, _settings.Current.History.MaxBytes) : _maxBytes;
 
     public async Task AppendAsync(HistoryEntry entry, CancellationToken cancellationToken = default)
     {
@@ -112,7 +122,10 @@ internal sealed class JsonHistoryStore : IHistoryStore
         var lines = entries.Select(Serialize).ToList();
         var totalBytes = lines.Sum(l => (long)Utf8NoBom.GetByteCount(l) + 1); // + newline
 
-        if (entries.Count <= _maxEntries && totalBytes <= _maxBytes)
+        var maxEntries = MaxEntries;
+        var maxBytes = MaxBytes;
+
+        if (entries.Count <= maxEntries && totalBytes <= maxBytes)
         {
             return;
         }
@@ -121,7 +134,7 @@ internal sealed class JsonHistoryStore : IHistoryStore
         var kept = new List<HistoryEntry>(entries);
         var keptBytes = totalBytes;
 
-        while ((kept.Count > _maxEntries || keptBytes > _maxBytes)
+        while ((kept.Count > maxEntries || keptBytes > maxBytes)
                && kept.FindIndex(e => !e.Pinned) is var index and >= 0)
         {
             keptBytes -= Utf8NoBom.GetByteCount(Serialize(kept[index])) + 1;

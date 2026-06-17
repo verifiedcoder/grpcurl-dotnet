@@ -30,8 +30,14 @@ public sealed class SettingsDocumentUiTests(HeadlessSessionFixture fixture) : He
         texts.ShouldContain("Theme");
         texts.ShouldContain("Network defaults");
         texts.ShouldContain("protoc");
-        texts.ShouldContain("Diagnostics");   // disabled placeholder
-        texts.ShouldContain("Updates");       // disabled placeholder
+        texts.ShouldContain("History");        // FR-158: active section
+        texts.ShouldContain("Diagnostics");    // disabled placeholder
+        texts.ShouldContain("Updates");        // disabled placeholder
+
+        // FR-158: the history capture toggle renders as a real, named control.
+        window.GetVisualDescendants().OfType<CheckBox>()
+            .Any(c => Equals(c.GetValue(Avalonia.Automation.AutomationProperties.NameProperty), "Capture history"))
+            .ShouldBeTrue();
 
         window.GetVisualDescendants().OfType<Button>()
             .Any(b => Equals(b.GetValue(Avalonia.Automation.AutomationProperties.NameProperty), "Reset all settings"))

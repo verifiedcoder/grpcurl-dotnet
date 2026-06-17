@@ -291,4 +291,38 @@ public sealed class JsonWorkspaceStoreTests : IDisposable
         store.Current.Name.ShouldBe("on-disk"); // disk state wins
         store.IsDirty.ShouldBeFalse();
     }
+
+    // ── E3.4: export / read-for-merge (FR-164) ───────────────────────────────
+
+    [Fact]
+    public async Task Export_writes_a_copy_without_changing_the_active_file()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var store = new JsonWorkspaceStore(Path_);
+        await store.SaveAsync(Named("active"), ct);
+
+        var exportPath = System.IO.Path.Combine(_dir, "shared.gcnws.json");
+        await store.ExportAsync(Named("shared-copy"), exportPath, ct);
+
+        File.Exists(exportPath).ShouldBeTrue();
+        store.CurrentPath.ShouldBe(Path_);                 // active file unchanged
+        store.Current.Name.ShouldBe("active");             // in-memory workspace unchanged
+        store.RecentWorkspaces.ShouldNotContain(r => r.Path.Contains("shared.gcnws.json")); // not a recent
+    }
+
+    [Fact]
+    public async Task Read_deserializes_without_opening()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var store = new JsonWorkspaceStore(Path_);
+
+        var otherPath = System.IO.Path.Combine(_dir, "other.gcnws.json");
+        await store.ExportAsync(Named("incoming"), otherPath, ct);
+
+        var read = await store.ReadAsync(otherPath, ct);
+
+        read.Name.ShouldBe("incoming");
+        store.CurrentPath.ShouldBe(Path_); // reading a file does not open it
+        store.Current.Name.ShouldNotBe("incoming");
+    }
 }

@@ -53,6 +53,11 @@
                 <MenuItem Header="_Reload from disk" Command="{Binding ReloadWorkspaceCommand}"
                           AutomationProperties.Name="Reload workspace" />
                 <Separator />
+                <MenuItem Header="_Import Workspace…" Command="{Binding ImportWorkspaceCommand}"
+                          AutomationProperties.Name="Import workspace" />
+                <MenuItem Header="E_xport Workspace…" Command="{Binding ExportWorkspaceCommand}"
+                          AutomationProperties.Name="Export workspace" />
+                <Separator />
                 <MenuItem Header="_Settings…" InputGesture="Ctrl+," Command="{Binding OpenSettingsCommand}"
                           AutomationProperties.Name="Settings" />
                 <Separator />

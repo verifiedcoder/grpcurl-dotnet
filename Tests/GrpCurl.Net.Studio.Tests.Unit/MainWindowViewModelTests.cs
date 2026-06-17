@@ -373,4 +373,86 @@ public sealed class MainWindowViewModelTests
 
         vm.Title.ShouldContain("●");
     }
+
+    // ── E3.4: workspace export / import (FR-164) ─────────────────────────────
+
+    [Fact]
+    public async Task Export_writes_the_current_workspace_to_the_chosen_path()
+    {
+        var vm = CreateWithWorkspace(out var store, out var picker, out _, out _, out _);
+        picker.SaveResult = "/ws/share.gcnws.json";
+
+        await vm.ExportWorkspaceCommand.ExecuteAsync(null);
+
+        store.LastExport.ShouldNotBeNull();
+        store.LastExport!.Value.Path.ShouldBe("/ws/share.gcnws.json");
+        store.LastExport.Value.Workspace.Name.ShouldBe("Demo");
+        store.CurrentPath.ShouldNotBe("/ws/share.gcnws.json"); // export doesn't change the active file
+    }
+
+    [Fact]
+    public async Task Export_cancelled_at_the_picker_writes_nothing()
+    {
+        var vm = CreateWithWorkspace(out var store, out var picker, out _, out _, out _);
+        picker.SaveResult = null; // user cancelled
+
+        await vm.ExportWorkspaceCommand.ExecuteAsync(null);
+
+        store.LastExport.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Import_merges_after_confirmation_and_refreshes_connections()
+    {
+        var vm = CreateWithWorkspace(out var store, out var picker, out var dialogs, out var connections, out _);
+        picker.OpenResult = "/ws/other.gcnws.json";
+        store.ReadResult = new WorkspaceModel { Connections = [new SavedConnection { Name = "staging", Address = "h:2" }] };
+        dialogs.ConfirmResult = true;
+
+        await vm.ImportWorkspaceCommand.ExecuteAsync(null);
+
+        dialogs.ConfirmCount.ShouldBe(1);
+        store.Current.Connections.Select(c => c.Name).ShouldBe(["a", "staging"]);
+        connections.Connections.Count.ShouldBe(2); // panes reloaded from the merged workspace
+    }
+
+    [Fact]
+    public async Task Import_declined_changes_nothing()
+    {
+        var vm = CreateWithWorkspace(out var store, out var picker, out var dialogs, out _, out _);
+        picker.OpenResult = "/ws/other.gcnws.json";
+        store.ReadResult = new WorkspaceModel { Connections = [new SavedConnection { Name = "staging" }] };
+        dialogs.ConfirmResult = false;
+
+        await vm.ImportWorkspaceCommand.ExecuteAsync(null);
+
+        store.Current.Connections.ShouldHaveSingleItem(); // only the original "a"
+    }
+
+    [Fact]
+    public async Task Import_of_an_empty_workspace_reports_nothing_to_import()
+    {
+        var vm = CreateWithWorkspace(out var store, out var picker, out var dialogs, out _, out _);
+        picker.OpenResult = "/ws/empty.gcnws.json";
+        store.ReadResult = new WorkspaceModel();
+
+        await vm.ImportWorkspaceCommand.ExecuteAsync(null);
+
+        dialogs.ConfirmCount.ShouldBe(0);
+        dialogs.LastMessageTitle.ShouldBe("Nothing to import");
+        store.Current.Connections.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public async Task Import_of_a_newer_file_reports_a_schema_error()
+    {
+        var vm = CreateWithWorkspace(out var store, out var picker, out var dialogs, out _, out _);
+        picker.OpenResult = "/ws/newer.gcnws.json";
+        store.ReadError = WorkspaceSchemaException.NewerVersion(2, 1);
+
+        await vm.ImportWorkspaceCommand.ExecuteAsync(null);
+
+        dialogs.LastMessageTitle.ShouldBe("Could not import workspace");
+        store.Current.Connections.ShouldHaveSingleItem();
+    }
 }

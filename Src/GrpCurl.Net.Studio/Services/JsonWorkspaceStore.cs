@@ -147,6 +147,17 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
         await PromoteRecentAsync(path, cancellationToken).ConfigureAwait(false);
     }
 
+    public Task ExportAsync(WorkspaceModel workspace, string path, CancellationToken cancellationToken = default)
+        // Export is a plain copy to disk: it must not disturb the active file, dirty state, or recents.
+        => WriteAtomicAsync(path, workspace, cancellationToken);
+
+    public async Task<WorkspaceModel> ReadAsync(string path, CancellationToken cancellationToken = default)
+    {
+        // Read-only preview for a merge: deserialize strictly, but leave Current/CurrentPath/recents alone.
+        var json = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
+        return WorkspaceSerializer.Deserialize(json);
+    }
+
     public WorkspaceModel NewWorkspace()
     {
         CancelPendingFlush();

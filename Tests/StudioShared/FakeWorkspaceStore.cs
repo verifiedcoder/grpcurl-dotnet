@@ -114,6 +114,31 @@ public sealed class FakeWorkspaceStore : IWorkspaceStore
         return Task.CompletedTask;
     }
 
+    /// <summary>The workspace + path passed to the most recent <see cref="ExportAsync" />.</summary>
+    public (WorkspaceModel Workspace, string Path)? LastExport { get; private set; }
+
+    public Task ExportAsync(WorkspaceModel workspace, string path, CancellationToken cancellationToken = default)
+    {
+        // Export must not change the active workspace, path, or dirty state.
+        LastExport = (workspace, path);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Scripted result for <see cref="ReadAsync" /> (the workspace to merge); throws <see cref="ReadError" /> when set.</summary>
+    public WorkspaceModel? ReadResult { get; set; }
+
+    public Exception? ReadError { get; set; }
+
+    public Task<WorkspaceModel> ReadAsync(string path, CancellationToken cancellationToken = default)
+    {
+        if (ReadError is not null)
+        {
+            throw ReadError;
+        }
+
+        return Task.FromResult(ReadResult ?? WorkspaceModel.Empty());
+    }
+
     public WorkspaceModel NewWorkspace()
     {
         Current = WorkspaceModel.Empty();

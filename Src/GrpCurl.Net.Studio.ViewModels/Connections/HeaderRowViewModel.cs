@@ -39,6 +39,19 @@ public sealed partial class HeaderRowViewModel : ViewModelBase
         _value = entry.Value;
     }
 
+    /// <summary>
+    ///     FR-066/FR-133: resolves a <c>${VAR}</c> against the active workspace environment for the preview
+    ///     (active env first, then OS). Set by the owning invocation tab; null falls back to OS only.
+    /// </summary>
+    public Func<string, string?>? ActiveEnvironmentResolver { get; set; }
+
+    /// <summary>Re-raises the resolved-value preview (e.g. after the active environment changes, FR-133).</summary>
+    public void RefreshResolvedPreview()
+    {
+        OnPropertyChanged(nameof(ResolvedPreview));
+        OnPropertyChanged(nameof(HasResolvedPreview));
+    }
+
     public bool IsBin => Name.EndsWith("-bin", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>FR-123: show the "value required" hint while a restored secret header is still blank.</summary>
@@ -83,7 +96,10 @@ public sealed partial class HeaderRowViewModel : ViewModelBase
             var resolved = EnvVarPattern().Replace(Value, m =>
             {
                 var name = m.Groups[1].Value;
-                return Environment.GetEnvironmentVariable(name) ?? $"<unset:{name}>";
+                // FR-066/FR-131: active environment first, then the OS process environment.
+                return ActiveEnvironmentResolver?.Invoke(name)
+                       ?? Environment.GetEnvironmentVariable(name)
+                       ?? $"<unset:{name}>";
             });
 
             return SecretRedactor.FormatValue(Name, resolved, unsafeShowSecrets: false);

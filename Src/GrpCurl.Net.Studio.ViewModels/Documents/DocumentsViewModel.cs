@@ -29,6 +29,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     private readonly IProtocService? _protoc;
     private readonly ISecretStore? _secrets;
     private readonly ISavedRequestStore? _savedRequests;
+    private readonly IEnvironmentService? _environment;
     private readonly IFilePickerService? _filePicker;
     private readonly ConsoleViewModel? _console;
     private readonly IInspector? _inspector;
@@ -58,7 +59,8 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         IHistoryStore? history = null,
         IWorkspaceStore? workspace = null,
         ISecretStore? secrets = null,
-        ISavedRequestStore? savedRequests = null)
+        ISavedRequestStore? savedRequests = null,
+        IEnvironmentService? environment = null)
     {
         _descriptors = descriptors;
         _dispatcher = dispatcher;
@@ -79,6 +81,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         _workspace = workspace;
         _secrets = secrets;
         _savedRequests = savedRequests;
+        _environment = environment;
     }
 
     public ObservableCollection<DocumentViewModel> Documents { get; } = [];
@@ -149,7 +152,8 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         var document = new InvocationDocumentViewModel(
             connection, method, body, _invocation, _descriptors, _dispatcher, _clipboard, _dialogs, _launcher, _validator,
             _filePicker, _settings.Current.Network.RingBufferSize, revealGate: _revealGate, documentHost: this,
-            console: _console, inspector: _inspector, recorder: _recorder, savedRequests: _savedRequests);
+            console: _console, inspector: _inspector, recorder: _recorder, savedRequests: _savedRequests,
+            environment: _environment);
 
         document.CliDialect = _settings.Current.General.CliShellDialect;
         return document;

@@ -100,12 +100,13 @@ public sealed class WorkspaceSerializerTests
     [Fact]
     public void Unknown_forward_fields_survive_a_round_trip()
     {
-        // A v1 file written by a newer Studio with an additive field this build doesn't model.
-        var json = """{ "schemaVersion": 1, "id": "abc", "name": "n", "savedRequests": [ { "id": "r1" } ] }""";
+        // A v1 file written by a newer Studio with an additive field this build doesn't model
+        // (graphqlRequests is in the schema but not yet modelled here — exactly the forward-compat case).
+        var json = """{ "schemaVersion": 1, "id": "abc", "name": "n", "graphqlRequests": [ { "id": "g1" } ] }""";
 
         var reserialized = WorkspaceSerializer.Serialize(WorkspaceSerializer.Deserialize(json));
 
-        reserialized.ShouldContain("savedRequests");
-        reserialized.ShouldContain("r1");
+        reserialized.ShouldContain("graphqlRequests");
+        reserialized.ShouldContain("g1");
     }
 }

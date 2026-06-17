@@ -4,5 +4,6 @@
   "name": "Sample workspace",
   "connections": [],
   "tlsProfiles": [],
-  "environments": []
+  "environments": [],
+  "savedRequests": []
 }

@@ -46,6 +46,9 @@ internal static class ServiceRegistration
         services.AddSingleton<IEnvironmentService, EnvironmentService>();
         services.AddSingleton<IEnvironmentStore, EnvironmentStore>(); // PR-B: workspace-level CRUD over environments
 
+        // Saved requests (FR-145): workspace-level CRUD over named invocation requests (sidebar + tabs).
+        services.AddSingleton<ISavedRequestStore, SavedRequestStore>();
+
         // TLS profile resolution (E2.2): turns a connection's profile reference + the PKCS12
         // password secret into the (profile, password) pair the channel mapper consumes.
         services.AddSingleton<ITlsProfileResolver, TlsProfileResolver>();

@@ -365,6 +365,74 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
     }
 
+    /// <summary>File → Export Workspace…: write a secret-free copy of the workspace to a chosen path (FR-164).</summary>
+    [RelayCommand(CanExecute = nameof(CanManageWorkspaces))]
+    private async Task ExportWorkspace()
+    {
+        if (_workspaceStore is null || _filePicker is null)
+        {
+            return;
+        }
+
+        var suggested = $"{Sanitize(_workspaceStore.Current.Name)}.gcnws.json";
+        var path = await _filePicker.SaveFileAsync("Export workspace", suggested, ["gcnws.json"]);
+
+        if (path is not null)
+        {
+            await _workspaceStore.ExportAsync(_workspaceStore.Current, path);
+        }
+    }
+
+    /// <summary>
+    ///     File → Import Workspace…: merge another workspace into this one (FR-164). Connections, profiles,
+    ///     and environments are added (never overwritten); a pre-merge summary lists what will change and the
+    ///     user confirms before anything is applied.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanManageWorkspaces))]
+    private async Task ImportWorkspace()
+    {
+        if (_workspaceStore is null || _filePicker is null || _dialogs is null)
+        {
+            return;
+        }
+
+        var path = await _filePicker.OpenFileAsync("Import workspace", ["gcnws.json", "json"]);
+
+        if (path is null)
+        {
+            return;
+        }
+
+        WorkspaceModel incoming;
+
+        try
+        {
+            incoming = await _workspaceStore.ReadAsync(path);
+        }
+        catch (WorkspaceSchemaException ex)
+        {
+            await _dialogs.ShowMessageAsync("Could not import workspace", ex.Message);
+            return;
+        }
+
+        var (merged, summary) = WorkspaceMerger.Merge(_workspaceStore.Current, incoming);
+
+        if (summary.IsEmpty)
+        {
+            await _dialogs.ShowMessageAsync("Nothing to import", summary.Describe());
+            return;
+        }
+
+        if (!await _dialogs.ConfirmAsync(
+                $"Import {summary.TotalAdded} item(s) from '{Path.GetFileName(path)}'?", summary.Describe()))
+        {
+            return;
+        }
+
+        await _workspaceStore.SaveAsync(merged);
+        OnWorkspaceSwitched();
+    }
+
     private async Task OpenPathAsync(string path)
     {
         try

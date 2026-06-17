@@ -60,6 +60,20 @@ public interface IWorkspaceStore
     /// <summary>Writes <paramref name="workspace" /> to <paramref name="path" />, which becomes the active file + a recent.</summary>
     Task SaveAsAsync(WorkspaceModel workspace, string path, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    ///     Writes a copy of <paramref name="workspace" /> to <paramref name="path" /> for sharing (FR-164)
+    ///     without changing the active file, dirty state, or recents. The format is already secret-free
+    ///     (FR-141), so an export needs no extra sanitisation.
+    /// </summary>
+    Task ExportAsync(WorkspaceModel workspace, string path, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Reads and deserializes a workspace document from <paramref name="path" /> strictly (a corrupt/newer
+    ///     file throws <see cref="WorkspaceSchemaException" />) <em>without</em> opening it — the active
+    ///     workspace, path, and recents are untouched. Used to preview a file before merging it (FR-164).
+    /// </summary>
+    Task<WorkspaceModel> ReadAsync(string path, CancellationToken cancellationToken = default);
+
     /// <summary>Replaces <see cref="Current" /> with a fresh empty workspace (a new identity, no saved path yet).</summary>
     WorkspaceModel NewWorkspace();
 

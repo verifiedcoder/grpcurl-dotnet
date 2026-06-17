@@ -5,6 +5,14 @@
              x:Class="GrpCurl.Net.Studio.Views.Panes.ServiceExplorerView"
              x:DataType="vm:ServiceExplorerViewModel">
 
+    <UserControl.Styles>
+        <!-- FR-059: deprecated symbols render struck-through and dimmed. -->
+        <Style Selector="TextBlock.deprecated">
+            <Setter Property="TextDecorations" Value="Strikethrough" />
+            <Setter Property="Opacity" Value="0.55" />
+        </Style>
+    </UserControl.Styles>
+
     <Grid RowDefinitions="Auto,Auto,Auto,*">
 
         <!-- Header + refresh -->
@@ -14,6 +22,10 @@
                 <Button DockPanel.Dock="Right" Content="⟳" Padding="6,0"
                         Command="{Binding RefreshCommand}"
                         ToolTip.Tip="Refresh" AutomationProperties.Name="Refresh services" />
+                <!-- FR-029: A→Z vs descriptor (file) order. -->
+                <ToggleButton DockPanel.Dock="Right" Content="A↓" Padding="6,0" Margin="0,0,6,0"
+                              IsChecked="{Binding SortAlphabetically}" IsVisible="{Binding IsLoaded}"
+                              ToolTip.Tip="Sort A→Z (off = file order)" AutomationProperties.Name="Sort alphabetically" />
                 <!-- Schema export (FR-100..104): the connection-level export entry point. -->
                 <Button DockPanel.Dock="Right" Content="Export ▾" Padding="6,0" Margin="0,0,6,0"
                         IsVisible="{Binding IsLoaded}" ToolTip.Tip="Export schema"
@@ -72,7 +84,7 @@
                         <TreeDataTemplate DataType="explorer:ServiceNodeViewModel" ItemsSource="{Binding Methods}">
                             <Grid ColumnDefinitions="*,Auto">
                                 <TextBlock Grid.Column="0" Text="{Binding FullName}" FontWeight="SemiBold"
-                                           TextTrimming="CharacterEllipsis" />
+                                           TextTrimming="CharacterEllipsis" Classes.deprecated="{Binding Deprecated}" />
                                 <TextBlock Grid.Column="1" Text="{Binding MethodCount}" Opacity="0.5"
                                            Margin="6,0,0,0" VerticalAlignment="Center" />
                                 <Grid.ContextMenu>
@@ -80,6 +92,8 @@
                                         <MenuItem Header="Describe" Command="{Binding DescribeCommand}"
                                                   CommandParameter="{Binding FullName}" />
                                         <MenuItem Header="Copy full name" Command="{Binding CopyFullNameCommand}"
+                                                  CommandParameter="{Binding FullName}" />
+                                        <MenuItem Header="Copy as .proto" Command="{Binding CopyProtoCommand}"
                                                   CommandParameter="{Binding FullName}" />
                                     </ContextMenu>
                                 </Grid.ContextMenu>
@@ -96,7 +110,8 @@
                                     <TextBlock Text="{Binding Badge}" FontSize="10" FontWeight="Bold"
                                                HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center"
+                                           Classes.deprecated="{Binding Deprecated}" />
                                 <StackPanel.ContextMenu>
                                     <ContextMenu>
                                         <MenuItem Header="New request" Command="{Binding NewRequestCommand}"
@@ -104,6 +119,8 @@
                                         <MenuItem Header="Describe" Command="{Binding DescribeCommand}"
                                                   CommandParameter="{Binding FullName}" />
                                         <MenuItem Header="Copy full name" Command="{Binding CopyFullNameCommand}"
+                                                  CommandParameter="{Binding FullName}" />
+                                        <MenuItem Header="Copy as .proto" Command="{Binding CopyProtoCommand}"
                                                   CommandParameter="{Binding FullName}" />
                                     </ContextMenu>
                                 </StackPanel.ContextMenu>
@@ -140,12 +157,15 @@
                                     <TextBlock Text="{Binding Badge}" FontSize="10" FontWeight="Bold"
                                                HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center"
+                                           Classes.deprecated="{Binding Deprecated}" />
                                 <StackPanel.ContextMenu>
                                     <ContextMenu>
                                         <MenuItem Header="Describe" Command="{Binding DescribeCommand}"
                                                   CommandParameter="{Binding FullName}" />
                                         <MenuItem Header="Copy full name" Command="{Binding CopyFullNameCommand}"
+                                                  CommandParameter="{Binding FullName}" />
+                                        <MenuItem Header="Copy as .proto" Command="{Binding CopyProtoCommand}"
                                                   CommandParameter="{Binding FullName}" />
                                     </ContextMenu>
                                 </StackPanel.ContextMenu>

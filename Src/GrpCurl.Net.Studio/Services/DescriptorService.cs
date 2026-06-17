@@ -204,6 +204,37 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null)
         }
     }
 
+    public async Task<string?> GetProtoSnippetAsync(SavedConnection connection, string symbol, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await using var session = await OpenSessionAsync(connection, cancellationToken).ConfigureAwait(false);
+
+            var normalized = symbol.Replace('/', '.');
+            var descriptor = await session.Source.FindSymbolAsync(normalized, cancellationToken).ConfigureAwait(false);
+
+            // Emit the whole defining file — the same reconstruction the export uses, byte-for-byte.
+            var file = descriptor switch
+            {
+                ServiceDescriptor s => s.File,
+                MethodDescriptor m => m.File,
+                MessageDescriptor g => g.File,
+                EnumDescriptor e => e.File,
+                _ => null
+            };
+
+            return file is null ? null : ProtoFileEmitter.EmitFile(file);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex) when (IsDescriptorSourceError(ex) || ex is RpcException)
+        {
+            return null;
+        }
+    }
+
     /// <summary>Opens a descriptor session with the connection's full channel + descriptor-source config.</summary>
     private async Task<DescriptorSourceFactory> OpenSessionAsync(SavedConnection connection, CancellationToken cancellationToken)
     {
@@ -263,10 +294,11 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null)
                 $"{descriptor.FullName}/{m.Name}",
                 StreamingShapeExtensions.FromFlags(m.IsClientStreaming, m.IsServerStreaming),
                 m.InputType.FullName,
-                m.OutputType.FullName))
+                m.OutputType.FullName,
+                m.GetOptions()?.Deprecated == true))
             .ToList();
 
-        return new ServiceEntry(descriptor.FullName, methods);
+        return new ServiceEntry(descriptor.FullName, methods, descriptor.GetOptions()?.Deprecated == true);
     }
 
     // --- describe mapping (FR-050/052) ---
@@ -279,10 +311,11 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null)
                 $"{s.FullName}/{m.Name}",
                 StreamingShapeExtensions.FromFlags(m.IsClientStreaming, m.IsServerStreaming),
                 new TypeRef(m.InputType.FullName, Resolvable: true),
-                new TypeRef(m.OutputType.FullName, Resolvable: true)))
+                new TypeRef(m.OutputType.FullName, Resolvable: true),
+                m.GetOptions()?.Deprecated == true))
             .ToList();
 
-        return new ServiceDescription(s.FullName, s.Name, s.File.Name, methods);
+        return new ServiceDescription(s.FullName, s.Name, s.File.Name, methods, s.GetOptions()?.Deprecated == true);
     }
 
     private static MethodDescription MapMethodDescription(MethodDescriptor m)
@@ -294,7 +327,8 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null)
             new TypeRef(m.InputType.FullName, Resolvable: true),
             new TypeRef(m.OutputType.FullName, Resolvable: true),
             new TypeRef(m.Service.FullName, Resolvable: true),
-            MessageTemplateGenerator.GenerateJson(m.InputType));
+            MessageTemplateGenerator.GenerateJson(m.InputType),
+            m.GetOptions()?.Deprecated == true);
 
     private static MessageDescription MapMessageDescription(MessageDescriptor g)
     {
@@ -308,7 +342,9 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null)
             .Concat(g.EnumTypes.Select(e => new TypeRef(e.FullName, Resolvable: true)))
             .ToList();
 
-        return new MessageDescription(g.FullName, g.Name, g.File.Name, fields, nested, MessageTemplateGenerator.GenerateJson(g));
+        return new MessageDescription(
+            g.FullName, g.Name, g.File.Name, fields, nested, MessageTemplateGenerator.GenerateJson(g),
+            g.GetOptions()?.Deprecated == true);
     }
 
     private static FieldDescription MapField(FieldDescriptor field)
@@ -321,11 +357,14 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null)
         // proto3 `optional` produces a synthetic single-field oneof — not a user-facing oneof.
         var oneof = field.ContainingOneof is { IsSynthetic: false } o ? o.Name : null;
 
-        return new FieldDescription(field.Name, field.FieldNumber, display, link, label, oneof);
+        return new FieldDescription(field.Name, field.FieldNumber, display, link, label, oneof, field.GetOptions()?.Deprecated == true);
     }
 
     private static EnumDescription MapEnumDescription(EnumDescriptor e)
-        => new(e.FullName, e.Name, e.File.Name, e.Values.Select(v => new EnumValue(v.Name, v.Number)).ToList());
+        => new(
+            e.FullName, e.Name, e.File.Name,
+            e.Values.Select(v => new EnumValue(v.Name, v.Number, v.GetOptions()?.Deprecated == true)).ToList(),
+            e.GetOptions()?.Deprecated == true);
 
     private static (string Display, TypeRef? Link) DescribeFieldType(FieldDescriptor field)
     {
@@ -391,7 +430,7 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null)
 
             foreach (var enumType in file.EnumType)
             {
-                types.Add(new TypeEntry(Combine(package, enumType.Name), TypeNodeKind.Enum, package));
+                types.Add(new TypeEntry(Combine(package, enumType.Name), TypeNodeKind.Enum, package, enumType.Options?.Deprecated == true));
             }
         }
 
@@ -406,7 +445,7 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null)
         }
 
         var fullName = Combine(scope, message.Name);
-        types.Add(new TypeEntry(fullName, TypeNodeKind.Message, package));
+        types.Add(new TypeEntry(fullName, TypeNodeKind.Message, package, message.Options?.Deprecated == true));
 
         foreach (var nested in message.NestedType)
         {
@@ -415,7 +454,7 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null)
 
         foreach (var enumType in message.EnumType)
         {
-            types.Add(new TypeEntry(Combine(fullName, enumType.Name), TypeNodeKind.Enum, package));
+            types.Add(new TypeEntry(Combine(fullName, enumType.Name), TypeNodeKind.Enum, package, enumType.Options?.Deprecated == true));
         }
     }
 

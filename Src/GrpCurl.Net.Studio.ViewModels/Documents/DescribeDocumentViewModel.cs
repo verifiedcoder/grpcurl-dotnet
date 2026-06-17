@@ -25,6 +25,7 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLoading), nameof(IsLoaded), nameof(HasError))]
+    [NotifyCanExecuteChangedFor(nameof(CopyProtoCommand))]
     private DescribeState _state = DescribeState.Loading;
 
     [ObservableProperty]
@@ -130,6 +131,18 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel
         if (TemplateJson is not null)
         {
             await _clipboard.SetTextAsync(TemplateJson);
+        }
+    }
+
+    /// <summary>FR-054: copies the reconstructed <c>.proto</c> of the current symbol's defining file.</summary>
+    [RelayCommand(CanExecute = nameof(IsLoaded))]
+    private async Task CopyProto()
+    {
+        var snippet = await _descriptors.GetProtoSnippetAsync(Connection, CurrentSymbol);
+
+        if (!string.IsNullOrEmpty(snippet))
+        {
+            await _clipboard.SetTextAsync(snippet);
         }
     }
 

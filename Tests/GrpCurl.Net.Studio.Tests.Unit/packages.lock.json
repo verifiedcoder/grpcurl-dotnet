@@ -735,6 +735,14 @@
           "TextMateSharp.Grammars": "[1.0.70, )"
         }
       },
+      "grpcurl.net.studio.conformance": {
+        "type": "Project",
+        "dependencies": {
+          "Google.Protobuf": "[3.34.1, )",
+          "GrpCurl.Net.Studio.ViewModels": "[1.0.0, )",
+          "Grpc.Net.Client": "[2.76.0, )"
+        }
+      },
       "grpcurl.net.studio.viewmodels": {
         "type": "Project",
         "dependencies": {

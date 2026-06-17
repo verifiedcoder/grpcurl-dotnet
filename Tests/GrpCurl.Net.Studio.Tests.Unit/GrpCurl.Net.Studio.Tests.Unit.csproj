@@ -40,6 +40,8 @@
         <ProjectReference Include="..\GrpCurl.Net.TestServer\GrpCurl.Net.TestServer.csproj" />
         <!-- Copy-as-grpcn round-trips through the real CLI parser (FR-162 / AC-14). -->
         <ProjectReference Include="..\..\Src\GrpCurl.Net\GrpCurl.Net.csproj" />
+        <!-- Deterministic regression cover for the conformance adapter's cancel-after-N invariant. -->
+        <ProjectReference Include="..\GrpCurl.Net.Studio.Conformance\GrpCurl.Net.Studio.Conformance.csproj" />
     </ItemGroup>
 
     <!-- Shared Studio test fakes, linked into both Studio test projects. -->

@@ -392,6 +392,14 @@ internal static class TestCaseRunner
 
             await foreach (var message in streaming.ResponseStream)
             {
+                // Cancel-after-N race: once we hit the threshold and cancel, the stream may already have
+                // another message in flight; ignore it so we report exactly N payloads (matches the
+                // reference clients), rather than counting the in-flight extra.
+                if (afterNumResponses > 0 && received >= afterNumResponses)
+                {
+                    continue;
+                }
+
                 ResultBuilder.AddPayload(result.Payloads, message, method);
 
                 received++;

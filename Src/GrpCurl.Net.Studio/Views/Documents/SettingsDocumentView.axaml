@@ -369,12 +369,44 @@
                 <TextBlock Classes="settingHint" Text="Core default: 65536." />
             </StackPanel>
 
+            <!-- ───────── Updates (FR-156) ───────── -->
+            <TextBlock Classes="sectionHeader" Text="Updates" />
+
+            <StackPanel Spacing="2">
+                <TextBlock Classes="settingLabel" Text="Version" />
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Check now" Margin="8,0,0,0"
+                            Command="{Binding CheckForUpdatesCommand}" AutomationProperties.Name="Check for updates" />
+                    <TextBlock Text="{Binding AppVersion}" VerticalAlignment="Center" />
+                </DockPanel>
+                <TextBlock Classes="settingHint" TextWrapping="Wrap"
+                           Text="Studio does not auto-update; Check now opens the releases page so you can download and install with consent (ADR-011)." />
+                <TextBlock Text="{Binding UpdateStatus}" FontSize="12" Opacity="0.8" Margin="0,2,0,0"
+                           IsVisible="{Binding UpdateStatus, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            </StackPanel>
+
+            <StackPanel Spacing="2">
+                <TextBlock Classes="settingLabel" Text="Release channel" />
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Reset" Margin="8,0,0,0"
+                            Command="{Binding ResetSettingCommand}" CommandParameter="updateChannel"
+                            AutomationProperties.Name="Reset release channel" />
+                    <ComboBox ItemsSource="{Binding UpdateChannelOptions}" SelectedItem="{Binding UpdateChannel}"
+                              MinWidth="180" HorizontalAlignment="Left" AutomationProperties.Name="Release channel" />
+                </DockPanel>
+                <TextBlock Classes="settingHint" Text="Stable opens the latest release; Preview opens all releases (default: Stable)." />
+            </StackPanel>
+
+            <StackPanel Spacing="2">
+                <CheckBox IsChecked="{Binding UpdateCheckOnLaunch}" Content="Check for updates on launch"
+                          AutomationProperties.Name="Check for updates on launch" />
+                <TextBlock Classes="settingHint" Text="Remembered for when automatic update checks arrive (default: on)." />
+            </StackPanel>
+
             <!-- ───────── Phase-2 placeholders (disabled) ───────── -->
             <StackPanel IsEnabled="False" Spacing="6" Opacity="0.55">
                 <TextBlock Classes="sectionHeader" Text="Diagnostics" />
                 <TextBlock Classes="settingHint" Text="In-app log viewer, level filter, and diagnostics bundle — arrives in a later release." />
-                <TextBlock Classes="sectionHeader" Text="Updates" />
-                <TextBlock Classes="settingHint" Text="Update channel, check-on-launch, and consent-to-apply — arrives in a later release." />
             </StackPanel>
 
             <!-- ───────── Reset all (FR-159) ───────── -->

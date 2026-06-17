@@ -32,8 +32,8 @@ public sealed class SettingsDocumentUiTests(HeadlessSessionFixture fixture) : He
         texts.ShouldContain("protoc");
         texts.ShouldContain("History");          // FR-158: active section
         texts.ShouldContain("Descriptor limits"); // FR-157: active section
+        texts.ShouldContain("Updates");          // FR-156: active section
         texts.ShouldContain("Diagnostics");      // disabled placeholder
-        texts.ShouldContain("Updates");          // disabled placeholder
 
         // FR-158: the history capture toggle renders as a real, named control.
         window.GetVisualDescendants().OfType<CheckBox>()

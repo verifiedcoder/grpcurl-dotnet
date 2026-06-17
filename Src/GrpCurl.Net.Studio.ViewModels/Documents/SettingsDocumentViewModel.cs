@@ -11,7 +11,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 ///     affordance, plus a "reset all" (FR-159). Theme routes through the shared
 ///     <see cref="IThemeService" /> (live switch); other settings are written straight back through
 ///     <see cref="ISettingsStore" />. General / Editor / Network / protoc / Security / History /
-///     Descriptor limits are active; Diagnostics and Updates remain disabled placeholders.
+///     Descriptor limits / Updates are active; Diagnostics remains a disabled placeholder.
 /// </summary>
 public sealed partial class SettingsDocumentViewModel : DocumentViewModel
 {
@@ -19,6 +19,8 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
     private readonly IThemeService _themeService;
     private readonly IDialogService _dialogs;
     private readonly IProtocService? _protoc;
+    private readonly IUpdateService? _updates;
+    private readonly ILauncherService? _launcher;
     private readonly SecretStoreInfo? _secretInfo;
     private readonly bool _loaded;
     private bool _applying;
@@ -104,17 +106,32 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
     [NotifyPropertyChangedFor(nameof(DescriptorMaxSymbolsChanged))]
     private int _descriptorMaxSymbols;
 
+    // ── Updates (FR-156) ─────────────────────────────────────────────────────
+
+    [ObservableProperty]
+    private UpdateChannel _updateChannel;
+
+    [ObservableProperty]
+    private bool _updateCheckOnLaunch;
+
+    [ObservableProperty]
+    private string? _updateStatus;
+
     public SettingsDocumentViewModel(
         ISettingsStore settings,
         IThemeService themeService,
         IDialogService dialogs,
         IProtocService? protoc = null,
-        ISecretStore? secrets = null)
+        ISecretStore? secrets = null,
+        IUpdateService? updates = null,
+        ILauncherService? launcher = null)
     {
         _settings = settings;
         _themeService = themeService;
         _dialogs = dialogs;
         _protoc = protoc;
+        _updates = updates;
+        _launcher = launcher;
         _secretInfo = secrets?.Info;
         Title = "Settings";
 
@@ -152,6 +169,13 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
     public IReadOnlyList<AppTheme> ThemeOptions { get; } = Enum.GetValues<AppTheme>();
     public IReadOnlyList<StartupBehavior> StartupOptions { get; } = Enum.GetValues<StartupBehavior>();
     public IReadOnlyList<ShellDialect> DialectOptions { get; } = Enum.GetValues<ShellDialect>();
+    public IReadOnlyList<UpdateChannel> UpdateChannelOptions { get; } = Enum.GetValues<UpdateChannel>();
+
+    /// <summary>FR-156: the running application version (or a dash when the update service isn't wired).</summary>
+    public string AppVersion => _updates?.CurrentVersion ?? "—";
+
+    /// <summary>Whether the Updates actions are available (the update + launcher services are wired).</summary>
+    public bool CanCheckForUpdates => _updates is not null && _launcher is not null;
 
     // ── Descriptor limits: Core defaults (FR-157 "showing the Core default") ──
 
@@ -208,6 +232,21 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
     partial void OnDescriptorMaxFileDescriptorsChanged(int value) => Persist(s => s.DescriptorLimits.MaxFileDescriptors = Math.Max(1, value));
     partial void OnDescriptorMaxDependencyDepthChanged(int value) => Persist(s => s.DescriptorLimits.MaxDependencyDepth = Math.Max(1, value));
     partial void OnDescriptorMaxSymbolsChanged(int value) => Persist(s => s.DescriptorLimits.MaxSymbols = Math.Max(1, value));
+    partial void OnUpdateChannelChanged(UpdateChannel value) => Persist(s => s.Updates.Channel = value);
+    partial void OnUpdateCheckOnLaunchChanged(bool value) => Persist(s => s.Updates.CheckOnLaunch = value);
+
+    /// <summary>FR-156: a manual, consent-respecting check — opens the channel's releases page in the browser.</summary>
+    [RelayCommand(CanExecute = nameof(CanCheckForUpdates))]
+    private async Task CheckForUpdates()
+    {
+        if (_updates is null || _launcher is null)
+        {
+            return;
+        }
+
+        await _launcher.LaunchUriAsync(_updates.ReleasesUrl(UpdateChannel));
+        UpdateStatus = $"Opened the {UpdateChannel.ToString().ToLowerInvariant()} releases page in your browser.";
+    }
 
     /// <summary>FR-150: per-setting reset to its built-in default. Setting the property re-persists.</summary>
     [RelayCommand]
@@ -238,6 +277,8 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
             case "descriptorFiles": DescriptorMaxFileDescriptors = DescriptorDefaultFileDescriptors; break;
             case "descriptorDepth": DescriptorMaxDependencyDepth = DescriptorDefaultDependencyDepth; break;
             case "descriptorSymbols": DescriptorMaxSymbols = DescriptorDefaultSymbols; break;
+            case "updateChannel": UpdateChannel = d.Updates.Channel; break;
+            case "updateCheckOnLaunch": UpdateCheckOnLaunch = d.Updates.CheckOnLaunch; break;
         }
     }
 
@@ -316,6 +357,8 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
         DescriptorMaxFileDescriptors = s.DescriptorLimits.MaxFileDescriptors;
         DescriptorMaxDependencyDepth = s.DescriptorLimits.MaxDependencyDepth;
         DescriptorMaxSymbols = s.DescriptorLimits.MaxSymbols;
+        UpdateChannel = s.Updates.Channel;
+        UpdateCheckOnLaunch = s.Updates.CheckOnLaunch;
     }
 
     private void Persist(Action<StudioSettings> mutate)

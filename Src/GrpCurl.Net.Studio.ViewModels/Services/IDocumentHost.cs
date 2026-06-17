@@ -24,6 +24,12 @@ public interface IDocumentHost
     /// </summary>
     void OpenInvocation(SavedConnection connection, string methodSymbol, string? initialRequestJson = null);
 
+    /// <summary>
+    ///     Opens a saved request (FR-145) into an invocation tab pre-filled with its body, format, headers,
+    ///     and options, titled with the request name.
+    /// </summary>
+    void OpenSavedRequest(SavedConnection connection, SavedRequest request);
+
     /// <summary>Opens the Settings tab (FR-150), or focuses it if already open (single instance).</summary>
     void OpenSettings();
 

@@ -1,3 +1,4 @@
+using GrpCurl.Net.Studio.Services;
 using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
@@ -141,5 +142,68 @@ public sealed class ConnectionsPaneViewModelTests
         pane.Connections.ShouldBeEmpty();
         pane.HasConnections.ShouldBeFalse();
         store.SaveCount.ShouldBe(1);
+    }
+
+    // ── FR-145: saved requests nested under their connection ─────────────────
+
+    private static ConnectionsPaneViewModel CreateWithSavedRequests(
+        out FakeDocumentHost host, WorkspaceModel initial)
+    {
+        var store = new FakeWorkspaceStore(initial);
+        host = new FakeDocumentHost();
+        return new ConnectionsPaneViewModel(
+            store, new FakeConnectionRegistry(), new FakeDialogService(), new ConnectionSelection(),
+            savedRequests: new SavedRequestStore(store), documentHost: host);
+    }
+
+    [Fact]
+    public void Saved_requests_are_grouped_under_their_connection()
+    {
+        var workspace = new WorkspaceModel
+        {
+            Connections =
+            [
+                new SavedConnection { Id = "c1", Name = "alpha", Address = "h:1" },
+                new SavedConnection { Id = "c2", Name = "beta", Address = "h:2" }
+            ],
+            SavedRequests =
+            [
+                new SavedRequest { Id = "r1", Name = "hello", ConnectionId = "c1", Method = "p.S/Hello" },
+                new SavedRequest { Id = "r2", Name = "bye", ConnectionId = "c1", Method = "p.S/Bye" },
+                new SavedRequest { Id = "r3", Name = "ping", ConnectionId = "c2", Method = "p.S/Ping" }
+            ]
+        };
+        var pane = CreateWithSavedRequests(out _, workspace);
+
+        var alpha = pane.Connections.Single(c => c.Id == "c1");
+        alpha.HasSavedRequests.ShouldBeTrue();
+        alpha.SavedRequests.Select(r => r.Name).ShouldBe(["hello", "bye"]);
+        pane.Connections.Single(c => c.Id == "c2").SavedRequests.Single().Name.ShouldBe("ping");
+    }
+
+    [Fact]
+    public void A_connection_without_saved_requests_shows_none()
+    {
+        var pane = CreateWithSavedRequests(out _,
+            new WorkspaceModel { Connections = [new SavedConnection { Id = "c1", Name = "a", Address = "h:1" }] });
+
+        pane.Connections.Single().HasSavedRequests.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Opening_a_saved_request_routes_to_the_document_host()
+    {
+        var workspace = new WorkspaceModel
+        {
+            Connections = [new SavedConnection { Id = "c1", Name = "alpha", Address = "h:1" }],
+            SavedRequests = [new SavedRequest { Id = "r1", Name = "hello", ConnectionId = "c1", Method = "p.S/Hello" }]
+        };
+        var pane = CreateWithSavedRequests(out var host, workspace);
+
+        await pane.Connections.Single().SavedRequests.Single().OpenCommand.ExecuteAsync(null);
+
+        var opened = host.LastSavedRequest.ShouldNotBeNull();
+        opened.Connection.Id.ShouldBe("c1");
+        opened.Request.Name.ShouldBe("hello");
     }
 }

@@ -25,6 +25,8 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
     private readonly IFilePickerService? _filePicker;
     private readonly ISecretStore? _secretStore;
     private readonly IProtocService? _protocService;
+    private readonly ISavedRequestStore? _savedRequests;
+    private readonly IDocumentHost? _documentHost;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(EditConnectionCommand))]
@@ -41,7 +43,9 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         ITlsProfileStore? profileStore = null,
         IFilePickerService? filePicker = null,
         ISecretStore? secretStore = null,
-        IProtocService? protocService = null)
+        IProtocService? protocService = null,
+        ISavedRequestStore? savedRequests = null,
+        IDocumentHost? documentHost = null)
     {
         _workspaceStore = workspaceStore;
         _registry = registry;
@@ -52,14 +56,44 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         _filePicker = filePicker;
         _secretStore = secretStore;
         _protocService = protocService;
+        _savedRequests = savedRequests;
+        _documentHost = documentHost;
 
         Connections = [];
         Connections.CollectionChanged += OnConnectionsChanged;
 
         foreach (var connection in workspaceStore.Current.Connections)
         {
-            Connections.Add(new ConnectionListItemViewModel(connection));
+            Connections.Add(CreateItem(connection));
         }
+    }
+
+    /// <summary>
+    ///     Builds a connection list item and populates its saved requests (FR-145) from the workspace, each
+    ///     wired to open into a pre-filled invocation tab.
+    /// </summary>
+    private ConnectionListItemViewModel CreateItem(SavedConnection connection)
+    {
+        var item = new ConnectionListItemViewModel(connection);
+
+        foreach (var request in _savedRequests?.ForConnection(connection.Id) ?? [])
+        {
+            item.SavedRequests.Add(new SavedRequestItemViewModel(request, OpenSavedRequestAsync));
+        }
+
+        return item;
+    }
+
+    private Task OpenSavedRequestAsync(SavedRequest request)
+    {
+        var connection = Connections.FirstOrDefault(c => c.Id == request.ConnectionId)?.Connection;
+
+        if (connection is not null)
+        {
+            _documentHost?.OpenSavedRequest(connection, request);
+        }
+
+        return Task.CompletedTask;
     }
 
     public string Header => "Connections";
@@ -76,7 +110,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
 
         foreach (var connection in _workspaceStore.Current.Connections)
         {
-            Connections.Add(new ConnectionListItemViewModel(connection));
+            Connections.Add(CreateItem(connection));
         }
     }
 
@@ -100,7 +134,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
 
         if (saved is not null)
         {
-            Connections.Add(new ConnectionListItemViewModel(saved));
+            Connections.Add(CreateItem(saved));
             await PersistAsync();
         }
     }
@@ -122,7 +156,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         if (saved is not null)
         {
             var index = Connections.IndexOf(item);
-            Connections[index] = new ConnectionListItemViewModel(saved);
+            Connections[index] = CreateItem(saved);
             await PersistAsync();
         }
     }
@@ -140,7 +174,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         var copy = item.Connection.Clone();
         copy.Name = $"{item.Connection.Name} (copy)";
 
-        Connections.Add(new ConnectionListItemViewModel(copy));
+        Connections.Add(CreateItem(copy));
         await PersistAsync();
     }
 

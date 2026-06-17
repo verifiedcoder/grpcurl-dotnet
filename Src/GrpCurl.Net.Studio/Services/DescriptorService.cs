@@ -18,7 +18,7 @@ namespace GrpCurl.Net.Studio.Services;
 ///     session (and its channel) is disposed once read; the long-lived business channel for
 ///     invocation arrives with E1.4.
 /// </summary>
-internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null) : IDescriptorService
+internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null, ISettingsStore? settings = null) : IDescriptorService
 {
     public async Task<DescriptorLoadResult> LoadAsync(SavedConnection connection, CancellationToken cancellationToken = default)
     {
@@ -250,25 +250,33 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null)
             descriptorOptions: BuildDescriptorOptions(connection)).ConfigureAwait(false);
     }
 
-    /// <summary>FR-049: maps the connection's per-connection limit overrides onto Core's defaults (null = none).</summary>
-    private static DescriptorSourceOptions? BuildDescriptorOptions(SavedConnection connection)
+    /// <summary>
+    ///     Resolves the effective descriptor caps: a per-connection override (FR-049) wins; otherwise the
+    ///     app-wide default (FR-157, from settings); otherwise Core's default. Returns null only when no
+    ///     app-wide setting is wired and the connection sets no override (so Core uses its own defaults).
+    /// </summary>
+    internal DescriptorSourceOptions? BuildDescriptorOptions(SavedConnection connection)
     {
         var c = connection.DescriptorSource;
+        var hasOverride = c.MaxProtosetFileBytes is not null || c.MaxReflectionDescriptorBytes is not null
+            || c.MaxFileDescriptors is not null || c.MaxDependencyDepth is not null || c.MaxSymbols is not null;
 
-        if (c.MaxProtosetFileBytes is null && c.MaxReflectionDescriptorBytes is null
-            && c.MaxFileDescriptors is null && c.MaxDependencyDepth is null && c.MaxSymbols is null)
+        if (!hasOverride && settings is null)
         {
-            return null; // no overrides — Core uses its defaults
+            return null; // no overrides and no app-wide settings — Core uses its defaults
         }
 
+        // The app-wide default layer (FR-157); falls back to Core's defaults when settings aren't wired.
+        var app = settings?.Current.DescriptorLimits;
         var d = DescriptorSourceOptions.Default;
+
         return new DescriptorSourceOptions
         {
-            MaxProtosetFileBytes = c.MaxProtosetFileBytes ?? d.MaxProtosetFileBytes,
-            MaxReflectionDescriptorBytes = c.MaxReflectionDescriptorBytes ?? d.MaxReflectionDescriptorBytes,
-            MaxFileDescriptors = c.MaxFileDescriptors ?? d.MaxFileDescriptors,
-            MaxDependencyDepth = c.MaxDependencyDepth ?? d.MaxDependencyDepth,
-            MaxSymbols = c.MaxSymbols ?? d.MaxSymbols
+            MaxProtosetFileBytes = c.MaxProtosetFileBytes ?? app?.MaxProtosetFileBytes ?? d.MaxProtosetFileBytes,
+            MaxReflectionDescriptorBytes = c.MaxReflectionDescriptorBytes ?? app?.MaxReflectionDescriptorBytes ?? d.MaxReflectionDescriptorBytes,
+            MaxFileDescriptors = c.MaxFileDescriptors ?? app?.MaxFileDescriptors ?? d.MaxFileDescriptors,
+            MaxDependencyDepth = c.MaxDependencyDepth ?? app?.MaxDependencyDepth ?? d.MaxDependencyDepth,
+            MaxSymbols = c.MaxSymbols ?? app?.MaxSymbols ?? d.MaxSymbols
         };
     }
 

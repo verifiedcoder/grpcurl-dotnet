@@ -25,6 +25,8 @@ public sealed class StudioSettings
 
     public HistorySettings History { get; set; } = new();
 
+    public DescriptorLimitsSettings DescriptorLimits { get; set; } = new();
+
     /// <summary>Unknown/forward-compatible keys, preserved on save (SPEC-040 §6).</summary>
     [JsonExtensionData]
     public Dictionary<string, JsonElement>? Overflow { get; set; }
@@ -119,4 +121,27 @@ public sealed class HistorySettings
     public int MaxEntries { get; set; } = 1000;
 
     public long MaxBytes { get; set; } = 50L * 1024 * 1024;
+}
+
+/// <summary>
+///     FR-157 Descriptor limits: app-wide defaults for the FR-047 caps, applied when a connection has no
+///     per-connection override (FR-049 wins). Defaults mirror Core's <c>DescriptorSourceOptions</c>, so an
+///     unchanged value behaves exactly as before.
+/// </summary>
+public sealed class DescriptorLimitsSettings
+{
+    public long MaxProtosetFileBytes { get; set; }
+        = GrpCurl.Net.DescriptorSources.DescriptorSourceOptions.DefaultMaxProtosetFileBytes;
+
+    public long MaxReflectionDescriptorBytes { get; set; }
+        = GrpCurl.Net.DescriptorSources.DescriptorSourceOptions.DefaultMaxReflectionDescriptorBytes;
+
+    public int MaxFileDescriptors { get; set; }
+        = GrpCurl.Net.DescriptorSources.DescriptorSourceOptions.DefaultMaxFileDescriptors;
+
+    public int MaxDependencyDepth { get; set; }
+        = GrpCurl.Net.DescriptorSources.DescriptorSourceOptions.DefaultMaxDependencyDepth;
+
+    public int MaxSymbols { get; set; }
+        = GrpCurl.Net.DescriptorSources.DescriptorSourceOptions.DefaultMaxSymbols;
 }

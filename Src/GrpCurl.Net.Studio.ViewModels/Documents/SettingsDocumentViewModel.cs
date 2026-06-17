@@ -10,8 +10,8 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 ///     Apply button) and survive restarts. Each setting has a per-setting "reset to default"
 ///     affordance, plus a "reset all" (FR-159). Theme routes through the shared
 ///     <see cref="IThemeService" /> (live switch); other settings are written straight back through
-///     <see cref="ISettingsStore" />. General / Editor / Network / protoc are active; Diagnostics,
-///     Updates, Descriptor limits, and History render as disabled placeholders (Phase 2).
+///     <see cref="ISettingsStore" />. General / Editor / Network / protoc / Security / History /
+///     Descriptor limits are active; Diagnostics and Updates remain disabled placeholders.
 /// </summary>
 public sealed partial class SettingsDocumentViewModel : DocumentViewModel
 {
@@ -82,6 +82,28 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
     [ObservableProperty]
     private int _historyResponseCapKiB;
 
+    // ── Descriptor limits (FR-157) ───────────────────────────────────────────
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DescriptorMaxProtosetMiBChanged))]
+    private int _descriptorMaxProtosetMiB;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DescriptorMaxReflectionMiBChanged))]
+    private int _descriptorMaxReflectionMiB;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DescriptorMaxFileDescriptorsChanged))]
+    private int _descriptorMaxFileDescriptors;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DescriptorMaxDependencyDepthChanged))]
+    private int _descriptorMaxDependencyDepth;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DescriptorMaxSymbolsChanged))]
+    private int _descriptorMaxSymbols;
+
     public SettingsDocumentViewModel(
         ISettingsStore settings,
         IThemeService themeService,
@@ -131,6 +153,29 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
     public IReadOnlyList<StartupBehavior> StartupOptions { get; } = Enum.GetValues<StartupBehavior>();
     public IReadOnlyList<ShellDialect> DialectOptions { get; } = Enum.GetValues<ShellDialect>();
 
+    // ── Descriptor limits: Core defaults (FR-157 "showing the Core default") ──
+
+    public static int DescriptorDefaultProtosetMiB
+        => (int)(GrpCurl.Net.DescriptorSources.DescriptorSourceOptions.DefaultMaxProtosetFileBytes / (1024L * 1024L));
+
+    public static int DescriptorDefaultReflectionMiB
+        => (int)(GrpCurl.Net.DescriptorSources.DescriptorSourceOptions.DefaultMaxReflectionDescriptorBytes / (1024L * 1024L));
+
+    public static int DescriptorDefaultFileDescriptors
+        => GrpCurl.Net.DescriptorSources.DescriptorSourceOptions.DefaultMaxFileDescriptors;
+
+    public static int DescriptorDefaultDependencyDepth
+        => GrpCurl.Net.DescriptorSources.DescriptorSourceOptions.DefaultMaxDependencyDepth;
+
+    public static int DescriptorDefaultSymbols
+        => GrpCurl.Net.DescriptorSources.DescriptorSourceOptions.DefaultMaxSymbols;
+
+    public bool DescriptorMaxProtosetMiBChanged => DescriptorMaxProtosetMiB != DescriptorDefaultProtosetMiB;
+    public bool DescriptorMaxReflectionMiBChanged => DescriptorMaxReflectionMiB != DescriptorDefaultReflectionMiB;
+    public bool DescriptorMaxFileDescriptorsChanged => DescriptorMaxFileDescriptors != DescriptorDefaultFileDescriptors;
+    public bool DescriptorMaxDependencyDepthChanged => DescriptorMaxDependencyDepth != DescriptorDefaultDependencyDepth;
+    public bool DescriptorMaxSymbolsChanged => DescriptorMaxSymbols != DescriptorDefaultSymbols;
+
     partial void OnThemeChanged(AppTheme value)
     {
         if (!_loaded || _applying || value == _themeService.Current)
@@ -158,6 +203,11 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
     partial void OnHistoryMaxEntriesChanged(int value) => Persist(s => s.History.MaxEntries = Math.Max(1, value));
     partial void OnHistoryMaxSizeMiBChanged(int value) => Persist(s => s.History.MaxBytes = Math.Max(1, value) * 1024L * 1024L);
     partial void OnHistoryResponseCapKiBChanged(int value) => Persist(s => s.History.ResponseCapBytes = Math.Max(1, value) * 1024);
+    partial void OnDescriptorMaxProtosetMiBChanged(int value) => Persist(s => s.DescriptorLimits.MaxProtosetFileBytes = Math.Max(1, value) * 1024L * 1024L);
+    partial void OnDescriptorMaxReflectionMiBChanged(int value) => Persist(s => s.DescriptorLimits.MaxReflectionDescriptorBytes = Math.Max(1, value) * 1024L * 1024L);
+    partial void OnDescriptorMaxFileDescriptorsChanged(int value) => Persist(s => s.DescriptorLimits.MaxFileDescriptors = Math.Max(1, value));
+    partial void OnDescriptorMaxDependencyDepthChanged(int value) => Persist(s => s.DescriptorLimits.MaxDependencyDepth = Math.Max(1, value));
+    partial void OnDescriptorMaxSymbolsChanged(int value) => Persist(s => s.DescriptorLimits.MaxSymbols = Math.Max(1, value));
 
     /// <summary>FR-150: per-setting reset to its built-in default. Setting the property re-persists.</summary>
     [RelayCommand]
@@ -183,6 +233,11 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
             case "historyMaxEntries": HistoryMaxEntries = d.History.MaxEntries; break;
             case "historyMaxSize": HistoryMaxSizeMiB = (int)(d.History.MaxBytes / (1024L * 1024L)); break;
             case "historyResponseCap": HistoryResponseCapKiB = d.History.ResponseCapBytes / 1024; break;
+            case "descriptorProtoset": DescriptorMaxProtosetMiB = DescriptorDefaultProtosetMiB; break;
+            case "descriptorReflection": DescriptorMaxReflectionMiB = DescriptorDefaultReflectionMiB; break;
+            case "descriptorFiles": DescriptorMaxFileDescriptors = DescriptorDefaultFileDescriptors; break;
+            case "descriptorDepth": DescriptorMaxDependencyDepth = DescriptorDefaultDependencyDepth; break;
+            case "descriptorSymbols": DescriptorMaxSymbols = DescriptorDefaultSymbols; break;
         }
     }
 
@@ -256,6 +311,11 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
         HistoryMaxEntries = s.History.MaxEntries;
         HistoryMaxSizeMiB = (int)Math.Max(1, s.History.MaxBytes / (1024L * 1024L));
         HistoryResponseCapKiB = Math.Max(1, s.History.ResponseCapBytes / 1024);
+        DescriptorMaxProtosetMiB = (int)Math.Max(1, s.DescriptorLimits.MaxProtosetFileBytes / (1024L * 1024L));
+        DescriptorMaxReflectionMiB = (int)Math.Max(1, s.DescriptorLimits.MaxReflectionDescriptorBytes / (1024L * 1024L));
+        DescriptorMaxFileDescriptors = s.DescriptorLimits.MaxFileDescriptors;
+        DescriptorMaxDependencyDepth = s.DescriptorLimits.MaxDependencyDepth;
+        DescriptorMaxSymbols = s.DescriptorLimits.MaxSymbols;
     }
 
     private void Persist(Action<StudioSettings> mutate)

@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using System.Text;
 using GrpCurl.Net.Studio.Services;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
@@ -22,8 +21,8 @@ public sealed class WorkspaceSerializerTests
         TlsProfiles = []
     };
 
-    private static string GoldenPath([CallerFilePath] string here = "")
-        => Path.Combine(Path.GetDirectoryName(here)!, "Goldens", "workspace.v1.gcnws.json");
+    private static string GoldenPath()
+        => Path.Combine(AppContext.BaseDirectory, "Goldens", "workspace.v1.gcnws.json");
 
     [Fact]
     public void Serializes_with_lf_endings_and_no_bom()

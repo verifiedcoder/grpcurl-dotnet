@@ -17,6 +17,8 @@
         <!-- Descriptor-source L2 fixtures (E2.3): a pre-built protoset + the TestServer's .proto. -->
         <Content Include="..\TestProtosets\test.protoset" CopyToOutputDirectory="PreserveNewest" LinkBase="TestProtosets" />
         <Content Include="..\GrpCurl.Net.TestServer\Protos\test.proto" CopyToOutputDirectory="PreserveNewest" LinkBase="Protos" />
+        <!-- E3.1: committed workspace schema goldens (SPEC-070 §4 format-drift guard). -->
+        <Content Include="Goldens\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="Goldens" />
     </ItemGroup>
 
     <ItemGroup>

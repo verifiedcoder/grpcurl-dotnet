@@ -43,4 +43,15 @@ public sealed class FakeHistoryStore : IHistoryStore
         Entries.RemoveAll(e => !keepPinned || !e.Pinned);
         return Task.CompletedTask;
     }
+
+    public string? ExportedPath { get; private set; }
+
+    public IReadOnlyList<HistoryEntry>? ExportedEntries { get; private set; }
+
+    public Task ExportAsync(string path, IReadOnlyList<HistoryEntry> entries, CancellationToken cancellationToken = default)
+    {
+        ExportedPath = path;
+        ExportedEntries = entries;
+        return Task.CompletedTask;
+    }
 }

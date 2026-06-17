@@ -80,6 +80,18 @@ internal sealed class JsonHistoryStore : IHistoryStore
     public Task ClearAsync(bool keepPinned = false, CancellationToken cancellationToken = default)
         => MutateAsync(entries => keepPinned ? entries.Where(e => e.Pinned).ToList() : [], cancellationToken);
 
+    public async Task ExportAsync(string path, IReadOnlyList<HistoryEntry> entries, CancellationToken cancellationToken = default)
+    {
+        var builder = new StringBuilder();
+
+        foreach (var entry in entries)
+        {
+            builder.Append(Serialize(entry)).Append('\n');
+        }
+
+        await File.WriteAllTextAsync(path, builder.ToString(), Utf8NoBom, cancellationToken).ConfigureAwait(false);
+    }
+
     private async Task MutateAsync(Func<List<HistoryEntry>, List<HistoryEntry>> transform, CancellationToken cancellationToken)
     {
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);

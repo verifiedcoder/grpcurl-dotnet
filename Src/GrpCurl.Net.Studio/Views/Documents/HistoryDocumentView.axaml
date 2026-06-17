@@ -1,0 +1,89 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:docs="clr-namespace:GrpCurl.Net.Studio.ViewModels.Documents;assembly=GrpCurl.Net.Studio.ViewModels"
+             x:Class="GrpCurl.Net.Studio.Views.Documents.HistoryDocumentView"
+             x:DataType="docs:HistoryDocumentViewModel">
+    <UserControl.Styles>
+        <Style Selector="TextBlock.err">
+            <Setter Property="Foreground" Value="{DynamicResource Status.Server}" />
+        </Style>
+        <Style Selector="TextBlock.pin">
+            <Setter Property="Foreground" Value="{DynamicResource Status.Caller}" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,Auto,*">
+
+        <!-- FR-129: banner when capture is off -->
+        <Border Grid.Row="0" Background="{DynamicResource Status.Caller}" Padding="10,4" IsVisible="{Binding !CaptureEnabled}">
+            <TextBlock Text="History capture is disabled — new invocations are not recorded (enable it in Settings)."
+                       Foreground="White" FontSize="12" />
+        </Border>
+
+        <!-- Toolbar: search + filters + actions -->
+        <Border Grid.Row="1" Background="{DynamicResource Surface.PaneHeader}" Padding="8,6"
+                BorderBrush="{DynamicResource Divider}" BorderThickness="0,0,0,1">
+            <DockPanel LastChildFill="False">
+                <TextBox DockPanel.Dock="Left" Width="200" Watermark="Search method / connection / body"
+                         Text="{Binding SearchText, Delay=150}" AutomationProperties.Name="History search" />
+                <ComboBox DockPanel.Dock="Left" Margin="6,0,0,0" Width="150" ItemsSource="{Binding ConnectionOptions}"
+                          SelectedItem="{Binding ConnectionFilter}" AutomationProperties.Name="Connection filter" />
+                <ComboBox DockPanel.Dock="Left" Margin="6,0,0,0" Width="120" ItemsSource="{Binding CategoryOptions}"
+                          SelectedItem="{Binding CategoryFilter}" AutomationProperties.Name="Category filter" />
+                <ComboBox DockPanel.Dock="Left" Margin="6,0,0,0" Width="100" ItemsSource="{Binding KindOptions}"
+                          SelectedItem="{Binding KindFilter}" AutomationProperties.Name="Kind filter" />
+                <CheckBox DockPanel.Dock="Left" Margin="8,0,0,0" Content="Pinned only" IsChecked="{Binding PinnedOnly}"
+                          VerticalAlignment="Center" AutomationProperties.Name="Pinned only" />
+
+                <Button DockPanel.Dock="Right" Content="Clear ▾" Margin="6,0,0,0" AutomationProperties.Name="Clear history">
+                    <Button.Flyout>
+                        <MenuFlyout>
+                            <MenuItem Header="Delete selected" Command="{Binding DeleteSelectedCommand}" />
+                            <MenuItem Header="Clear unpinned…" Command="{Binding ClearUnpinnedCommand}" />
+                            <MenuItem Header="Clear all…" Command="{Binding ClearAllCommand}" />
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+                <Button DockPanel.Dock="Right" Content="Export…" Command="{Binding ExportCommand}"
+                        AutomationProperties.Name="Export history" />
+                <Button DockPanel.Dock="Right" Content="Refresh" Margin="0,0,6,0" Command="{Binding RefreshCommand}"
+                        AutomationProperties.Name="Refresh history" />
+            </DockPanel>
+        </Border>
+
+        <Panel Grid.Row="2">
+            <TextBlock Margin="14" Opacity="0.6" IsVisible="{Binding IsEmpty}"
+                       Text="No history entries match the current filters." />
+
+            <ListBox ItemsSource="{Binding Rows}" IsVisible="{Binding !IsEmpty}" Background="Transparent"
+                     AutomationProperties.Name="History entries">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="docs:HistoryRowViewModel">
+                        <Grid ColumnDefinitions="Auto,150,*,140,90,70,Auto,Auto" ColumnSpacing="8"
+                              DoubleTapped="OnRowDoubleTapped">
+                            <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected}" AutomationProperties.Name="Select entry" />
+                            <TextBlock Grid.Column="1" Text="{Binding TimeText}" VerticalAlignment="Center" FontSize="12" Opacity="0.8" />
+                            <TextBlock Grid.Column="2" Text="{Binding Method}" VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" FontFamily="Cascadia Code,Consolas,monospace" FontSize="12" />
+                            <TextBlock Grid.Column="3" Text="{Binding ConnectionName}" VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" FontSize="12" />
+                            <TextBlock Grid.Column="4" Text="{Binding Status}" VerticalAlignment="Center" FontSize="12"
+                                       Classes.err="{Binding IsError}" />
+                            <TextBlock Grid.Column="5" Text="{Binding DurationText}" VerticalAlignment="Center" FontSize="12" Opacity="0.7" />
+                            <TextBlock Grid.Column="6" Text="★" VerticalAlignment="Center" Classes="pin"
+                                       IsVisible="{Binding Pinned}" ToolTip.Tip="Pinned" />
+                            <StackPanel Grid.Column="7" Orientation="Horizontal" Spacing="4">
+                                <Button Content="Replay" Padding="6,0" FontSize="11"
+                                        Command="{Binding $parent[ListBox].((docs:HistoryDocumentViewModel)DataContext).ReplayCommand}"
+                                        CommandParameter="{Binding}" IsEnabled="{Binding Replayable}" />
+                                <Button Content="Pin" Padding="6,0" FontSize="11"
+                                        Command="{Binding $parent[ListBox].((docs:HistoryDocumentViewModel)DataContext).TogglePinCommand}"
+                                        CommandParameter="{Binding}" />
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Panel>
+    </Grid>
+</UserControl>

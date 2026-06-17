@@ -22,6 +22,7 @@
         <KeyBinding Gesture="Ctrl+O" Command="{Binding OpenWorkspaceCommand}" />
         <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveWorkspaceCommand}" />
         <KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding SaveWorkspaceAsCommand}" />
+        <KeyBinding Gesture="Ctrl+H" Command="{Binding OpenHistoryCommand}" />
     </Window.KeyBindings>
 
     <DockPanel>
@@ -78,6 +79,9 @@
                 <MenuItem Header="Toggle _Console" InputGesture="Ctrl+J" Command="{Binding ToggleConsoleCommand}" />
                 <MenuItem Header="Toggle _Inspector" InputGesture="Ctrl+I" Command="{Binding ToggleInspectorCommand}" />
                 <MenuItem Header="_Focus Mode" InputGesture="Ctrl+Shift+M" Command="{Binding ToggleFocusModeCommand}" />
+                <Separator />
+                <MenuItem Header="_History" InputGesture="Ctrl+H" Command="{Binding OpenHistoryCommand}"
+                          AutomationProperties.Name="History" />
             </MenuItem>
             <MenuItem Header="_Connection">
                 <MenuItem Header="_Add Connection…" Command="{Binding Connections.AddConnectionCommand}"

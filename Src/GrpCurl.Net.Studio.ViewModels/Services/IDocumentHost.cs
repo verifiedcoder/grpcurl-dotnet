@@ -26,4 +26,7 @@ public interface IDocumentHost
 
     /// <summary>Opens the Settings tab (FR-150), or focuses it if already open (single instance).</summary>
     void OpenSettings();
+
+    /// <summary>Opens the History tab (FR-120..129), or focuses it if already open (single instance).</summary>
+    void OpenHistory();
 }

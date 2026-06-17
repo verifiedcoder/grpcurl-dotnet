@@ -25,4 +25,8 @@ public sealed class FakeDocumentHost : IDocumentHost
     public int SettingsOpened { get; private set; }
 
     public void OpenSettings() => SettingsOpened++;
+
+    public int HistoryOpened { get; private set; }
+
+    public void OpenHistory() => HistoryOpened++;
 }

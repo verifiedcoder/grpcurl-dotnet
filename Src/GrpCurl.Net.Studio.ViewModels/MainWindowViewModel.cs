@@ -238,6 +238,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private void OpenSettings() => Documents.OpenSettings();
 
+    /// <summary>Opens (or focuses) the History tab (FR-120).</summary>
+    [RelayCommand]
+    private void OpenHistory() => Documents.OpenHistory();
+
     // ── E3.1: workspace file operations (File menu) ──────────────────────────
 
     /// <summary>File → New: start a fresh empty workspace (untitled until Save As), after a dirty guard.</summary>

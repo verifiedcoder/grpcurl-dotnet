@@ -32,12 +32,31 @@
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="items:ConnectionListItemViewModel">
                     <Grid ColumnDefinitions="Auto,*" Margin="0,2">
-                        <Ellipse Grid.Column="0" Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,8,0"
+                        <Ellipse Grid.Column="0" Width="10" Height="10" VerticalAlignment="Top" Margin="0,3,8,0"
                                  Fill="{Binding Status, Converter={StaticResource StatusToBrush}}"
                                  ToolTip.Tip="{Binding StatusDetail}" />
                         <StackPanel Grid.Column="1">
                             <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
                             <TextBlock Text="{Binding Address}" Opacity="0.6" FontSize="12" />
+
+                            <!-- FR-145: the connection's saved requests, nested and openable into a tab. -->
+                            <ItemsControl ItemsSource="{Binding SavedRequests}" IsVisible="{Binding HasSavedRequests}"
+                                          Margin="2,4,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="items:SavedRequestItemViewModel">
+                                        <Button Command="{Binding OpenCommand}" Padding="6,2" Margin="0,1"
+                                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                                Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                                AutomationProperties.Name="Open saved request"
+                                                ToolTip.Tip="{Binding MethodShortName}">
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <TextBlock Text="▸" Opacity="0.5" VerticalAlignment="Center" />
+                                                <TextBlock Text="{Binding Name}" />
+                                            </StackPanel>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </StackPanel>
                     </Grid>
                 </DataTemplate>

@@ -22,6 +22,14 @@ public sealed class FakeDocumentHost : IDocumentHost
     public void OpenInvocation(SavedConnection connection, string methodSymbol, string? initialRequestJson = null)
         => Invocations.Add((connection, methodSymbol, initialRequestJson));
 
+    public List<(SavedConnection Connection, SavedRequest Request)> SavedRequests { get; } = [];
+
+    public (SavedConnection Connection, SavedRequest Request)? LastSavedRequest
+        => SavedRequests.Count == 0 ? null : SavedRequests[^1];
+
+    public void OpenSavedRequest(SavedConnection connection, SavedRequest request)
+        => SavedRequests.Add((connection, request));
+
     public int SettingsOpened { get; private set; }
 
     public void OpenSettings() => SettingsOpened++;

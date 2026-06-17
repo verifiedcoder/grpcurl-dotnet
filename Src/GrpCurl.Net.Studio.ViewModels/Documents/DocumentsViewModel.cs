@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using GrpCurl.Net.Studio.ViewModels.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Panes;
 using GrpCurl.Net.Studio.ViewModels.Services;
@@ -118,6 +120,47 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         if (!string.IsNullOrWhiteSpace(network.MaxMessageSize))
         {
             document.MaxMessageSize = network.MaxMessageSize;
+        }
+
+        document.CloseRequested += OnDocumentCloseRequested;
+
+        Documents.Add(document);
+        SelectedDocument = document;
+    }
+
+    public void OpenSavedRequest(SavedConnection connection, SavedRequest request)
+    {
+        var document = new InvocationDocumentViewModel(
+            connection, request.Method, request.Body, _invocation, _descriptors, _dispatcher, _clipboard, _dialogs, _launcher, _validator,
+            _filePicker, _settings.Current.Network.RingBufferSize, revealGate: _revealGate, documentHost: this,
+            console: _console, inspector: _inspector, recorder: _recorder);
+
+        // The saved request is the authoritative tab state (FR-145): title, format, options, and headers.
+        if (!string.IsNullOrWhiteSpace(request.Name))
+        {
+            document.Title = request.Name;
+        }
+
+        document.CliDialect = _settings.Current.General.CliShellDialect;
+        document.BodyFormat = request.BodyFormat;
+        document.EmitDefaults = request.EmitDefaults;
+        document.AllowUnknownFields = request.AllowUnknownFields;
+
+        if (!string.IsNullOrWhiteSpace(request.Deadline))
+        {
+            document.Deadline = request.Deadline;
+        }
+
+        if ((request.MaxReceiveBytes ?? request.MaxSendBytes) is { } maxBytes)
+        {
+            document.MaxMessageSize = maxBytes.ToString(CultureInfo.InvariantCulture);
+        }
+
+        document.Headers.Clear();
+
+        foreach (var header in request.Headers)
+        {
+            document.Headers.Add(new HeaderRowViewModel(new HeaderEntry { Name = header.Name, Value = header.Value, IsBin = header.IsBin }));
         }
 
         document.CloseRequested += OnDocumentCloseRequested;

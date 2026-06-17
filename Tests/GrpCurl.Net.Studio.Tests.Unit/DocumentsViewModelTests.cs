@@ -40,6 +40,36 @@ public sealed class DocumentsViewModelTests
     }
 
     [Fact]
+    public void Open_saved_request_prefills_the_tab_from_the_saved_state()
+    {
+        var docs = Create();
+        var request = new SavedRequest
+        {
+            Id = "r1", Name = "say hello", ConnectionId = "c", Method = "pkg.Svc/Hello",
+            BodyFormat = GrpCurl.Net.Studio.ViewModels.Models.Invocation.RequestBodyFormat.Text,
+            Body = "{ \"name\": \"world\" }",
+            Headers = [new HeaderEntry { Name = "authorization", Value = "${TOKEN}" }],
+            Deadline = "15s",
+            EmitDefaults = true,
+            AllowUnknownFields = false,
+            MaxReceiveBytes = 4096
+        };
+
+        docs.OpenSavedRequest(Conn(), request);
+
+        var tab = docs.Documents.OfType<InvocationDocumentViewModel>().ShouldHaveSingleItem();
+        tab.Title.ShouldBe("say hello");                 // titled with the request name
+        tab.BodyFormat.ShouldBe(GrpCurl.Net.Studio.ViewModels.Models.Invocation.RequestBodyFormat.Text);
+        tab.Deadline.ShouldBe("15s");
+        tab.EmitDefaults.ShouldBeTrue();
+        tab.AllowUnknownFields.ShouldBeFalse();
+        tab.MaxMessageSize.ShouldBe("4096");
+        var header = tab.Headers.ShouldHaveSingleItem();
+        header.Name.ShouldBe("authorization");
+        header.Value.ShouldBe("${TOKEN}");
+    }
+
+    [Fact]
     public void Open_settings_adds_a_single_settings_tab()
     {
         var docs = Create();

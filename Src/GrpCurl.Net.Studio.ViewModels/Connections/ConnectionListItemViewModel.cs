@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 
@@ -12,9 +14,19 @@ public sealed partial class ConnectionListItemViewModel : ViewModelBase
     [ObservableProperty]
     private string? _statusDetail;
 
-    public ConnectionListItemViewModel(SavedConnection connection) => Connection = connection;
+    public ConnectionListItemViewModel(SavedConnection connection)
+    {
+        Connection = connection;
+        SavedRequests.CollectionChanged += OnSavedRequestsChanged;
+    }
 
     public SavedConnection Connection { get; }
+
+    /// <summary>The connection's saved requests, shown nested beneath it in the sidebar (FR-145).</summary>
+    public ObservableCollection<SavedRequestItemViewModel> SavedRequests { get; } = [];
+
+    /// <summary>True when this connection has at least one saved request (drives the nested list's visibility).</summary>
+    public bool HasSavedRequests => SavedRequests.Count > 0;
 
     public string Id => Connection.Id;
 
@@ -23,4 +35,7 @@ public sealed partial class ConnectionListItemViewModel : ViewModelBase
     public string Address => Connection.Address;
 
     public string TransportLabel => Connection.Transport == TransportMode.Plaintext ? "plaintext" : "TLS";
+
+    private void OnSavedRequestsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        => OnPropertyChanged(nameof(HasSavedRequests));
 }

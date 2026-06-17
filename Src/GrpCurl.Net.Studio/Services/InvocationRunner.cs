@@ -21,7 +21,7 @@ namespace GrpCurl.Net.Studio.Services;
 ///     later optimisation. User cancellation propagates; resolution/parse failures become a failed
 ///     <see cref="InvocationResultModel" />.
 /// </summary>
-internal sealed partial class InvocationRunner(IInvocationService invocation, ITlsProfileResolver? tlsResolver = null) : IInvocationRunner
+internal sealed partial class InvocationRunner(IInvocationService invocation, ITlsProfileResolver? tlsResolver = null, IEnvironmentService? environment = null) : IInvocationRunner
 {
     [GeneratedRegex(@"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")]
     private static partial Regex EnvVarPattern();
@@ -57,10 +57,10 @@ internal sealed partial class InvocationRunner(IInvocationService invocation, IT
 
             resolve.Stop();
 
-            // FR-066: resolve ${ENV_VAR} placeholders in header values at send time; an undefined
-            // variable fails the call (never sent as empty).
+            // FR-066/131/134: resolve ${VAR} placeholders at send time (active environment first, then OS);
+            // an unresolved variable fails the call before any RPC is issued (never sent as empty).
             var callHeaders = GrpcChannelFactory.CreateMetadata(
-                request.Headers.Select(h => $"{h.Name}: {ResolveEnvironmentVariables(h.Value)}"),
+                await ExpandHeadersAsync(request.Headers, cancellationToken).ConfigureAwait(false),
                 NullIfBlank(connection.UserAgent));
 
             var requestMessage = ParseRequest(method.InputType, request.RequestJson, request.AllowUnknownFields, request.BodyFormat);
@@ -169,7 +169,7 @@ internal sealed partial class InvocationRunner(IInvocationService invocation, IT
         try
         {
             callHeaders = GrpcChannelFactory.CreateMetadata(
-                request.Headers.Select(h => $"{h.Name}: {ResolveEnvironmentVariables(h.Value)}"),
+                await ExpandHeadersAsync(request.Headers, cancellationToken).ConfigureAwait(false),
                 NullIfBlank(connection.UserAgent));
         }
         catch (InvalidOperationException ex)
@@ -267,6 +267,24 @@ internal sealed partial class InvocationRunner(IInvocationService invocation, IT
         }
 
         return items;
+    }
+
+    // Expand each header value's ${VAR} placeholders. Uses the environment service (active env → OS) when
+    // wired; otherwise falls back to OS-only resolution (the same semantics, for bare unit constructions).
+    private async Task<IEnumerable<string>> ExpandHeadersAsync(
+        IReadOnlyList<ViewModels.Models.Connections.HeaderEntry> headers, CancellationToken cancellationToken)
+    {
+        var lines = new List<string>(headers.Count);
+
+        foreach (var header in headers)
+        {
+            var value = environment is null
+                ? ResolveEnvironmentVariables(header.Value)
+                : await environment.ExpandAsync(header.Value, cancellationToken).ConfigureAwait(false);
+            lines.Add($"{header.Name}: {value}");
+        }
+
+        return lines;
     }
 
     private static string ResolveEnvironmentVariables(string value)

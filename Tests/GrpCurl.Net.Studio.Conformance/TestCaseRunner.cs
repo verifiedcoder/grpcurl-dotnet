@@ -25,6 +25,16 @@ internal static class TestCaseRunner
 
     private static readonly IInvocationService Invocation = new InvocationService();
 
+    /// <summary>
+    ///     Cancel-after-N invariant (server-stream / bidi): record a streamed response only until the cancel
+    ///     threshold is reached. Once we have recorded <paramref name="afterNumResponses" /> and cancelled,
+    ///     a further message — already in flight on the HTTP/2 stream before the cancel propagated — is
+    ///     ignored, so the recorded count is exactly N (matching the reference clients). An
+    ///     <paramref name="afterNumResponses" /> of 0 means "no cancellation": record every response.
+    /// </summary>
+    internal static bool ShouldRecordResponse(uint received, uint afterNumResponses)
+        => afterNumResponses == 0 || received < afterNumResponses;
+
     public static async Task<ClientResponseResult> RunAsync(ClientCompatRequest request)
     {
         Validate(request);
@@ -126,9 +136,15 @@ internal static class TestCaseRunner
                         break;
 
                     case MessageReceived msg:
+                        // Ignore a message that arrives after the cancel threshold (the in-flight extra).
+                        if (!ShouldRecordResponse(received, afterNumResponses))
+                        {
+                            break;
+                        }
+
                         ResultBuilder.AddPayload(result.Payloads, msg.Message, method);
                         received++;
-                        if (afterNumResponses > 0 && received >= afterNumResponses)
+                        if (!ShouldRecordResponse(received, afterNumResponses))
                         {
                             cts.Cancel();
                         }
@@ -222,10 +238,16 @@ internal static class TestCaseRunner
                         break;
 
                     case MessageReceived msg:
+                        // Ignore a message that arrives after the cancel threshold (the in-flight extra).
+                        if (!ShouldRecordResponse(received, afterNumResponses))
+                        {
+                            break;
+                        }
+
                         ResultBuilder.AddPayload(result.Payloads, msg.Message, method);
                         received++;
                         context.ResponseGate.Release(); // unblock the next full-duplex send
-                        if (afterNumResponses > 0 && received >= afterNumResponses)
+                        if (!ShouldRecordResponse(received, afterNumResponses))
                         {
                             cts.Cancel();
                         }

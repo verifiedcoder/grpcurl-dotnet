@@ -10,6 +10,11 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <!-- Deterministic regression cover for the cancel-after-N invariant (TestCaseRunner). -->
+        <InternalsVisibleTo Include="GrpCurl.Net.Studio.Tests.Unit" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Google.Protobuf" />
         <PackageReference Include="Grpc.Net.Client" />
         <PackageReference Include="Grpc.Tools">

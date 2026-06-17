@@ -20,6 +20,16 @@ public interface IWorkspaceStore
     /// <summary>Recently opened/saved workspaces, newest first, with dangling entries flagged.</summary>
     IReadOnlyList<RecentWorkspace> RecentWorkspaces { get; }
 
+    /// <summary>
+    ///     True when the in-memory workspace has changes not yet on disk — the window between a mutation
+    ///     (the autosave-debounced <see cref="SaveAsync" />) and its flush, or any change to an untitled
+    ///     workspace that has nowhere to autosave yet (<see cref="CurrentPath" /> is null).
+    /// </summary>
+    bool IsDirty { get; }
+
+    /// <summary>Raised whenever <see cref="IsDirty" /> changes.</summary>
+    event EventHandler? DirtyChanged;
+
     /// <summary>Loads the default startup workspace (resilient: a corrupt/newer file is set aside).</summary>
     Task<WorkspaceModel> LoadAsync(CancellationToken cancellationToken = default);
 
@@ -30,8 +40,22 @@ public interface IWorkspaceStore
     /// </summary>
     Task<WorkspaceModel> OpenAsync(string path, CancellationToken cancellationToken = default);
 
-    /// <summary>Persists <paramref name="workspace" /> to the active <see cref="CurrentPath" />.</summary>
+    /// <summary>
+    ///     Applies a mutation: replaces <see cref="Current" /> with <paramref name="workspace" /> and
+    ///     autosaves it to <see cref="CurrentPath" /> (debounced; immediate when the debounce is zero).
+    ///     An untitled workspace stays dirty until <see cref="SaveAsAsync" /> gives it a path.
+    /// </summary>
     Task SaveAsync(WorkspaceModel workspace, CancellationToken cancellationToken = default);
+
+    /// <summary>Flushes any pending autosave to disk immediately and clears <see cref="IsDirty" /> (explicit Save).</summary>
+    Task SaveNowAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Re-reads <see cref="CurrentPath" /> from disk, discarding unsaved in-memory changes (Reload from
+    ///     disk; the caller confirms first when dirty). A corrupt/newer file on disk throws
+    ///     <see cref="WorkspaceSchemaException" />. A no-op for an untitled workspace.
+    /// </summary>
+    Task ReloadAsync(CancellationToken cancellationToken = default);
 
     /// <summary>Writes <paramref name="workspace" /> to <paramref name="path" />, which becomes the active file + a recent.</summary>
     Task SaveAsAsync(WorkspaceModel workspace, string path, CancellationToken cancellationToken = default);

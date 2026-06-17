@@ -16,17 +16,11 @@ internal sealed class TlsProfileStore(IWorkspaceStore workspace, ISecretStore se
 
     public Task SaveAsync(TlsProfile profile, CancellationToken cancellationToken = default)
     {
-        var current = workspace.Current;
-        var profiles = current.TlsProfiles.Where(p => p.Id != profile.Id).Append(profile).ToList();
+        // Clone the live workspace so a profile save preserves the connection list + workspace identity.
+        var next = workspace.Current.Copy();
+        next.TlsProfiles = next.TlsProfiles.Where(p => p.Id != profile.Id).Append(profile).ToList();
 
-        return workspace.SaveAsync(
-            new WorkspaceModel
-            {
-                SchemaVersion = current.SchemaVersion,
-                Connections = [.. current.Connections],
-                TlsProfiles = profiles
-            },
-            cancellationToken);
+        return workspace.SaveAsync(next, cancellationToken);
     }
 
     public async Task DeleteAsync(string profileId, CancellationToken cancellationToken = default)
@@ -45,14 +39,10 @@ internal sealed class TlsProfileStore(IWorkspaceStore workspace, ISecretStore se
             connection.TlsProfileId = null;
         }
 
-        await workspace.SaveAsync(
-            new WorkspaceModel
-            {
-                SchemaVersion = current.SchemaVersion,
-                Connections = [.. current.Connections],
-                TlsProfiles = current.TlsProfiles.Where(p => p.Id != profileId).ToList()
-            },
-            cancellationToken).ConfigureAwait(false);
+        var next = current.Copy();
+        next.TlsProfiles = next.TlsProfiles.Where(p => p.Id != profileId).ToList();
+
+        await workspace.SaveAsync(next, cancellationToken).ConfigureAwait(false);
 
         // The PKCS12 password is the profile's only secret; remove it once the profile is gone (SEC-017).
         if (!string.IsNullOrWhiteSpace(profile.ClientCertPasswordSecretRef))

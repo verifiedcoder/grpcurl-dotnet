@@ -166,16 +166,10 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
 
     private Task PersistAsync()
     {
-        // Carry the rest of the workspace forward — TLS profiles are workspace-level (E2.2) and must
-        // survive a connection-list save, just as a profile save must preserve the connection list.
-        var current = _workspaceStore.Current;
-
-        var workspace = new WorkspaceModel
-        {
-            SchemaVersion = current.SchemaVersion,
-            Connections = Connections.Select(i => i.Connection).ToList(),
-            TlsProfiles = [.. current.TlsProfiles]
-        };
+        // Clone the live workspace so the connection-list save preserves everything else — the workspace
+        // id/name (which namespaces secrets), TLS profiles, and any forward-compat fields.
+        var workspace = _workspaceStore.Current.Copy();
+        workspace.Connections = Connections.Select(i => i.Connection).ToList();
 
         return _workspaceStore.SaveAsync(workspace);
     }

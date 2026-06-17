@@ -41,4 +41,19 @@ public sealed class WorkspaceModel
         Id = Guid.NewGuid().ToString("D"),
         Name = "Default"
     };
+
+    /// <summary>
+    ///     A copy preserving identity (id/name/schemaVersion/overflow) with fresh collection instances.
+    ///     Mutators clone the live workspace and replace just the collection they own, so a connection-list
+    ///     save never wipes the workspace id or another section's data.
+    /// </summary>
+    public WorkspaceModel Copy() => new()
+    {
+        SchemaVersion = SchemaVersion,
+        Id = Id,
+        Name = Name,
+        Connections = [.. Connections],
+        TlsProfiles = [.. TlsProfiles],
+        Overflow = Overflow is null ? null : new Dictionary<string, JsonElement>(Overflow)
+    };
 }

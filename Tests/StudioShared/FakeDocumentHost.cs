@@ -1,4 +1,5 @@
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
+using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.TestSupport;
@@ -21,6 +22,14 @@ public sealed class FakeDocumentHost : IDocumentHost
 
     public void OpenInvocation(SavedConnection connection, string methodSymbol, string? initialRequestJson = null)
         => Invocations.Add((connection, methodSymbol, initialRequestJson));
+
+    public List<(SavedConnection Connection, string Symbol, RequestPrefill Prefill)> Prefills { get; } = [];
+
+    public (SavedConnection Connection, string Symbol, RequestPrefill Prefill)? LastPrefill
+        => Prefills.Count == 0 ? null : Prefills[^1];
+
+    public void OpenInvocation(SavedConnection connection, string methodSymbol, RequestPrefill prefill)
+        => Prefills.Add((connection, methodSymbol, prefill));
 
     public List<(SavedConnection Connection, SavedRequest Request)> SavedRequests { get; } = [];
 

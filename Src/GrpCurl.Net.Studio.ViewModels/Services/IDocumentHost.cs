@@ -1,4 +1,5 @@
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
+using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 
 namespace GrpCurl.Net.Studio.ViewModels.Services;
 
@@ -23,6 +24,12 @@ public interface IDocumentHost
     ///     request template itself. Invocation tabs are editable drafts, so each call opens a new one.
     /// </summary>
     void OpenInvocation(SavedConnection connection, string methodSymbol, string? initialRequestJson = null);
+
+    /// <summary>
+    ///     Opens a new invocation tab pre-filled from <paramref name="prefill" /> (FR-123 replay): body,
+    ///     format, headers, and options, without binding the tab to a saved request (it is a fresh draft).
+    /// </summary>
+    void OpenInvocation(SavedConnection connection, string methodSymbol, RequestPrefill prefill);
 
     /// <summary>
     ///     Opens a saved request (FR-145) into an invocation tab pre-filled with its body, format, headers,

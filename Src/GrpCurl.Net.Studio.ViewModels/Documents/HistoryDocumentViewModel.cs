@@ -1,8 +1,10 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Globalization;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.History;
+using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.ViewModels.Documents;
@@ -178,8 +180,31 @@ public sealed partial class HistoryDocumentViewModel : DocumentViewModel
             return;
         }
 
-        _host.OpenInvocation(connection, row.Entry.Method, row.Entry.Request.Body);
+        // FR-123: restore body + headers + options. A redacted secret value can't be recovered, so its
+        // header is restored by name and flagged "value required"; ${VAR} headers come back verbatim and
+        // re-resolve at send time. The replay is a plain draft (not bound to a saved request).
+        _host.OpenInvocation(connection, row.Entry.Method, BuildPrefill(row.Entry.Request));
     }
+
+    private static RequestPrefill BuildPrefill(HistoryRequest request)
+    {
+        var headers = request.Headers
+            .Select(h => h.Value == HistoryEntry.RedactedMarker
+                ? new PrefillHeader(h.Name, string.Empty, IsBin(h.Name), RequiresValue: true)
+                : new PrefillHeader(h.Name, h.Value, IsBin(h.Name)))
+            .ToList();
+
+        return new RequestPrefill(
+            request.Body,
+            request.BodyFormat == "text" ? RequestBodyFormat.Text : RequestBodyFormat.Json,
+            headers,
+            request.Deadline,
+            request.EmitDefaults,
+            request.AllowUnknownFields,
+            (request.MaxReceiveBytes ?? request.MaxSendBytes)?.ToString(CultureInfo.InvariantCulture));
+    }
+
+    private static bool IsBin(string name) => name.EndsWith("-bin", StringComparison.OrdinalIgnoreCase);
 
     [RelayCommand]
     private async Task DeleteSelected()

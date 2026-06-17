@@ -90,9 +90,45 @@ public sealed class HistoryDocumentViewModelTests
 
         await doc.ReplayCommand.ExecuteAsync(doc.Rows[0]);
 
-        var opened = host.LastInvocation.ShouldNotBeNull();
+        var opened = host.LastPrefill.ShouldNotBeNull();
         opened.Symbol.ShouldBe("pkg.Svc/Go");
-        opened.InitialJson.ShouldBe("{ \"a\": 1 }");
+        opened.Prefill.Body.ShouldBe("{ \"a\": 1 }");
+    }
+
+    [Fact]
+    public async Task Replay_restores_headers_and_options_with_a_marker_on_redacted_secrets()
+    {
+        var request = new HistoryRequest(
+            "text", "{}", BodyTruncated: false,
+            Headers:
+            [
+                new HistoryHeader("x-trace", "abc"),                       // plain value restored verbatim
+                new HistoryHeader("authorization", HistoryEntry.RedactedMarker), // secret → needs re-entry
+                new HistoryHeader("x-env", "${TOKEN}")                     // ${VAR} restored verbatim
+            ],
+            Deadline: "30s", EmitDefaults: true, AllowUnknownFields: false,
+            MaxSendBytes: null, MaxReceiveBytes: 4096, EnvironmentName: null);
+        var entry = new HistoryEntry(
+            HistoryEntry.CurrentVersion, "e1", new DateTimeOffset(2026, 6, 11, 14, 0, 0, TimeSpan.Zero), HistoryKind.Grpc,
+            new HistoryConnection("staging", "h:1", "tls", null), "/ws/x.gcnws.json", "pkg.Svc/Go", request,
+            new HistoryOutcome("OK", "success", 0, 12, 1, 1, null, false, null));
+        var doc = Create(out _, out var host, out _, out _, entry);
+
+        await doc.ReplayCommand.ExecuteAsync(doc.Rows[0]);
+
+        var prefill = host.LastPrefill.ShouldNotBeNull().Prefill;
+        prefill.BodyFormat.ShouldBe(GrpCurl.Net.Studio.ViewModels.Models.Invocation.RequestBodyFormat.Text);
+        prefill.Deadline.ShouldBe("30s");
+        prefill.EmitDefaults.ShouldBeTrue();
+        prefill.AllowUnknownFields.ShouldBeFalse();
+        prefill.MaxMessageSize.ShouldBe("4096");
+
+        prefill.Headers.Select(h => h.Name).ShouldBe(["x-trace", "authorization", "x-env"]);
+        prefill.Headers[0].Value.ShouldBe("abc");
+        prefill.Headers[0].RequiresValue.ShouldBeFalse();
+        prefill.Headers[1].Value.ShouldBe(string.Empty);          // redacted secret blanked
+        prefill.Headers[1].RequiresValue.ShouldBeTrue();          // FR-123 marker
+        prefill.Headers[2].Value.ShouldBe("${TOKEN}");            // re-resolves at send time
     }
 
     [Fact]
@@ -103,7 +139,7 @@ public sealed class HistoryDocumentViewModelTests
         await doc.ReplayCommand.ExecuteAsync(doc.Rows[0]);
 
         dialogs.MessageCount.ShouldBe(1);
-        host.Invocations.ShouldBeEmpty();
+        host.Prefills.ShouldBeEmpty();
     }
 
     [Fact]

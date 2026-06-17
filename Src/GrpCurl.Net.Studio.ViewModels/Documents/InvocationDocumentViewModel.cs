@@ -35,7 +35,14 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     private readonly ConsoleViewModel? _console;
     private readonly IInspector? _inspector;
     private readonly IHistoryRecorder? _recorder;
+    private readonly ISavedRequestStore? _savedRequests;
     private InvocationStatusModel? _streamTerminalStatus;
+
+    // FR-145/FR-002: the saved request this tab is bound to (null = unsaved draft) and the baseline
+    // signature it was last saved/opened at, so divergence drives the dirty marker.
+    private string? _savedRequestId;
+    private string _savedRequestName = string.Empty;
+    private string? _savedSignature;
 
     private CancellationTokenSource? _elapsedCts;
     private DateTimeOffset _elapsedStart;
@@ -142,7 +149,8 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         IDocumentHost? documentHost = null,
         ConsoleViewModel? console = null,
         IInspector? inspector = null,
-        IHistoryRecorder? recorder = null)
+        IHistoryRecorder? recorder = null,
+        ISavedRequestStore? savedRequests = null)
     {
         Connection = connection;
         MethodSymbol = methodSymbol;
@@ -158,10 +166,14 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         _console = console;
         _inspector = inspector;
         _recorder = recorder;
+        _savedRequests = savedRequests;
         _revealGate = revealGate ?? AlwaysRevealGate.Instance;
         _writerFactory = writerFactory ?? (path => new StreamWriter(path));
 
         Title = ShortName(methodSymbol);
+
+        // FR-002: editing any persistable field re-evaluates divergence from the saved copy.
+        PropertyChanged += OnTrackedPropertyChanged;
 
         // FR-088: rows carry the clipboard + inspector so their context actions (copy JSON / NDJSON /
         // open in viewer) work without reaching back into this tab.
@@ -188,6 +200,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
 
         OnPropertyChanged(nameof(HasHeaderErrors));
         InvokeCommand.NotifyCanExecuteChanged();
+        RefreshDirty(); // FR-002: adding/removing a header row diverges from the saved copy
     }
 
     private void OnHeaderRowChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -196,6 +209,11 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         {
             OnPropertyChanged(nameof(HasHeaderErrors));
             InvokeCommand.NotifyCanExecuteChanged();
+        }
+
+        if (e.PropertyName is nameof(HeaderRowViewModel.Name) or nameof(HeaderRowViewModel.Value))
+        {
+            RefreshDirty(); // FR-002: a header edit diverges from the saved copy
         }
     }
 
@@ -808,6 +826,117 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         AllowUnknownFields,
         NullIfBlank(MaxMessageSize),
         BodyFormat);
+
+    // ── FR-145 / FR-078 / FR-002: save the tab as a named request + track divergence ──
+
+    /// <summary>The header text: the request name with a dirty dot when it diverges from the saved copy.</summary>
+    public override string DisplayTitle => IsSavedRequestDirty ? $"{Title} ●" : Title;
+
+    /// <summary>FR-002: true when this tab is bound to a saved request and has unsaved edits.</summary>
+    public bool IsSavedRequestDirty => _savedRequestId is not null && _savedSignature != CurrentSignature();
+
+    /// <summary>Whether the Save action is available (the saved-request store is wired).</summary>
+    public bool CanSaveRequest => _savedRequests is not null;
+
+    /// <summary>
+    ///     Binds this tab to a saved request and snapshots the baseline at <paramref name="expectedBody" />
+    ///     (the body the async method-resolve will settle <see cref="RequestJson" /> to), so the tab opens clean.
+    /// </summary>
+    public void BindSavedRequest(string id, string name, string expectedBody)
+    {
+        _savedRequestId = id;
+        _savedRequestName = name;
+        _savedSignature = SignatureWith(expectedBody);
+        RefreshDirty();
+    }
+
+    /// <summary>
+    ///     FR-078: promote the tab to a named <see cref="SavedRequest" /> (prompting for a name the first time),
+    ///     or update the request it is already bound to. On success the title takes the name and the dirty
+    ///     marker clears.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanSaveRequest))]
+    private async Task SaveRequest()
+    {
+        if (_savedRequests is null)
+        {
+            return;
+        }
+
+        var name = _savedRequestName;
+
+        if (_savedRequestId is null)
+        {
+            var entered = await _dialogs.ShowDialogAsync(
+                new TextInputDialogViewModel("Save request", "Name", ShortName(MethodSymbol)));
+
+            if (string.IsNullOrWhiteSpace(entered))
+            {
+                return;
+            }
+
+            name = entered;
+            _savedRequestId = Guid.NewGuid().ToString();
+        }
+
+        await _savedRequests.SaveAsync(ToSavedRequest(_savedRequestId, name));
+
+        _savedRequestName = name;
+        Title = name; // FR-078: the tab title takes the request name
+        _savedSignature = CurrentSignature();
+        RefreshDirty();
+    }
+
+    private SavedRequest ToSavedRequest(string id, string name) => new()
+    {
+        Id = id,
+        Name = name,
+        ConnectionId = Connection.Id,
+        Method = MethodSymbol,
+        BodyFormat = BodyFormat,
+        Body = RequestJson,
+        Headers = Headers.Select(h => h.ToEntry()).ToList(),
+        Deadline = NullIfBlank(Deadline),
+        EmitDefaults = EmitDefaults,
+        AllowUnknownFields = AllowUnknownFields,
+        MaxReceiveBytes = ParseBytes(MaxMessageSize)
+    };
+
+    private string CurrentSignature() => SignatureWith(RequestJson);
+
+    /// <summary>A stable signature of the persistable request state, used to detect divergence (FR-002).</summary>
+    private string SignatureWith(string body)
+    {
+        var headers = string.Join("", Headers.Select(h => $"{h.Name}{h.Value}{h.IsBin}"));
+        return string.Join(
+            "",
+            MethodSymbol,
+            body,
+            BodyFormat.ToString(),
+            NullIfBlank(Deadline) ?? string.Empty,
+            EmitDefaults ? "1" : "0",
+            AllowUnknownFields ? "1" : "0",
+            NullIfBlank(MaxMessageSize) ?? string.Empty,
+            headers);
+    }
+
+    private void OnTrackedPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(RequestJson) or nameof(BodyFormat) or nameof(Deadline)
+            or nameof(EmitDefaults) or nameof(AllowUnknownFields) or nameof(MaxMessageSize))
+        {
+            RefreshDirty();
+        }
+    }
+
+    private void RefreshDirty()
+    {
+        OnPropertyChanged(nameof(IsSavedRequestDirty));
+        OnPropertyChanged(nameof(DisplayTitle));
+    }
+
+    private static long? ParseBytes(string? value)
+        => long.TryParse(value, out var parsed) && parsed > 0 ? parsed : null;
 
     [RelayCommand]
     private void AddHeader() => Headers.Add(new HeaderRowViewModel());

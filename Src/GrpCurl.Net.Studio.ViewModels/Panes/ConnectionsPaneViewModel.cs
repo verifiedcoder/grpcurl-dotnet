@@ -66,6 +66,26 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         {
             Connections.Add(CreateItem(connection));
         }
+
+        // FR-145: keep the nested saved-request lists in sync as requests are saved/deleted.
+        if (_savedRequests is not null)
+        {
+            _savedRequests.Changed += (_, _) => RefreshSavedRequests();
+        }
+    }
+
+    /// <summary>Re-populates every connection's nested saved-request list from the store (FR-145).</summary>
+    private void RefreshSavedRequests()
+    {
+        foreach (var item in Connections)
+        {
+            item.SavedRequests.Clear();
+
+            foreach (var request in _savedRequests?.ForConnection(item.Connection.Id) ?? [])
+            {
+                item.SavedRequests.Add(new SavedRequestItemViewModel(request, OpenSavedRequestAsync));
+            }
+        }
     }
 
     /// <summary>

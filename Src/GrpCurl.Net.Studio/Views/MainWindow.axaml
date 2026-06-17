@@ -191,7 +191,7 @@
                     <TabControl.ItemTemplate>
                         <DataTemplate x:DataType="docs:DocumentViewModel">
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding DisplayTitle}" VerticalAlignment="Center" />
                                 <Button Content="✕" Command="{Binding CloseCommand}" Padding="3,0"
                                         Background="Transparent" BorderThickness="0"
                                         AutomationProperties.Name="Close tab" />

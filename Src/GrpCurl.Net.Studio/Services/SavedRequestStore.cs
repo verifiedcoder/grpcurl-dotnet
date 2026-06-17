@@ -13,27 +13,31 @@ internal sealed class SavedRequestStore(IWorkspaceStore workspace) : ISavedReque
 {
     public IReadOnlyList<SavedRequest> Requests => workspace.Current.SavedRequests;
 
+    public event EventHandler? Changed;
+
     public IReadOnlyList<SavedRequest> ForConnection(string connectionId)
         => workspace.Current.SavedRequests.Where(r => r.ConnectionId == connectionId).ToList();
 
-    public Task SaveAsync(SavedRequest request, CancellationToken cancellationToken = default)
+    public async Task SaveAsync(SavedRequest request, CancellationToken cancellationToken = default)
     {
         var next = workspace.Current.Copy();
         next.SavedRequests = next.SavedRequests.Where(r => r.Id != request.Id).Append(request).ToList();
 
-        return workspace.SaveAsync(next, cancellationToken);
+        await workspace.SaveAsync(next, cancellationToken).ConfigureAwait(false);
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 
-    public Task DeleteAsync(string requestId, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(string requestId, CancellationToken cancellationToken = default)
     {
         if (workspace.Current.SavedRequests.All(r => r.Id != requestId))
         {
-            return Task.CompletedTask;
+            return;
         }
 
         var next = workspace.Current.Copy();
         next.SavedRequests = next.SavedRequests.Where(r => r.Id != requestId).ToList();
 
-        return workspace.SaveAsync(next, cancellationToken);
+        await workspace.SaveAsync(next, cancellationToken).ConfigureAwait(false);
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 }

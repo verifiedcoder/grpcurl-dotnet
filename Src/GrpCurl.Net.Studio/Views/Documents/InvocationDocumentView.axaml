@@ -9,6 +9,11 @@
              x:Name="Root"
              x:DataType="docs:InvocationDocumentViewModel">
 
+    <!-- FR-078: tab-scoped Ctrl+S saves the request when this tab has focus. -->
+    <UserControl.KeyBindings>
+        <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveRequestCommand}" />
+    </UserControl.KeyBindings>
+
     <UserControl.Resources>
         <conv:SeverityToBrushConverter x:Key="SeverityBrush" />
         <conv:SecretMaskConverter x:Key="SecretMask" />
@@ -147,6 +152,10 @@
                 BorderBrush="{DynamicResource Divider}" BorderThickness="0,0,0,1">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6">
+                    <Button Content="Save" Command="{Binding SaveRequestCommand}"
+                            IsVisible="{Binding CanSaveRequest}"
+                            ToolTip.Tip="Save this request to the workspace (Ctrl+S)"
+                            AutomationProperties.Name="Save request" />
                     <Button Content="Copy as CLI" Command="{Binding CopyAsCliCommand}"
                             ToolTip.Tip="Copy an equivalent grpcn command (secrets as ${VAR})"
                             AutomationProperties.Name="Copy as CLI command" />

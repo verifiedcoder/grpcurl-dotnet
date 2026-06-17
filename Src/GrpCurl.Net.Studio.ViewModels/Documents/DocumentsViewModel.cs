@@ -27,6 +27,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     private readonly IThemeService _theme;
     private readonly IProtocService? _protoc;
     private readonly ISecretStore? _secrets;
+    private readonly ISavedRequestStore? _savedRequests;
     private readonly IFilePickerService? _filePicker;
     private readonly ConsoleViewModel? _console;
     private readonly IInspector? _inspector;
@@ -55,7 +56,8 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         IHistoryRecorder? recorder = null,
         IHistoryStore? history = null,
         IWorkspaceStore? workspace = null,
-        ISecretStore? secrets = null)
+        ISecretStore? secrets = null,
+        ISavedRequestStore? savedRequests = null)
     {
         _descriptors = descriptors;
         _dispatcher = dispatcher;
@@ -75,6 +77,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         _history = history;
         _workspace = workspace;
         _secrets = secrets;
+        _savedRequests = savedRequests;
     }
 
     public ObservableCollection<DocumentViewModel> Documents { get; } = [];
@@ -106,7 +109,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         var document = new InvocationDocumentViewModel(
             connection, methodSymbol, initialRequestJson, _invocation, _descriptors, _dispatcher, _clipboard, _dialogs, _launcher, _validator,
             _filePicker, _settings.Current.Network.RingBufferSize, revealGate: _revealGate, documentHost: this,
-            console: _console, inspector: _inspector, recorder: _recorder);
+            console: _console, inspector: _inspector, recorder: _recorder, savedRequests: _savedRequests);
 
         // FR-153 / FR-163: seed new tabs from the Network/General defaults (initial values only).
         var network = _settings.Current.Network;
@@ -133,7 +136,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         var document = new InvocationDocumentViewModel(
             connection, request.Method, request.Body, _invocation, _descriptors, _dispatcher, _clipboard, _dialogs, _launcher, _validator,
             _filePicker, _settings.Current.Network.RingBufferSize, revealGate: _revealGate, documentHost: this,
-            console: _console, inspector: _inspector, recorder: _recorder);
+            console: _console, inspector: _inspector, recorder: _recorder, savedRequests: _savedRequests);
 
         // The saved request is the authoritative tab state (FR-145): title, format, options, and headers.
         if (!string.IsNullOrWhiteSpace(request.Name))
@@ -162,6 +165,9 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         {
             document.Headers.Add(new HeaderRowViewModel(new HeaderEntry { Name = header.Name, Value = header.Value, IsBin = header.IsBin }));
         }
+
+        // FR-002: bind the tab to the saved request and snapshot the baseline (body settles to request.Body).
+        document.BindSavedRequest(request.Id, request.Name, request.Body);
 
         document.CloseRequested += OnDocumentCloseRequested;
 

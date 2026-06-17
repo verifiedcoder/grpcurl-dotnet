@@ -15,11 +15,16 @@ public abstract partial class DocumentViewModel : ViewModelBase
     [ObservableProperty]
     private string _title = string.Empty;
 
+    /// <summary>The tab-header text; a derived tab may append a dirty marker (e.g. saved-request divergence, FR-002).</summary>
+    public virtual string DisplayTitle => Title;
+
     /// <summary>
     ///     The connection this tab targets, or null for connection-less tabs (e.g. settings). Used by the
     ///     shell to detect when an open tab uses an insecure TLS profile (SEC-014).
     /// </summary>
     public virtual SavedConnection? TabConnection => null;
+
+    partial void OnTitleChanged(string value) => OnPropertyChanged(nameof(DisplayTitle));
 
     /// <summary>Raised when the document asks to be closed (its tab's × button).</summary>
     public event EventHandler? CloseRequested;

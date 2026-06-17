@@ -1,0 +1,20 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:docs="clr-namespace:GrpCurl.Net.Studio.ViewModels.Documents;assembly=GrpCurl.Net.Studio.ViewModels"
+             x:Class="GrpCurl.Net.Studio.Views.Documents.TextInputDialogView"
+             x:DataType="docs:TextInputDialogViewModel"
+             Width="380">
+    <StackPanel Margin="20" Spacing="12">
+        <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" />
+        <StackPanel Spacing="4">
+            <TextBlock Text="{Binding Prompt}" />
+            <TextBox Text="{Binding Value}" AutomationProperties.Name="Value" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+            <Button Content="Cancel" Command="{Binding CancelCommand}" MinWidth="80"
+                    AutomationProperties.Name="Cancel" />
+            <Button Content="OK" Command="{Binding AcceptCommand}" MinWidth="80" IsDefault="True"
+                    AutomationProperties.Name="OK" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

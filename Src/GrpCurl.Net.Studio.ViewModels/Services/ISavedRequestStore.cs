@@ -15,6 +15,9 @@ public interface ISavedRequestStore
     /// <summary>The saved requests bound to a given connection (sidebar grouping, FR-145).</summary>
     IReadOnlyList<SavedRequest> ForConnection(string connectionId);
 
+    /// <summary>Raised after a save or delete, so the sidebar can refresh its nested lists.</summary>
+    event EventHandler? Changed;
+
     /// <summary>
     ///     Inserts a new saved request or replaces the existing one with the same <see cref="SavedRequest.Id" />,
     ///     preserving the rest of the workspace.

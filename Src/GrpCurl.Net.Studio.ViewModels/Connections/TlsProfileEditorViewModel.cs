@@ -73,6 +73,15 @@ public sealed partial class TlsProfileEditorViewModel : DialogViewModel<TlsProfi
     [ObservableProperty]
     private bool _exportableClientKey;
 
+    /// <summary>FR-037: parsed facts for the selected CA / client certificate (null when not inspectable).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasCaCertFacts))]
+    private CertificateFacts? _caCertFacts;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasClientCertFacts))]
+    private CertificateFacts? _clientCertFacts;
+
     public TlsProfileEditorViewModel(
         IFilePickerService filePicker,
         IDialogService dialogService,
@@ -102,9 +111,16 @@ public sealed partial class TlsProfileEditorViewModel : DialogViewModel<TlsProfi
         _clientKeyPath = p.ClientKeyPath ?? string.Empty;
         _exportableClientKey = p.ExportableClientKey;
         _detectedClientCertFormat = DetectFormat(_clientCertPath);
+        _caCertFacts = CertificateInspector.TryRead(_caCertPath);
+        _clientCertFacts = CertificateInspector.TryRead(_clientCertPath);
     }
 
     public bool IsEdit { get; }
+
+    /// <summary>FR-037: whether parsed CA / client certificate facts are available to display.</summary>
+    public bool HasCaCertFacts => CaCertFacts is not null;
+
+    public bool HasClientCertFacts => ClientCertFacts is not null;
 
     public string Title => IsEdit ? "Edit TLS profile" : "New TLS profile";
 
@@ -162,6 +178,11 @@ public sealed partial class TlsProfileEditorViewModel : DialogViewModel<TlsProfi
             CaCertPath = path;
         }
     }
+
+    // FR-037: re-parse the certificate facts whenever the path changes (browse or manual edit).
+    partial void OnCaCertPathChanged(string value) => CaCertFacts = CertificateInspector.TryRead(value);
+
+    partial void OnClientCertPathChanged(string value) => ClientCertFacts = CertificateInspector.TryRead(value);
 
     [RelayCommand]
     private async Task BrowseClientCert()

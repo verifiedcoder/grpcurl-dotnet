@@ -17,8 +17,19 @@ public sealed class FakeDialogService : IDialogService
 
     public int ConfirmCount { get; private set; }
 
+    public int MessageCount { get; private set; }
+
+    public string? LastMessageTitle { get; private set; }
+
+    public string? LastMessageBody { get; private set; }
+
     public Task ShowMessageAsync(string title, string message, CancellationToken cancellationToken = default)
-        => Task.CompletedTask;
+    {
+        MessageCount++;
+        LastMessageTitle = title;
+        LastMessageBody = message;
+        return Task.CompletedTask;
+    }
 
     public Task<bool> ConfirmAsync(string title, string message, CancellationToken cancellationToken = default)
     {

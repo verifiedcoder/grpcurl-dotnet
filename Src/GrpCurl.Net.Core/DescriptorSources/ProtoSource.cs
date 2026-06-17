@@ -29,11 +29,13 @@ internal static class ProtoSource
     ///     the descriptor load.
     /// </param>
     /// <param name="warningSink">Optional sink for non-fatal load warnings; defaults to <c>Console.Error</c>.</param>
+    /// <param name="options">Descriptor resource limits applied to the compiled protoset; defaults to <see cref="DescriptorSourceOptions.Default" />.</param>
     public static async Task<ProtosetSource> LoadFromProtoFilesAsync(
         IReadOnlyList<string> protoFiles,
         IReadOnlyList<string> importPaths,
         CancellationToken cancellationToken,
-        IDescriptorWarningSink? warningSink = null)
+        IDescriptorWarningSink? warningSink = null,
+        DescriptorSourceOptions? options = null)
     {
         if (protoFiles.Count == 0)
         {
@@ -119,7 +121,7 @@ internal static class ProtoSource
 
                 if (process.ExitCode == 0)
                 {
-                    return await ProtosetSource.LoadFromFilesAsync([tempProtoset], DescriptorSourceOptions.Default, cancellationToken, warningSink).ConfigureAwait(false);
+                    return await ProtosetSource.LoadFromFilesAsync([tempProtoset], options ?? DescriptorSourceOptions.Default, cancellationToken, warningSink).ConfigureAwait(false);
                 }
 
                 var stderr = await stderrTask.ConfigureAwait(false);

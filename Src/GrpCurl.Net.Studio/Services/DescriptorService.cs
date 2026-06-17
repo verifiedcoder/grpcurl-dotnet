@@ -39,7 +39,8 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null)
                 channelOptions: options,
                 reflectionMetadata: metadata,
                 cancellationToken: cancellationToken,
-                warningSink: warnings).ConfigureAwait(false);
+                warningSink: warnings,
+                descriptorOptions: BuildDescriptorOptions(connection)).ConfigureAwait(false);
 
             var serviceNames = await session.Source.ListServicesAsync(cancellationToken).ConfigureAwait(false);
             var services = new List<ServiceEntry>(serviceNames.Count);
@@ -99,7 +100,8 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null)
                 channelOptions: options,
                 reflectionMetadata: metadata,
                 cancellationToken: cancellationToken,
-                warningSink: warnings).ConfigureAwait(false);
+                warningSink: warnings,
+                descriptorOptions: BuildDescriptorOptions(connection)).ConfigureAwait(false);
 
             // Accept both the dotted FQN and the invocation grammar (pkg.Service/Method) for methods.
             var normalized = symbol.Replace('/', '.');
@@ -244,7 +246,30 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null)
         var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
 
         return await DescriptorSourceFactory.CreateAsync(
-            connection.Address, protosets, protos, imports, options, metadata, cancellationToken).ConfigureAwait(false);
+            connection.Address, protosets, protos, imports, options, metadata, cancellationToken,
+            descriptorOptions: BuildDescriptorOptions(connection)).ConfigureAwait(false);
+    }
+
+    /// <summary>FR-049: maps the connection's per-connection limit overrides onto Core's defaults (null = none).</summary>
+    private static DescriptorSourceOptions? BuildDescriptorOptions(SavedConnection connection)
+    {
+        var c = connection.DescriptorSource;
+
+        if (c.MaxProtosetFileBytes is null && c.MaxReflectionDescriptorBytes is null
+            && c.MaxFileDescriptors is null && c.MaxDependencyDepth is null && c.MaxSymbols is null)
+        {
+            return null; // no overrides — Core uses its defaults
+        }
+
+        var d = DescriptorSourceOptions.Default;
+        return new DescriptorSourceOptions
+        {
+            MaxProtosetFileBytes = c.MaxProtosetFileBytes ?? d.MaxProtosetFileBytes,
+            MaxReflectionDescriptorBytes = c.MaxReflectionDescriptorBytes ?? d.MaxReflectionDescriptorBytes,
+            MaxFileDescriptors = c.MaxFileDescriptors ?? d.MaxFileDescriptors,
+            MaxDependencyDepth = c.MaxDependencyDepth ?? d.MaxDependencyDepth,
+            MaxSymbols = c.MaxSymbols ?? d.MaxSymbols
+        };
     }
 
     // ProtoFileEmitter writes one .proto per descriptor file at dir/<file.Name>; mirror that to pre-flight

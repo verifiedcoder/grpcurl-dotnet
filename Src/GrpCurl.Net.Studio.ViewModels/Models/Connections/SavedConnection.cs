@@ -42,12 +42,28 @@ public sealed class DescriptorSourceConfig
     /// <summary>Ordered import directories passed to <c>protoc</c> (CLI <c>-I</c>/<c>--import-path</c>).</summary>
     public List<string> ImportPaths { get; set; } = [];
 
+    // FR-049: per-connection overrides for Core's descriptor DoS limits. Null = use Core's default.
+    public long? MaxProtosetFileBytes { get; set; }
+
+    public long? MaxReflectionDescriptorBytes { get; set; }
+
+    public int? MaxFileDescriptors { get; set; }
+
+    public int? MaxDependencyDepth { get; set; }
+
+    public int? MaxSymbols { get; set; }
+
     public DescriptorSourceConfig Clone() => new()
     {
         Mode = Mode,
         ProtosetPaths = [.. ProtosetPaths],
         ProtoFiles = [.. ProtoFiles],
-        ImportPaths = [.. ImportPaths]
+        ImportPaths = [.. ImportPaths],
+        MaxProtosetFileBytes = MaxProtosetFileBytes,
+        MaxReflectionDescriptorBytes = MaxReflectionDescriptorBytes,
+        MaxFileDescriptors = MaxFileDescriptors,
+        MaxDependencyDepth = MaxDependencyDepth,
+        MaxSymbols = MaxSymbols
     };
 }
 

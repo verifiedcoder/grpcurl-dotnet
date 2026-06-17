@@ -24,7 +24,13 @@
                         <Grid ColumnDefinitions="*,Auto">
                             <StackPanel Grid.Column="0" Spacing="2">
                                 <TextBlock Text="{Binding Display}" FontWeight="SemiBold" />
-                                <TextBlock Text="{Binding UsageText}" FontSize="12"
+                                <!-- FR-038: in-use counts are a click-through to the referencing connections. -->
+                                <Button Content="{Binding UsageText}" FontSize="12" Padding="0" BorderThickness="0"
+                                        Background="Transparent" Cursor="Hand" IsVisible="{Binding HasUsage}"
+                                        Foreground="{DynamicResource Conn.Connecting}"
+                                        Command="{Binding $parent[ItemsControl].((vm:TlsProfileManagerViewModel)DataContext).ShowUsageCommand}"
+                                        CommandParameter="{Binding}" AutomationProperties.Name="Show referencing connections" />
+                                <TextBlock Text="{Binding UsageText}" FontSize="12" IsVisible="{Binding !HasUsage}"
                                            Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">

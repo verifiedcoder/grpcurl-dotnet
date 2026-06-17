@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using GrpCurl.Net.DescriptorSources;
 using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Services;
@@ -97,6 +99,32 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
     [ObservableProperty]
     private string? _protocStatus;
 
+    // FR-049: per-connection descriptor-limit overrides (blank = use Core's default).
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(LimitsError))]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private string _maxProtosetFileBytesOverride = string.Empty;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(LimitsError))]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private string _maxReflectionDescriptorBytesOverride = string.Empty;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(LimitsError))]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private string _maxFileDescriptorsOverride = string.Empty;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(LimitsError))]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private string _maxDependencyDepthOverride = string.Empty;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(LimitsError))]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private string _maxSymbolsOverride = string.Empty;
+
     public ConnectionEditorViewModel(
         IConnectionRegistry registry,
         SavedConnection? existing = null,
@@ -126,6 +154,12 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
         ProtosetRows = new ObservableCollection<DescriptorPathRow>(_descriptorSource.ProtosetPaths.Select(DescriptorPathRow.ForProtoset));
         ProtoFileRows = new ObservableCollection<DescriptorPathRow>(_descriptorSource.ProtoFiles.Select(DescriptorPathRow.ForProtoFile));
         ImportPathRows = new ObservableCollection<DescriptorPathRow>(_descriptorSource.ImportPaths.Select(DescriptorPathRow.ForImportPath));
+
+        _maxProtosetFileBytesOverride = OverrideText(_descriptorSource.MaxProtosetFileBytes);
+        _maxReflectionDescriptorBytesOverride = OverrideText(_descriptorSource.MaxReflectionDescriptorBytes);
+        _maxFileDescriptorsOverride = OverrideText(_descriptorSource.MaxFileDescriptors);
+        _maxDependencyDepthOverride = OverrideText(_descriptorSource.MaxDependencyDepth);
+        _maxSymbolsOverride = OverrideText(_descriptorSource.MaxSymbols);
 
         if (_selectedDescriptorMode == DescriptorMode.Proto)
         {
@@ -182,7 +216,7 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
 
     private bool CanSave
         => NameError is null && AddressError is null && ConnectTimeoutError is null
-           && KeepaliveTimeError is null && KeepaliveTimeoutError is null;
+           && KeepaliveTimeError is null && KeepaliveTimeoutError is null && LimitsError is null;
 
     private bool CanTest => AddressError is null && !string.IsNullOrWhiteSpace(Address);
 
@@ -293,6 +327,42 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
         "Max import depth: 128",
         "Max symbols: 65,536"
     ];
+
+    // FR-049: Core's defaults shown as the override watermarks (blank field = keep the default).
+    public string DefaultMaxProtosetFileBytes => DescriptorSourceOptions.DefaultMaxProtosetFileBytes.ToString(CultureInfo.InvariantCulture);
+
+    public string DefaultMaxReflectionDescriptorBytes => DescriptorSourceOptions.DefaultMaxReflectionDescriptorBytes.ToString(CultureInfo.InvariantCulture);
+
+    public string DefaultMaxFileDescriptors => DescriptorSourceOptions.DefaultMaxFileDescriptors.ToString(CultureInfo.InvariantCulture);
+
+    public string DefaultMaxDependencyDepth => DescriptorSourceOptions.DefaultMaxDependencyDepth.ToString(CultureInfo.InvariantCulture);
+
+    public string DefaultMaxSymbols => DescriptorSourceOptions.DefaultMaxSymbols.ToString(CultureInfo.InvariantCulture);
+
+    /// <summary>FR-049: the first invalid limit override (must be blank or a positive integer); null when all are valid.</summary>
+    public string? LimitsError
+    {
+        get
+        {
+            foreach (var (label, text) in new[]
+                     {
+                         ("Max protoset file size", MaxProtosetFileBytesOverride),
+                         ("Max reflection response", MaxReflectionDescriptorBytesOverride),
+                         ("Max file descriptors", MaxFileDescriptorsOverride),
+                         ("Max import depth", MaxDependencyDepthOverride),
+                         ("Max symbols", MaxSymbolsOverride)
+                     })
+            {
+                if (!string.IsNullOrWhiteSpace(text)
+                    && !(long.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var v) && v > 0))
+                {
+                    return $"{label} must be a positive whole number.";
+                }
+            }
+
+            return null;
+        }
+    }
 
     partial void OnSelectedDescriptorModeChanged(DescriptorMode value)
     {
@@ -407,6 +477,15 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
         IsTestRunning = true;
         LastTestResult = null;
 
+        // FR-039: re-validate referenced files exist before probing — a moved/renamed cert, key, protoset,
+        // or .proto would otherwise surface as an opaque Core failure deep into the connect.
+        if (FirstMissingPath() is { } missing)
+        {
+            LastTestResult = TestConnectionResult.Failure($"{missing.Label} not found at '{missing.Path}'.");
+            IsTestRunning = false;
+            return;
+        }
+
         try
         {
             LastTestResult = await _registry.TestConnectionAsync(BuildConnection(), cancellationToken);
@@ -419,6 +498,60 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
         {
             IsTestRunning = false;
         }
+    }
+
+    /// <summary>
+    ///     FR-039: the first referenced file/directory that no longer exists, by current mode. TLS material
+    ///     applies only under TLS; descriptor paths apply only in their respective source mode.
+    /// </summary>
+    private (string Label, string Path)? FirstMissingPath()
+    {
+        if (!IsPlaintext && SelectedTlsProfile?.Profile is { } tls)
+        {
+            foreach (var (label, path) in new[]
+                     {
+                         ("CA certificate", tls.CaCertPath),
+                         ("Client certificate", tls.ClientCertPath),
+                         ("Client key", tls.ClientKeyPath)
+                     })
+            {
+                if (!string.IsNullOrWhiteSpace(path) && !File.Exists(path))
+                {
+                    return (label, path);
+                }
+            }
+        }
+
+        if (SelectedDescriptorMode == DescriptorMode.Protoset)
+        {
+            foreach (var row in ProtosetRows)
+            {
+                if (!File.Exists(row.Path))
+                {
+                    return ("Protoset file", row.Path);
+                }
+            }
+        }
+        else if (SelectedDescriptorMode == DescriptorMode.Proto)
+        {
+            foreach (var row in ProtoFileRows)
+            {
+                if (!File.Exists(row.Path))
+                {
+                    return (".proto file", row.Path);
+                }
+            }
+
+            foreach (var row in ImportPathRows)
+            {
+                if (!Directory.Exists(row.Path))
+                {
+                    return ("Import directory", row.Path);
+                }
+            }
+        }
+
+        return null;
     }
 
     [RelayCommand(CanExecute = nameof(CanSave))]
@@ -434,6 +567,13 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
         _descriptorSource.ProtosetPaths = ProtosetRows.Select(r => r.Path).ToList();
         _descriptorSource.ProtoFiles = ProtoFileRows.Select(r => r.Path).ToList();
         _descriptorSource.ImportPaths = ImportPathRows.Select(r => r.Path).ToList();
+
+        // FR-049: persist the limit overrides (blank → null → Core default).
+        _descriptorSource.MaxProtosetFileBytes = ParseLong(MaxProtosetFileBytesOverride);
+        _descriptorSource.MaxReflectionDescriptorBytes = ParseLong(MaxReflectionDescriptorBytesOverride);
+        _descriptorSource.MaxFileDescriptors = ParseInt(MaxFileDescriptorsOverride);
+        _descriptorSource.MaxDependencyDepth = ParseInt(MaxDependencyDepthOverride);
+        _descriptorSource.MaxSymbols = ParseInt(MaxSymbolsOverride);
 
         return new SavedConnection
         {
@@ -458,4 +598,12 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
     }
 
     private static string? NullIfBlank(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;
+
+    private static string OverrideText(long? value) => value?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
+
+    private static long? ParseLong(string text)
+        => long.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var v) && v > 0 ? v : null;
+
+    private static int? ParseInt(string text)
+        => int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var v) && v > 0 ? v : null;
 }

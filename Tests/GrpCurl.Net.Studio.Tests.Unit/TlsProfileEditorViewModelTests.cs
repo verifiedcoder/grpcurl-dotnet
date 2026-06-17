@@ -205,4 +205,32 @@ public sealed class TlsProfileEditorViewModelTests : IDisposable
 
         saved!.InsecureSkipVerify.ShouldBeTrue();
     }
+
+    // ── FR-037: certificate facts after a file is selected ───────────────────
+
+    [Fact]
+    public void Selecting_a_ca_certificate_surfaces_its_facts()
+    {
+        var path = TestCertificate.WritePem("CN=ca.example.test");
+        _tempFiles.Add(path);
+        var vm = Create(out _, out _, out _);
+
+        vm.SelectedValidationMode = TlsValidationMode.CustomCa;
+        vm.CaCertPath = path;
+
+        vm.HasCaCertFacts.ShouldBeTrue();
+        vm.CaCertFacts!.Subject.ShouldContain("ca.example.test");
+        vm.CaCertFacts.IsOutOfValidity.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void A_bad_certificate_path_yields_no_facts_without_blocking()
+    {
+        var vm = Create(out _, out _, out _);
+
+        vm.ClientCertPath = "/no/such/cert.pem";
+
+        vm.HasClientCertFacts.ShouldBeFalse();
+        vm.ClientCertFacts.ShouldBeNull();
+    }
 }

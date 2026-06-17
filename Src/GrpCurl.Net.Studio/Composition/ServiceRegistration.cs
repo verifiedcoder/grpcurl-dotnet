@@ -40,6 +40,9 @@ internal static class ServiceRegistration
         services.AddSingleton<IHistoryStore, JsonHistoryStore>();
         services.AddSingleton<IHistoryRecorder, HistoryRecorder>();
 
+        // Environments (E3.2): ${VAR} resolution, active env → OS, secrets via ISecretStore (FR-130..134).
+        services.AddSingleton<IEnvironmentService, EnvironmentService>();
+
         // TLS profile resolution (E2.2): turns a connection's profile reference + the PKCS12
         // password secret into the (profile, password) pair the channel mapper consumes.
         services.AddSingleton<ITlsProfileResolver, TlsProfileResolver>();

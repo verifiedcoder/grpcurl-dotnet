@@ -27,6 +27,9 @@ public sealed class WorkspaceModel
     /// <summary>Named TLS bundles referenced by connections (FR-030; workspace-level per SPEC-010 §1.2).</summary>
     public List<TlsProfile> TlsProfiles { get; set; } = [];
 
+    /// <summary>Named variable environments for <c>${VAR}</c> resolution (FR-130; SPEC-040 §3.2).</summary>
+    public List<WorkspaceEnvironment> Environments { get; set; } = [];
+
     /// <summary>
     ///     Forward-compatibility bag: properties present in the file but not modelled by this build
     ///     (e.g. <c>savedRequests</c>/<c>environments</c> added by a newer Studio at the same schema
@@ -54,6 +57,7 @@ public sealed class WorkspaceModel
         Name = Name,
         Connections = [.. Connections],
         TlsProfiles = [.. TlsProfiles],
+        Environments = Environments.Select(e => e.Copy()).ToList(),
         Overflow = Overflow is null ? null : new Dictionary<string, JsonElement>(Overflow)
     };
 }

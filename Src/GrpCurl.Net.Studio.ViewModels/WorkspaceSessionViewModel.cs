@@ -41,16 +41,17 @@ public sealed partial class WorkspaceSessionViewModel : ViewModelBase
 
     /// <summary>
     ///     Reloads the workspace from disk, discarding unsaved changes after a confirmation. A corrupt or
-    ///     newer file on disk is reported and the in-memory workspace is left as-is.
+    ///     newer file on disk is reported and the in-memory workspace is left as-is. Returns
+    ///     <see langword="true" /> when the on-disk state was actually loaded (so the shell can refresh
+    ///     dependent panes), <see langword="false" /> when the user declined or the reload failed.
     /// </summary>
-    [RelayCommand(CanExecute = nameof(CanReload))]
-    private async Task Reload()
+    public async Task<bool> ReloadAsync()
     {
         if (IsDirty && !await _dialogs.ConfirmAsync(
                 "Reload from disk?",
                 "This workspace has unsaved changes. Reloading will discard them and re-read the file on disk. Continue?"))
         {
-            return;
+            return false;
         }
 
         try
@@ -60,10 +61,15 @@ public sealed partial class WorkspaceSessionViewModel : ViewModelBase
         catch (WorkspaceSchemaException ex)
         {
             await _dialogs.ShowMessageAsync("Could not reload workspace", ex.Message);
+            return false;
         }
 
         Refresh();
+        return true;
     }
+
+    [RelayCommand(CanExecute = nameof(CanReload))]
+    private Task Reload() => ReloadAsync();
 
     /// <summary>Re-publishes the workspace identity/state after it changes (open / new / save-as).</summary>
     public void Refresh()

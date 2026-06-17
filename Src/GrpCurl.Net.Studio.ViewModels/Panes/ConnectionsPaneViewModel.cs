@@ -64,6 +64,22 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
 
     public string Header => "Connections";
 
+    /// <summary>
+    ///     E3.1: rebuilds the connection list from the active workspace after it changes (open / new /
+    ///     reload), clearing the current selection so a stale connection isn't left selected.
+    /// </summary>
+    public void ReloadFromWorkspace()
+    {
+        _selection.Set(null);
+        SelectedConnection = null;
+        Connections.Clear();
+
+        foreach (var connection in _workspaceStore.Current.Connections)
+        {
+            Connections.Add(new ConnectionListItemViewModel(connection));
+        }
+    }
+
     public ObservableCollection<ConnectionListItemViewModel> Connections { get; }
 
     public bool HasConnections => Connections.Count > 0;

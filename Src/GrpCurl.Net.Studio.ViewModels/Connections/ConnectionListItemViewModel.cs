@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 
 namespace GrpCurl.Net.Studio.ViewModels.Connections;
@@ -8,19 +9,30 @@ namespace GrpCurl.Net.Studio.ViewModels.Connections;
 /// <summary>A connection as shown in the sidebar list: name, address, and live status dot (FR-019).</summary>
 public sealed partial class ConnectionListItemViewModel : ViewModelBase
 {
+    private readonly Func<ConnectionListItemViewModel, Task>? _importRequest;
+
     [ObservableProperty]
     private ConnectionStatus _status = ConnectionStatus.Unknown;
 
     [ObservableProperty]
     private string? _statusDetail;
 
-    public ConnectionListItemViewModel(SavedConnection connection)
+    public ConnectionListItemViewModel(
+        SavedConnection connection, Func<ConnectionListItemViewModel, Task>? importRequest = null)
     {
         Connection = connection;
+        _importRequest = importRequest;
         SavedRequests.CollectionChanged += OnSavedRequestsChanged;
     }
 
     public SavedConnection Connection { get; }
+
+    /// <summary>FR-166: whether a saved-request snippet can be imported into this connection.</summary>
+    public bool CanImportRequest => _importRequest is not null;
+
+    /// <summary>FR-166: import a saved-request snippet into this connection.</summary>
+    [RelayCommand(CanExecute = nameof(CanImportRequest))]
+    private Task ImportRequest() => _importRequest?.Invoke(this) ?? Task.CompletedTask;
 
     /// <summary>The connection's saved requests, shown nested beneath it in the sidebar (FR-145).</summary>
     public ObservableCollection<SavedRequestItemViewModel> SavedRequests { get; } = [];

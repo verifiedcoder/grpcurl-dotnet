@@ -1,3 +1,4 @@
+using System.IO;
 using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
@@ -15,14 +16,23 @@ public sealed partial class SavedRequestItemViewModel : ViewModelBase
     private readonly Func<SavedRequest, Task> _open;
     private readonly ISavedRequestStore? _store;
     private readonly IDialogService? _dialogs;
+    private readonly IFilePickerService? _filePicker;
+    private readonly ISavedRequestSnippetIO? _snippetIO;
 
     public SavedRequestItemViewModel(
-        SavedRequest request, Func<SavedRequest, Task> open, ISavedRequestStore? store = null, IDialogService? dialogs = null)
+        SavedRequest request,
+        Func<SavedRequest, Task> open,
+        ISavedRequestStore? store = null,
+        IDialogService? dialogs = null,
+        IFilePickerService? filePicker = null,
+        ISavedRequestSnippetIO? snippetIO = null)
     {
         Request = request;
         _open = open;
         _store = store;
         _dialogs = dialogs;
+        _filePicker = filePicker;
+        _snippetIO = snippetIO;
     }
 
     public SavedRequest Request { get; }
@@ -43,8 +53,35 @@ public sealed partial class SavedRequestItemViewModel : ViewModelBase
     /// <summary>Whether the manage actions (rename/delete/duplicate) are available (the store is wired).</summary>
     public bool CanManage => _store is not null;
 
+    /// <summary>FR-166: whether this request can be exported as a standalone snippet.</summary>
+    public bool CanExport => _filePicker is not null && _snippetIO is not null;
+
     [RelayCommand]
     private Task Open() => _open(Request);
+
+    /// <summary>FR-166: write this request to a standalone JSON snippet for ad-hoc sharing.</summary>
+    [RelayCommand(CanExecute = nameof(CanExport))]
+    private async Task Export()
+    {
+        if (_filePicker is null || _snippetIO is null)
+        {
+            return;
+        }
+
+        var suggested = $"{Sanitize(Request.Name)}.grpcnreq.json";
+        var path = await _filePicker.SaveFileAsync("Export request", suggested, ["grpcnreq.json", "json"]);
+
+        if (path is not null)
+        {
+            await _snippetIO.ExportAsync(Request, path);
+        }
+    }
+
+    private static string Sanitize(string name)
+    {
+        var trimmed = string.IsNullOrWhiteSpace(name) ? "request" : name.Trim();
+        return string.Join("_", trimmed.Split(Path.GetInvalidFileNameChars()));
+    }
 
     [RelayCommand(CanExecute = nameof(CanManage))]
     private async Task Rename()

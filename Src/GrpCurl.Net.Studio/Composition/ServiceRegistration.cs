@@ -48,6 +48,7 @@ internal static class ServiceRegistration
 
         // Saved requests (FR-145): workspace-level CRUD over named invocation requests (sidebar + tabs).
         services.AddSingleton<ISavedRequestStore, SavedRequestStore>();
+        services.AddSingleton<ISavedRequestSnippetIO, SavedRequestSnippetIO>(); // FR-166: single-request snippet export/import
 
         // TLS profile resolution (E2.2): turns a connection's profile reference + the PKCS12
         // password secret into the (profile, password) pair the channel mapper consumes.

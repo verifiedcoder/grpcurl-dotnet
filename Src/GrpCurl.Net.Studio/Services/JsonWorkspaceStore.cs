@@ -1,4 +1,3 @@
-using System.Text.Json;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Services;
 
@@ -39,16 +38,13 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
 
         try
         {
-            await using var stream = File.OpenRead(_path);
-
-            Current = await JsonSerializer.DeserializeAsync(
-                          stream,
-                          WorkspaceJsonContext.Default.WorkspaceModel,
-                          cancellationToken).ConfigureAwait(false)
-                      ?? WorkspaceModel.Empty();
+            var json = await File.ReadAllTextAsync(_path, cancellationToken).ConfigureAwait(false);
+            Current = WorkspaceSerializer.Deserialize(json);
         }
-        catch (Exception ex) when (ex is JsonException or IOException)
+        catch (Exception ex) when (ex is WorkspaceSchemaException or IOException)
         {
+            // The default startup workspace stays resilient: a corrupt/newer file is set aside so the
+            // app always starts. The strict, user-facing open flow (E3.1 PR-B) surfaces the error instead.
             TryQuarantine();
             Current = WorkspaceModel.Empty();
         }
@@ -61,15 +57,7 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
         Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
 
         var tempPath = _path + ".tmp";
-
-        await using (var stream = File.Create(tempPath))
-        {
-            await JsonSerializer.SerializeAsync(
-                stream,
-                workspace,
-                WorkspaceJsonContext.Default.WorkspaceModel,
-                cancellationToken).ConfigureAwait(false);
-        }
+        await File.WriteAllBytesAsync(tempPath, WorkspaceSerializer.SerializeToUtf8(workspace), cancellationToken).ConfigureAwait(false);
 
         File.Move(tempPath, _path, overwrite: true);
         Current = workspace;

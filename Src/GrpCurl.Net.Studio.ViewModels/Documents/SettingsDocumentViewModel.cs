@@ -19,6 +19,7 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
     private readonly IThemeService _themeService;
     private readonly IDialogService _dialogs;
     private readonly IProtocService? _protoc;
+    private readonly SecretStoreInfo? _secretInfo;
     private readonly bool _loaded;
     private bool _applying;
 
@@ -68,12 +69,14 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
         ISettingsStore settings,
         IThemeService themeService,
         IDialogService dialogs,
-        IProtocService? protoc = null)
+        IProtocService? protoc = null,
+        ISecretStore? secrets = null)
     {
         _settings = settings;
         _themeService = themeService;
         _dialogs = dialogs;
         _protoc = protoc;
+        _secretInfo = secrets?.Info;
         Title = "Settings";
 
         LoadFrom(settings.Current, themeService.Current);
@@ -89,6 +92,23 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
 
         _loaded = true;
     }
+
+    // ── Security (SEC-024): read-only view of the live secret-store backend ──────
+
+    /// <summary>Whether the secret-store backend is known (wired in the real app; null in bare constructions).</summary>
+    public bool HasSecretBackend => _secretInfo is not null;
+
+    /// <summary>The live backend name, e.g. "macOS Keychain" or "Encrypted file (fallback)".</summary>
+    public string SecretBackendName => _secretInfo?.BackendName ?? "Unknown";
+
+    /// <summary>True when secrets are held in an OS keychain; false for the encrypted-file fallback.</summary>
+    public bool SecretBackendIsOsKeychain => _secretInfo?.IsOsKeychain ?? false;
+
+    /// <summary>True for the degraded encrypted-file fallback, which carries a limitation note.</summary>
+    public bool SecretBackendHasLimitation => _secretInfo?.LimitationNote is not null;
+
+    /// <summary>The verbatim honest-limitation text for the fallback backend (SEC-024), or null.</summary>
+    public string? SecretBackendLimitation => _secretInfo?.LimitationNote;
 
     public IReadOnlyList<AppTheme> ThemeOptions { get; } = Enum.GetValues<AppTheme>();
     public IReadOnlyList<StartupBehavior> StartupOptions { get; } = Enum.GetValues<StartupBehavior>();

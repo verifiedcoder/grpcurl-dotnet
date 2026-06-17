@@ -1,11 +1,11 @@
 namespace GrpCurl.Net.Studio.ViewModels.Services;
 
 /// <summary>
-///     Per-OS secret storage (ADR-009 / SEC-017): the PKCS12 password is the only TLS secret Studio
-///     keeps, stored here and referenced from the workspace JSON as <c>{"$secret":"&lt;keyRef&gt;"}</c> —
-///     never as a literal. The <paramref name="keyRef" /> is an opaque, caller-owned handle (a GUID),
-///     so re-saving a profile overwrites the same entry. Backends: Windows DPAPI, Linux libsecret,
-///     macOS Keychain, with an encrypted-file fallback where the native store is unavailable.
+///     Stores secret-typed values (PKCS12 passwords, secret environment variables) exclusively, keyed by an
+///     opaque namespaced keyref (<c>studio/v1/{scope}/...</c>, SPEC-040 §4 / SEC-020). The workspace, history,
+///     and settings files only ever carry the keyref as <c>{"$secret":"&lt;keyRef&gt;"}</c>, never the value.
+///     Backed by the OS keychain where available (Windows DPAPI, macOS Keychain, Linux Secret Service) with an
+///     encrypted-file fallback (SEC-021..025); the live backend is reported via <see cref="Info" />.
 /// </summary>
 public interface ISecretStore
 {
@@ -14,4 +14,18 @@ public interface ISecretStore
     Task<string?> GetAsync(string keyRef, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(string keyRef, CancellationToken cancellationToken = default);
+
+    /// <summary>Whether a value is stored for <paramref name="keyRef" /> (SPEC-050 §3.1).</summary>
+    Task<bool> ExistsAsync(string keyRef, CancellationToken cancellationToken = default);
+
+    /// <summary>The live backend, for the Settings → Security panel (SEC-024).</summary>
+    SecretStoreInfo Info { get; }
 }
+
+/// <summary>
+///     Describes the active <see cref="ISecretStore" /> backend (SPEC-050 §3.1) for display in
+///     Settings → Security. <see cref="IsOsKeychain" /> is <see langword="false" /> only for the
+///     encrypted-file fallback, which additionally carries the verbatim honest-limitation
+///     <see cref="LimitationNote" /> (SEC-024).
+/// </summary>
+public sealed record SecretStoreInfo(string BackendName, bool IsOsKeychain, string? LimitationNote);

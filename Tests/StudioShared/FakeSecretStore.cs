@@ -7,6 +7,9 @@ public sealed class FakeSecretStore : ISecretStore
 {
     private readonly Dictionary<string, string> _values = [];
 
+    /// <summary>Overridable backend descriptor so tests can simulate the fallback (SEC-024) surface.</summary>
+    public SecretStoreInfo Info { get; set; } = new("In-memory (test)", IsOsKeychain: false, LimitationNote: null);
+
     public Task SetAsync(string keyRef, string value, CancellationToken cancellationToken = default)
     {
         _values[keyRef] = value;
@@ -21,4 +24,7 @@ public sealed class FakeSecretStore : ISecretStore
         _values.Remove(keyRef);
         return Task.CompletedTask;
     }
+
+    public Task<bool> ExistsAsync(string keyRef, CancellationToken cancellationToken = default)
+        => Task.FromResult(_values.ContainsKey(keyRef));
 }

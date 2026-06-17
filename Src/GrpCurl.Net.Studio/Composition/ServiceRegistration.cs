@@ -30,9 +30,11 @@ internal static class ServiceRegistration
         services.AddSingleton<ILauncherService, LauncherService>();
         services.AddSingleton<IProtocService, ProtocService>();
 
-        // Connection layer (E1.1).
-        services.AddSingleton<ISecretStore>(_ => new SecretStore(Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GrpCurlNet.Studio")));
+        // Connection layer (E1.1). The secret store picks its backend once at startup and logs the choice
+        // (backend name only, SEC-025); the live backend is surfaced in Settings → Security (SEC-024).
+        services.AddSingleton<ISecretStore>(_ => new SecretStore(
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GrpCurlNet.Studio"),
+            log: message => System.Diagnostics.Trace.WriteLine($"[Studio] {message}")));
 
         services.AddSingleton<IWorkspaceStore, JsonWorkspaceStore>();
 

@@ -188,4 +188,42 @@ public sealed class MainWindowViewModelTests
 
         vm.IsInsecureBannerVisible.ShouldBeFalse();
     }
+
+    // ── Welcome overlay must not hide a document opened before the first connection ──
+
+    [Fact]
+    public void Welcome_shows_when_there_are_no_connections_and_no_documents()
+    {
+        var vm = CreateViewModel();
+
+        vm.HasAnyConnection.ShouldBeFalse();
+        vm.ShowWelcome.ShouldBeTrue();
+        vm.ShowDocuments.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Opening_a_document_without_connections_reveals_the_document_area()
+    {
+        var vm = CreateViewModel();
+        vm.ShowDocuments.ShouldBeFalse();
+
+        // File → Settings on a fresh, connection-less workspace opens a Settings tab.
+        vm.Documents.OpenSettings();
+
+        vm.Documents.Documents.ShouldNotBeEmpty();
+        vm.ShowDocuments.ShouldBeTrue();  // the tab area is now shown…
+        vm.ShowWelcome.ShouldBeFalse();   // …and the welcome overlay steps aside
+    }
+
+    [Fact]
+    public void Closing_the_last_document_without_connections_restores_the_welcome()
+    {
+        var vm = CreateViewModel();
+        vm.Documents.OpenSettings();
+        vm.ShowWelcome.ShouldBeFalse();
+
+        vm.Documents.Documents.Clear();
+
+        vm.ShowWelcome.ShouldBeTrue();
+    }
 }

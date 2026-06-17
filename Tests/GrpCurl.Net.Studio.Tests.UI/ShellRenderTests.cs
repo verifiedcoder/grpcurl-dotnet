@@ -47,6 +47,27 @@ public sealed class ShellRenderTests(HeadlessSessionFixture fixture) : HeadlessT
     });
 
     [Fact]
+    public Task Opening_settings_without_connections_shows_the_tab_not_the_welcome() => RunOnUiThread(() =>
+    {
+        var vm = CreateViewModel();
+        var window = new MainWindow { DataContext = vm };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        var tabs = window.FindControl<TabControl>("DocumentTabs")!;
+        var welcome = window.FindControl<Control>("Welcome")!;
+        tabs.IsVisible.ShouldBeFalse();   // fresh workspace: welcome overlay, no tabs
+        welcome.IsVisible.ShouldBeTrue();
+
+        // File → Settings opens a tab even with no connections — it must not stay hidden behind welcome.
+        vm.Documents.OpenSettings();
+        Dispatcher.UIThread.RunJobs();
+
+        tabs.IsVisible.ShouldBeTrue();
+        welcome.IsVisible.ShouldBeFalse();
+    });
+
+    [Fact]
     public Task Welcome_add_button_is_bound_to_the_add_connection_command() => RunOnUiThread(() =>
     {
         var pane = new ConnectionsPaneViewModel(

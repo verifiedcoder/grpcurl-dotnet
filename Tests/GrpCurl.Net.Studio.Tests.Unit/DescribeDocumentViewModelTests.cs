@@ -154,4 +154,43 @@ public sealed class DescribeDocumentViewModelTests
         doc.ErrorMessage.ShouldBe("nope");
         doc.HasTemplate.ShouldBeFalse();
     }
+
+    // ── FR-054: copy the symbol's defining file as a .proto snippet ───────────
+
+    [Fact]
+    public async Task Copy_proto_copies_the_snippet_for_the_current_symbol()
+    {
+        var doc = Create(out var descriptors, out var clipboard, out _, "pkg.Alpha");
+        descriptors.ProtoSnippet = "syntax = \"proto3\";\nmessage Alpha {}";
+
+        doc.IsLoaded.ShouldBeTrue();
+        doc.CopyProtoCommand.CanExecute(null).ShouldBeTrue();
+        await doc.CopyProtoCommand.ExecuteAsync(null);
+
+        descriptors.LastProtoSnippetSymbol.ShouldBe("pkg.Alpha");
+        clipboard.Text.ShouldBe("syntax = \"proto3\";\nmessage Alpha {}");
+    }
+
+    // ── FR-058: unresolvable type references ─────────────────────────────────
+
+    [Fact]
+    public void A_resolvable_type_ref_tooltips_its_full_name()
+        => new TypeRef("pkg.Foo", Resolvable: true).Tooltip.ShouldBe("pkg.Foo");
+
+    [Fact]
+    public void An_unresolvable_type_ref_tooltips_an_explanation()
+        => new TypeRef("pkg.Gone", Resolvable: false).Tooltip
+            .ShouldBe("pkg.Gone — type not in the active descriptor set");
+
+    [Fact]
+    public void Navigation_ignores_an_unresolvable_type_ref()
+    {
+        var doc = Create(out _, out _, out var host, "pkg.Alpha");
+
+        doc.NavigateCommand.Execute(new TypeRef("pkg.Gone", Resolvable: false));
+        doc.OpenInNewTabCommand.Execute(new TypeRef("pkg.Gone", Resolvable: false));
+
+        doc.CurrentSymbol.ShouldBe("pkg.Alpha"); // did not navigate
+        host.Opened.ShouldBeEmpty();
+    }
 }

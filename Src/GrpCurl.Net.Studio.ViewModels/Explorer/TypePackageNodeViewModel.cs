@@ -28,12 +28,14 @@ public sealed partial class TypePackageNodeViewModel : ViewModelBase
 /// <summary>A message or enum leaf in the explorer's Types branch (FR-022).</summary>
 public sealed class TypeLeafNodeViewModel : ViewModelBase
 {
-    public TypeLeafNodeViewModel(TypeEntry type, ICommand describeCommand, ICommand copyFullNameCommand)
+    public TypeLeafNodeViewModel(TypeEntry type, ICommand describeCommand, ICommand copyFullNameCommand, ICommand copyProtoCommand)
     {
         FullName = type.FullName;
         Kind = type.Kind;
+        Deprecated = type.Deprecated;
         DescribeCommand = describeCommand;
         CopyFullNameCommand = copyFullNameCommand;
+        CopyProtoCommand = copyProtoCommand;
 
         var lastDot = type.FullName.LastIndexOf('.');
         Name = lastDot >= 0 ? type.FullName[(lastDot + 1)..] : type.FullName;
@@ -46,10 +48,16 @@ public sealed class TypeLeafNodeViewModel : ViewModelBase
 
     public TypeNodeKind Kind { get; }
 
+    /// <summary>FR-059: the type carries <c>option deprecated = true</c>.</summary>
+    public bool Deprecated { get; }
+
     /// <summary>Short badge: M (message) / E (enum).</summary>
     public string Badge { get; }
 
     public ICommand DescribeCommand { get; }
 
     public ICommand CopyFullNameCommand { get; }
+
+    /// <summary>FR-054: copy the type's defining file as a .proto snippet.</summary>
+    public ICommand CopyProtoCommand { get; }
 }

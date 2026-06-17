@@ -24,7 +24,7 @@ public enum FieldLabel
 public abstract record SymbolDescription(SymbolKind Kind, string FullName, string Name, string? SourceFile);
 
 /// <summary>A method as it appears in a service's method table (FR-050).</summary>
-public sealed record MethodSummary(string Name, string FullName, StreamingShape Shape, TypeRef InputType, TypeRef OutputType)
+public sealed record MethodSummary(string Name, string FullName, StreamingShape Shape, TypeRef InputType, TypeRef OutputType, bool Deprecated = false)
 {
     /// <summary>Streaming-shape badge (U/SS/CS/BD) for the method table.</summary>
     public string Badge => Shape.Badge();
@@ -35,7 +35,8 @@ public sealed record ServiceDescription(
     string FullName,
     string Name,
     string? SourceFile,
-    IReadOnlyList<MethodSummary> Methods)
+    IReadOnlyList<MethodSummary> Methods,
+    bool Deprecated = false)
     : SymbolDescription(SymbolKind.Service, FullName, Name, SourceFile);
 
 /// <summary>A method: full signature, input/output type links, parent service, and request template (FR-050/052).</summary>
@@ -47,7 +48,8 @@ public sealed record MethodDescription(
     TypeRef InputType,
     TypeRef OutputType,
     TypeRef ParentService,
-    string TemplateJson)
+    string TemplateJson,
+    bool Deprecated = false)
     : SymbolDescription(SymbolKind.Method, FullName, Name, SourceFile);
 
 /// <summary>A single field in a message's field table (FR-050).</summary>
@@ -59,7 +61,8 @@ public sealed record FieldDescription(
     string TypeDisplay,
     TypeRef? Link,
     FieldLabel Label,
-    string? OneofName)
+    string? OneofName,
+    bool Deprecated = false)
 {
     /// <summary>Cardinality prefix for the field table (<c>repeated </c>/<c>map </c>/empty).</summary>
     public string LabelText => Label switch
@@ -77,16 +80,18 @@ public sealed record MessageDescription(
     string? SourceFile,
     IReadOnlyList<FieldDescription> Fields,
     IReadOnlyList<TypeRef> NestedTypes,
-    string TemplateJson)
+    string TemplateJson,
+    bool Deprecated = false)
     : SymbolDescription(SymbolKind.Message, FullName, Name, SourceFile);
 
 /// <summary>A single enum value (FR-050).</summary>
-public sealed record EnumValue(string Name, int Number);
+public sealed record EnumValue(string Name, int Number, bool Deprecated = false);
 
 /// <summary>An enum: its name/number value table (FR-050).</summary>
 public sealed record EnumDescription(
     string FullName,
     string Name,
     string? SourceFile,
-    IReadOnlyList<EnumValue> Values)
+    IReadOnlyList<EnumValue> Values,
+    bool Deprecated = false)
     : SymbolDescription(SymbolKind.Enum, FullName, Name, SourceFile);

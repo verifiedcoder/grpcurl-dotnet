@@ -82,4 +82,18 @@ public sealed class FakeDescriptorService : IDescriptorService
         cancellationToken.ThrowIfCancellationRequested();
         return Task.FromResult(OnExportProtos?.Invoke(directory, overwrite) ?? ExportProtosResult);
     }
+
+    /// <summary>Snippet returned by <see cref="GetProtoSnippetAsync" /> unless <see cref="OnGetProtoSnippet" /> is set.</summary>
+    public string? ProtoSnippet { get; set; } = "syntax = \"proto3\";";
+
+    public Func<SavedConnection, string, string?>? OnGetProtoSnippet { get; set; }
+
+    public string? LastProtoSnippetSymbol { get; private set; }
+
+    public Task<string?> GetProtoSnippetAsync(SavedConnection connection, string symbol, CancellationToken cancellationToken = default)
+    {
+        LastProtoSnippetSymbol = symbol;
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(OnGetProtoSnippet is not null ? OnGetProtoSnippet(connection, symbol) : ProtoSnippet);
+    }
 }

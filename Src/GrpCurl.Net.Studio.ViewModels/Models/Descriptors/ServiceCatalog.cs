@@ -11,12 +11,14 @@ public sealed record ServiceMethod(
     string FullName,
     StreamingShape Shape,
     string InputType,
-    string OutputType);
+    string OutputType,
+    bool Deprecated = false);
 
 /// <summary>A service node and its methods (FR-020).</summary>
 /// <param name="FullName">Fully-qualified service name (e.g. <c>testing.TestService</c>).</param>
 /// <param name="Methods">Methods in descriptor (file) order.</param>
-public sealed record ServiceEntry(string FullName, IReadOnlyList<ServiceMethod> Methods);
+/// <param name="Deprecated">FR-059: the service carries <c>option deprecated = true</c>.</param>
+public sealed record ServiceEntry(string FullName, IReadOnlyList<ServiceMethod> Methods, bool Deprecated = false);
 
 /// <summary>
 ///     The descriptor set browsable in the explorer, plus any non-fatal warnings raised while

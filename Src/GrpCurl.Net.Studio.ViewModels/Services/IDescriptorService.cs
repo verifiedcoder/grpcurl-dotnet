@@ -40,4 +40,11 @@ public interface IDescriptorService
     ///     <paramref name="overwrite" /> is set.
     /// </summary>
     Task<SchemaExportResult> ExportProtosAsync(SavedConnection connection, string directory, bool overwrite, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     FR-054: reconstructs the <c>.proto</c> source of the file that defines <paramref name="symbol" />
+    ///     and returns it as a snippet for the clipboard. Returns <see langword="null" /> when the symbol
+    ///     is not in the active set. Same cancellation/error contract as <see cref="DescribeAsync" />.
+    /// </summary>
+    Task<string?> GetProtoSnippetAsync(SavedConnection connection, string symbol, CancellationToken cancellationToken = default);
 }

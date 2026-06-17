@@ -295,4 +295,99 @@ public sealed class ServiceExplorerViewModelTests
         inspector.Shown.ShouldBeEmpty();
         vm.SelectedMethod.ShouldBeNull();
     }
+
+    // ── FR-029: sort toggle ──────────────────────────────────────────────────
+
+    [Fact]
+    public void Services_and_methods_default_to_file_order()
+    {
+        var (vm, descriptors, selection, _, _) = Create();
+        descriptors.Result = DescriptorLoadResult.Success(SampleCatalog());
+        selection.Set(Conn());
+
+        vm.Services.Select(s => s.FullName).ShouldBe(["pkg.Greeter", "pkg.Admin"]);
+        vm.Services[0].Methods.Select(m => m.Name).ShouldBe(["SayHello", "Chat"]);
+    }
+
+    [Fact]
+    public void Sort_alphabetically_reorders_services_and_methods()
+    {
+        var (vm, descriptors, selection, _, _) = Create();
+        descriptors.Result = DescriptorLoadResult.Success(SampleCatalog());
+        selection.Set(Conn());
+
+        vm.SortAlphabetically = true;
+
+        vm.Services.Select(s => s.FullName).ShouldBe(["pkg.Admin", "pkg.Greeter"]);
+        vm.Services.First(s => s.FullName == "pkg.Greeter").Methods.Select(m => m.Name).ShouldBe(["Chat", "SayHello"]);
+    }
+
+    // ── FR-028: expansion + selection survive a refresh ──────────────────────
+
+    [Fact]
+    public async Task Refresh_preserves_expansion_and_selection_for_the_same_connection()
+    {
+        var (vm, descriptors, selection, _, _) = Create();
+        descriptors.Result = DescriptorLoadResult.Success(SampleCatalog());
+        selection.Set(Conn());
+
+        vm.Services[0].IsExpanded = true;
+        vm.SelectedNode = vm.Services[0].Methods[0];
+        var selectedFullName = vm.SelectedMethod!.FullName;
+
+        await vm.RefreshCommand.ExecuteAsync(null);
+
+        vm.Services[0].IsExpanded.ShouldBeTrue();              // expansion restored on the rebuilt node
+        vm.SelectedMethod!.FullName.ShouldBe(selectedFullName); // selection restored by identity
+    }
+
+    [Fact]
+    public async Task Switching_connection_does_not_carry_expansion_across()
+    {
+        var (vm, descriptors, selection, _, _) = Create();
+        descriptors.Result = DescriptorLoadResult.Success(SampleCatalog());
+        selection.Set(Conn());
+        vm.Services[0].IsExpanded = true;
+
+        selection.Set(Conn()); // a different connection instance (new Id)
+        await Task.Yield();
+
+        vm.Services[0].IsExpanded.ShouldBeFalse(); // fresh tree, no carry-over
+    }
+
+    // ── FR-054: copy as .proto ───────────────────────────────────────────────
+
+    [Fact]
+    public async Task Copy_proto_copies_the_reconstructed_snippet()
+    {
+        var (vm, descriptors, selection, clipboard, _) = Create();
+        descriptors.Result = DescriptorLoadResult.Success(SampleCatalog());
+        descriptors.ProtoSnippet = "syntax = \"proto3\";\nmessage Req {}";
+        selection.Set(Conn());
+
+        await vm.CopyProtoCommand.ExecuteAsync("pkg.Greeter");
+
+        descriptors.LastProtoSnippetSymbol.ShouldBe("pkg.Greeter");
+        clipboard.Text.ShouldBe("syntax = \"proto3\";\nmessage Req {}");
+    }
+
+    // ── FR-059: deprecated flags reach the nodes ─────────────────────────────
+
+    [Fact]
+    public void Deprecated_services_and_methods_surface_on_their_nodes()
+    {
+        var catalog = new ServiceCatalog(
+        [
+            new ServiceEntry("pkg.Old",
+                [new ServiceMethod("Gone", "pkg.Old/Gone", StreamingShape.Unary, "pkg.In", "pkg.Out", Deprecated: true)],
+                Deprecated: true)
+        ], []);
+        var (vm, descriptors, selection, _, _) = Create();
+        descriptors.Result = DescriptorLoadResult.Success(catalog);
+        selection.Set(Conn());
+
+        var service = vm.Services.ShouldHaveSingleItem();
+        service.Deprecated.ShouldBeTrue();
+        service.Methods.ShouldHaveSingleItem().Deprecated.ShouldBeTrue();
+    }
 }

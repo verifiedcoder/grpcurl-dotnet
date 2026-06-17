@@ -18,6 +18,11 @@
         <Style Selector="Button.link:pointerover /template/ ContentPresenter">
             <Setter Property="TextBlock.TextDecorations" Value="Underline" />
         </Style>
+        <!-- FR-059: deprecated symbols render struck-through and dimmed. -->
+        <Style Selector="TextBlock.deprecated">
+            <Setter Property="TextDecorations" Value="Strikethrough" />
+            <Setter Property="Opacity" Value="0.55" />
+        </Style>
     </UserControl.Styles>
 
     <Grid RowDefinitions="Auto,*">
@@ -30,6 +35,10 @@
                         ToolTip.Tip="Back" AutomationProperties.Name="Back" />
                 <Button DockPanel.Dock="Left" Content="→" Command="{Binding ForwardCommand}" Padding="6,0" Margin="2,0,0,0"
                         ToolTip.Tip="Forward" AutomationProperties.Name="Forward" />
+                <!-- FR-054: copy the symbol's defining file as a .proto snippet. -->
+                <Button DockPanel.Dock="Right" Content="Copy .proto" Command="{Binding CopyProtoCommand}"
+                        Padding="6,0" Margin="6,0,0,0" VerticalAlignment="Center"
+                        AutomationProperties.Name="Copy as proto" />
                 <TextBlock DockPanel.Dock="Right" Text="{Binding Symbol.SourceFile}" Opacity="0.55"
                            VerticalAlignment="Center" IsVisible="{Binding IsLoaded}" />
                 <TextBlock Text="{Binding CurrentSymbol}" VerticalAlignment="Center" Margin="10,0" Opacity="0.7" />
@@ -46,7 +55,8 @@
                             <!-- Service: method table -->
                             <DataTemplate DataType="m:ServiceDescription">
                                 <StackPanel Spacing="6">
-                                    <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" FontSize="16" />
+                                    <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" FontSize="16"
+                                               Classes.deprecated="{Binding Deprecated}" />
                                     <TextBlock Text="service" Opacity="0.6" FontStyle="Italic" />
                                     <ItemsControl ItemsSource="{Binding Methods}" Margin="0,6,0,0">
                                         <ItemsControl.ItemTemplate>
@@ -59,13 +69,16 @@
                                                                    HorizontalAlignment="Center" />
                                                     </Border>
                                                     <WrapPanel Grid.Column="1" Margin="8,0,0,0">
-                                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center"
+                                                                   Classes.deprecated="{Binding Deprecated}" />
                                                         <TextBlock Text=" ( " VerticalAlignment="Center" Opacity="0.6" />
                                                         <Button Classes="link" Content="{Binding InputType.FullName}"
+                                                                ToolTip.Tip="{Binding InputType.Tooltip}" IsEnabled="{Binding InputType.Resolvable}"
                                                                 Command="{Binding #Root.((docs:DescribeDocumentViewModel)DataContext).NavigateCommand}"
                                                                 CommandParameter="{Binding InputType}" />
                                                         <TextBlock Text=" ) returns ( " VerticalAlignment="Center" Opacity="0.6" />
                                                         <Button Classes="link" Content="{Binding OutputType.FullName}"
+                                                                ToolTip.Tip="{Binding OutputType.Tooltip}" IsEnabled="{Binding OutputType.Resolvable}"
                                                                 Command="{Binding #Root.((docs:DescribeDocumentViewModel)DataContext).NavigateCommand}"
                                                                 CommandParameter="{Binding OutputType}" />
                                                         <TextBlock Text=" )" VerticalAlignment="Center" Opacity="0.6" />
@@ -80,16 +93,20 @@
                             <!-- Method: signature -->
                             <DataTemplate DataType="m:MethodDescription">
                                 <StackPanel Spacing="6">
-                                    <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" FontSize="16" />
+                                    <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" FontSize="16"
+                                               Classes.deprecated="{Binding Deprecated}" />
                                     <WrapPanel>
                                         <TextBlock Text="rpc " Opacity="0.6" VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center"
+                                                   Classes.deprecated="{Binding Deprecated}" />
                                         <TextBlock Text=" ( " VerticalAlignment="Center" Opacity="0.6" />
                                         <Button Classes="link" Content="{Binding InputType.FullName}"
+                                                ToolTip.Tip="{Binding InputType.Tooltip}" IsEnabled="{Binding InputType.Resolvable}"
                                                 Command="{Binding #Root.((docs:DescribeDocumentViewModel)DataContext).NavigateCommand}"
                                                 CommandParameter="{Binding InputType}" />
                                         <TextBlock Text=" ) returns ( " VerticalAlignment="Center" Opacity="0.6" />
                                         <Button Classes="link" Content="{Binding OutputType.FullName}"
+                                                ToolTip.Tip="{Binding OutputType.Tooltip}" IsEnabled="{Binding OutputType.Resolvable}"
                                                 Command="{Binding #Root.((docs:DescribeDocumentViewModel)DataContext).NavigateCommand}"
                                                 CommandParameter="{Binding OutputType}" />
                                         <TextBlock Text=" )" VerticalAlignment="Center" Opacity="0.6" />
@@ -97,6 +114,7 @@
                                     <WrapPanel>
                                         <TextBlock Text="in service " Opacity="0.6" VerticalAlignment="Center" />
                                         <Button Classes="link" Content="{Binding ParentService.FullName}"
+                                                ToolTip.Tip="{Binding ParentService.Tooltip}" IsEnabled="{Binding ParentService.Resolvable}"
                                                 Command="{Binding #Root.((docs:DescribeDocumentViewModel)DataContext).NavigateCommand}"
                                                 CommandParameter="{Binding ParentService}" />
                                     </WrapPanel>
@@ -106,7 +124,8 @@
                             <!-- Message: field table -->
                             <DataTemplate DataType="m:MessageDescription">
                                 <StackPanel Spacing="6">
-                                    <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" FontSize="16" />
+                                    <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" FontSize="16"
+                                               Classes.deprecated="{Binding Deprecated}" />
                                     <TextBlock Text="message" Opacity="0.6" FontStyle="Italic" />
                                     <ItemsControl ItemsSource="{Binding Fields}" Margin="0,6,0,0">
                                         <ItemsControl.ItemTemplate>
@@ -114,12 +133,14 @@
                                                 <WrapPanel Margin="0,2">
                                                     <TextBlock Text="{Binding LabelText}" Opacity="0.6" VerticalAlignment="Center" />
                                                     <Button Classes="link" Content="{Binding TypeDisplay}" VerticalAlignment="Center"
+                                                            ToolTip.Tip="{Binding Link.Tooltip}" IsEnabled="{Binding Link.Resolvable}"
                                                             IsVisible="{Binding Link, Converter={x:Static ObjectConverters.IsNotNull}}"
                                                             Command="{Binding #Root.((docs:DescribeDocumentViewModel)DataContext).NavigateCommand}"
                                                             CommandParameter="{Binding Link}" />
                                                     <TextBlock Text="{Binding TypeDisplay}" VerticalAlignment="Center"
                                                                IsVisible="{Binding Link, Converter={x:Static ObjectConverters.IsNull}}" />
-                                                    <TextBlock Text="{Binding Name, StringFormat=' {0}'}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding Name, StringFormat=' {0}'}" FontWeight="SemiBold" VerticalAlignment="Center"
+                                                               Classes.deprecated="{Binding Deprecated}" />
                                                     <TextBlock Text="{Binding Number, StringFormat=' = {0}'}" Opacity="0.6" VerticalAlignment="Center" />
                                                     <TextBlock Text="{Binding OneofName, StringFormat='  (oneof {0})'}" Opacity="0.5"
                                                                VerticalAlignment="Center" FontStyle="Italic"
@@ -134,7 +155,8 @@
                             <!-- Enum: value table -->
                             <DataTemplate DataType="m:EnumDescription">
                                 <StackPanel Spacing="6">
-                                    <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" FontSize="16" />
+                                    <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" FontSize="16"
+                                               Classes.deprecated="{Binding Deprecated}" />
                                     <TextBlock Text="enum" Opacity="0.6" FontStyle="Italic" />
                                     <ItemsControl ItemsSource="{Binding Values}" Margin="0,6,0,0">
                                         <ItemsControl.ItemTemplate>

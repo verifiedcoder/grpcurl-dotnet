@@ -31,6 +31,8 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
 
     private ServiceCatalog? _catalog;
     private CancellationTokenSource? _loadCts;
+    private string? _loadedConnectionId;
+    private ExplorerTreeState? _pendingRestore;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsNoConnection), nameof(IsLoading), nameof(IsLoaded), nameof(IsEmpty), nameof(HasError))]
@@ -39,6 +41,10 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
 
     [ObservableProperty]
     private string _filterText = string.Empty;
+
+    /// <summary>FR-029: false = descriptor (file) order; true = A→Z by name.</summary>
+    [ObservableProperty]
+    private bool _sortAlphabetically;
 
     [ObservableProperty]
     private string? _errorMessage;
@@ -310,6 +316,10 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
         var cts = new CancellationTokenSource();
         _loadCts = cts;
 
+        // FR-028: a refresh of the SAME connection preserves the tree's expansion + selection;
+        // switching to a different connection starts fresh.
+        _pendingRestore = connection.Id == _loadedConnectionId ? CaptureTreeState() : null;
+
         await _dispatcher.InvokeAsync(() =>
         {
             Services.Clear();
@@ -354,7 +364,52 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
         ApplyFilter();
         ApplySourceMetadata(_catalog!);
         State = _catalog!.Services.Count == 0 ? ExplorerState.Empty : ExplorerState.Loaded;
+
+        _loadedConnectionId = _selection.Current?.Id;
+        RestoreTreeState(); // FR-028: re-apply expansion/selection captured before the reload
     }
+
+    /// <summary>FR-028: snapshots the current tree expansion + selected method before a refresh.</summary>
+    private ExplorerTreeState CaptureTreeState() => new(
+        Services.Where(s => s.IsExpanded).Select(s => s.FullName).ToHashSet(StringComparer.Ordinal),
+        TypePackages.Where(p => p.IsExpanded).Select(p => p.Package).ToHashSet(StringComparer.Ordinal),
+        SelectedMethod?.FullName);
+
+    /// <summary>FR-028: restores a captured snapshot onto the freshly-rebuilt tree (by node identity).</summary>
+    private void RestoreTreeState()
+    {
+        if (_pendingRestore is not { } state)
+        {
+            return;
+        }
+
+        _pendingRestore = null;
+
+        foreach (var service in Services)
+        {
+            service.IsExpanded = state.ExpandedServices.Contains(service.FullName);
+        }
+
+        foreach (var package in TypePackages)
+        {
+            package.IsExpanded = state.ExpandedPackages.Contains(package.Package);
+        }
+
+        if (state.SelectedMethod is { } symbol)
+        {
+            var match = Services.SelectMany(s => s.Methods).FirstOrDefault(m => m.FullName == symbol);
+
+            if (match is not null)
+            {
+                SelectedNode = match;
+            }
+        }
+    }
+
+    private sealed record ExplorerTreeState(
+        HashSet<string> ExpandedServices,
+        HashSet<string> ExpandedPackages,
+        string? SelectedMethod);
 
     /// <summary>Populates the explorer-header source badge + warnings strip from a loaded catalog (FR-040/043/046/048).</summary>
     private void ApplySourceMetadata(ServiceCatalog catalog)
@@ -412,6 +467,25 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
 
     partial void OnFilterTextChanged(string value) => ApplyFilter();
 
+    partial void OnSortAlphabeticallyChanged(bool value) => ApplyFilter();
+
+    /// <summary>FR-054: copies the reconstructed <c>.proto</c> of the symbol's defining file to the clipboard.</summary>
+    [RelayCommand]
+    private async Task CopyProto(string? symbol)
+    {
+        if (string.IsNullOrWhiteSpace(symbol) || _selection.Current is not { } connection)
+        {
+            return;
+        }
+
+        var snippet = await _descriptors.GetProtoSnippetAsync(connection, symbol);
+
+        if (!string.IsNullOrEmpty(snippet))
+        {
+            await _clipboard.SetTextAsync(snippet);
+        }
+    }
+
     /// <summary>
     ///     Rebuilds the visible tree from the loaded catalog applying the case-insensitive filter
     ///     over fully-qualified service and method names (FR-023). Matching services auto-expand so
@@ -430,15 +504,22 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
         var filter = FilterText?.Trim() ?? string.Empty;
         var filtering = filter.Length > 0;
 
-        foreach (var service in _catalog.Services)
+        // FR-029: descriptor (file) order by default; A→Z by name when the sort toggle is on.
+        var orderedServices = SortAlphabetically
+            ? _catalog.Services.OrderBy(s => s.FullName, StringComparer.Ordinal)
+            : _catalog.Services.AsEnumerable();
+
+        foreach (var service in orderedServices)
         {
             var serviceMatches = !filtering || service.FullName.Contains(filter, StringComparison.OrdinalIgnoreCase);
 
-            var methods = service.Methods
+            var matched = service.Methods
                 .Where(m => serviceMatches
                     || m.Name.Contains(filter, StringComparison.OrdinalIgnoreCase)
-                    || m.FullName.Contains(filter, StringComparison.OrdinalIgnoreCase))
-                .Select(m => new MethodNodeViewModel(m, CopyFullNameCommand, DescribeCommand, NewRequestCommand))
+                    || m.FullName.Contains(filter, StringComparison.OrdinalIgnoreCase));
+
+            var methods = (SortAlphabetically ? matched.OrderBy(m => m.Name, StringComparer.Ordinal) : matched)
+                .Select(m => new MethodNodeViewModel(m, CopyFullNameCommand, DescribeCommand, NewRequestCommand, CopyProtoCommand))
                 .ToList();
 
             if (methods.Count == 0 && !serviceMatches)
@@ -446,7 +527,7 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
                 continue;
             }
 
-            Services.Add(new ServiceNodeViewModel(service.FullName, methods, CopyFullNameCommand, DescribeCommand) { IsExpanded = filtering });
+            Services.Add(new ServiceNodeViewModel(service.FullName, methods, CopyFullNameCommand, DescribeCommand, CopyProtoCommand, service.Deprecated) { IsExpanded = filtering });
         }
 
         // Types branch (FR-022): message/enum types grouped by package, filtered by FQN.
@@ -457,7 +538,7 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
         {
             var leaves = group
                 .OrderBy(t => t.FullName, StringComparer.Ordinal)
-                .Select(t => new TypeLeafNodeViewModel(t, DescribeCommand, CopyFullNameCommand))
+                .Select(t => new TypeLeafNodeViewModel(t, DescribeCommand, CopyFullNameCommand, CopyProtoCommand))
                 .ToList();
 
             var packageName = string.IsNullOrEmpty(group.Key) ? "(default)" : group.Key;

@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using GrpCurl.Net.Studio.TestSupport;
@@ -83,6 +84,37 @@ public sealed class ServiceExplorerUiTests(HeadlessSessionFixture fixture) : Hea
         var texts = window.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text).ToList();
         texts.ShouldContain("Protoset");
         texts.ShouldContain(t => t != null && t.Contains("1 warning"));
+    });
+
+    [Fact]
+    public Task Deprecated_method_renders_struck_through_and_the_sort_toggle_is_present() => RunOnUiThread(() =>
+    {
+        var descriptors = new FakeDescriptorService
+        {
+            Result = DescriptorLoadResult.Success(new ServiceCatalog(
+            [
+                new ServiceEntry("pkg.Old",
+                    [new ServiceMethod("Gone", "pkg.Old/Gone", StreamingShape.Unary, "pkg.In", "pkg.Out", Deprecated: true)],
+                    Deprecated: true)
+            ], []))
+        };
+        var selection = new ConnectionSelection();
+        var vm = new ServiceExplorerViewModel(descriptors, selection, new FakeClipboardService(), new ImmediateUiDispatcher(), new FakeDocumentHost());
+        selection.Set(new SavedConnection { Name = "c", Address = "h:1" });
+
+        var window = new Window { Content = new ServiceExplorerView { DataContext = vm }, Width = 320, Height = 480 };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        // FR-059: the deprecated service's label carries the strikethrough class.
+        var service = window.GetVisualDescendants().OfType<TextBlock>().FirstOrDefault(t => t.Text == "pkg.Old");
+        service.ShouldNotBeNull();
+        service!.Classes.ShouldContain("deprecated");
+
+        // FR-029: the A→Z sort toggle is present in the header.
+        window.GetVisualDescendants().OfType<ToggleButton>()
+            .Any(b => Equals(b.GetValue(Avalonia.Automation.AutomationProperties.NameProperty), "Sort alphabetically"))
+            .ShouldBeTrue();
     });
 
     [Fact]

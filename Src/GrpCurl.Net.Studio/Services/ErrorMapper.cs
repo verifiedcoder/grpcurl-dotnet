@@ -156,7 +156,8 @@ internal static class ErrorMapper
                 list.Add(new("Verify the caller is permitted to invoke this method."));
                 break;
             case 4: // DEADLINE_EXCEEDED
-                list.Add(new("Increase the deadline or investigate server latency."));
+                // FR-095: the default deadline is a Network setting, so offer a jump there.
+                list.Add(new("Increase the deadline or investigate server latency.", SettingLink: "network"));
                 break;
             case 12: // UNIMPLEMENTED
                 list.Add(new("Confirm the method name and that the server implements it."));

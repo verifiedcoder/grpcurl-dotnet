@@ -138,6 +138,16 @@ public sealed class ErrorMapperTests
     }
 
     [Fact]
+    public void Deadline_exceeded_suggestion_deep_links_to_the_network_settings_FR095()
+    {
+        var model = ErrorMapper.FromOutcome(FailedOutcome(4, "DeadlineExceeded", string.Empty), Ctx);
+
+        var suggestion = model.Suggestions.ShouldHaveSingleItem();
+        suggestion.HasSettingLink.ShouldBeTrue();
+        suggestion.SettingLink.ShouldBe("network");
+    }
+
+    [Fact]
     public void Custom_ca_revocation_failure_suggests_offline_or_nocheck_SEC013()
     {
         var model = ErrorMapper.FromOutcome(

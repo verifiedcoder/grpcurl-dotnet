@@ -553,4 +553,124 @@ public sealed class InvocationDocumentViewModelTests
         await doc.ToggleCaptureCommand.ExecuteAsync(null);
         doc.IsCapturing.ShouldBeFalse();
     }
+
+    // ── CU-2 FR-073: live elapsed + deadline countdown ───────────────────────
+
+    private static InvocationDocumentViewModel CreateWithCapture(
+        out FakeInvocationRunner runner, out FakeFilePickerService picker, out StringWriter sink, out FakeDocumentHost host)
+    {
+        var captRunner = new FakeInvocationRunner();
+        var captPicker = new FakeFilePickerService();
+        var captSink = new StringWriter();
+        var captHost = new FakeDocumentHost();
+        runner = captRunner;
+        picker = captPicker;
+        sink = captSink;
+        host = captHost;
+        return new InvocationDocumentViewModel(
+            Conn(), "pkg.Svc/Go", "{}", captRunner, new FakeDescriptorService(), new ImmediateUiDispatcher(),
+            new FakeClipboardService(), new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator(),
+            captPicker, 10, _ => captSink, revealGate: null, documentHost: captHost);
+    }
+
+    [Fact]
+    public void Begin_elapsed_with_a_deadline_reports_elapsed_and_countdown()
+    {
+        var doc = Create(out _, out _, out _);
+        var start = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
+        doc.BeginElapsed(start, start.AddSeconds(10));
+        doc.UpdateElapsed(start.AddSeconds(3));
+
+        doc.ElapsedText.ShouldBe("3.0s elapsed");
+        doc.HasDeadlineRemaining.ShouldBeTrue();
+        doc.DeadlineRemainingText.ShouldBe("7.0s to deadline");
+    }
+
+    [Fact]
+    public void Elapsed_countdown_clamps_to_zero_past_the_deadline()
+    {
+        var doc = Create(out _, out _, out _);
+        var start = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
+        doc.BeginElapsed(start, start.AddSeconds(5));
+        doc.UpdateElapsed(start.AddSeconds(8));
+
+        doc.DeadlineRemainingText.ShouldBe("0.0s to deadline");
+    }
+
+    [Fact]
+    public void Begin_elapsed_without_a_deadline_has_no_countdown()
+    {
+        var doc = Create(out _, out _, out _);
+        var start = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
+        doc.BeginElapsed(start, deadlineAt: null);
+        doc.UpdateElapsed(start.AddSeconds(2));
+
+        doc.ElapsedText.ShouldBe("2.0s elapsed");
+        doc.HasDeadlineRemaining.ShouldBeFalse();
+        doc.DeadlineRemainingText.ShouldBeNull();
+    }
+
+    // ── CU-2 FR-074: save response to file ───────────────────────────────────
+
+    [Fact]
+    public async Task Save_response_writes_the_response_json_to_the_picked_path()
+    {
+        var doc = CreateWithCapture(out var runner, out var picker, out var sink, out _);
+        runner.Result = OkResult();
+        await doc.InvokeCommand.ExecuteAsync(null);
+        doc.SaveResponseCommand.CanExecute(null).ShouldBeTrue();
+        picker.SaveResult = "/tmp/response.json";
+
+        await doc.SaveResponseCommand.ExecuteAsync(null);
+
+        picker.LastSaveSuggestedName.ShouldBe("response.json");
+        sink.ToString().ShouldBe("{ \"ok\": true }");
+    }
+
+    [Fact]
+    public async Task Save_response_writes_nothing_when_the_picker_is_cancelled()
+    {
+        var doc = CreateWithCapture(out var runner, out var picker, out var sink, out _);
+        runner.Result = OkResult();
+        await doc.InvokeCommand.ExecuteAsync(null);
+        picker.SaveResult = null; // user cancelled the dialog
+
+        await doc.SaveResponseCommand.ExecuteAsync(null);
+
+        sink.ToString().ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Save_response_is_disabled_without_a_response()
+    {
+        var doc = CreateWithCapture(out _, out _, out _, out _);
+
+        doc.SaveResponseCommand.CanExecute(null).ShouldBeFalse();
+    }
+
+    // ── CU-2 FR-095: suggestion → settings deep-link ─────────────────────────
+
+    [Fact]
+    public void Open_setting_link_opens_the_settings_tab()
+    {
+        var doc = CreateWithCapture(out _, out _, out _, out var host);
+
+        doc.OpenSettingLinkCommand.Execute("network");
+
+        host.SettingsOpened.ShouldBe(1);
+    }
+
+    [Fact]
+    public void Open_setting_link_ignores_an_empty_link()
+    {
+        var doc = CreateWithCapture(out _, out _, out _, out var host);
+
+        doc.OpenSettingLinkCommand.Execute(null);
+        doc.OpenSettingLinkCommand.Execute(string.Empty);
+
+        host.SettingsOpened.ShouldBe(0);
+    }
 }

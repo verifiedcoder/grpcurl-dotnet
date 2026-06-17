@@ -8,6 +8,7 @@ using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Descriptors;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using GrpCurl.Net.Utilities;
 
 namespace GrpCurl.Net.Studio.ViewModels.Documents;
 
@@ -29,6 +30,11 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     private readonly IRequestValidator _validator;
     private readonly IFilePickerService? _filePicker;
     private readonly IRevealGate _revealGate;
+    private readonly IDocumentHost? _documentHost;
+
+    private CancellationTokenSource? _elapsedCts;
+    private DateTimeOffset _elapsedStart;
+    private DateTimeOffset? _deadlineAt;
     private readonly StreamDispatchPump _pump = new();
     private readonly Func<string, TextWriter> _writerFactory;
     private StreamCaptureWriter? _capture;
@@ -54,6 +60,15 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     /// <summary>FR-062: the request-body grammar/parser — JSON (default) or protobuf text format.</summary>
     [ObservableProperty]
     private RequestBodyFormat _bodyFormat = RequestBodyFormat.Json;
+
+    /// <summary>FR-073: live elapsed time while a call is in flight.</summary>
+    [ObservableProperty]
+    private string? _elapsedText;
+
+    /// <summary>FR-073: live deadline countdown when a deadline is set.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasDeadlineRemaining))]
+    private string? _deadlineRemainingText;
 
     /// <summary>The verbose call transcript for the Raw tab (FR-111); header values are redacted (FR-112).</summary>
     [ObservableProperty]
@@ -118,7 +133,8 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         IFilePickerService? filePicker = null,
         int ringCapacity = 10_000,
         Func<string, TextWriter>? writerFactory = null,
-        IRevealGate? revealGate = null)
+        IRevealGate? revealGate = null,
+        IDocumentHost? documentHost = null)
     {
         Connection = connection;
         MethodSymbol = methodSymbol;
@@ -129,6 +145,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         _dialogs = dialogs;
         _launcher = launcher;
         _validator = validator;
+        _documentHost = documentHost;
         _filePicker = filePicker;
         _revealGate = revealGate ?? AlwaysRevealGate.Instance;
         _writerFactory = writerFactory ?? (path => new StreamWriter(path));
@@ -300,6 +317,77 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         if (clear)
         {
             await _dispatcher.InvokeAsync(() => RequestJson = string.Empty);
+        }
+    }
+
+    // ── FR-073: live elapsed + deadline countdown while in flight ─────────────
+
+    public bool HasDeadlineRemaining => DeadlineRemainingText is not null;
+
+    partial void OnStateChanged(RunState value)
+    {
+        if (value == RunState.InFlight)
+        {
+            BeginElapsed(DateTimeOffset.UtcNow, ComputeDeadlineAt());
+            _elapsedCts?.Cancel();
+            var cts = new CancellationTokenSource();
+            _elapsedCts = cts;
+            _ = TickElapsedAsync(cts.Token);
+        }
+        else
+        {
+            _elapsedCts?.Cancel();
+            _elapsedCts = null;
+        }
+    }
+
+    /// <summary>Seeds the elapsed/deadline clock (test seam; the timer drives it during a real call).</summary>
+    internal void BeginElapsed(DateTimeOffset start, DateTimeOffset? deadlineAt)
+    {
+        _elapsedStart = start;
+        _deadlineAt = deadlineAt;
+        UpdateElapsed(start);
+    }
+
+    /// <summary>Recomputes the live elapsed + deadline-remaining text for the given instant.</summary>
+    internal void UpdateElapsed(DateTimeOffset now)
+    {
+        ElapsedText = $"{(now - _elapsedStart).TotalSeconds:0.0}s elapsed";
+        DeadlineRemainingText = _deadlineAt is { } deadline
+            ? $"{Math.Max(0, (deadline - now).TotalSeconds):0.0}s to deadline"
+            : null;
+    }
+
+    private DateTimeOffset? ComputeDeadlineAt()
+    {
+        if (string.IsNullOrWhiteSpace(Deadline))
+        {
+            return null;
+        }
+
+        try
+        {
+            return DateTimeOffset.UtcNow.Add(GrpcChannelFactory.ParseDuration(Deadline));
+        }
+        catch (ArgumentException)
+        {
+            return null; // invalid duration — no countdown (the call will surface the parse error)
+        }
+    }
+
+    private async Task TickElapsedAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                await Task.Delay(250, cancellationToken).ConfigureAwait(false);
+                await _dispatcher.InvokeAsync(() => UpdateElapsed(DateTimeOffset.UtcNow)).ConfigureAwait(false);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Stopped when the call completed or was cancelled.
         }
     }
 
@@ -548,10 +636,38 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         }
     }
 
+    /// <summary>FR-074: save the response body to a file.</summary>
+    [RelayCommand(CanExecute = nameof(HasResponse))]
+    private async Task SaveResponse()
+    {
+        if (_filePicker is null || ResponseJson is null)
+        {
+            return;
+        }
+
+        var path = await _filePicker.SaveFileAsync("Save response", "response.json", [".json", ".txt"]);
+
+        if (path is not null)
+        {
+            await using var writer = _writerFactory(path);
+            await writer.WriteAsync(ResponseJson);
+        }
+    }
+
     /// <summary>Copies the equivalent grpcn invoke command, secrets as ${VAR} placeholders (FR-160/161).</summary>
     [RelayCommand]
     private async Task CopyAsCli()
         => await _clipboard.SetTextAsync(CliCommandBuilder.BuildCommand(BuildRequest(), CliDialect));
+
+    /// <summary>FR-095: a suggestion that maps to a Studio setting opens the Settings tab.</summary>
+    [RelayCommand]
+    private void OpenSettingLink(string? settingLink)
+    {
+        if (!string.IsNullOrEmpty(settingLink))
+        {
+            _documentHost?.OpenSettings();
+        }
+    }
 
     public bool HasRawTranscript => !string.IsNullOrEmpty(RawTranscript);
 

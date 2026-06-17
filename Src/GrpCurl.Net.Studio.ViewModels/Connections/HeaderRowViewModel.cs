@@ -21,7 +21,13 @@ public sealed partial class HeaderRowViewModel : ViewModelBase
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(BinError), nameof(BinReadout), nameof(HasBinError), nameof(HasBinReadout))]
     [NotifyPropertyChangedFor(nameof(ResolvedPreview), nameof(HasResolvedPreview))]
+    [NotifyPropertyChangedFor(nameof(ShowRequiresValue))]
     private string _value = string.Empty;
+
+    /// <summary>FR-123: set when restored from a redacted history value — the value must be re-entered.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowRequiresValue))]
+    private bool _requiresValue;
 
     public HeaderRowViewModel()
     {
@@ -34,6 +40,9 @@ public sealed partial class HeaderRowViewModel : ViewModelBase
     }
 
     public bool IsBin => Name.EndsWith("-bin", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>FR-123: show the "value required" hint while a restored secret header is still blank.</summary>
+    public bool ShowRequiresValue => RequiresValue && string.IsNullOrEmpty(Value);
 
     /// <summary>True for sensitive header names (per Core's <see cref="SecretRedactor" />) — masked in the UI (FR-068).</summary>
     public bool IsSecret => SecretRedactor.ShouldRedact(Name);

@@ -229,6 +229,10 @@
                                                Foreground="{DynamicResource Status.Neutral}" TextTrimming="CharacterEllipsis">
                                         <Run Text="→ " /><Run Text="{Binding ResolvedPreview}" />
                                     </TextBlock>
+                                    <!-- FR-123: a replayed secret header needs its value re-entered. -->
+                                    <TextBlock Text="Value required (the secret wasn't stored in history)."
+                                               FontSize="11" IsVisible="{Binding ShowRequiresValue}"
+                                               Foreground="{DynamicResource Status.Server}" />
                                 </StackPanel>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>

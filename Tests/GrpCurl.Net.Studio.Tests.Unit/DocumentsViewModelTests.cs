@@ -70,6 +70,31 @@ public sealed class DocumentsViewModelTests
     }
 
     [Fact]
+    public void Open_invocation_with_a_prefill_applies_headers_and_options_without_binding()
+    {
+        var docs = Create();
+        var prefill = new GrpCurl.Net.Studio.ViewModels.Models.Invocation.RequestPrefill(
+            "{}", GrpCurl.Net.Studio.ViewModels.Models.Invocation.RequestBodyFormat.Text,
+            [
+                new GrpCurl.Net.Studio.ViewModels.Models.Invocation.PrefillHeader("x-trace", "abc", IsBin: false),
+                new GrpCurl.Net.Studio.ViewModels.Models.Invocation.PrefillHeader("authorization", "", IsBin: false, RequiresValue: true)
+            ],
+            Deadline: "30s", EmitDefaults: true, AllowUnknownFields: false, MaxMessageSize: "4096");
+
+        docs.OpenInvocation(Conn(), "pkg.Svc/Go", prefill);
+
+        var tab = docs.Documents.OfType<InvocationDocumentViewModel>().ShouldHaveSingleItem();
+        tab.BodyFormat.ShouldBe(GrpCurl.Net.Studio.ViewModels.Models.Invocation.RequestBodyFormat.Text);
+        tab.Deadline.ShouldBe("30s");
+        tab.EmitDefaults.ShouldBeTrue();
+        tab.AllowUnknownFields.ShouldBeFalse();
+        tab.MaxMessageSize.ShouldBe("4096");
+        tab.Headers.Select(h => h.Name).ShouldBe(["x-trace", "authorization"]);
+        tab.Headers[1].ShowRequiresValue.ShouldBeTrue(); // FR-123: blank restored secret prompts for a value
+        tab.IsSavedRequestDirty.ShouldBeFalse();          // a replay is a plain draft, not bound
+    }
+
+    [Fact]
     public void Open_settings_adds_a_single_settings_tab()
     {
         var docs = Create();

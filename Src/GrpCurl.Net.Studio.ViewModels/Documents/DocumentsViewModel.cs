@@ -3,6 +3,7 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GrpCurl.Net.Studio.ViewModels.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
+using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Panes;
 using GrpCurl.Net.Studio.ViewModels.Services;
 
@@ -106,14 +107,10 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
 
     public void OpenInvocation(SavedConnection connection, string methodSymbol, string? initialRequestJson = null)
     {
-        var document = new InvocationDocumentViewModel(
-            connection, methodSymbol, initialRequestJson, _invocation, _descriptors, _dispatcher, _clipboard, _dialogs, _launcher, _validator,
-            _filePicker, _settings.Current.Network.RingBufferSize, revealGate: _revealGate, documentHost: this,
-            console: _console, inspector: _inspector, recorder: _recorder, savedRequests: _savedRequests);
+        var document = CreateInvocationTab(connection, methodSymbol, initialRequestJson);
 
         // FR-153 / FR-163: seed new tabs from the Network/General defaults (initial values only).
         var network = _settings.Current.Network;
-        document.CliDialect = _settings.Current.General.CliShellDialect;
 
         if (!string.IsNullOrWhiteSpace(network.DefaultDeadline))
         {
@@ -125,52 +122,85 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
             document.MaxMessageSize = network.MaxMessageSize;
         }
 
-        document.CloseRequested += OnDocumentCloseRequested;
+        Finish(document);
+    }
 
-        Documents.Add(document);
-        SelectedDocument = document;
+    public void OpenInvocation(SavedConnection connection, string methodSymbol, RequestPrefill prefill)
+    {
+        // FR-123 replay: a plain draft pre-filled from the prefill (no saved-request binding).
+        var document = CreateInvocationTab(connection, methodSymbol, prefill.Body);
+        ApplyPrefill(document, prefill);
+        Finish(document);
     }
 
     public void OpenSavedRequest(SavedConnection connection, SavedRequest request)
     {
-        var document = new InvocationDocumentViewModel(
-            connection, request.Method, request.Body, _invocation, _descriptors, _dispatcher, _clipboard, _dialogs, _launcher, _validator,
-            _filePicker, _settings.Current.Network.RingBufferSize, revealGate: _revealGate, documentHost: this,
-            console: _console, inspector: _inspector, recorder: _recorder, savedRequests: _savedRequests);
-
-        // The saved request is the authoritative tab state (FR-145): title, format, options, and headers.
-        if (!string.IsNullOrWhiteSpace(request.Name))
-        {
-            document.Title = request.Name;
-        }
-
-        document.CliDialect = _settings.Current.General.CliShellDialect;
-        document.BodyFormat = request.BodyFormat;
-        document.EmitDefaults = request.EmitDefaults;
-        document.AllowUnknownFields = request.AllowUnknownFields;
-
-        if (!string.IsNullOrWhiteSpace(request.Deadline))
-        {
-            document.Deadline = request.Deadline;
-        }
-
-        if ((request.MaxReceiveBytes ?? request.MaxSendBytes) is { } maxBytes)
-        {
-            document.MaxMessageSize = maxBytes.ToString(CultureInfo.InvariantCulture);
-        }
-
-        document.Headers.Clear();
-
-        foreach (var header in request.Headers)
-        {
-            document.Headers.Add(new HeaderRowViewModel(new HeaderEntry { Name = header.Name, Value = header.Value, IsBin = header.IsBin }));
-        }
+        var document = CreateInvocationTab(connection, request.Method, request.Body);
+        ApplyPrefill(document, PrefillFrom(request));
 
         // FR-002: bind the tab to the saved request and snapshot the baseline (body settles to request.Body).
         document.BindSavedRequest(request.Id, request.Name, request.Body);
 
-        document.CloseRequested += OnDocumentCloseRequested;
+        Finish(document);
+    }
 
+    private InvocationDocumentViewModel CreateInvocationTab(SavedConnection connection, string method, string? body)
+    {
+        var document = new InvocationDocumentViewModel(
+            connection, method, body, _invocation, _descriptors, _dispatcher, _clipboard, _dialogs, _launcher, _validator,
+            _filePicker, _settings.Current.Network.RingBufferSize, revealGate: _revealGate, documentHost: this,
+            console: _console, inspector: _inspector, recorder: _recorder, savedRequests: _savedRequests);
+
+        document.CliDialect = _settings.Current.General.CliShellDialect;
+        return document;
+    }
+
+    private static void ApplyPrefill(InvocationDocumentViewModel document, RequestPrefill prefill)
+    {
+        if (!string.IsNullOrWhiteSpace(prefill.Title))
+        {
+            document.Title = prefill.Title;
+        }
+
+        document.BodyFormat = prefill.BodyFormat;
+        document.EmitDefaults = prefill.EmitDefaults;
+        document.AllowUnknownFields = prefill.AllowUnknownFields;
+
+        if (!string.IsNullOrWhiteSpace(prefill.Deadline))
+        {
+            document.Deadline = prefill.Deadline;
+        }
+
+        if (!string.IsNullOrWhiteSpace(prefill.MaxMessageSize))
+        {
+            document.MaxMessageSize = prefill.MaxMessageSize;
+        }
+
+        document.Headers.Clear();
+
+        foreach (var header in prefill.Headers)
+        {
+            document.Headers.Add(new HeaderRowViewModel(
+                new HeaderEntry { Name = header.Name, Value = header.Value, IsBin = header.IsBin })
+            {
+                RequiresValue = header.RequiresValue
+            });
+        }
+    }
+
+    private static RequestPrefill PrefillFrom(SavedRequest request) => new(
+        request.Body,
+        request.BodyFormat,
+        request.Headers.Select(h => new PrefillHeader(h.Name, h.Value, h.IsBin)).ToList(),
+        request.Deadline,
+        request.EmitDefaults,
+        request.AllowUnknownFields,
+        (request.MaxReceiveBytes ?? request.MaxSendBytes)?.ToString(CultureInfo.InvariantCulture),
+        request.Name);
+
+    private void Finish(DocumentViewModel document)
+    {
+        document.CloseRequested += OnDocumentCloseRequested;
         Documents.Add(document);
         SelectedDocument = document;
     }

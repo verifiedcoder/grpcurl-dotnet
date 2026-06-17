@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://grpcurl.net/schemas/studio/workspace/v1",
+  "title": "GrpCurl.Net Studio workspace",
+  "type": "object",
+  "required": ["schemaVersion", "id", "name"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "id": { "$ref": "#/$defs/uuid", "description": "Stable workspace identity; namespaces secret keyrefs (SPEC-040 §4)" },
+    "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "connections": { "type": "array", "items": { "$ref": "#/$defs/connection" }, "default": [] },
+    "tlsProfiles": { "type": "array", "items": { "$ref": "#/$defs/tlsProfile" }, "default": [] },
+    "savedRequests": { "type": "array", "items": { "$ref": "#/$defs/savedRequest" }, "default": [] },
+    "graphqlRequests": { "type": "array", "items": { "$ref": "#/$defs/graphqlRequest" }, "default": [] },
+    "environments": { "type": "array", "items": { "$ref": "#/$defs/environment" }, "default": [] }
+  },
+  "$defs": {
+    "uuid": { "type": "string", "format": "uuid" },
+    "secretRef": {
+      "type": "object",
+      "required": ["$secret"],
+      "additionalProperties": false,
+      "properties": { "$secret": { "type": "string", "minLength": 1, "description": "ISecretStore keyref — SPEC-040 §4" } }
+    },
+    "stringOrSecret": { "oneOf": [ { "type": "string" }, { "$ref": "#/$defs/secretRef" } ] },
+    "duration": { "type": "string", "pattern": "^\\d+(\\.\\d+)?(ms|s|m|h)$", "description": "e.g. \"10s\", \"1.5m\" — matches CLI duration syntax" },
+    "header": {
+      "type": "object",
+      "required": ["name", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "description": "Metadata key; '-bin' suffix implies isBin unless overridden" },
+        "value": { "$ref": "#/$defs/stringOrSecret", "description": "May contain ${VAR} placeholders (environment expansion)" },
+        "isBin": { "type": "boolean", "default": false, "description": "Value is base64 of binary metadata" }
+      }
+    },
+    "connection": {
+      "type": "object",
+      "required": ["id", "name", "address", "transport"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/uuid" },
+        "name": { "type": "string", "minLength": 1 },
+        "address": { "type": "string", "minLength": 1, "description": "host:port, unix:///path, or URL form accepted by GrpcChannelFactory" },
+        "transport": { "enum": ["plaintext", "tls"] },
+        "tlsProfileRef": { "oneOf": [ { "$ref": "#/$defs/uuid" }, { "type": "null" } ], "default": null, "description": "tlsProfiles[].id; null with transport=tls means system trust, no client cert" },
+        "connectTimeout": { "oneOf": [ { "$ref": "#/$defs/duration" }, { "type": "null" } ], "default": null },
+        "keepalive": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "object", "additionalProperties": false,
+              "properties": { "time": { "$ref": "#/$defs/duration" }, "timeout": { "$ref": "#/$defs/duration" } } }
+          ],
+          "default": null
+        },
+        "authority": { "type": ["string", "null"], "default": null, "description": "HTTP/2 :authority override" },
+        "serverName": { "type": ["string", "null"], "default": null, "description": "TLS SNI override" },
+        "userAgent": { "type": ["string", "null"], "default": null },
+        "reflectionHeaders": { "type": "array", "items": { "$ref": "#/$defs/header" }, "default": [], "description": "Sent only on reflection RPCs" },
+        "descriptorSource": {
+          "type": "object",
+          "required": ["mode"],
+          "additionalProperties": false,
+          "properties": {
+            "mode": { "enum": ["reflection", "protoset", "proto"] },
+            "protosetPaths": { "type": "array", "items": { "type": "string" }, "default": [], "description": "Path-reference rule SPEC-040 §3.1" },
+            "protoFiles": { "type": "array", "items": { "type": "string" }, "default": [] },
+            "importPaths": { "type": "array", "items": { "type": "string" }, "default": [] }
+          }
+        }
+      }
+    },
+    "tlsProfile": {
+      "type": "object",
+      "required": ["id", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/uuid" },
+        "name": { "type": "string", "minLength": 1 },
+        "caCertPath": { "type": ["string", "null"], "default": null },
+        "clientCertPath": { "type": ["string", "null"], "default": null, "description": "PEM cert or PKCS12 bundle (content-detected by Core)" },
+        "clientKeyPath": { "type": ["string", "null"], "default": null },
+        "clientCertPasswordRef": { "oneOf": [ { "$ref": "#/$defs/secretRef" }, { "type": "null" } ], "default": null },
+        "revocationMode": { "enum": ["online", "offline", "nocheck"], "default": "online" },
+        "insecureSkipVerify": { "type": "boolean", "default": false },
+        "exportableClientKey": { "type": "boolean", "default": false, "description": "Windows: import PKCS12 key as exportable" }
+      }
+    },
+    "savedRequest": {
+      "type": "object",
+      "required": ["id", "name", "connectionId", "method"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/uuid" },
+        "name": { "type": "string", "minLength": 1 },
+        "connectionId": { "$ref": "#/$defs/uuid" },
+        "method": { "type": "string", "minLength": 1, "description": "Fully-qualified package.Service/Method" },
+        "bodyFormat": { "enum": ["json", "text"], "default": "json", "description": "text = protobuf text format" },
+        "body": { "type": "string", "default": "", "description": "For client/duplex streams: multiple messages in the CLI's multi-message syntax" },
+        "headers": { "type": "array", "items": { "$ref": "#/$defs/header" }, "default": [] },
+        "deadline": { "oneOf": [ { "$ref": "#/$defs/duration" }, { "type": "null" } ], "default": null },
+        "emitDefaults": { "type": "boolean", "default": false },
+        "allowUnknownFields": { "type": "boolean", "default": false },
+        "maxSendBytes": { "type": ["integer", "null"], "minimum": 1, "default": null },
+        "maxReceiveBytes": { "type": ["integer", "null"], "minimum": 1, "default": null }
+      }
+    },
+    "graphqlRequest": {
+      "type": "object",
+      "required": ["id", "name", "connectionId", "document"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/uuid" },
+        "name": { "type": "string", "minLength": 1 },
+        "connectionId": { "$ref": "#/$defs/uuid" },
+        "document": { "type": "string", "minLength": 1 },
+        "variables": { "type": "string", "default": "{}", "description": "JSON text, kept verbatim (preserves user formatting/comments-by-convention)" },
+        "operationName": { "type": ["string", "null"], "default": null },
+        "mappingPath": { "type": ["string", "null"], "default": null, "description": "Path to mapping YAML (SPEC-040 §3.1); mutually exclusive with inlineMapping" },
+        "inlineMapping": { "type": ["string", "null"], "default": null, "description": "Mapping YAML embedded verbatim" },
+        "defaultService": { "type": ["string", "null"], "default": null, "description": "Convention-mode default service" },
+        "raw": { "type": "boolean", "default": false, "description": "Bypass projection — full gRPC response as JSON" }
+      },
+      "not": {
+        "required": ["mappingPath", "inlineMapping"],
+        "properties": { "mappingPath": { "type": "string" }, "inlineMapping": { "type": "string" } }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "required": ["id", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/uuid" },
+        "name": { "type": "string", "minLength": 1 },
+        "variables": {
+          "type": "array", "default": [],
+          "items": {
+            "type": "object",
+            "required": ["name", "value"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
+              "value": { "$ref": "#/$defs/stringOrSecret" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

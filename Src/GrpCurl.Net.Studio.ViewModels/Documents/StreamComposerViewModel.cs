@@ -8,8 +8,8 @@ using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.ViewModels.Documents;
 
-/// <summary>A row in the composer's sent-message queue (FR-082).</summary>
-public sealed record SentMessageRow(int Index, DateTimeOffset Timestamp, string Preview);
+/// <summary>A row in the composer's sent-message queue (FR-082). <paramref name="Json" /> is the full body (FR-165).</summary>
+public sealed record SentMessageRow(int Index, DateTimeOffset Timestamp, string Preview, string Json);
 
 /// <summary>
 ///     The client/duplex request composer (FR-082/083). Owns a <see cref="Channel{T}" /> of request
@@ -67,6 +67,9 @@ public sealed partial class StreamComposerViewModel : ViewModelBase
 
     public ObservableCollection<SentMessageRow> SentQueue { get; } = [];
     public ObservableCollection<ValidationProblem> Problems { get; } = [];
+
+    /// <summary>FR-165: the full JSON of every message sent this session, for copy-as-CLI reproduction.</summary>
+    public IReadOnlyList<string> SentMessages => SentQueue.Select(r => r.Json).ToList();
 
     /// <summary>True while the request stream is open and accepting sends.</summary>
     public bool CanSend => IsActive && !SendingComplete;
@@ -141,7 +144,7 @@ public sealed partial class StreamComposerViewModel : ViewModelBase
             return;
         }
 
-        SentQueue.Add(new SentMessageRow(SentQueue.Count, DateTimeOffset.Now, Preview(json)));
+        SentQueue.Add(new SentMessageRow(SentQueue.Count, DateTimeOffset.Now, Preview(json), json));
     }
 
     // FR-082: advisory validation, debounced, never blocks Send.

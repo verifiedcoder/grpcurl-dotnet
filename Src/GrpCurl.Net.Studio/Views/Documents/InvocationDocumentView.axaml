@@ -498,6 +498,15 @@
                             <Run Text="sent" Foreground="{DynamicResource Status.Neutral}" />
                             <Run Text="{Binding Log.TotalSent}" FontWeight="SemiBold" />
                         </TextBlock>
+                        <!-- FR-089: live elapsed + throughput. -->
+                        <TextBlock VerticalAlignment="Center" AutomationProperties.Name="Stream elapsed">
+                            <Run Text="elapsed" Foreground="{DynamicResource Status.Neutral}" />
+                            <Run Text="{Binding Log.ElapsedText}" FontWeight="SemiBold" />
+                        </TextBlock>
+                        <TextBlock VerticalAlignment="Center" AutomationProperties.Name="Stream rate">
+                            <Run Text="rate" Foreground="{DynamicResource Status.Neutral}" />
+                            <Run Text="{Binding Log.RateText}" FontWeight="SemiBold" />
+                        </TextBlock>
                         <TextBlock Text="{Binding Log.TruncationNotice}" VerticalAlignment="Center" FontSize="11"
                                    Foreground="{DynamicResource Status.Server}" IsVisible="{Binding Log.IsTruncated}" />
                     </StackPanel>

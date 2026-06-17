@@ -100,4 +100,22 @@ public sealed class CliCommandBuilderTests
 
         CliCommandBuilder.BuildCommand(request).ShouldBe(CliCommandBuilder.BuildCommand(request, ShellDialect.Bash));
     }
+
+    // ── FR-165: streaming copy-as-CLI marks interactively-composed messages ───
+
+    [Fact]
+    public void Streaming_command_appends_the_interactive_messages_under_a_comment()
+    {
+        var request = new InvocationRequestModel(Conn(), "p.Chat/Stream", "{}", [], AllowUnknownFields: false);
+
+        var command = CliCommandBuilder.BuildStreamingCommand(request, ["{ \"a\": 1 }", "{ \"b\": 2 }"]);
+
+        var lines = command.Split('\n');
+        lines[0].ShouldStartWith("grpcn invoke");
+        lines[0].ShouldEndWith("p.Chat/Stream");           // target + method end the options line
+        lines[0].ShouldNotContain("-d");                   // the body is not on the options line
+        lines.ShouldContain("# messages below were sent interactively");
+        command.ShouldContain("-d '{ \"a\": 1 }'");
+        command.ShouldContain("-d '{ \"b\": 2 }'");
+    }
 }

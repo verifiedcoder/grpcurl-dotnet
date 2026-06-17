@@ -467,6 +467,29 @@ public sealed class InvocationDocumentViewModelTests
     }
 
     [Fact]
+    public async Task Copy_as_cli_for_a_streaming_tab_marks_the_messages_interactive()
+    {
+        var descriptors = new FakeDescriptorService
+        {
+            OnDescribe = (_, symbol, _) => Task.FromResult(DescribeResult.Success(
+                new MethodDescription(symbol, "Go", "f.proto", StreamingShape.ClientStreaming,
+                    new TypeRef("pkg.In", true), new TypeRef("pkg.Out", true), new TypeRef("pkg.Svc", true), "{}")))
+        };
+        var clipboard = new FakeClipboardService();
+        var doc = new InvocationDocumentViewModel(
+            Conn(), "pkg.Svc/Go", "{}", new FakeInvocationRunner(), descriptors, new ImmediateUiDispatcher(),
+            clipboard, new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator());
+        doc.HasComposer.ShouldBeTrue();
+        doc.Composer!.MessageJson = "{ \"x\": 1 }";
+
+        await doc.CopyAsCliCommand.ExecuteAsync(null);
+
+        var command = clipboard.Text.ShouldNotBeNull();
+        command.ShouldContain("# messages below were sent interactively");
+        command.ShouldContain("-d '{ \"x\": 1 }'");
+    }
+
+    [Fact]
     public async Task Start_stream_populates_the_event_log_and_final_status()
     {
         var doc = CreateStreaming(StreamingShape.ServerStreaming, out var runner);

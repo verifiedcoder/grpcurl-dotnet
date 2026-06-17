@@ -44,7 +44,8 @@ internal sealed partial class InvocationRunner(IInvocationService invocation, IT
                 connection.Address, protosets, protos, imports,
                 channelOptions: options,
                 reflectionMetadata: reflectionMetadata,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                cancellationToken: cancellationToken,
+                measureChannelConnect: true).ConfigureAwait(false);
 
             // Accept both the dotted FQN and the pkg.Service/Method invocation grammar.
             var symbol = request.MethodSymbol.Replace('/', '.');
@@ -72,12 +73,22 @@ internal sealed partial class InvocationRunner(IInvocationService invocation, IT
                 ? null
                 : invocation.MessageToJson(outcome.Response, request.EmitDefaults, indent: true);
 
-            // FR-110 structured phases. "descriptor" = session create + symbol resolve; "call" = the RPC
-            // (gRPC connects lazily, so channel-establishment cost lands here — Studio can't split a
-            // distinct "channel" phase without Core changes); "total" = end-to-end.
+            // FR-110 structured phases. "channel" = HTTP/2 connection establishment (measured by the
+            // factory via ConnectAsync); "descriptor" = symbol resolution over that connection; "call" =
+            // the RPC; "total" = end-to-end. The resolve stopwatch spans channel + descriptor, so subtract
+            // the channel time to isolate the descriptor phase.
+            var channelElapsed = session.ChannelConnectDuration ?? TimeSpan.Zero;
+            var descriptorElapsed = resolve.Elapsed - channelElapsed;
+
+            if (descriptorElapsed < TimeSpan.Zero)
+            {
+                descriptorElapsed = TimeSpan.Zero;
+            }
+
             var timing = new TimingModel(
                 [
-                    new TimingPhase("descriptor", resolve.Elapsed),
+                    new TimingPhase("channel", channelElapsed),
+                    new TimingPhase("descriptor", descriptorElapsed),
                     new TimingPhase("call", call.Elapsed),
                     new TimingPhase("total", resolve.Elapsed + call.Elapsed)
                 ],

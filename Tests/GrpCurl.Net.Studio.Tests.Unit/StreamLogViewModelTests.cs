@@ -66,4 +66,39 @@ public sealed class StreamLogViewModelTests
         log.TotalReceived.ShouldBe(0);
         log.TotalRows.ShouldBe(0);
     }
+
+    // ── FR-089: footer elapsed + rate ────────────────────────────────────────
+
+    [Fact]
+    public void Footer_tracks_elapsed_and_message_rate()
+    {
+        var log = Log();
+        log.Append(Received(0, elapsedMs: 0));
+        log.Append(Received(1, elapsedMs: 1000));
+        log.Append(Received(2, elapsedMs: 2000));
+
+        log.ElapsedMs.ShouldBe(2000);
+        log.ElapsedText.ShouldBe("2.0s");
+        log.RateText.ShouldBe("1.5 msg/s"); // 3 messages over 2.0s
+    }
+
+    [Fact]
+    public void Rate_is_a_dash_before_any_time_elapses()
+    {
+        var log = Log();
+        log.Append(Received(0, elapsedMs: 0));
+
+        log.RateText.ShouldBe("—");
+    }
+
+    [Fact]
+    public void Reset_clears_the_elapsed_clock()
+    {
+        var log = Log();
+        log.Append(Received(0, elapsedMs: 500));
+        log.Reset();
+
+        log.ElapsedMs.ShouldBe(0);
+        log.ElapsedText.ShouldBe("0.0s");
+    }
 }

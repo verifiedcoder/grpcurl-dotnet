@@ -36,6 +36,9 @@ internal static class ServiceRegistration
 
         services.AddSingleton<IWorkspaceStore, JsonWorkspaceStore>();
 
+        // History (E3.3): append-only NDJSON store of redacted invocations (SPEC-040 §5).
+        services.AddSingleton<IHistoryStore, JsonHistoryStore>();
+
         // TLS profile resolution (E2.2): turns a connection's profile reference + the PKCS12
         // password secret into the (profile, password) pair the channel mapper consumes.
         services.AddSingleton<ITlsProfileResolver, TlsProfileResolver>();

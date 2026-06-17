@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:GrpCurl.Net.Studio.ViewModels;assembly=GrpCurl.Net.Studio.ViewModels"
         xmlns:models="clr-namespace:GrpCurl.Net.Studio.ViewModels.Models;assembly=GrpCurl.Net.Studio.ViewModels"
+        xmlns:conn="clr-namespace:GrpCurl.Net.Studio.ViewModels.Models.Connections;assembly=GrpCurl.Net.Studio.ViewModels"
         xmlns:docs="clr-namespace:GrpCurl.Net.Studio.ViewModels.Documents;assembly=GrpCurl.Net.Studio.ViewModels"
         xmlns:panes="clr-namespace:GrpCurl.Net.Studio.Views.Panes"
         xmlns:views="clr-namespace:GrpCurl.Net.Studio.Views"
@@ -17,6 +18,10 @@
         <KeyBinding Gesture="Ctrl+I" Command="{Binding ToggleInspectorCommand}" />
         <KeyBinding Gesture="Ctrl+Shift+M" Command="{Binding ToggleFocusModeCommand}" />
         <KeyBinding Gesture="Ctrl+OemComma" Command="{Binding OpenSettingsCommand}" />
+        <KeyBinding Gesture="Ctrl+N" Command="{Binding NewWorkspaceCommand}" />
+        <KeyBinding Gesture="Ctrl+O" Command="{Binding OpenWorkspaceCommand}" />
+        <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveWorkspaceCommand}" />
+        <KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding SaveWorkspaceAsCommand}" />
     </Window.KeyBindings>
 
     <DockPanel>
@@ -24,6 +29,29 @@
         <!-- Menu bar -->
         <Menu DockPanel.Dock="Top" x:Name="MenuBar">
             <MenuItem Header="_File">
+                <MenuItem Header="_New Workspace" InputGesture="Ctrl+N" Command="{Binding NewWorkspaceCommand}"
+                          AutomationProperties.Name="New workspace" />
+                <MenuItem Header="_Open Workspace…" InputGesture="Ctrl+O" Command="{Binding OpenWorkspaceCommand}"
+                          AutomationProperties.Name="Open workspace" />
+                <MenuItem Header="Open _Recent" ItemsSource="{Binding RecentWorkspaces}"
+                          IsEnabled="{Binding HasRecentWorkspaces}" AutomationProperties.Name="Open recent workspace">
+                    <MenuItem.ItemContainerTheme>
+                        <ControlTheme TargetType="MenuItem" x:DataType="conn:RecentWorkspace">
+                            <Setter Property="Header" Value="{Binding DisplayName}" />
+                            <Setter Property="Command"
+                                    Value="{Binding $parent[Menu].((vm:MainWindowViewModel)DataContext).OpenRecentCommand}" />
+                            <Setter Property="CommandParameter" Value="{Binding Path}" />
+                        </ControlTheme>
+                    </MenuItem.ItemContainerTheme>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="_Save" InputGesture="Ctrl+S" Command="{Binding SaveWorkspaceCommand}"
+                          AutomationProperties.Name="Save workspace" />
+                <MenuItem Header="Save _As…" InputGesture="Ctrl+Shift+S" Command="{Binding SaveWorkspaceAsCommand}"
+                          AutomationProperties.Name="Save workspace as" />
+                <MenuItem Header="_Reload from disk" Command="{Binding ReloadWorkspaceCommand}"
+                          AutomationProperties.Name="Reload workspace" />
+                <Separator />
                 <MenuItem Header="_Settings…" InputGesture="Ctrl+," Command="{Binding OpenSettingsCommand}"
                           AutomationProperties.Name="Settings" />
                 <Separator />
@@ -80,8 +108,10 @@
                 Background="{DynamicResource Surface.PaneHeader}"
                 BorderBrush="{DynamicResource Divider}" BorderThickness="0,1,0,0">
             <DockPanel LastChildFill="False" Margin="8,0">
+                <!-- E3.1: the active workspace file + dirty dot (●). -->
                 <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" Opacity="0.7"
-                           Text="No workspace" />
+                           Text="{Binding Session.StatusText, FallbackValue='No workspace'}"
+                           AutomationProperties.Name="Workspace status" />
                 <TextBlock DockPanel.Dock="Right" VerticalAlignment="Center" Opacity="0.7"
                            Text="v1.0.0" />
             </DockPanel>

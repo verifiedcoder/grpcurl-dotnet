@@ -131,6 +131,18 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         SelectedDocument = document;
     }
 
+    /// <summary>E3.1: closes every open tab (e.g. when switching to a different workspace).</summary>
+    public void CloseAll()
+    {
+        foreach (var document in Documents)
+        {
+            document.CloseRequested -= OnDocumentCloseRequested;
+        }
+
+        Documents.Clear();
+        SelectedDocument = null;
+    }
+
     private void OnDocumentCloseRequested(object? sender, EventArgs e)
     {
         if (sender is not DocumentViewModel document)

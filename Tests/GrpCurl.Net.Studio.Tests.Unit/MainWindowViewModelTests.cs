@@ -226,4 +226,151 @@ public sealed class MainWindowViewModelTests
 
         vm.ShowWelcome.ShouldBeTrue();
     }
+
+    // ── E3.1 PR-D: File-menu workspace operations ────────────────────────────
+
+    private static MainWindowViewModel CreateWithWorkspace(
+        out FakeWorkspaceStore store, out FakeFilePickerService picker, out FakeDialogService dialogs,
+        out ConnectionsPaneViewModel connections, out DocumentsViewModel documents)
+    {
+        store = new FakeWorkspaceStore(new WorkspaceModel
+        {
+            Id = "w1", Name = "Demo",
+            Connections = [new SavedConnection { Name = "a", Address = "h:1" }]
+        });
+        picker = new FakeFilePickerService();
+        dialogs = new FakeDialogService();
+        var session = new WorkspaceSessionViewModel(store, dialogs);
+        connections = new ConnectionsPaneViewModel(store, new FakeConnectionRegistry(), dialogs, new ConnectionSelection());
+        documents = EmptyDocuments();
+        return new MainWindowViewModel(
+            new ThemeService(new FakeSettingsStore()), connections, EmptyExplorer(), new ConsoleViewModel(),
+            new InspectorViewModel(), documents, profileStore: null,
+            workspaceStore: store, session: session, filePicker: picker, dialogs: dialogs);
+    }
+
+    [Fact]
+    public void Recent_workspaces_are_exposed_from_the_store()
+    {
+        var vm = CreateWithWorkspace(out var store, out _, out _, out _, out _);
+        store.SeedRecent("/a/one.gcnws.json", "/b/two.gcnws.json");
+
+        // RefreshRecents runs in the ctor; re-create to pick up the seeded list.
+        vm = new MainWindowViewModel(
+            new ThemeService(new FakeSettingsStore()),
+            new ConnectionsPaneViewModel(store, new FakeConnectionRegistry(), new FakeDialogService(), new ConnectionSelection()),
+            EmptyExplorer(), new ConsoleViewModel(), new InspectorViewModel(), EmptyDocuments(),
+            workspaceStore: store, session: new WorkspaceSessionViewModel(store, new FakeDialogService()),
+            filePicker: new FakeFilePickerService(), dialogs: new FakeDialogService());
+
+        vm.RecentWorkspaces.Count.ShouldBe(2);
+        vm.HasRecentWorkspaces.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task New_workspace_switches_and_closes_open_tabs()
+    {
+        var vm = CreateWithWorkspace(out var store, out _, out _, out _, out var documents);
+        documents.OpenSettings();
+        documents.Documents.ShouldNotBeEmpty();
+
+        await vm.NewWorkspaceCommand.ExecuteAsync(null);
+
+        store.CurrentPath.ShouldBeNull();          // untitled
+        documents.Documents.ShouldBeEmpty();        // tabs closed on switch
+    }
+
+    [Fact]
+    public async Task Open_workspace_loads_the_picked_file_and_reloads_connections()
+    {
+        var vm = CreateWithWorkspace(out var store, out var picker, out _, out var connections, out _);
+        connections.Connections.Count.ShouldBe(1); // the seed connection
+        picker.OpenResult = "/ws/other.gcnws.json";
+        store.OpenResult = new WorkspaceModel
+        {
+            Id = "w2", Name = "Other",
+            Connections = [new SavedConnection { Name = "x", Address = "h:9" }, new SavedConnection { Name = "y", Address = "h:8" }]
+        };
+
+        await vm.OpenWorkspaceCommand.ExecuteAsync(null);
+
+        store.CurrentPath.ShouldBe("/ws/other.gcnws.json");
+        connections.Connections.Count.ShouldBe(2); // reloaded from the opened workspace
+    }
+
+    [Fact]
+    public async Task Open_workspace_reports_a_schema_error_and_does_not_switch()
+    {
+        var vm = CreateWithWorkspace(out var store, out var picker, out var dialogs, out var connections, out _);
+        picker.OpenResult = "/ws/newer.gcnws.json";
+        store.OpenError = WorkspaceSchemaException.NewerVersion(2, 1);
+
+        await vm.OpenWorkspaceCommand.ExecuteAsync(null);
+
+        dialogs.MessageCount.ShouldBe(1);
+        dialogs.LastMessageTitle.ShouldBe("Could not open workspace");
+        connections.Connections.Count.ShouldBe(1); // unchanged
+    }
+
+    [Fact]
+    public async Task Save_when_untitled_routes_to_save_as()
+    {
+        var vm = CreateWithWorkspace(out var store, out var picker, out _, out _, out _);
+        store.NewWorkspace(); // CurrentPath becomes null
+        picker.SaveResult = "/ws/named.gcnws.json";
+
+        await vm.SaveWorkspaceCommand.ExecuteAsync(null);
+
+        store.LastSavedAsPath.ShouldBe("/ws/named.gcnws.json");
+    }
+
+    [Fact]
+    public async Task Save_when_titled_flushes_through_the_store()
+    {
+        var vm = CreateWithWorkspace(out var store, out _, out _, out _, out _);
+        await store.SaveAsAsync(store.Current, "/ws/demo.gcnws.json", TestContext.Current.CancellationToken); // give it a path
+
+        await vm.SaveWorkspaceCommand.ExecuteAsync(null);
+
+        store.SaveNowCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Reload_refreshes_the_connection_list()
+    {
+        var vm = CreateWithWorkspace(out var store, out _, out _, out var connections, out _);
+        await store.SaveAsAsync(store.Current, "/ws/demo.gcnws.json", TestContext.Current.CancellationToken);
+        store.ReloadResult = new WorkspaceModel { Id = "w1", Name = "Demo", Connections = [] }; // on-disk has none
+
+        await vm.ReloadWorkspaceCommand.ExecuteAsync(null);
+
+        store.ReloadCount.ShouldBe(1);
+        connections.Connections.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task New_with_unsaved_changes_is_cancellable()
+    {
+        var vm = CreateWithWorkspace(out var store, out _, out var dialogs, out _, out _);
+        store.SetDirty(true);
+        dialogs.ConfirmResult = false; // user keeps the current workspace
+
+        await vm.NewWorkspaceCommand.ExecuteAsync(null);
+
+        dialogs.ConfirmCount.ShouldBe(1);
+        store.Current.Name.ShouldBe("Demo"); // not replaced
+    }
+
+    [Fact]
+    public void Title_reflects_the_workspace_name_and_dirty_state()
+    {
+        var vm = CreateWithWorkspace(out var store, out _, out _, out _, out _);
+
+        vm.Title.ShouldContain("Demo");
+        vm.Title.ShouldNotContain("●");
+
+        store.SetDirty(true);
+
+        vm.Title.ShouldContain("●");
+    }
 }

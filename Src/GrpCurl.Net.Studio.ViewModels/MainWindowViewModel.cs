@@ -1,4 +1,5 @@
 using System.Collections.Specialized;
+using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.Studio.ViewModels.Documents;
@@ -20,6 +21,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 {
     private readonly IThemeService _theme;
     private readonly ITlsProfileStore? _profileStore;
+    private readonly IWorkspaceStore? _workspaceStore;
+    private readonly IFilePickerService? _filePicker;
+    private readonly IDialogService? _dialogs;
 
     private SavedConnection? _insecureConnection;
 
@@ -60,15 +64,23 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         ConsoleViewModel console,
         InspectorViewModel inspector,
         DocumentsViewModel documents,
-        ITlsProfileStore? profileStore = null)
+        ITlsProfileStore? profileStore = null,
+        IWorkspaceStore? workspaceStore = null,
+        WorkspaceSessionViewModel? session = null,
+        IFilePickerService? filePicker = null,
+        IDialogService? dialogs = null)
     {
         _theme = theme;
         _profileStore = profileStore;
+        _workspaceStore = workspaceStore;
+        _filePicker = filePicker;
+        _dialogs = dialogs;
         Connections = connections;
         Explorer = explorer;
         Console = console;
         Inspector = inspector;
         Documents = documents;
+        Session = session;
 
         _selectedTheme = theme.Current;
         theme.PropertyChanged += (_, e) =>
@@ -92,6 +104,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         // SEC-014: the insecure banner appears/disappears as tabs open and close.
         documents.Documents.CollectionChanged += OnDocumentsChanged;
         RefreshInsecureBanner();
+
+        // E3.1: the window title tracks the workspace name + dirty state.
+        if (session is not null)
+        {
+            session.PropertyChanged += (_, _) => OnPropertyChanged(nameof(Title));
+        }
+
+        RefreshRecents();
     }
 
     /// <summary>
@@ -153,7 +173,21 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private Task ReviewInsecureConnection()
         => _insecureConnection is { } connection ? Connections.ReviewConnectionAsync(connection) : Task.CompletedTask;
 
-    public string Title => "GrpCurl.Net Studio";
+    /// <summary>Window title: the active workspace name with a dirty marker, plus the app name.</summary>
+    public string Title => Session is { } session
+        ? $"{session.WorkspaceName}{(session.IsDirty ? " ●" : string.Empty)} — GrpCurl.Net Studio"
+        : "GrpCurl.Net Studio";
+
+    /// <summary>The active workspace session (status + Save), or null in bare unit constructions.</summary>
+    public WorkspaceSessionViewModel? Session { get; }
+
+    /// <summary>Recently opened/saved workspaces for the File → Recent submenu (null danglers greyed).</summary>
+    public System.Collections.ObjectModel.ObservableCollection<RecentWorkspace> RecentWorkspaces { get; } = [];
+
+    public bool HasRecentWorkspaces => RecentWorkspaces.Count > 0;
+
+    /// <summary>Whether the workspace file operations are wired (the store + picker are present).</summary>
+    public bool CanManageWorkspaces => _workspaceStore is not null && _filePicker is not null;
 
     public ConnectionsPaneViewModel Connections { get; }
 
@@ -203,4 +237,180 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <summary>Opens (or focuses) the Settings tab.</summary>
     [RelayCommand]
     private void OpenSettings() => Documents.OpenSettings();
+
+    // ── E3.1: workspace file operations (File menu) ──────────────────────────
+
+    /// <summary>File → New: start a fresh empty workspace (untitled until Save As), after a dirty guard.</summary>
+    [RelayCommand(CanExecute = nameof(CanManageWorkspaces))]
+    private async Task NewWorkspace()
+    {
+        if (_workspaceStore is null || !await ConfirmDiscardIfDirtyAsync())
+        {
+            return;
+        }
+
+        _workspaceStore.NewWorkspace();
+        OnWorkspaceSwitched();
+    }
+
+    /// <summary>File → Open…: pick a <c>.gcnws.json</c> and load it strictly (errors are reported).</summary>
+    [RelayCommand(CanExecute = nameof(CanManageWorkspaces))]
+    private async Task OpenWorkspace()
+    {
+        if (_workspaceStore is null || _filePicker is null || !await ConfirmDiscardIfDirtyAsync())
+        {
+            return;
+        }
+
+        var path = await _filePicker.OpenFileAsync("Open workspace", ["gcnws.json", "json"]);
+
+        if (path is not null)
+        {
+            await OpenPathAsync(path);
+        }
+    }
+
+    /// <summary>File → Open Recent: load a remembered workspace (a dangling entry offers to be forgotten).</summary>
+    [RelayCommand(CanExecute = nameof(CanManageWorkspaces))]
+    private async Task OpenRecent(string? path)
+    {
+        if (_workspaceStore is null || string.IsNullOrWhiteSpace(path) || !await ConfirmDiscardIfDirtyAsync())
+        {
+            return;
+        }
+
+        if (!File.Exists(path))
+        {
+            if (_dialogs is not null
+                && await _dialogs.ConfirmAsync("Workspace not found", $"'{path}' no longer exists. Remove it from the recent list?"))
+            {
+                await _workspaceStore.RemoveRecentAsync(path);
+                RefreshRecents();
+            }
+
+            return;
+        }
+
+        await OpenPathAsync(path);
+    }
+
+    /// <summary>File → Forget recent: drop a recent entry without opening it.</summary>
+    [RelayCommand(CanExecute = nameof(CanManageWorkspaces))]
+    private async Task ForgetRecent(string? path)
+    {
+        if (_workspaceStore is not null && !string.IsNullOrWhiteSpace(path))
+        {
+            await _workspaceStore.RemoveRecentAsync(path);
+            RefreshRecents();
+        }
+    }
+
+    /// <summary>File → Save: flush the active workspace, or Save As when it is still untitled.</summary>
+    [RelayCommand(CanExecute = nameof(CanManageWorkspaces))]
+    private async Task SaveWorkspace()
+    {
+        if (_workspaceStore is null)
+        {
+            return;
+        }
+
+        if (_workspaceStore.CurrentPath is null)
+        {
+            await SaveWorkspaceAs();
+            return;
+        }
+
+        await _workspaceStore.SaveNowAsync();
+        Session?.Refresh();
+        OnPropertyChanged(nameof(Title));
+    }
+
+    /// <summary>File → Save As…: pick a path, write the workspace there, and make it the active file.</summary>
+    [RelayCommand(CanExecute = nameof(CanManageWorkspaces))]
+    private async Task SaveWorkspaceAs()
+    {
+        if (_workspaceStore is null || _filePicker is null)
+        {
+            return;
+        }
+
+        var suggested = $"{Sanitize(_workspaceStore.Current.Name)}.gcnws.json";
+        var path = await _filePicker.SaveFileAsync("Save workspace as", suggested, ["gcnws.json"]);
+
+        if (path is not null)
+        {
+            await _workspaceStore.SaveAsAsync(_workspaceStore.Current, path);
+            Session?.Refresh();
+            RefreshRecents();
+            OnPropertyChanged(nameof(Title));
+        }
+    }
+
+    /// <summary>File → Reload from disk: re-read the active file (confirming first when dirty).</summary>
+    [RelayCommand(CanExecute = nameof(CanManageWorkspaces))]
+    private async Task ReloadWorkspace()
+    {
+        if (Session is not null && await Session.ReloadAsync())
+        {
+            OnWorkspaceSwitched();
+        }
+    }
+
+    private async Task OpenPathAsync(string path)
+    {
+        try
+        {
+            await _workspaceStore!.OpenAsync(path);
+            OnWorkspaceSwitched();
+        }
+        catch (WorkspaceSchemaException ex)
+        {
+            if (_dialogs is not null)
+            {
+                await _dialogs.ShowMessageAsync("Could not open workspace", ex.Message);
+            }
+        }
+    }
+
+    /// <summary>Refreshes the panes/tabs after the active workspace changes (open / new / reload).</summary>
+    private void OnWorkspaceSwitched()
+    {
+        Documents.CloseAll();
+        Connections.ReloadFromWorkspace();
+        HasAnyConnection = Connections.HasConnections;
+        Session?.Refresh();
+        RefreshInsecureBanner();
+        RefreshRecents();
+        OnPropertyChanged(nameof(Title));
+    }
+
+    private void RefreshRecents()
+    {
+        RecentWorkspaces.Clear();
+
+        foreach (var recent in _workspaceStore?.RecentWorkspaces ?? [])
+        {
+            RecentWorkspaces.Add(recent);
+        }
+
+        OnPropertyChanged(nameof(HasRecentWorkspaces));
+    }
+
+    private async Task<bool> ConfirmDiscardIfDirtyAsync()
+    {
+        if (Session is not { IsDirty: true } || _dialogs is null)
+        {
+            return true;
+        }
+
+        return await _dialogs.ConfirmAsync(
+            "Discard unsaved changes?",
+            "The current workspace has unsaved changes that will be lost. Continue?");
+    }
+
+    private static string Sanitize(string name)
+    {
+        var trimmed = string.IsNullOrWhiteSpace(name) ? "workspace" : name.Trim();
+        return string.Join("_", trimmed.Split(Path.GetInvalidFileNameChars()));
+    }
 }

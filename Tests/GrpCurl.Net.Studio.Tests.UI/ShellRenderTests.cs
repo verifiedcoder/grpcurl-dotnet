@@ -47,6 +47,33 @@ public sealed class ShellRenderTests(HeadlessSessionFixture fixture) : HeadlessT
     });
 
     [Fact]
+    public Task Status_bar_shows_the_workspace_file_and_dirty_dot() => RunOnUiThread(() =>
+    {
+        var store = new FakeWorkspaceStore(new ViewModels.Models.Connections.WorkspaceModel { Id = "w", Name = "Demo" });
+        store.SaveAsAsync(store.Current, "/ws/demo.gcnws.json").GetAwaiter().GetResult();
+        var session = new WorkspaceSessionViewModel(store, new FakeDialogService());
+        var vm = new MainWindowViewModel(
+            new FakeThemeService(),
+            new ConnectionsPaneViewModel(store, new FakeConnectionRegistry(), new FakeDialogService(), new ConnectionSelection()),
+            new ServiceExplorerViewModel(new FakeDescriptorService(), new ConnectionSelection(), new FakeClipboardService(), new ImmediateUiDispatcher(), new FakeDocumentHost()),
+            new ConsoleViewModel(), new InspectorViewModel(),
+            new DocumentsViewModel(new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator(), new InMemorySettingsStore(), new FakeThemeService()),
+            workspaceStore: store, session: session, filePicker: new FakeFilePickerService(), dialogs: new FakeDialogService());
+
+        var window = new MainWindow { DataContext = vm };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        var status = window.GetVisualDescendants().OfType<TextBlock>()
+            .Single(t => Equals(t.GetValue(Avalonia.Automation.AutomationProperties.NameProperty), "Workspace status"));
+        status.Text.ShouldBe("demo.gcnws.json");
+
+        store.SetDirty(true);
+        Dispatcher.UIThread.RunJobs();
+        status.Text.ShouldBe("demo.gcnws.json ●");
+    });
+
+    [Fact]
     public Task Opening_settings_without_connections_shows_the_tab_not_the_welcome() => RunOnUiThread(() =>
     {
         var vm = CreateViewModel();

@@ -255,4 +255,44 @@ public sealed class ServiceExplorerViewModelTests
         host.LastInvocation!.Value.Symbol.ShouldBe("pkg.Greeter/SayHello");
         host.LastInvocation.Value.Connection.ShouldBe(connection);
     }
+
+    // ── FR-020: selecting a method publishes its signature to the inspector ───
+
+    [Fact]
+    public void Selecting_a_method_node_shows_its_signature_in_the_inspector()
+    {
+        var descriptors = new FakeDescriptorService { Result = DescriptorLoadResult.Success(SampleCatalog()) };
+        var selection = new ConnectionSelection();
+        var inspector = new FakeInspector();
+        var vm = new ServiceExplorerViewModel(
+            descriptors, selection, new FakeClipboardService(), new ImmediateUiDispatcher(), new FakeDocumentHost(),
+            inspector: inspector);
+        selection.Set(Conn());
+
+        var method = vm.Services.First(s => s.FullName == "pkg.Greeter").Methods.First(m => m.Name == "SayHello");
+        vm.SelectedNode = method;
+
+        vm.SelectedMethod.ShouldBe(method);
+        var shown = inspector.Last.ShouldBeOfType<MethodSignatureContent>();
+        shown.FullName.ShouldBe("pkg.Greeter/SayHello");
+        shown.InputType.ShouldBe("pkg.Req");
+        shown.OutputType.ShouldBe("pkg.Resp");
+    }
+
+    [Fact]
+    public void Selecting_a_non_method_node_leaves_the_inspector_unchanged()
+    {
+        var descriptors = new FakeDescriptorService { Result = DescriptorLoadResult.Success(SampleCatalog()) };
+        var selection = new ConnectionSelection();
+        var inspector = new FakeInspector();
+        var vm = new ServiceExplorerViewModel(
+            descriptors, selection, new FakeClipboardService(), new ImmediateUiDispatcher(), new FakeDocumentHost(),
+            inspector: inspector);
+        selection.Set(Conn());
+
+        vm.SelectedNode = vm.Services.First(); // a service branch, not a method leaf
+
+        inspector.Shown.ShouldBeEmpty();
+        vm.SelectedMethod.ShouldBeNull();
+    }
 }

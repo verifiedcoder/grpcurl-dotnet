@@ -6,6 +6,7 @@ using GrpCurl.Net.Studio.ViewModels;
 using GrpCurl.Net.Studio.ViewModels.Connections;
 using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Explorer;
+using GrpCurl.Net.Studio.ViewModels.Panes;
 
 namespace GrpCurl.Net.Studio.Tests.UI;
 
@@ -33,7 +34,8 @@ public sealed class ViewLocatorTests(HeadlessSessionFixture fixture) : HeadlessT
         typeof(StreamComposerViewModel), // sub-view-models rendered inline inside the invocation tab
         typeof(StreamLogViewModel),
         typeof(StreamRowViewModel),
-        typeof(MetadataRowViewModel)
+        typeof(MetadataRowViewModel),
+        typeof(ConsoleCallRowViewModel) // console call rows render via an inline DataTemplate (FR-114)
     ];
 
     public static TheoryData<Type> ContentViewModels()

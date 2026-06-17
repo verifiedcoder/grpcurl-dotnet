@@ -58,8 +58,9 @@ internal static class ServiceRegistration
         // View models — shell root + pane placeholders.
         services.AddSingleton<ConnectionsPaneViewModel>();
         services.AddSingleton<ServiceExplorerViewModel>();
-        services.AddSingleton<ConsoleViewModel>();
         services.AddSingleton<InspectorViewModel>();
+        services.AddSingleton<IInspector>(sp => sp.GetRequiredService<InspectorViewModel>());
+        services.AddSingleton<ConsoleViewModel>();
         services.AddSingleton<MainWindowViewModel>();
 
         return builder;

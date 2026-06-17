@@ -446,6 +446,14 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="docs:StreamRowViewModel">
                         <StackPanel>
+                            <!-- FR-088: per-row context actions (message rows expose copy/open; any row copies NDJSON). -->
+                            <StackPanel.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuItem Header="Copy message JSON" Command="{Binding CopyMessageJsonCommand}" />
+                                    <MenuItem Header="Copy row as NDJSON" Command="{Binding CopyAsNdjsonCommand}" />
+                                    <MenuItem Header="Open in viewer" Command="{Binding OpenInViewerCommand}" />
+                                </MenuFlyout>
+                            </StackPanel.ContextFlyout>
                             <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="8">
                                 <TextBlock Grid.Column="0" Text="{Binding Glyph}" Width="14"
                                            Foreground="{DynamicResource Status.Neutral}" />

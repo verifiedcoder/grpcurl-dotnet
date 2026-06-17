@@ -8,8 +8,33 @@
             <Border Grid.Row="0" Background="{DynamicResource Surface.PaneHeader}" Padding="8,4">
                 <TextBlock Text="{Binding Header}" FontWeight="SemiBold" />
             </Border>
-            <TextBlock Grid.Row="1" Margin="8" Opacity="0.6"
-                       Text="Activity and timing will appear here." />
+
+            <Panel Grid.Row="1">
+                <TextBlock Margin="8" Opacity="0.6" IsVisible="{Binding !HasActivity}"
+                           Text="Activity and timing will appear here." />
+
+                <!-- FR-114: completed calls, selectable to reveal the phase breakdown in the inspector. -->
+                <ListBox ItemsSource="{Binding Calls}" SelectedItem="{Binding SelectedCall}"
+                         IsVisible="{Binding HasActivity}" AutomationProperties.Name="Call activity"
+                         Background="Transparent">
+                    <ListBox.Styles>
+                        <Style Selector="TextBlock.error">
+                            <Setter Property="Foreground" Value="{DynamicResource Status.Server}" />
+                        </Style>
+                    </ListBox.Styles>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="vm:ConsoleCallRowViewModel">
+                            <Grid ColumnDefinitions="*,Auto,Auto"
+                                  TextElement.FontFamily="Cascadia Code,Consolas,monospace" TextElement.FontSize="12">
+                                <TextBlock Grid.Column="0" Text="{Binding Method}" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Grid.Column="1" Text="{Binding StatusName}" Margin="8,0"
+                                           Classes.error="{Binding IsError}" />
+                                <TextBlock Grid.Column="2" Text="{Binding TotalText}" Opacity="0.7" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Panel>
         </Grid>
     </Border>
 </UserControl>

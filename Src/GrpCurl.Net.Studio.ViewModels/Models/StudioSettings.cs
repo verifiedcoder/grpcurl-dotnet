@@ -23,6 +23,8 @@ public sealed class StudioSettings
 
     public ProtocSettings Protoc { get; set; } = new();
 
+    public HistorySettings History { get; set; } = new();
+
     /// <summary>Unknown/forward-compatible keys, preserved on save (SPEC-040 §6).</summary>
     [JsonExtensionData]
     public Dictionary<string, JsonElement>? Overflow { get; set; }
@@ -100,4 +102,21 @@ public sealed class NetworkSettings
 public sealed class ProtocSettings
 {
     public string Path { get; set; } = string.Empty;
+}
+
+/// <summary>FR-129/158 History: capture on/off, response-body opt-in + cap, retention caps (SPEC-040 §6).</summary>
+public sealed class HistorySettings
+{
+    /// <summary>When false, no invocations are recorded (FR-129); existing entries are retained.</summary>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>Opt-in to storing response bodies (off by default; SPEC-040 §5.1).</summary>
+    public bool CaptureResponses { get; set; }
+
+    /// <summary>Per-entry request/response body cap; beyond it the body is truncated and flagged.</summary>
+    public int ResponseCapBytes { get; set; } = 256 * 1024;
+
+    public int MaxEntries { get; set; } = 1000;
+
+    public long MaxBytes { get; set; } = 50L * 1024 * 1024;
 }

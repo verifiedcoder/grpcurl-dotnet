@@ -34,6 +34,8 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     private readonly IDocumentHost? _documentHost;
     private readonly ConsoleViewModel? _console;
     private readonly IInspector? _inspector;
+    private readonly IHistoryRecorder? _recorder;
+    private InvocationStatusModel? _streamTerminalStatus;
 
     private CancellationTokenSource? _elapsedCts;
     private DateTimeOffset _elapsedStart;
@@ -139,7 +141,8 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         IRevealGate? revealGate = null,
         IDocumentHost? documentHost = null,
         ConsoleViewModel? console = null,
-        IInspector? inspector = null)
+        IInspector? inspector = null,
+        IHistoryRecorder? recorder = null)
     {
         Connection = connection;
         MethodSymbol = methodSymbol;
@@ -154,6 +157,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         _filePicker = filePicker;
         _console = console;
         _inspector = inspector;
+        _recorder = recorder;
         _revealGate = revealGate ?? AlwaysRevealGate.Instance;
         _writerFactory = writerFactory ?? (path => new StreamWriter(path));
 
@@ -420,10 +424,13 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
             RawTranscript = null;
         });
 
+        var request = BuildRequest();
+
         try
         {
-            var result = await _runner.InvokeUnaryAsync(BuildRequest(), cancellationToken);
+            var result = await _runner.InvokeUnaryAsync(request, cancellationToken);
             await _dispatcher.InvokeAsync(() => Apply(result));
+            await RecordHistoryAsync(r => r.RecordUnaryAsync(request, result, cancellationToken));
         }
         catch (OperationCanceledException)
         {
@@ -434,6 +441,24 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
                 StatusIsError = true;
                 Severity = StatusSeverity.Cancelled;
             });
+        }
+    }
+
+    /// <summary>FR-120: records the call to history, best-effort — a history failure never breaks the invoke.</summary>
+    private async Task RecordHistoryAsync(Func<IHistoryRecorder, Task> record)
+    {
+        if (_recorder is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await record(_recorder);
+        }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException)
+        {
+            // History is a convenience; never surface a persistence hiccup to the invoke flow.
         }
     }
 
@@ -449,6 +474,8 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
             Severity = StatusSeverity.Ok;
             Log.Reset();
         });
+
+        _streamTerminalStatus = null;
 
         // Client/duplex stream request bodies from the composer; server-streaming sends the editor body once.
         var requestJson = HasComposer && Composer is not null ? Composer.Begin() : Once(RequestJson);
@@ -487,6 +514,14 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         {
             Composer?.End();
         }
+
+        // FR-120: record the completed/cancelled stream — counts + terminal status, never the messages.
+        var status = _streamTerminalStatus
+                     ?? (State == RunState.Cancelled
+                         ? new InvocationStatusModel(1, "Cancelled", string.Empty)
+                         : new InvocationStatusModel(0, "OK", string.Empty));
+        await RecordHistoryAsync(r => r.RecordStreamAsync(
+            BuildStreamRequest(), status, Log.ElapsedMs, (int)Log.TotalSent, (int)Log.TotalReceived, cancellationToken));
     }
 
     private void ApplyStreamBatch(IReadOnlyList<StreamEventModel> batch)
@@ -509,6 +544,11 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
             Severity = ev.Error?.Severity ?? (ev.Status is { } s ? StatusSeverityMap.FromCode(s.Code) : StatusSeverity.Ok);
             StatusIsError = ev.Status is { Code: not 0 };
             StatusText = ev.Status?.CodeName;
+
+            if (ev.Status is { } terminal)
+            {
+                _streamTerminalStatus = terminal; // FR-120: capture the stream's final status for history
+            }
         }
     }
 

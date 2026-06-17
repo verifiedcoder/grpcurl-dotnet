@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using Google.Protobuf.WellKnownTypes;
+using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Services;
@@ -37,6 +38,67 @@ public sealed class StreamRowAndPumpTests
     {
         var row = new StreamRowViewModel(new StreamEventModel(kind, 0, DateTimeOffset.Now, 0, "x"), 0, _ => "f");
         row.IsMessage.ShouldBe(isMessage);
+    }
+
+    // ── FR-088: per-row context actions ──────────────────────────────────────
+
+    private static StreamRowViewModel MessageRow(out FakeClipboardService clipboard, out FakeInspector inspector, long index = 3)
+    {
+        clipboard = new FakeClipboardService();
+        inspector = new FakeInspector();
+        var ev = new StreamEventModel(StreamEventKind.MessageReceived, index, DateTimeOffset.Now, 0, "preview", RawMessage: new Empty());
+        var services = new StreamRowServices(clipboard, _ => "{\"compact\":true}", inspector);
+        return new StreamRowViewModel(ev, 0, _ => "{ \"full\": true }", services);
+    }
+
+    [Fact]
+    public async Task Copy_message_json_copies_the_pretty_body()
+    {
+        var row = MessageRow(out var clipboard, out _);
+
+        row.HasMessage.ShouldBeTrue();
+        row.CopyMessageJsonCommand.CanExecute(null).ShouldBeTrue();
+        await row.CopyMessageJsonCommand.ExecuteAsync(null);
+
+        clipboard.Text.ShouldBe("{ \"full\": true }");
+    }
+
+    [Fact]
+    public async Task Copy_as_ndjson_copies_one_envelope_line()
+    {
+        var row = MessageRow(out var clipboard, out _);
+
+        await row.CopyAsNdjsonCommand.ExecuteAsync(null);
+
+        clipboard.Text.ShouldNotBeNull();
+        clipboard.Text!.ShouldContain("\"kind\":\"message\"");
+        clipboard.Text.ShouldContain("\"index\":3");
+        clipboard.Text.ShouldContain("\"compact\":true");
+    }
+
+    [Fact]
+    public void Open_in_viewer_routes_the_message_into_the_inspector()
+    {
+        var row = MessageRow(out _, out var inspector, index: 7);
+
+        row.OpenInViewerCommand.CanExecute(null).ShouldBeTrue();
+        row.OpenInViewerCommand.Execute(null);
+
+        var shown = inspector.Last.ShouldBeOfType<GrpCurl.Net.Studio.ViewModels.Panes.MessageContent>();
+        shown.Title.ShouldBe("Message #7");
+        shown.Json.ShouldBe("{ \"full\": true }");
+    }
+
+    [Fact]
+    public void Meta_rows_cannot_copy_a_body_or_open_a_viewer()
+    {
+        var ev = new StreamEventModel(StreamEventKind.Status, -1, DateTimeOffset.Now, 0, "OK");
+        var services = new StreamRowServices(new FakeClipboardService(), _ => "{}", new FakeInspector());
+        var row = new StreamRowViewModel(ev, 0, _ => "f", services);
+
+        row.HasMessage.ShouldBeFalse();
+        row.CopyMessageJsonCommand.CanExecute(null).ShouldBeFalse();
+        row.OpenInViewerCommand.CanExecute(null).ShouldBeFalse();
     }
 
     private static async IAsyncEnumerable<int> Range(int count, [EnumeratorCancellation] CancellationToken ct = default)

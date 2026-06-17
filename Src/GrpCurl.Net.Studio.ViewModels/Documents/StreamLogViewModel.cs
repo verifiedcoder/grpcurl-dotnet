@@ -14,6 +14,7 @@ public sealed partial class StreamLogViewModel : ViewModelBase
 {
     private readonly int _capacity;
     private readonly Func<IMessage, string> _formatter;
+    private readonly StreamRowServices? _rowServices;
     private long _lastElapsedMs;
 
     [ObservableProperty]
@@ -26,10 +27,11 @@ public sealed partial class StreamLogViewModel : ViewModelBase
     [ObservableProperty]
     private long _totalSent;
 
-    public StreamLogViewModel(int ringCapacity, Func<IMessage, string> formatter)
+    public StreamLogViewModel(int ringCapacity, Func<IMessage, string> formatter, StreamRowServices? rowServices = null)
     {
         _capacity = Math.Max(1, ringCapacity);
         _formatter = formatter;
+        _rowServices = rowServices;
     }
 
     public ObservableCollection<StreamRowViewModel> Rows { get; } = [];
@@ -66,7 +68,7 @@ public sealed partial class StreamLogViewModel : ViewModelBase
             Rows.RemoveAt(0); // drop oldest from the view (ring buffer)
         }
 
-        Rows.Add(new StreamRowViewModel(ev, delta, _formatter));
+        Rows.Add(new StreamRowViewModel(ev, delta, _formatter, _rowServices));
     }
 
     public void Reset()

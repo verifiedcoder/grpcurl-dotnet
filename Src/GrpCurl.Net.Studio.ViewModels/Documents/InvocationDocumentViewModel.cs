@@ -7,6 +7,7 @@ using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Descriptors;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
+using GrpCurl.Net.Studio.ViewModels.Panes;
 using GrpCurl.Net.Studio.ViewModels.Services;
 using GrpCurl.Net.Utilities;
 
@@ -31,6 +32,8 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     private readonly IFilePickerService? _filePicker;
     private readonly IRevealGate _revealGate;
     private readonly IDocumentHost? _documentHost;
+    private readonly ConsoleViewModel? _console;
+    private readonly IInspector? _inspector;
 
     private CancellationTokenSource? _elapsedCts;
     private DateTimeOffset _elapsedStart;
@@ -134,7 +137,9 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         int ringCapacity = 10_000,
         Func<string, TextWriter>? writerFactory = null,
         IRevealGate? revealGate = null,
-        IDocumentHost? documentHost = null)
+        IDocumentHost? documentHost = null,
+        ConsoleViewModel? console = null,
+        IInspector? inspector = null)
     {
         Connection = connection;
         MethodSymbol = methodSymbol;
@@ -147,11 +152,17 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         _validator = validator;
         _documentHost = documentHost;
         _filePicker = filePicker;
+        _console = console;
+        _inspector = inspector;
         _revealGate = revealGate ?? AlwaysRevealGate.Instance;
         _writerFactory = writerFactory ?? (path => new StreamWriter(path));
 
         Title = ShortName(methodSymbol);
-        Log = new StreamLogViewModel(ringCapacity, _runner.FormatMessage);
+
+        // FR-088: rows carry the clipboard + inspector so their context actions (copy JSON / NDJSON /
+        // open in viewer) work without reaching back into this tab.
+        var rowServices = new StreamRowServices(_clipboard, _runner.FormatMessageCompact, _inspector);
+        Log = new StreamLogViewModel(ringCapacity, _runner.FormatMessage, rowServices);
 
         // FR-067: a header row's -bin validity gates Invoke, so re-evaluate when rows or values change.
         Headers.CollectionChanged += OnHeadersChanged;
@@ -608,6 +619,32 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         StatusIsError = !result.Ok;
         StatusText = result.Status.CodeName; // FR-091: pill text is always the status name
         State = result.Ok ? RunState.Completed : RunState.Failed;
+
+        RecordCallActivity(result.Status, result.Timing); // FR-114: log the completed call to the console
+    }
+
+    /// <summary>FR-114: append a completed call (status + phase breakdown) to the console activity log.</summary>
+    private void RecordCallActivity(InvocationStatusModel status, TimingModel timing)
+    {
+        if (_console is null)
+        {
+            return;
+        }
+
+        var total = timing.Phases.FirstOrDefault(p => p.Phase == "total")?.Duration
+                    ?? timing.Phases.Aggregate(TimeSpan.Zero, (acc, p) => acc + p.Duration);
+        var totalMs = total.TotalMilliseconds;
+
+        var phases = timing.Phases
+            .Where(p => p.Phase != "total")
+            .Select(p => new CallTimingPhase(
+                p.Phase,
+                $"{p.Duration.TotalMilliseconds:0} ms",
+                totalMs > 0 ? p.Duration.TotalMilliseconds / totalMs : 0.0))
+            .ToList();
+
+        _console.AppendCall(new ConsoleCallActivity(
+            MethodSymbol, status.Code, status.CodeName, status.Code != 0, $"{totalMs:0} ms", phases));
     }
 
     /// <summary>Builds the Timing-tab rows with each phase's fraction of the total for the bar breakdown (FR-110).</summary>

@@ -7,7 +7,62 @@
         <Border Grid.Row="0" Background="{DynamicResource Surface.PaneHeader}" Padding="8,6">
             <TextBlock Text="{Binding Header}" FontWeight="SemiBold" />
         </Border>
-        <TextBlock Grid.Row="1" Margin="8" Opacity="0.6"
-                   Text="Select an item to inspect." />
+
+        <ContentControl Grid.Row="1" Margin="8" Content="{Binding Content}">
+            <ContentControl.DataTemplates>
+
+                <!-- Empty resting state -->
+                <DataTemplate DataType="vm:EmptyInspectorContent">
+                    <TextBlock Opacity="0.6" Text="Select an item to inspect." />
+                </DataTemplate>
+
+                <!-- FR-020: method signature -->
+                <DataTemplate DataType="vm:MethodSignatureContent">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Shape}" Opacity="0.7" FontSize="12" />
+                        <StackPanel Spacing="2" Margin="0,4,0,0">
+                            <TextBlock Text="Request" Opacity="0.6" FontSize="11" />
+                            <TextBlock Text="{Binding InputType}" TextWrapping="Wrap"
+                                       FontFamily="Cascadia Code,Consolas,monospace" FontSize="12" />
+                            <TextBlock Text="Response" Opacity="0.6" FontSize="11" Margin="0,4,0,0" />
+                            <TextBlock Text="{Binding OutputType}" TextWrapping="Wrap"
+                                       FontFamily="Cascadia Code,Consolas,monospace" FontSize="12" />
+                        </StackPanel>
+                    </StackPanel>
+                </DataTemplate>
+
+                <!-- FR-088: a streamed message opened in the viewer -->
+                <DataTemplate DataType="vm:MessageContent">
+                    <Grid RowDefinitions="Auto,*">
+                        <TextBlock Grid.Row="0" Text="{Binding Title}" FontWeight="SemiBold" Margin="0,0,0,6" />
+                        <TextBox Grid.Row="1" Text="{Binding Json}" IsReadOnly="True" AcceptsReturn="True"
+                                 TextWrapping="NoWrap" FontFamily="Cascadia Code,Consolas,monospace" FontSize="12"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto" />
+                    </Grid>
+                </DataTemplate>
+
+                <!-- FR-114: a completed call's phase breakdown -->
+                <DataTemplate DataType="vm:CallTimingContent">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding TotalText}" Opacity="0.7" FontSize="12" />
+                        <ItemsControl ItemsSource="{Binding Phases}" Margin="0,4,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:CallTimingPhase">
+                                    <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,1">
+                                        <TextBlock Grid.Column="0" Text="{Binding Phase}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding DurationText}" Opacity="0.8" Margin="8,0" />
+                                        <TextBlock Grid.Column="2" Text="{Binding PercentText}" Opacity="0.6" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </DataTemplate>
+
+            </ContentControl.DataTemplates>
+        </ContentControl>
     </Grid>
 </UserControl>

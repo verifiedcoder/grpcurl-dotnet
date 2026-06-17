@@ -27,6 +27,7 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
     private readonly IFilePickerService? _filePicker;
     private readonly IDialogService? _dialog;
     private readonly ILauncherService? _launcher;
+    private readonly IInspector? _inspector;
 
     private ServiceCatalog? _catalog;
     private CancellationTokenSource? _loadCts;
@@ -50,6 +51,13 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
 
     [ObservableProperty]
     private MethodNodeViewModel? _selectedMethod;
+
+    /// <summary>
+    ///     The tree's current selection (bound to the Services <c>TreeView.SelectedItem</c>). A method
+    ///     leaf publishes its signature to the inspector (FR-020); branch nodes leave it unchanged.
+    /// </summary>
+    [ObservableProperty]
+    private object? _selectedNode;
 
     /// <summary>The active descriptor source kind, e.g. "Server reflection" / "Protoset" / "Proto (protoc)" (FR-040/048).</summary>
     [ObservableProperty]
@@ -78,7 +86,8 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
         ConsoleViewModel? console = null,
         IFilePickerService? filePicker = null,
         IDialogService? dialog = null,
-        ILauncherService? launcher = null)
+        ILauncherService? launcher = null,
+        IInspector? inspector = null)
     {
         _descriptors = descriptors;
         _selection = selection;
@@ -90,6 +99,7 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
         _filePicker = filePicker;
         _dialog = dialog;
         _launcher = launcher;
+        _inspector = inspector;
 
         Services = [];
         TypePackages = [];
@@ -386,6 +396,18 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
 
         var info = await _protoc.DetectAsync();
         await _dispatcher.InvokeAsync(() => ProtocDetail = info.Found ? $"protoc: {info.Message}" : null);
+    }
+
+    /// <summary>FR-020: surface a selected method's signature in the inspector.</summary>
+    partial void OnSelectedNodeChanged(object? value)
+    {
+        if (value is MethodNodeViewModel node)
+        {
+            SelectedMethod = node;
+            var method = node.Method;
+            _inspector?.ShowMethod(new MethodSignatureContent(
+                method.FullName, method.Name, node.ShapeLabel, method.InputType, method.OutputType));
+        }
     }
 
     partial void OnFilterTextChanged(string value) => ApplyFilter();

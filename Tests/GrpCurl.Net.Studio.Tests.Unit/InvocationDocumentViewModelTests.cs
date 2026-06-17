@@ -673,4 +673,25 @@ public sealed class InvocationDocumentViewModelTests
 
         host.SettingsOpened.ShouldBe(0);
     }
+
+    // ── CU-3 FR-114: a completed call is recorded in the console ──────────────
+
+    [Fact]
+    public async Task A_completed_call_appends_a_console_row_with_its_total_and_phases()
+    {
+        var console = new GrpCurl.Net.Studio.ViewModels.Panes.ConsoleViewModel();
+        var runner = new FakeInvocationRunner { Result = OkResult() };
+        var doc = new InvocationDocumentViewModel(
+            Conn(), "pkg.Svc/Go", "{}", runner, new FakeDescriptorService(), new ImmediateUiDispatcher(),
+            new FakeClipboardService(), new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator(),
+            console: console);
+
+        await doc.InvokeCommand.ExecuteAsync(null);
+
+        var row = console.Calls.ShouldHaveSingleItem();
+        row.Method.ShouldBe("pkg.Svc/Go");
+        row.StatusName.ShouldBe("OK");
+        row.IsError.ShouldBeFalse();
+        row.Activity.Phases.ShouldContain(p => p.Phase == "Call");
+    }
 }

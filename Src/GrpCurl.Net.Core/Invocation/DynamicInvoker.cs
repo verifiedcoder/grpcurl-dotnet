@@ -60,7 +60,8 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
         }
         catch (RpcException ex)
         {
-            throw await AttachResponseHeadersAsync(RpcErrorNormalizer.Normalize(ex, deadline), call.ResponseHeadersAsync);
+            throw await AttachResponseHeadersAsync(
+                RpcErrorNormalizer.Normalize(ex, deadline, cancellationToken.IsCancellationRequested), call.ResponseHeadersAsync);
         }
 
         var responseHeaders = await call.ResponseHeadersAsync;
@@ -197,7 +198,8 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
         }
         catch (RpcException ex)
         {
-            throw await AttachResponseHeadersAsync(RpcErrorNormalizer.Normalize(ex, deadline), call.ResponseHeadersAsync);
+            throw await AttachResponseHeadersAsync(
+                RpcErrorNormalizer.Normalize(ex, deadline, cancellationToken.IsCancellationRequested), call.ResponseHeadersAsync);
         }
     }
 
@@ -248,7 +250,7 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
             }
             catch (RpcException ex)
             {
-                throw RpcErrorNormalizer.Normalize(ex, deadline);
+                throw RpcErrorNormalizer.Normalize(ex, deadline, cancellationToken.IsCancellationRequested);
             }
 
             yield return current;

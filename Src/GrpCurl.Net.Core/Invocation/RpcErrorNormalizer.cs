@@ -15,11 +15,32 @@ internal static class RpcErrorNormalizer
 
     private static readonly TimeSpan DeadlineSkewTolerance = TimeSpan.FromMilliseconds(50);
 
-    public static RpcException Normalize(RpcException exception, DateTime? deadline)
+    public static RpcException Normalize(RpcException exception, DateTime? deadline, bool cancellationRequested = false)
     {
         var normalized = NormalizeDeadlineExpiry(exception, deadline);
 
+        normalized = NormalizeClientCancellation(normalized, cancellationRequested);
+
         return NormalizeStackDeviations(normalized);
+    }
+
+    /// <summary>
+    ///     Reports CANCELLED when the caller's cancellation token was signalled and the failure is the
+    ///     aborted-request <see cref="System.IO.IOException" /> that grpc-dotnet surfaces as UNAVAILABLE.
+    ///     The HTTP/2 stream teardown can beat the cancellation-token propagation, so a client-initiated
+    ///     cancel intermittently lands as UNAVAILABLE ("The request was aborted.") instead of CANCELLED.
+    ///     Gated on the caller's own cancellation, so it cannot reinterpret a genuine server UNAVAILABLE.
+    /// </summary>
+    private static RpcException NormalizeClientCancellation(RpcException exception, bool cancellationRequested)
+    {
+        if (cancellationRequested
+            && exception.StatusCode == StatusCode.Unavailable
+            && exception.Status.Detail.Contains("The request was aborted", StringComparison.Ordinal))
+        {
+            return WithStatusCode(exception, StatusCode.Cancelled);
+        }
+
+        return exception;
     }
 
     /// <summary>

@@ -694,7 +694,18 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     /// <summary>Copies the equivalent grpcn invoke command, secrets as ${VAR} placeholders (FR-160/161).</summary>
     [RelayCommand]
     private async Task CopyAsCli()
-        => await _clipboard.SetTextAsync(CliCommandBuilder.BuildCommand(BuildRequest(), CliDialect));
+    {
+        // FR-165: a client/duplex tab reproduces its interactively-composed messages; everything else is unary.
+        var command = HasComposer && Composer is { } composer
+            ? CliCommandBuilder.BuildStreamingCommand(BuildRequest(), StreamingCliMessages(composer), CliDialect)
+            : CliCommandBuilder.BuildCommand(BuildRequest(), CliDialect);
+
+        await _clipboard.SetTextAsync(command);
+    }
+
+    /// <summary>The composed messages to reproduce in a streaming copy-as-CLI: those sent, or the current draft.</summary>
+    private static IReadOnlyList<string> StreamingCliMessages(StreamComposerViewModel composer)
+        => composer.SentMessages.Count > 0 ? composer.SentMessages : [composer.MessageJson];
 
     /// <summary>FR-095: a suggestion that maps to a Studio setting opens the Settings tab.</summary>
     [RelayCommand]

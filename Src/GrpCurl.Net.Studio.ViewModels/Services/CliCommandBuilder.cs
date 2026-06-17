@@ -16,7 +16,9 @@ namespace GrpCurl.Net.Studio.ViewModels.Services;
 public static class CliCommandBuilder
 {
     /// <summary>The argument list for <c>grpcn</c>, starting at the <c>invoke</c> subcommand.</summary>
-    public static IReadOnlyList<string> BuildArgs(InvocationRequestModel request)
+    public static IReadOnlyList<string> BuildArgs(InvocationRequestModel request) => BuildArgs(request, includeBody: true);
+
+    private static IReadOnlyList<string> BuildArgs(InvocationRequestModel request, bool includeBody)
     {
         var connection = request.Connection;
         var args = new List<string> { "invoke" };
@@ -69,8 +71,12 @@ public static class CliCommandBuilder
             args.Add("text");
         }
 
-        args.Add("-d");
-        args.Add(request.RequestJson);
+        // Streaming bodies are appended separately as interactive messages (FR-165), so skip the body here.
+        if (includeBody)
+        {
+            args.Add("-d");
+            args.Add(request.RequestJson);
+        }
 
         args.Add(connection.Address);
         args.Add(request.MethodSymbol);
@@ -86,6 +92,31 @@ public static class CliCommandBuilder
         foreach (var arg in BuildArgs(request))
         {
             sb.Append(' ').Append(ShellQuote(arg, dialect));
+        }
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    ///     FR-165: a streaming tab's equivalent command. The connection/options line ends with the target +
+    ///     method; the interactively-composed messages follow, each as a <c>-d</c>, under a comment marking
+    ///     them as sent live (the unary command round-trips through the parser; this is a faithful reference).
+    /// </summary>
+    public static string BuildStreamingCommand(
+        InvocationRequestModel request, IReadOnlyList<string> messages, ShellDialect dialect = ShellDialect.Bash)
+    {
+        var sb = new StringBuilder("grpcn");
+
+        foreach (var arg in BuildArgs(request, includeBody: false))
+        {
+            sb.Append(' ').Append(ShellQuote(arg, dialect));
+        }
+
+        sb.Append('\n').Append("# messages below were sent interactively");
+
+        foreach (var message in messages)
+        {
+            sb.Append('\n').Append("-d ").Append(ShellQuote(message, dialect));
         }
 
         return sb.ToString();

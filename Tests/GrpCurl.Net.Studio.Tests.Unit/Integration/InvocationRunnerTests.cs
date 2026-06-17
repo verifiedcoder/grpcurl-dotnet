@@ -54,6 +54,10 @@ public sealed class InvocationRunnerTests(StudioPlaintextServerFixture server)
         result.ResponseJson.ShouldNotBeNullOrWhiteSpace();
         result.ResponseJson!.ShouldContain("payload");
         result.Timing.ResponseBytes.ShouldBeGreaterThan(0);
+
+        // FR-110: the runner reports a distinct channel-establishment phase (measured via ConnectAsync).
+        result.Timing.Phases.Select(p => p.Phase).ShouldBe(["channel", "descriptor", "call", "total"]);
+        result.Timing.Phases.Single(p => p.Phase == "channel").Duration.ShouldBeGreaterThanOrEqualTo(TimeSpan.Zero);
     }
 
     [Fact]

@@ -15,17 +15,23 @@ public sealed partial class StreamLogViewModel : ViewModelBase
     private readonly int _capacity;
     private readonly Func<IMessage, string> _formatter;
     private readonly StreamRowServices? _rowServices;
-    private long _lastElapsedMs;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsTruncated), nameof(TruncationNotice))]
     private long _totalRows;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(RateText))]
     private long _totalReceived;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(RateText))]
     private long _totalSent;
+
+    /// <summary>FR-089: wall-clock since the stream began, from the latest event's elapsed timestamp.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ElapsedText), nameof(RateText))]
+    private long _elapsedMs;
 
     public StreamLogViewModel(int ringCapacity, Func<IMessage, string> formatter, StreamRowServices? rowServices = null)
     {
@@ -40,6 +46,19 @@ public sealed partial class StreamLogViewModel : ViewModelBase
 
     public string TruncationNotice => $"showing last {Rows.Count:N0} of {TotalRows:N0} — older rows dropped from view";
 
+    /// <summary>FR-089: footer elapsed (e.g. <c>1.2s</c>).</summary>
+    public string ElapsedText => $"{ElapsedMs / 1000.0:0.0}s";
+
+    /// <summary>FR-089: footer throughput in messages per second (received + sent over elapsed).</summary>
+    public string RateText
+    {
+        get
+        {
+            var seconds = ElapsedMs / 1000.0;
+            return seconds > 0 ? $"{(TotalReceived + TotalSent) / seconds:0.0} msg/s" : "—";
+        }
+    }
+
     public void Append(IReadOnlyList<StreamEventModel> events)
     {
         foreach (var ev in events)
@@ -50,8 +69,8 @@ public sealed partial class StreamLogViewModel : ViewModelBase
 
     public void Append(StreamEventModel ev)
     {
-        var delta = Math.Max(0, ev.ElapsedMs - _lastElapsedMs);
-        _lastElapsedMs = ev.ElapsedMs;
+        var delta = Math.Max(0, ev.ElapsedMs - ElapsedMs);
+        ElapsedMs = ev.ElapsedMs;
 
         TotalRows++;
         if (ev.Kind == StreamEventKind.MessageReceived)
@@ -77,6 +96,6 @@ public sealed partial class StreamLogViewModel : ViewModelBase
         TotalRows = 0;
         TotalReceived = 0;
         TotalSent = 0;
-        _lastElapsedMs = 0;
+        ElapsedMs = 0;
     }
 }

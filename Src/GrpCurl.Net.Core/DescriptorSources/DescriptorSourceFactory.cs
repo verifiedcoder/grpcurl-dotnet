@@ -15,15 +15,23 @@ namespace GrpCurl.Net.DescriptorSources;
 /// </summary>
 internal sealed class DescriptorSourceFactory : IAsyncDisposable
 {
-    private DescriptorSourceFactory(GrpcChannel? channel, IDescriptorSource source)
+    private DescriptorSourceFactory(GrpcChannel? channel, IDescriptorSource source, TimeSpan? channelConnectDuration)
     {
         Channel = channel;
         Source = source;
+        ChannelConnectDuration = channelConnectDuration;
     }
 
     public GrpcChannel? Channel { get; }
 
     public IDescriptorSource Source { get; }
+
+    /// <summary>
+    ///     FR-110: how long establishing the HTTP/2 connection took, when the caller requested it via
+    ///     <c>measureChannelConnect</c>; otherwise <see langword="null" /> (gRPC connects lazily). Lets the
+    ///     timing panel report a distinct <c>channel</c> phase separate from descriptor and call time.
+    /// </summary>
+    public TimeSpan? ChannelConnectDuration { get; }
 
     public async ValueTask DisposeAsync()
     {
@@ -47,8 +55,9 @@ internal sealed class DescriptorSourceFactory : IAsyncDisposable
         Metadata reflectionMetadata,
         CancellationToken cancellationToken,
         IDescriptorWarningSink? warningSink = null,
-        DescriptorSourceOptions? descriptorOptions = null)
-        => CreateAsync(address, protosetPaths, [], [], channelOptions, reflectionMetadata, cancellationToken, warningSink, descriptorOptions);
+        DescriptorSourceOptions? descriptorOptions = null,
+        bool measureChannelConnect = false)
+        => CreateAsync(address, protosetPaths, [], [], channelOptions, reflectionMetadata, cancellationToken, warningSink, descriptorOptions, measureChannelConnect);
 
     public static async Task<DescriptorSourceFactory> CreateAsync(
         string? address,
@@ -59,7 +68,8 @@ internal sealed class DescriptorSourceFactory : IAsyncDisposable
         Metadata reflectionMetadata,
         CancellationToken cancellationToken,
         IDescriptorWarningSink? warningSink = null,
-        DescriptorSourceOptions? descriptorOptions = null)
+        DescriptorSourceOptions? descriptorOptions = null,
+        bool measureChannelConnect = false)
     {
         var hasProtosets = protosetPaths.Count > 0;
         var hasProtoFiles = protoFiles.Count > 0;
@@ -73,10 +83,29 @@ internal sealed class DescriptorSourceFactory : IAsyncDisposable
         }
 
         GrpcChannel? channel = null;
+        TimeSpan? channelConnectDuration = null;
 
         if (hasAddress)
         {
             channel = GrpcChannelFactory.Create(address!, channelOptions);
+
+            // FR-110: eagerly establish the connection so its cost is a distinct, measured phase rather
+            // than hidden inside the first reflection/business RPC. Opt-in — the lazy default is unchanged.
+            // ConnectAsync requires a plain SocketsHttpHandler; channels with a custom ConnectCallback
+            // (e.g. Unix domain sockets) reject it, so fall back to lazy connect (no channel phase) there.
+            if (measureChannelConnect)
+            {
+                try
+                {
+                    var connect = System.Diagnostics.Stopwatch.StartNew();
+                    await channel.ConnectAsync(cancellationToken).ConfigureAwait(false);
+                    channelConnectDuration = connect.Elapsed;
+                }
+                catch (InvalidOperationException)
+                {
+                    channelConnectDuration = null;
+                }
+            }
         }
 
         var options = descriptorOptions ?? DescriptorSourceOptions.Default;
@@ -96,6 +125,6 @@ internal sealed class DescriptorSourceFactory : IAsyncDisposable
             source = new ReflectionSource(channel!, reflectionMetadata, options: options, warningSink: warningSink);
         }
 
-        return new DescriptorSourceFactory(channel, source);
+        return new DescriptorSourceFactory(channel, source, channelConnectDuration);
     }
 }

@@ -69,7 +69,7 @@ internal sealed class ConnectionRegistry(ITlsProfileResolver? tlsResolver = null
 
     private static string Describe(RpcException ex) => ex.StatusCode switch
     {
-        StatusCode.Unimplemented => "Server does not support reflection. Use a protoset or .proto source (coming soon).",
+        StatusCode.Unimplemented => "Server does not support reflection. Use a protoset or .proto source instead.",
         StatusCode.Unavailable => $"Server unavailable: {ex.Status.Detail}",
         _ => $"{ex.StatusCode}: {ex.Status.Detail}"
     };

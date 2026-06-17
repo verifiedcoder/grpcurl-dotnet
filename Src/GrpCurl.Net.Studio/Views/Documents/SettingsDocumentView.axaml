@@ -228,6 +228,57 @@
                 </Border>
             </StackPanel>
 
+            <!-- ───────── History (FR-158) ───────── -->
+            <TextBlock Classes="sectionHeader" Text="History" />
+
+            <StackPanel Spacing="2">
+                <CheckBox IsChecked="{Binding HistoryCaptureEnabled}" Content="Capture invocation history"
+                          AutomationProperties.Name="Capture history" />
+                <TextBlock Classes="settingHint" Text="Record every call (redacted) to the History tab (default: on)." />
+            </StackPanel>
+
+            <StackPanel Spacing="2">
+                <CheckBox IsChecked="{Binding HistoryCaptureResponses}" Content="Capture response bodies"
+                          AutomationProperties.Name="Capture response bodies" />
+                <TextBlock Classes="settingHint" Text="Store response payloads in history, capped below (default: off)." />
+            </StackPanel>
+
+            <StackPanel Spacing="2">
+                <TextBlock Classes="settingLabel" Text="Max entries" />
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Reset" Margin="8,0,0,0"
+                            Command="{Binding ResetSettingCommand}" CommandParameter="historyMaxEntries"
+                            AutomationProperties.Name="Reset history max entries" />
+                    <NumericUpDown Value="{Binding HistoryMaxEntries}" Minimum="1" Maximum="100000" Increment="100"
+                                   MinWidth="160" HorizontalAlignment="Left" AutomationProperties.Name="History max entries" />
+                </DockPanel>
+                <TextBlock Classes="settingHint" Text="Oldest unpinned entries are evicted past this count (default: 1000)." />
+            </StackPanel>
+
+            <StackPanel Spacing="2">
+                <TextBlock Classes="settingLabel" Text="Max size (MiB)" />
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Reset" Margin="8,0,0,0"
+                            Command="{Binding ResetSettingCommand}" CommandParameter="historyMaxSize"
+                            AutomationProperties.Name="Reset history max size" />
+                    <NumericUpDown Value="{Binding HistoryMaxSizeMiB}" Minimum="1" Maximum="4096" Increment="10"
+                                   MinWidth="160" HorizontalAlignment="Left" AutomationProperties.Name="History max size" />
+                </DockPanel>
+                <TextBlock Classes="settingHint" Text="Total history file cap before eviction (default: 50)." />
+            </StackPanel>
+
+            <StackPanel Spacing="2">
+                <TextBlock Classes="settingLabel" Text="Response snapshot cap (KiB)" />
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Reset" Margin="8,0,0,0"
+                            Command="{Binding ResetSettingCommand}" CommandParameter="historyResponseCap"
+                            AutomationProperties.Name="Reset history response cap" />
+                    <NumericUpDown Value="{Binding HistoryResponseCapKiB}" Minimum="1" Maximum="16384" Increment="64"
+                                   MinWidth="160" HorizontalAlignment="Left" AutomationProperties.Name="History response cap" />
+                </DockPanel>
+                <TextBlock Classes="settingHint" Text="Per-entry body/response truncation size (default: 256)." />
+            </StackPanel>
+
             <!-- ───────── Phase-2 placeholders (disabled) ───────── -->
             <StackPanel IsEnabled="False" Spacing="6" Opacity="0.55">
                 <TextBlock Classes="sectionHeader" Text="Diagnostics" />
@@ -236,8 +287,6 @@
                 <TextBlock Classes="settingHint" Text="Update channel, check-on-launch, and consent-to-apply — arrives in a later release." />
                 <TextBlock Classes="sectionHeader" Text="Descriptor limits" />
                 <TextBlock Classes="settingHint" Text="App-wide defaults for descriptor caps — arrives in a later release." />
-                <TextBlock Classes="sectionHeader" Text="History" />
-                <TextBlock Classes="settingHint" Text="Retention caps and capture toggle — arrives in a later release." />
             </StackPanel>
 
             <!-- ───────── Reset all (FR-159) ───────── -->

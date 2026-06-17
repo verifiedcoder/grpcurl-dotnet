@@ -65,6 +65,23 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
     [ObservableProperty]
     private string? _protocStatus;
 
+    // ── History (FR-158) ─────────────────────────────────────────────────────
+
+    [ObservableProperty]
+    private bool _historyCaptureEnabled;
+
+    [ObservableProperty]
+    private bool _historyCaptureResponses;
+
+    [ObservableProperty]
+    private int _historyMaxEntries;
+
+    [ObservableProperty]
+    private int _historyMaxSizeMiB;
+
+    [ObservableProperty]
+    private int _historyResponseCapKiB;
+
     public SettingsDocumentViewModel(
         ISettingsStore settings,
         IThemeService themeService,
@@ -136,6 +153,11 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
     partial void OnNetworkMaxMessageSizeChanged(string value) => Persist(s => s.Network.MaxMessageSize = value);
     partial void OnNetworkDefaultDeadlineChanged(string value) => Persist(s => s.Network.DefaultDeadline = value);
     partial void OnProtocPathChanged(string value) => Persist(s => s.Protoc.Path = value);
+    partial void OnHistoryCaptureEnabledChanged(bool value) => Persist(s => s.History.Enabled = value);
+    partial void OnHistoryCaptureResponsesChanged(bool value) => Persist(s => s.History.CaptureResponses = value);
+    partial void OnHistoryMaxEntriesChanged(int value) => Persist(s => s.History.MaxEntries = Math.Max(1, value));
+    partial void OnHistoryMaxSizeMiBChanged(int value) => Persist(s => s.History.MaxBytes = Math.Max(1, value) * 1024L * 1024L);
+    partial void OnHistoryResponseCapKiBChanged(int value) => Persist(s => s.History.ResponseCapBytes = Math.Max(1, value) * 1024);
 
     /// <summary>FR-150: per-setting reset to its built-in default. Setting the property re-persists.</summary>
     [RelayCommand]
@@ -158,6 +180,9 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
             case "maxMessageSize": NetworkMaxMessageSize = d.Network.MaxMessageSize; break;
             case "defaultDeadline": NetworkDefaultDeadline = d.Network.DefaultDeadline; break;
             case "protocPath": ProtocPath = d.Protoc.Path; break;
+            case "historyMaxEntries": HistoryMaxEntries = d.History.MaxEntries; break;
+            case "historyMaxSize": HistoryMaxSizeMiB = (int)(d.History.MaxBytes / (1024L * 1024L)); break;
+            case "historyResponseCap": HistoryResponseCapKiB = d.History.ResponseCapBytes / 1024; break;
         }
     }
 
@@ -226,6 +251,11 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
         NetworkMaxMessageSize = s.Network.MaxMessageSize;
         NetworkDefaultDeadline = s.Network.DefaultDeadline;
         ProtocPath = s.Protoc.Path;
+        HistoryCaptureEnabled = s.History.Enabled;
+        HistoryCaptureResponses = s.History.CaptureResponses;
+        HistoryMaxEntries = s.History.MaxEntries;
+        HistoryMaxSizeMiB = (int)Math.Max(1, s.History.MaxBytes / (1024L * 1024L));
+        HistoryResponseCapKiB = Math.Max(1, s.History.ResponseCapBytes / 1024);
     }
 
     private void Persist(Action<StudioSettings> mutate)

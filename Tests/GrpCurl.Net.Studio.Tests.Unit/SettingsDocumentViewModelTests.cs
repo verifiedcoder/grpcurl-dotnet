@@ -217,4 +217,53 @@ public sealed class SettingsDocumentViewModelTests
         vm.NetworkConnectTimeout.ShouldBe("99s");
         (store.SaveCount - savesBefore).ShouldBe(0);
     }
+
+    // ── History (FR-158) ─────────────────────────────────────────────────────
+
+    [Fact]
+    public void History_settings_load_from_current()
+    {
+        var store = new FakeSettingsStore();
+        store.Current.History.Enabled = false;
+        store.Current.History.CaptureResponses = true;
+        store.Current.History.MaxEntries = 250;
+        store.Current.History.MaxBytes = 8L * 1024 * 1024;
+        store.Current.History.ResponseCapBytes = 64 * 1024;
+
+        var vm = new SettingsDocumentViewModel(store, new FakeThemeService(), new FakeDialogService(), new FakeProtocService());
+
+        vm.HistoryCaptureEnabled.ShouldBeFalse();
+        vm.HistoryCaptureResponses.ShouldBeTrue();
+        vm.HistoryMaxEntries.ShouldBe(250);
+        vm.HistoryMaxSizeMiB.ShouldBe(8);
+        vm.HistoryResponseCapKiB.ShouldBe(64);
+    }
+
+    [Fact]
+    public void Changing_history_settings_persists_in_canonical_units()
+    {
+        var vm = Create(out var store, out _);
+
+        vm.HistoryCaptureEnabled = false;
+        vm.HistoryMaxEntries = 500;
+        vm.HistoryMaxSizeMiB = 25;
+        vm.HistoryResponseCapKiB = 128;
+
+        store.Current.History.Enabled.ShouldBeFalse();
+        store.Current.History.MaxEntries.ShouldBe(500);
+        store.Current.History.MaxBytes.ShouldBe(25L * 1024 * 1024); // MiB → bytes
+        store.Current.History.ResponseCapBytes.ShouldBe(128 * 1024); // KiB → bytes
+    }
+
+    [Fact]
+    public void Resetting_history_max_entries_restores_the_default()
+    {
+        var vm = Create(out var store, out _);
+        vm.HistoryMaxEntries = 7;
+
+        vm.ResetSettingCommand.Execute("historyMaxEntries");
+
+        vm.HistoryMaxEntries.ShouldBe(StudioSettings.Defaults().History.MaxEntries);
+        store.Current.History.MaxEntries.ShouldBe(StudioSettings.Defaults().History.MaxEntries);
+    }
 }

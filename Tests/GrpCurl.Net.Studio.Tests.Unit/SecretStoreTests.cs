@@ -1,4 +1,5 @@
 using GrpCurl.Net.Studio.Services.Secrets;
+using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
 
@@ -61,6 +62,58 @@ public sealed class SecretStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task Encrypted_file_store_reports_existence()
+    {
+        var store = new EncryptedFileSecretStore(_dir);
+        var ct = TestContext.Current.CancellationToken;
+
+        (await store.ExistsAsync("k", ct)).ShouldBeFalse();
+        await store.SetAsync("k", "v", ct);
+        (await store.ExistsAsync("k", ct)).ShouldBeTrue();
+        await store.DeleteAsync("k", ct);
+        (await store.ExistsAsync("k", ct)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Encrypted_file_store_info_is_the_fallback_with_an_honest_limitation()
+    {
+        var info = new EncryptedFileSecretStore(_dir).Info;
+
+        info.BackendName.ShouldBe("Encrypted file (fallback)");
+        info.IsOsKeychain.ShouldBeFalse(); // SEC-024: false only for the fallback
+        info.LimitationNote.ShouldNotBeNull();
+        info.LimitationNote.ShouldContain("Secret Service"); // recommends a keyring provider
+    }
+
+    [Fact]
+    public async Task Encrypted_file_store_derives_a_stable_key_across_instances()
+    {
+        var key = Guid.NewGuid().ToString("N");
+        var ct = TestContext.Current.CancellationToken;
+
+        await new EncryptedFileSecretStore(_dir).SetAsync(key, "derived-secret", ct);
+
+        // SEC-023: the key is HKDF-derived from machine + user + salt, not cached — a fresh instance
+        // over the same directory must derive the same key and decrypt successfully.
+        (await new EncryptedFileSecretStore(_dir).GetAsync(key, ct)).ShouldBe("derived-secret");
+    }
+
+    [Fact]
+    public async Task Encrypted_file_store_persists_a_salt_not_a_raw_key()
+    {
+        await new EncryptedFileSecretStore(_dir).SetAsync("k", "v", TestContext.Current.CancellationToken);
+
+        File.Exists(Path.Combine(_dir, "secrets.salt")).ShouldBeTrue(); // SEC-023: only the salt is at rest
+        File.Exists(Path.Combine(_dir, "secrets.key")).ShouldBeFalse(); // never a raw key
+
+        if (!OperatingSystem.IsWindows())
+        {
+            var mode = File.GetUnixFileMode(Path.Combine(_dir, "secrets.salt"));
+            mode.ShouldBe(UnixFileMode.UserRead | UnixFileMode.UserWrite); // 0600
+        }
+    }
+
+    [Fact]
     public async Task Facade_round_trips_via_native_or_fallback()
     {
         var store = new SecretStore(_dir);
@@ -70,10 +123,27 @@ public sealed class SecretStoreTests : IDisposable
         {
             await store.SetAsync(key, "facade-secret", TestContext.Current.CancellationToken);
             (await store.GetAsync(key, TestContext.Current.CancellationToken)).ShouldBe("facade-secret");
+            (await store.ExistsAsync(key, TestContext.Current.CancellationToken)).ShouldBeTrue();
         }
         finally
         {
             await store.DeleteAsync(key, TestContext.Current.CancellationToken);
         }
     }
+
+    [Fact]
+    public void Facade_selects_and_logs_a_backend_at_startup()
+    {
+        string? logged = null;
+        var store = new SecretStore(_dir, log: m => logged = m);
+
+        // SEC-024/025: a backend is chosen at startup, surfaced via Info, and logged (name only).
+        store.Info.BackendName.ShouldNotBeNullOrWhiteSpace();
+        logged.ShouldNotBeNull();
+        logged.ShouldContain(store.Info.BackendName);
+    }
+
+    [Fact]
+    public void Facade_info_is_a_secret_store_info()
+        => new SecretStore(_dir).Info.ShouldBeOfType<SecretStoreInfo>();
 }

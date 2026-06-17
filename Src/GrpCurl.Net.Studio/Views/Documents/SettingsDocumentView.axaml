@@ -205,6 +205,29 @@
                            Text="Explicit protoc used instead of PATH lookup. Detect reports what PATH resolves; Verify runs --version on the override." />
             </StackPanel>
 
+            <!-- ───────── Security (SEC-024): live secret-store backend ───────── -->
+            <TextBlock Classes="sectionHeader" Text="Security" IsVisible="{Binding HasSecretBackend}" />
+
+            <StackPanel Spacing="2" IsVisible="{Binding HasSecretBackend}">
+                <TextBlock Classes="settingLabel" Text="Secret storage backend" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="{Binding SecretBackendName}" VerticalAlignment="Center" />
+                    <Border Background="{DynamicResource Conn.Connecting}" CornerRadius="4" Padding="6,1"
+                            IsVisible="{Binding SecretBackendIsOsKeychain}">
+                        <TextBlock Text="OS keychain" FontSize="11" Foreground="White" />
+                    </Border>
+                </StackPanel>
+                <TextBlock Classes="settingHint"
+                           Text="Where PKCS12 passwords and secret-typed variables are stored. Secrets are never written to workspace, history, or settings files." />
+
+                <!-- SEC-024: the encrypted-file fallback states its limitation verbatim. -->
+                <Border IsVisible="{Binding SecretBackendHasLimitation}" Margin="0,6,0,0" Padding="10"
+                        CornerRadius="4" Background="{DynamicResource Banner.DangerBg}"
+                        BorderBrush="{DynamicResource Status.Server}" BorderThickness="3,0,0,0">
+                    <TextBlock Text="{Binding SecretBackendLimitation}" TextWrapping="Wrap" FontSize="12" />
+                </Border>
+            </StackPanel>
+
             <!-- ───────── Phase-2 placeholders (disabled) ───────── -->
             <StackPanel IsEnabled="False" Spacing="6" Opacity="0.55">
                 <TextBlock Classes="sectionHeader" Text="Diagnostics" />

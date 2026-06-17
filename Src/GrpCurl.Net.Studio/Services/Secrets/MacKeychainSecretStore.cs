@@ -15,6 +15,11 @@ internal sealed class MacKeychainSecretStore : ISecretStore
 {
     private const string Service = "GrpCurl.Net Studio";
 
+    public SecretStoreInfo Info { get; } = new("macOS Keychain", IsOsKeychain: true, LimitationNote: null);
+
+    public async Task<bool> ExistsAsync(string keyRef, CancellationToken cancellationToken = default)
+        => await GetAsync(keyRef, cancellationToken).ConfigureAwait(false) is not null;
+
     public async Task SetAsync(string keyRef, string value, CancellationToken cancellationToken = default)
     {
         // -U updates an existing item instead of failing on duplicate.

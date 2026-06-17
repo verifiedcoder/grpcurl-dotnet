@@ -17,6 +17,11 @@ internal sealed class LinuxLibsecretSecretStore : ISecretStore
     private const string SchemaName = "org.grpcurl.studio.Secret";
     private const string AttributeName = "keyref";
 
+    public SecretStoreInfo Info { get; } = new("Secret Service (libsecret)", IsOsKeychain: true, LimitationNote: null);
+
+    public async Task<bool> ExistsAsync(string keyRef, CancellationToken cancellationToken = default)
+        => await GetAsync(keyRef, cancellationToken).ConfigureAwait(false) is not null;
+
     public Task SetAsync(string keyRef, string value, CancellationToken cancellationToken = default)
     {
         WithSchema(schema =>

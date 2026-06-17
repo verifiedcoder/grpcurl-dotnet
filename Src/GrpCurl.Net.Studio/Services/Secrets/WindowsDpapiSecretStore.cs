@@ -19,6 +19,21 @@ internal sealed class WindowsDpapiSecretStore : ISecretStore
 
     public WindowsDpapiSecretStore(string directory) => _dataPath = Path.Combine(directory, "secrets.dpapi.json");
 
+    public SecretStoreInfo Info { get; } = new("Windows DPAPI", IsOsKeychain: true, LimitationNote: null);
+
+    public async Task<bool> ExistsAsync(string keyRef, CancellationToken cancellationToken = default)
+    {
+        await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            return Load().ContainsKey(keyRef);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
     public async Task SetAsync(string keyRef, string value, CancellationToken cancellationToken = default)
     {
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);

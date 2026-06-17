@@ -21,6 +21,47 @@ public sealed class SettingsDocumentViewModelTests
         return new SettingsDocumentViewModel(store, theme, dialogs, protoc);
     }
 
+    // ── Security panel (SEC-024) ─────────────────────────────────────────────
+
+    [Fact]
+    public void Without_a_secret_store_the_security_panel_is_hidden()
+    {
+        var vm = new SettingsDocumentViewModel(new FakeSettingsStore(), new FakeThemeService(), new FakeDialogService());
+
+        vm.HasSecretBackend.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void The_security_panel_reflects_an_os_keychain_backend()
+    {
+        var secrets = new FakeSecretStore { Info = new SecretStoreInfo("macOS Keychain", IsOsKeychain: true, LimitationNote: null) };
+
+        var vm = new SettingsDocumentViewModel(
+            new FakeSettingsStore(), new FakeThemeService(), new FakeDialogService(), new FakeProtocService(), secrets);
+
+        vm.HasSecretBackend.ShouldBeTrue();
+        vm.SecretBackendName.ShouldBe("macOS Keychain");
+        vm.SecretBackendIsOsKeychain.ShouldBeTrue();
+        vm.SecretBackendHasLimitation.ShouldBeFalse();
+        vm.SecretBackendLimitation.ShouldBeNull();
+    }
+
+    [Fact]
+    public void The_security_panel_surfaces_the_fallback_limitation_verbatim()
+    {
+        var secrets = new FakeSecretStore
+        {
+            Info = new SecretStoreInfo("Encrypted file (fallback)", IsOsKeychain: false, LimitationNote: "weaker than a keychain")
+        };
+
+        var vm = new SettingsDocumentViewModel(
+            new FakeSettingsStore(), new FakeThemeService(), new FakeDialogService(), new FakeProtocService(), secrets);
+
+        vm.SecretBackendIsOsKeychain.ShouldBeFalse();
+        vm.SecretBackendHasLimitation.ShouldBeTrue();
+        vm.SecretBackendLimitation.ShouldBe("weaker than a keychain");
+    }
+
     [Fact]
     public void Seeds_from_current_settings_without_persisting()
     {

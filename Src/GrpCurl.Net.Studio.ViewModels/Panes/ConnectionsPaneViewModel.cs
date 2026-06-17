@@ -27,6 +27,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
     private readonly IProtocService? _protocService;
     private readonly ISavedRequestStore? _savedRequests;
     private readonly IDocumentHost? _documentHost;
+    private readonly ISavedRequestSnippetIO? _snippetIO;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(EditConnectionCommand))]
@@ -45,7 +46,8 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         ISecretStore? secretStore = null,
         IProtocService? protocService = null,
         ISavedRequestStore? savedRequests = null,
-        IDocumentHost? documentHost = null)
+        IDocumentHost? documentHost = null,
+        ISavedRequestSnippetIO? snippetIO = null)
     {
         _workspaceStore = workspaceStore;
         _registry = registry;
@@ -58,6 +60,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         _protocService = protocService;
         _savedRequests = savedRequests;
         _documentHost = documentHost;
+        _snippetIO = snippetIO;
 
         Connections = [];
         Connections.CollectionChanged += OnConnectionsChanged;
@@ -83,7 +86,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
 
             foreach (var request in _savedRequests?.ForConnection(item.Connection.Id) ?? [])
             {
-                item.SavedRequests.Add(new SavedRequestItemViewModel(request, OpenSavedRequestAsync, _savedRequests, _dialogService));
+                item.SavedRequests.Add(new SavedRequestItemViewModel(request, OpenSavedRequestAsync, _savedRequests, _dialogService, _filePicker, _snippetIO));
             }
         }
     }
@@ -94,11 +97,12 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
     /// </summary>
     private ConnectionListItemViewModel CreateItem(SavedConnection connection)
     {
-        var item = new ConnectionListItemViewModel(connection);
+        var canImport = _filePicker is not null && _snippetIO is not null && _savedRequests is not null;
+        var item = new ConnectionListItemViewModel(connection, canImport ? ImportRequestIntoAsync : null);
 
         foreach (var request in _savedRequests?.ForConnection(connection.Id) ?? [])
         {
-            item.SavedRequests.Add(new SavedRequestItemViewModel(request, OpenSavedRequestAsync, _savedRequests, _dialogService));
+            item.SavedRequests.Add(new SavedRequestItemViewModel(request, OpenSavedRequestAsync, _savedRequests, _dialogService, _filePicker, _snippetIO));
         }
 
         return item;
@@ -114,6 +118,56 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         }
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>FR-166: import a saved-request snippet into a connection (re-bound, with a deduped name).</summary>
+    private async Task ImportRequestIntoAsync(ConnectionListItemViewModel item)
+    {
+        if (_filePicker is null || _snippetIO is null || _savedRequests is null)
+        {
+            return;
+        }
+
+        var path = await _filePicker.OpenFileAsync("Import request", ["grpcnreq.json", "json"]);
+
+        if (path is null)
+        {
+            return;
+        }
+
+        SavedRequest request;
+
+        try
+        {
+            request = await _snippetIO.ImportAsync(path);
+        }
+        catch (SavedRequestSnippetException ex)
+        {
+            await _dialogService.ShowMessageAsync("Could not import request", ex.Message);
+            return;
+        }
+
+        // Re-bind the imported request to the target connection with a fresh id + a non-colliding name.
+        request.Id = Guid.NewGuid().ToString();
+        request.ConnectionId = item.Connection.Id;
+        request.Name = DedupRequestName(request.Name, item.Connection.Id);
+
+        await _savedRequests.SaveAsync(request);
+    }
+
+    private string DedupRequestName(string name, string connectionId)
+    {
+        var taken = new HashSet<string>(
+            _savedRequests?.ForConnection(connectionId).Select(r => r.Name) ?? [], StringComparer.Ordinal);
+
+        var candidate = taken.Contains(name) ? $"{name} (imported)" : name;
+
+        for (var n = 2; taken.Contains(candidate); n++)
+        {
+            candidate = $"{name} (imported {n})";
+        }
+
+        return candidate;
     }
 
     public string Header => "Connections";

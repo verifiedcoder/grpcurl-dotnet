@@ -32,6 +32,13 @@
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="items:ConnectionListItemViewModel">
                     <Grid ColumnDefinitions="Auto,*" Margin="0,2">
+                        <!-- FR-166: import a saved-request snippet into this connection. -->
+                        <Grid.ContextMenu>
+                            <ContextMenu x:DataType="items:ConnectionListItemViewModel">
+                                <MenuItem Header="Import request…" Command="{Binding ImportRequestCommand}"
+                                          AutomationProperties.Name="Import request into connection" />
+                            </ContextMenu>
+                        </Grid.ContextMenu>
                         <Ellipse Grid.Column="0" Width="10" Height="10" VerticalAlignment="Top" Margin="0,3,8,0"
                                  Fill="{Binding Status, Converter={StaticResource StatusToBrush}}"
                                  ToolTip.Tip="{Binding StatusDetail}" />
@@ -62,6 +69,8 @@
                                                               AutomationProperties.Name="Rename saved request" />
                                                     <MenuItem Header="Duplicate" Command="{Binding DuplicateCommand}"
                                                               AutomationProperties.Name="Duplicate saved request" />
+                                                    <MenuItem Header="Export…" Command="{Binding ExportCommand}"
+                                                              AutomationProperties.Name="Export saved request" />
                                                     <Separator />
                                                     <MenuItem Header="Delete" Command="{Binding DeleteCommand}"
                                                               AutomationProperties.Name="Delete saved request" />

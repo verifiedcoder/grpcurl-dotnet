@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:GrpCurl.Net.Studio.ViewModels.Connections;assembly=GrpCurl.Net.Studio.ViewModels"
+             x:Class="GrpCurl.Net.Studio.Views.Connections.EnvironmentManagerView"
+             x:DataType="vm:EnvironmentManagerViewModel"
+             Width="520">
+    <StackPanel Margin="20" Spacing="12">
+
+        <DockPanel>
+            <TextBlock Text="Environments" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" />
+            <Button Content="New environment…" Command="{Binding NewEnvironmentCommand}" HorizontalAlignment="Right"
+                    DockPanel.Dock="Right" AutomationProperties.Name="New environment" />
+        </DockPanel>
+
+        <TextBlock Text="No environments yet. Create one to resolve ${VAR} placeholders in header values per target."
+                   IsVisible="{Binding !HasEnvironments}" TextWrapping="Wrap"
+                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+
+        <ItemsControl ItemsSource="{Binding Environments}" MaxHeight="360">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:EnvironmentRow">
+                    <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="0,0,0,1"
+                            Padding="0,8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="{Binding Display}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding SummaryText}" FontSize="12"
+                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <Button Content="Edit"
+                                        Command="{Binding $parent[ItemsControl].((vm:EnvironmentManagerViewModel)DataContext).EditEnvironmentCommand}"
+                                        CommandParameter="{Binding}" AutomationProperties.Name="Edit environment" />
+                                <Button Content="Duplicate"
+                                        Command="{Binding $parent[ItemsControl].((vm:EnvironmentManagerViewModel)DataContext).DuplicateEnvironmentCommand}"
+                                        CommandParameter="{Binding}" AutomationProperties.Name="Duplicate environment" />
+                                <Button Content="Delete"
+                                        Command="{Binding $parent[ItemsControl].((vm:EnvironmentManagerViewModel)DataContext).DeleteEnvironmentCommand}"
+                                        CommandParameter="{Binding}" AutomationProperties.Name="Delete environment" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
+            <Button Content="Close" Command="{Binding CloseCommand}" MinWidth="80" IsDefault="True"
+                    AutomationProperties.Name="Close manager" />
+        </StackPanel>
+
+    </StackPanel>
+</UserControl>

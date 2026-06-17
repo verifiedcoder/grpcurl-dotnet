@@ -42,6 +42,7 @@ internal static class ServiceRegistration
 
         // Environments (E3.2): ${VAR} resolution, active env → OS, secrets via ISecretStore (FR-130..134).
         services.AddSingleton<IEnvironmentService, EnvironmentService>();
+        services.AddSingleton<IEnvironmentStore, EnvironmentStore>(); // PR-B: workspace-level CRUD over environments
 
         // TLS profile resolution (E2.2): turns a connection's profile reference + the PKCS12
         // password secret into the (profile, password) pair the channel mapper consumes.
@@ -69,6 +70,7 @@ internal static class ServiceRegistration
         services.AddSingleton<IInspector>(sp => sp.GetRequiredService<InspectorViewModel>());
         services.AddSingleton<ConsoleViewModel>();
         services.AddSingleton<WorkspaceSessionViewModel>(); // E3.1: workspace status + save/reload (wired to the shell in PR-D)
+        services.AddSingleton<EnvironmentSwitcherViewModel>(); // E3.2: status-bar environment switcher (FR-133/138)
         services.AddSingleton<MainWindowViewModel>();
 
         return builder;

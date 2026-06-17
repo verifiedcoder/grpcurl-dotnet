@@ -68,7 +68,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IWorkspaceStore? workspaceStore = null,
         WorkspaceSessionViewModel? session = null,
         IFilePickerService? filePicker = null,
-        IDialogService? dialogs = null)
+        IDialogService? dialogs = null,
+        EnvironmentSwitcherViewModel? environment = null)
     {
         _theme = theme;
         _profileStore = profileStore;
@@ -81,6 +82,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         Inspector = inspector;
         Documents = documents;
         Session = session;
+        Environment = environment;
 
         _selectedTheme = theme.Current;
         theme.PropertyChanged += (_, e) =>
@@ -180,6 +182,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>The active workspace session (status + Save), or null in bare unit constructions.</summary>
     public WorkspaceSessionViewModel? Session { get; }
+
+    /// <summary>The status-bar environment switcher (FR-133), or null in bare unit constructions.</summary>
+    public EnvironmentSwitcherViewModel? Environment { get; }
 
     /// <summary>Recently opened/saved workspaces for the File → Recent submenu (null danglers greyed).</summary>
     public System.Collections.ObjectModel.ObservableCollection<RecentWorkspace> RecentWorkspaces { get; } = [];
@@ -383,6 +388,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         Connections.ReloadFromWorkspace();
         HasAnyConnection = Connections.HasConnections;
         Session?.Refresh();
+        Environment?.Reload(); // the new workspace carries its own environments (FR-133/138)
         RefreshInsecureBanner();
         RefreshRecents();
         OnPropertyChanged(nameof(Title));

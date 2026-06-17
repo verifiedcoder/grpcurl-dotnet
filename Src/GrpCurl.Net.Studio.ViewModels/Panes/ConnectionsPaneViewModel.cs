@@ -83,7 +83,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
 
             foreach (var request in _savedRequests?.ForConnection(item.Connection.Id) ?? [])
             {
-                item.SavedRequests.Add(new SavedRequestItemViewModel(request, OpenSavedRequestAsync));
+                item.SavedRequests.Add(new SavedRequestItemViewModel(request, OpenSavedRequestAsync, _savedRequests, _dialogService));
             }
         }
     }
@@ -98,7 +98,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
 
         foreach (var request in _savedRequests?.ForConnection(connection.Id) ?? [])
         {
-            item.SavedRequests.Add(new SavedRequestItemViewModel(request, OpenSavedRequestAsync));
+            item.SavedRequests.Add(new SavedRequestItemViewModel(request, OpenSavedRequestAsync, _savedRequests, _dialogService));
         }
 
         return item;

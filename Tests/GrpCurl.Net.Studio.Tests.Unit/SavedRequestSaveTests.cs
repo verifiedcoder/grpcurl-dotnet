@@ -149,4 +149,90 @@ public sealed class SavedRequestSaveTests
 
         pane.Connections.Single().SavedRequests.Single().Name.ShouldBe("hello");
     }
+
+    // ── sidebar manage: rename / delete / duplicate (FR-145) ─────────────────
+
+    private static SavedRequestItemViewModel ManagedItem(
+        out SavedRequestStore store, out FakeDialogService dialogs, out FakeWorkspaceStore workspace)
+    {
+        workspace = new FakeWorkspaceStore(new WorkspaceModel
+        {
+            SavedRequests = [new SavedRequest { Id = "r1", Name = "hello", ConnectionId = "c1", Method = "pkg.Svc/Go" }]
+        });
+        store = new SavedRequestStore(workspace);
+        dialogs = new FakeDialogService();
+        var request = store.Requests.Single();
+        return new SavedRequestItemViewModel(request, _ => Task.CompletedTask, store, dialogs);
+    }
+
+    [Fact]
+    public async Task Rename_updates_the_request_name_in_place()
+    {
+        var item = ManagedItem(out var store, out var dialogs, out _);
+        dialogs.OnShowDialog = d => d is TextInputDialogViewModel ? "renamed" : null;
+
+        await item.RenameCommand.ExecuteAsync(null);
+
+        var request = store.Requests.ShouldHaveSingleItem();
+        request.Id.ShouldBe("r1");        // same id (rename in place)
+        request.Name.ShouldBe("renamed");
+    }
+
+    [Fact]
+    public async Task Rename_cancelled_changes_nothing()
+    {
+        var item = ManagedItem(out var store, out var dialogs, out _);
+        dialogs.OnShowDialog = _ => null;
+
+        await item.RenameCommand.ExecuteAsync(null);
+
+        store.Requests.Single().Name.ShouldBe("hello");
+    }
+
+    [Fact]
+    public async Task Duplicate_adds_a_copy_with_a_new_id()
+    {
+        var item = ManagedItem(out var store, out _, out _);
+
+        await item.DuplicateCommand.ExecuteAsync(null);
+
+        store.Requests.Count.ShouldBe(2);
+        var copy = store.Requests.Single(r => r.Name == "hello (copy)");
+        copy.Id.ShouldNotBe("r1");
+        copy.ConnectionId.ShouldBe("c1"); // stays under the same connection
+    }
+
+    [Fact]
+    public async Task Delete_confirmed_removes_the_request()
+    {
+        var item = ManagedItem(out var store, out var dialogs, out _);
+        dialogs.ConfirmResult = true;
+
+        await item.DeleteCommand.ExecuteAsync(null);
+
+        store.Requests.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Delete_declined_keeps_the_request()
+    {
+        var item = ManagedItem(out var store, out var dialogs, out _);
+        dialogs.ConfirmResult = false;
+
+        await item.DeleteCommand.ExecuteAsync(null);
+
+        store.Requests.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public void Manage_actions_are_disabled_without_a_store()
+    {
+        var item = new SavedRequestItemViewModel(
+            new SavedRequest { Id = "r1", Name = "x", ConnectionId = "c1", Method = "m" }, _ => Task.CompletedTask);
+
+        item.CanManage.ShouldBeFalse();
+        item.RenameCommand.CanExecute(null).ShouldBeFalse();
+        item.DeleteCommand.CanExecute(null).ShouldBeFalse();
+        item.DuplicateCommand.CanExecute(null).ShouldBeFalse();
+    }
 }

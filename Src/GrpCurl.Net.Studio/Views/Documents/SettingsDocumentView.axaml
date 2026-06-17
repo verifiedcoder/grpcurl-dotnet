@@ -279,14 +279,102 @@
                 <TextBlock Classes="settingHint" Text="Per-entry body/response truncation size (default: 256)." />
             </StackPanel>
 
+            <!-- ───────── Descriptor limits (FR-157) ───────── -->
+            <TextBlock Classes="sectionHeader" Text="Descriptor limits" />
+            <TextBlock Classes="settingHint"
+                       Text="App-wide caps on descriptor loading. A connection's own override (in its Limits expander) wins; otherwise these apply, falling back to the Core default." />
+
+            <StackPanel Spacing="2">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Classes="settingLabel" Text="Protoset file cap (MiB)" />
+                    <TextBlock Text="(changed)" FontSize="11" VerticalAlignment="Center"
+                               Foreground="{DynamicResource Conn.Connecting}"
+                               IsVisible="{Binding DescriptorMaxProtosetMiBChanged}" />
+                </StackPanel>
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Reset" Margin="8,0,0,0"
+                            Command="{Binding ResetSettingCommand}" CommandParameter="descriptorProtoset"
+                            AutomationProperties.Name="Reset protoset cap" />
+                    <NumericUpDown Value="{Binding DescriptorMaxProtosetMiB}" Minimum="1" Maximum="4096" Increment="16"
+                                   MinWidth="160" HorizontalAlignment="Left" AutomationProperties.Name="Protoset file cap" />
+                </DockPanel>
+                <TextBlock Classes="settingHint" Text="Core default: 64 MiB." />
+            </StackPanel>
+
+            <StackPanel Spacing="2">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Classes="settingLabel" Text="Reflection descriptor cap (MiB)" />
+                    <TextBlock Text="(changed)" FontSize="11" VerticalAlignment="Center"
+                               Foreground="{DynamicResource Conn.Connecting}"
+                               IsVisible="{Binding DescriptorMaxReflectionMiBChanged}" />
+                </StackPanel>
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Reset" Margin="8,0,0,0"
+                            Command="{Binding ResetSettingCommand}" CommandParameter="descriptorReflection"
+                            AutomationProperties.Name="Reset reflection cap" />
+                    <NumericUpDown Value="{Binding DescriptorMaxReflectionMiB}" Minimum="1" Maximum="4096" Increment="8"
+                                   MinWidth="160" HorizontalAlignment="Left" AutomationProperties.Name="Reflection descriptor cap" />
+                </DockPanel>
+                <TextBlock Classes="settingHint" Text="Core default: 16 MiB." />
+            </StackPanel>
+
+            <StackPanel Spacing="2">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Classes="settingLabel" Text="Max file descriptors" />
+                    <TextBlock Text="(changed)" FontSize="11" VerticalAlignment="Center"
+                               Foreground="{DynamicResource Conn.Connecting}"
+                               IsVisible="{Binding DescriptorMaxFileDescriptorsChanged}" />
+                </StackPanel>
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Reset" Margin="8,0,0,0"
+                            Command="{Binding ResetSettingCommand}" CommandParameter="descriptorFiles"
+                            AutomationProperties.Name="Reset max file descriptors" />
+                    <NumericUpDown Value="{Binding DescriptorMaxFileDescriptors}" Minimum="1" Maximum="1000000" Increment="256"
+                                   MinWidth="160" HorizontalAlignment="Left" AutomationProperties.Name="Max file descriptors" />
+                </DockPanel>
+                <TextBlock Classes="settingHint" Text="Core default: 2048." />
+            </StackPanel>
+
+            <StackPanel Spacing="2">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Classes="settingLabel" Text="Max dependency depth" />
+                    <TextBlock Text="(changed)" FontSize="11" VerticalAlignment="Center"
+                               Foreground="{DynamicResource Conn.Connecting}"
+                               IsVisible="{Binding DescriptorMaxDependencyDepthChanged}" />
+                </StackPanel>
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Reset" Margin="8,0,0,0"
+                            Command="{Binding ResetSettingCommand}" CommandParameter="descriptorDepth"
+                            AutomationProperties.Name="Reset max dependency depth" />
+                    <NumericUpDown Value="{Binding DescriptorMaxDependencyDepth}" Minimum="1" Maximum="100000" Increment="16"
+                                   MinWidth="160" HorizontalAlignment="Left" AutomationProperties.Name="Max dependency depth" />
+                </DockPanel>
+                <TextBlock Classes="settingHint" Text="Core default: 128." />
+            </StackPanel>
+
+            <StackPanel Spacing="2">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Classes="settingLabel" Text="Max symbols" />
+                    <TextBlock Text="(changed)" FontSize="11" VerticalAlignment="Center"
+                               Foreground="{DynamicResource Conn.Connecting}"
+                               IsVisible="{Binding DescriptorMaxSymbolsChanged}" />
+                </StackPanel>
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Reset" Margin="8,0,0,0"
+                            Command="{Binding ResetSettingCommand}" CommandParameter="descriptorSymbols"
+                            AutomationProperties.Name="Reset max symbols" />
+                    <NumericUpDown Value="{Binding DescriptorMaxSymbols}" Minimum="1" Maximum="100000000" Increment="1024"
+                                   MinWidth="160" HorizontalAlignment="Left" AutomationProperties.Name="Max symbols" />
+                </DockPanel>
+                <TextBlock Classes="settingHint" Text="Core default: 65536." />
+            </StackPanel>
+
             <!-- ───────── Phase-2 placeholders (disabled) ───────── -->
             <StackPanel IsEnabled="False" Spacing="6" Opacity="0.55">
                 <TextBlock Classes="sectionHeader" Text="Diagnostics" />
                 <TextBlock Classes="settingHint" Text="In-app log viewer, level filter, and diagnostics bundle — arrives in a later release." />
                 <TextBlock Classes="sectionHeader" Text="Updates" />
                 <TextBlock Classes="settingHint" Text="Update channel, check-on-launch, and consent-to-apply — arrives in a later release." />
-                <TextBlock Classes="sectionHeader" Text="Descriptor limits" />
-                <TextBlock Classes="settingHint" Text="App-wide defaults for descriptor caps — arrives in a later release." />
             </StackPanel>
 
             <!-- ───────── Reset all (FR-159) ───────── -->

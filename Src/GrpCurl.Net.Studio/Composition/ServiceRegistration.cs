@@ -31,11 +31,18 @@ internal static class ServiceRegistration
         services.AddSingleton<IProtocService, ProtocService>();
         services.AddSingleton<IUpdateService, UpdateService>(); // FR-156: version + releases URL for Settings → Updates
 
+        // Diagnostics log (FR-155 / SPEC-030 §9): rolling NDJSON sink + a Microsoft.Extensions.Logging
+        // provider, so ILogger output is captured for Settings → Diagnostics.
+        services.AddSingleton<IDiagnosticsLog, FileDiagnosticsLog>();
+        services.AddSingleton<Microsoft.Extensions.Logging.ILoggerProvider, DiagnosticsLoggerProvider>();
+
         // Connection layer (E1.1). The secret store picks its backend once at startup and logs the choice
-        // (backend name only, SEC-025); the live backend is surfaced in Settings → Security (SEC-024).
-        services.AddSingleton<ISecretStore>(_ => new SecretStore(
+        // (backend name only, SEC-025/#10) to the diagnostics log; the live backend is surfaced in
+        // Settings → Security (SEC-024).
+        services.AddSingleton<ISecretStore>(sp => new SecretStore(
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GrpCurlNet.Studio"),
-            log: message => System.Diagnostics.Trace.WriteLine($"[Studio] {message}")));
+            log: message => sp.GetRequiredService<IDiagnosticsLog>()
+                .Log(ViewModels.Models.Diagnostics.DiagnosticsLevel.Information, "SecretStore", message)));
 
         services.AddSingleton<IWorkspaceStore, JsonWorkspaceStore>();
 

@@ -27,6 +27,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private readonly IFilePickerService? _filePicker;
     private readonly IDialogService? _dialogs;
     private readonly IHistoryStore? _history;
+    private readonly ISecretStore? _secrets;
 
     private SavedConnection? _insecureConnection;
 
@@ -84,12 +85,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IFilePickerService? filePicker = null,
         IDialogService? dialogs = null,
         EnvironmentSwitcherViewModel? environment = null,
-        IHistoryStore? history = null)
+        IHistoryStore? history = null,
+        ISecretStore? secrets = null)
     {
         _theme = theme;
         _profileStore = profileStore;
         _workspaceStore = workspaceStore;
         _history = history;
+        _secrets = secrets;
         _filePicker = filePicker;
         _dialogs = dialogs;
         Connections = connections;
@@ -536,10 +539,16 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        // FR-148: an untitled or read-only file has nowhere to autosave/flush — route to Save As instead.
+        // FR-148: an untitled or read-only file has nowhere to autosave/flush — route to Save As instead
+        // (which runs the secret guard itself).
         if (_workspaceStore.CurrentPath is null || _workspaceStore.IsCurrentReadOnly)
         {
             await SaveWorkspaceAs();
+            return;
+        }
+
+        if (!await PassesSecretGuardAsync())
+        {
             return;
         }
 
@@ -562,6 +571,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         if (path is not null)
         {
+            if (!await PassesSecretGuardAsync())
+            {
+                return;
+            }
+
             await _workspaceStore.SaveAsAsync(_workspaceStore.Current, path);
             Session?.Refresh();
             RefreshRecents();
@@ -593,6 +607,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         if (path is not null)
         {
+            if (!await PassesSecretGuardAsync())
+            {
+                return;
+            }
+
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             await _workspaceStore.ExportAsync(_workspaceStore.Current, path);
             var ms = stopwatch.Elapsed.TotalMilliseconds;
@@ -603,6 +622,61 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                 [new CallTimingPhase("export", $"{ms:0} ms", 1.0)],
                 ConsoleActivityKind.Export, DateTimeOffset.UtcNow));
         }
+    }
+
+    // SEC-034 (T1 backstop): before an explicit save/export, scan the workspace for secret material that would
+    // land as a plain literal in the committed file. Findings are surfaced honestly and the user confirms before
+    // proceeding (autosave can't prompt, so the guard runs only on explicit writes). Returns true to proceed.
+    private async Task<bool> PassesSecretGuardAsync()
+    {
+        if (_workspaceStore is null)
+        {
+            return true;
+        }
+
+        var workspace = _workspaceStore.Current;
+        var leaks = WorkspaceSecretScanner.Scan(workspace, await ResolveSecretValuesAsync(workspace));
+
+        if (leaks.Count == 0 || _dialogs is null)
+        {
+            return true;
+        }
+
+        var detail = string.Join("\n", leaks.Take(10).Select(Describe));
+
+        return await _dialogs.ConfirmAsync(
+            "Possible secret in workspace",
+            "This workspace may hold secret values as plain text, which would be written to the file:\n\n"
+            + detail
+            + "\n\nUse a ${VAR} reference or a secret-typed variable instead to keep them out of the file. Save anyway?");
+
+        static string Describe(SecretLeak leak) => leak.Kind == SecretLeakKind.SensitiveHeaderLiteral
+            ? $"• {leak.Location} has a literal value (use a ${{VAR}} reference)"
+            : $"• {leak.Location} matches a stored secret value";
+    }
+
+    private async Task<IReadOnlyCollection<string>> ResolveSecretValuesAsync(WorkspaceModel workspace)
+    {
+        if (_secrets is null)
+        {
+            return [];
+        }
+
+        var values = new List<string>();
+
+        foreach (var environment in workspace.Environments)
+        {
+            foreach (var variable in environment.Variables)
+            {
+                if (variable.IsSecret && variable.Value.SecretRef is { } keyRef
+                    && await _secrets.GetAsync(keyRef) is { } value)
+                {
+                    values.Add(value);
+                }
+            }
+        }
+
+        return values;
     }
 
     /// <summary>

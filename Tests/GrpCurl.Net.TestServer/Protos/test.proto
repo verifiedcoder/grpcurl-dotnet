@@ -238,6 +238,13 @@ service TestService {
   // first request.
   rpc HalfDuplexCall(stream StreamingOutputCallRequest)
       returns (stream StreamingOutputCallResponse);
+
+  // A deprecated unary call. Present only to exercise the deprecated-symbol
+  // mapping end-to-end (FR-059); the server leaves it UNIMPLEMENTED — describe
+  // and reflection still expose it with the deprecated option set.
+  rpc DeprecatedCall(SimpleRequest) returns (SimpleResponse) {
+    option deprecated = true;
+  }
 }
 
 // A simple service NOT implemented at servers so clients can test for

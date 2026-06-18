@@ -135,4 +135,27 @@ public sealed class DescribeServiceTests(StudioPlaintextServerFixture server)
         await Should.ThrowAsync<OperationCanceledException>(
             async () => await descriptors.DescribeAsync(PlaintextReflection(server.Address), "testing.TestService", cts.Token));
     }
+
+    // FR-059: the deprecated-symbol mapping, end-to-end against a real descriptor (the TestServer's
+    // DeprecatedCall rpc carries `option deprecated = true`). Covers both the describe and catalog paths.
+
+    [Fact]
+    public async Task A_deprecated_method_is_flagged_in_describe()
+    {
+        var service = (ServiceDescription)await Describe("testing.TestService");
+
+        service.Methods.Single(m => m.Name == "DeprecatedCall").Deprecated.ShouldBeTrue();
+        service.Methods.Single(m => m.Name == "UnaryCall").Deprecated.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task A_deprecated_method_is_flagged_in_the_catalog()
+    {
+        var result = await new DescriptorService().LoadAsync(
+            PlaintextReflection(server.Address), TestContext.Current.CancellationToken);
+        result.Ok.ShouldBeTrue(result.Error?.Message);
+
+        var service = result.Catalog!.Services.Single(s => s.FullName == "testing.TestService");
+        service.Methods.Single(m => m.Name == "DeprecatedCall").Deprecated.ShouldBeTrue();
+    }
 }

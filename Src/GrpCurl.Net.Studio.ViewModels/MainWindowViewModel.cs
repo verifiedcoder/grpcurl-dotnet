@@ -326,7 +326,34 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             }
         }
 
+        AddMethodItems(items);
+
         return items;
+    }
+
+    // Command palette v2 (method navigation): jump straight to any method of the active connection's loaded
+    // services. The explorer already holds the catalog for the selected connection, so this is a synchronous
+    // read; choosing a method opens a fresh invocation tab on it.
+    private void AddMethodItems(List<PaletteItem> items)
+    {
+        if (Connections.SelectedConnection?.Connection is not { } connection)
+        {
+            return;
+        }
+
+        foreach (var service in Explorer.Services)
+        {
+            foreach (var method in service.Methods)
+            {
+                var symbol = method.FullName;
+                items.Add(new PaletteItem($"Invoke method: {symbol}", "Method",
+                    () =>
+                    {
+                        Documents.OpenInvocation(connection, symbol);
+                        return Task.CompletedTask;
+                    }));
+            }
+        }
     }
 
     private void SelectConnection(ConnectionListItemViewModel item) => Connections.SelectedConnection = item;

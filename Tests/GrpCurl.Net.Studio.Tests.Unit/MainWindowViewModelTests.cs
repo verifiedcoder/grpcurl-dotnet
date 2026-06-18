@@ -695,4 +695,67 @@ public sealed class MainWindowViewModelTests
 
         documents.Documents.OfType<InvocationDocumentViewModel>().ShouldContain(t => t.MethodSymbol == "pkg.Svc/Go");
     }
+
+    // ── Save-time secret guard (SEC-034) ─────────────────────────────────────
+
+    private static MainWindowViewModel CreateWithLeakWorkspace(out FakeWorkspaceStore store, out FakeDialogService dialogs)
+    {
+        var workspace = new WorkspaceModel
+        {
+            Id = "w", Name = "Demo",
+            Connections =
+            [
+                new SavedConnection
+                {
+                    Name = "prod", Address = "h:1",
+                    ReflectionHeaders = [new HeaderEntry { Name = "authorization", Value = "Bearer secret-literal" }]
+                }
+            ]
+        };
+        store = new FakeWorkspaceStore(workspace);
+        dialogs = new FakeDialogService();
+        return new MainWindowViewModel(
+            new ThemeService(new FakeSettingsStore()),
+            new ConnectionsPaneViewModel(store, new FakeConnectionRegistry(), dialogs, new ConnectionSelection()),
+            EmptyExplorer(), new ConsoleViewModel(), new InspectorViewModel(), EmptyDocuments(),
+            workspaceStore: store, session: new WorkspaceSessionViewModel(store, dialogs),
+            filePicker: new FakeFilePickerService(), dialogs: dialogs);
+    }
+
+    [Fact]
+    public async Task Save_is_blocked_when_a_secret_literal_is_found_and_the_user_declines()
+    {
+        var vm = CreateWithLeakWorkspace(out var store, out var dialogs);
+        await store.SaveAsAsync(store.Current, "/ws/x.gcnws.json", TestContext.Current.CancellationToken); // give it a path
+        dialogs.ConfirmResult = false;
+
+        await vm.SaveWorkspaceCommand.ExecuteAsync(null);
+
+        dialogs.ConfirmCount.ShouldBe(1);
+        store.SaveNowCount.ShouldBe(0); // blocked — nothing flushed
+    }
+
+    [Fact]
+    public async Task Save_proceeds_when_the_user_confirms_despite_a_secret_literal()
+    {
+        var vm = CreateWithLeakWorkspace(out var store, out var dialogs);
+        await store.SaveAsAsync(store.Current, "/ws/x.gcnws.json", TestContext.Current.CancellationToken);
+        dialogs.ConfirmResult = true;
+
+        await vm.SaveWorkspaceCommand.ExecuteAsync(null);
+
+        store.SaveNowCount.ShouldBe(1); // user chose to save anyway
+    }
+
+    [Fact]
+    public async Task Save_does_not_prompt_for_a_clean_workspace()
+    {
+        var vm = CreateWithWorkspace(out var store, out _, out var dialogs, out _, out _); // seeded "Demo" is clean
+        await store.SaveAsAsync(store.Current, "/ws/x.gcnws.json", TestContext.Current.CancellationToken);
+
+        await vm.SaveWorkspaceCommand.ExecuteAsync(null);
+
+        dialogs.ConfirmCount.ShouldBe(0);
+        store.SaveNowCount.ShouldBe(1);
+    }
 }

@@ -324,7 +324,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
                         SessionTabKind.Invocation, invocation.Connection.Id, invocation.MethodSymbol,
                         invocation.RequestJson, invocation.BodyFormat,
                         invocation.Headers
-                            .Select(h => new SessionHeader(h.Name, h.Value, h.IsBin, h.RequiresValue)).ToList(),
+                            .Select(ToSessionHeader).ToList(),
                         NullIfEmpty(invocation.Deadline), invocation.EmitDefaults, invocation.AllowUnknownFields,
                         NullIfEmpty(invocation.MaxMessageSize)));
                     break;
@@ -337,6 +337,19 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
 
         return state;
     }
+
+    /// <summary>
+    ///     Projects a live header row into its persisted session form, redacting secrets first
+    ///     (B1 — security). A sensitive-named header carrying a literal value (per the same rule
+    ///     the workspace save-guard enforces) is persisted with an empty value and
+    ///     <c>RequiresValue=true</c>, so the secret bytes never reach <c>ui-state.json</c> and the
+    ///     restored tab prompts the user to re-enter it (FR-123). <c>${VAR}</c>-referencing and
+    ///     non-sensitive headers are persisted verbatim.
+    /// </summary>
+    private static SessionHeader ToSessionHeader(HeaderRowViewModel header)
+        => WorkspaceSecretScanner.IsSensitiveHeaderLiteral(header.Name, header.Value)
+            ? new SessionHeader(header.Name, string.Empty, header.IsBin, RequiresValue: true)
+            : new SessionHeader(header.Name, header.Value, header.IsBin, header.RequiresValue);
 
     /// <summary>
     ///     FR-146/FR-151: restores the prior tabs on launch when the startup setting asks to reopen the last

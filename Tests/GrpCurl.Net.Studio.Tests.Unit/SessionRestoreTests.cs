@@ -69,6 +69,49 @@ public sealed class SessionRestoreTests
     }
 
     [Fact]
+    public void BuildSession_redacts_sensitive_header_literal_value()
+    {
+        var (workspace, connection) = Workspace();
+        var docs = Create(new FakeSessionStore(), workspace);
+
+        docs.OpenInvocation(connection, "pkg.Svc/Go");
+        var tab = docs.Documents.OfType<InvocationDocumentViewModel>().Single();
+
+        // A sensitive-named header typed as a literal secret (not a ${VAR} reference).
+        tab.Headers.Add(new GrpCurl.Net.Studio.ViewModels.Connections.HeaderRowViewModel(
+            new HeaderEntry { Name = "authorization", Value = "Bearer super-secret-token" }));
+
+        var state = docs.BuildSession();
+
+        var header = state.Tabs[0].Headers.ShouldHaveSingleItem();
+        header.Name.ShouldBe("authorization");
+        header.Value.ShouldBeEmpty();          // secret bytes never reach ui-state.json
+        header.RequiresValue.ShouldBeTrue();   // restored tab re-prompts (FR-123)
+    }
+
+    [Fact]
+    public void BuildSession_keeps_envvar_and_nonsensitive_header_values()
+    {
+        var (workspace, connection) = Workspace();
+        var docs = Create(new FakeSessionStore(), workspace);
+
+        docs.OpenInvocation(connection, "pkg.Svc/Go");
+        var tab = docs.Documents.OfType<InvocationDocumentViewModel>().Single();
+
+        // ${VAR}-referencing sensitive header and a non-sensitive literal header both pass through.
+        tab.Headers.Add(new GrpCurl.Net.Studio.ViewModels.Connections.HeaderRowViewModel(
+            new HeaderEntry { Name = "authorization", Value = "${TOKEN}" }));
+        tab.Headers.Add(new GrpCurl.Net.Studio.ViewModels.Connections.HeaderRowViewModel(
+            new HeaderEntry { Name = "x-tenant", Value = "acme" }));
+
+        var state = docs.BuildSession();
+
+        var headers = state.Tabs[0].Headers!;
+        headers.Single(h => h.Name == "authorization").Value.ShouldBe("${TOKEN}");
+        headers.Single(h => h.Name == "x-tenant").Value.ShouldBe("acme");
+    }
+
+    [Fact]
     public async Task RestoreSessionAsync_reopens_tabs_as_drafts_for_the_matching_workspace()
     {
         var (workspace, _) = Workspace();

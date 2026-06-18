@@ -6,6 +6,7 @@ using GrpCurl.Net.Studio.ViewModels.Connections;
 using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
+using GrpCurl.Net.Studio.ViewModels.Models.History;
 using GrpCurl.Net.Studio.ViewModels.Panes;
 using GrpCurl.Net.Studio.ViewModels.Services;
 
@@ -25,6 +26,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private readonly IWorkspaceStore? _workspaceStore;
     private readonly IFilePickerService? _filePicker;
     private readonly IDialogService? _dialogs;
+    private readonly IHistoryStore? _history;
 
     private SavedConnection? _insecureConnection;
 
@@ -74,11 +76,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         WorkspaceSessionViewModel? session = null,
         IFilePickerService? filePicker = null,
         IDialogService? dialogs = null,
-        EnvironmentSwitcherViewModel? environment = null)
+        EnvironmentSwitcherViewModel? environment = null,
+        IHistoryStore? history = null)
     {
         _theme = theme;
         _profileStore = profileStore;
         _workspaceStore = workspaceStore;
+        _history = history;
         _filePicker = filePicker;
         _dialogs = dialogs;
         Connections = connections;
@@ -280,7 +284,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        var chosen = await _dialogs.ShowDialogAsync(new CommandPaletteViewModel(BuildPaletteItems()));
+        var items = BuildPaletteItems();
+        await AddHistoryItemsAsync(items);
+
+        var chosen = await _dialogs.ShowDialogAsync(new CommandPaletteViewModel(items));
 
         if (chosen is not null)
         {
@@ -288,8 +295,49 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
     }
 
+    // Command palette v2 (history navigation): the most recent replayable calls, newest first. Replay reuses
+    // the History tab's path — resolve the connection by name and re-open a draft from the redacted request.
+    private async Task AddHistoryItemsAsync(List<PaletteItem> items)
+    {
+        if (_history is null || _workspaceStore is null)
+        {
+            return;
+        }
+
+        var entries = await _history.ReadAllAsync();
+
+        foreach (var entry in entries.Where(e => !e.Request.BodyTruncated).Reverse().Take(20))
+        {
+            var captured = entry;
+            items.Add(new PaletteItem(
+                $"Replay: {captured.Method} ({captured.Connection.Name})", "History",
+                () => ReplayHistoryAsync(captured)));
+        }
+    }
+
+    private async Task ReplayHistoryAsync(HistoryEntry entry)
+    {
+        if (_workspaceStore is null)
+        {
+            return;
+        }
+
+        if (HistoryReplay.ResolveConnection(_workspaceStore.Current, entry) is not { } connection)
+        {
+            if (_dialogs is not null)
+            {
+                await _dialogs.ShowMessageAsync("Connection no longer exists",
+                    $"The connection '{entry.Connection.Name}' is not in the current workspace, so this entry cannot be replayed.");
+            }
+
+            return;
+        }
+
+        Documents.OpenInvocation(connection, entry.Method, HistoryReplay.ToPrefill(entry.Request));
+    }
+
     /// <summary>Builds the palette entries: app commands, then connections, then their saved requests.</summary>
-    private IReadOnlyList<PaletteItem> BuildPaletteItems()
+    private List<PaletteItem> BuildPaletteItems()
     {
         var items = new List<PaletteItem>
         {

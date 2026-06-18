@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:docs="clr-namespace:GrpCurl.Net.Studio.ViewModels.Documents;assembly=GrpCurl.Net.Studio.ViewModels"
+             xmlns:diag="clr-namespace:GrpCurl.Net.Studio.ViewModels.Models.Diagnostics;assembly=GrpCurl.Net.Studio.ViewModels"
              x:Class="GrpCurl.Net.Studio.Views.Documents.SettingsDocumentView"
              x:Name="Root"
              x:DataType="docs:SettingsDocumentViewModel">
@@ -403,10 +404,53 @@
                 <TextBlock Classes="settingHint" Text="Remembered for when automatic update checks arrive (default: on)." />
             </StackPanel>
 
-            <!-- ───────── Phase-2 placeholders (disabled) ───────── -->
-            <StackPanel IsEnabled="False" Spacing="6" Opacity="0.55">
-                <TextBlock Classes="sectionHeader" Text="Diagnostics" />
-                <TextBlock Classes="settingHint" Text="In-app log viewer, level filter, and diagnostics bundle — arrives in a later release." />
+            <!-- ───────── Diagnostics (FR-155) ───────── -->
+            <TextBlock Classes="sectionHeader" Text="Diagnostics" />
+            <StackPanel Spacing="6" IsVisible="{Binding HasDiagnostics}">
+                <TextBlock Classes="settingHint"
+                           Text="The rolling diagnostics log (7-day / 10 MB). Header values are never logged; the bundle contains no workspace content or secrets." />
+
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
+                    <ComboBox Grid.Column="0" ItemsSource="{Binding DiagnosticsLevelOptions}"
+                              SelectedItem="{Binding DiagnosticsLevelFilter}" MinWidth="120"
+                              AutomationProperties.Name="Diagnostics level filter" />
+                    <TextBox Grid.Column="1" Text="{Binding DiagnosticsSearch}" Watermark="Search…"
+                             AutomationProperties.Name="Diagnostics search" />
+                    <Button Grid.Column="2" Content="Refresh" Command="{Binding RefreshDiagnosticsCommand}"
+                            AutomationProperties.Name="Refresh diagnostics" />
+                </Grid>
+
+                <Border BorderBrush="{DynamicResource Divider}" BorderThickness="1" CornerRadius="4"
+                        Background="{DynamicResource Surface.PaneHeader}" Padding="6" MinHeight="120">
+                    <ScrollViewer MaxHeight="320">
+                        <Panel>
+                            <TextBlock Text="No matching log entries." Opacity="0.6" FontSize="12"
+                                       IsVisible="{Binding HasNoDiagnosticsEntries}" />
+                            <ItemsControl ItemsSource="{Binding DiagnosticsEntries}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="diag:DiagnosticsLogEntry">
+                                        <TextBlock FontFamily="Cascadia Code,Consolas,monospace" FontSize="11"
+                                                   TextWrapping="Wrap" Margin="0,1">
+                                            <Run Text="{Binding At, StringFormat='{}{0:HH:mm:ss}'}" />
+                                            <Run Text=" " /><Run Text="{Binding Level}" FontWeight="SemiBold" />
+                                            <Run Text="  " /><Run Text="{Binding Category}" Foreground="{DynamicResource Status.Neutral}" />
+                                            <Run Text=" — " /><Run Text="{Binding Message}" />
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Panel>
+                    </ScrollViewer>
+                </Border>
+
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Button Content="Open log folder" Command="{Binding OpenLogFolderCommand}"
+                            AutomationProperties.Name="Open log folder" />
+                    <Button Content="Copy diagnostics bundle" Command="{Binding CopyDiagnosticsBundleCommand}"
+                            AutomationProperties.Name="Copy diagnostics bundle" />
+                    <TextBlock Text="{Binding DiagnosticsStatus}" VerticalAlignment="Center" Opacity="0.8" FontSize="12"
+                               IsVisible="{Binding DiagnosticsStatus, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                </StackPanel>
             </StackPanel>
 
             <!-- ───────── Reset all (FR-159) ───────── -->

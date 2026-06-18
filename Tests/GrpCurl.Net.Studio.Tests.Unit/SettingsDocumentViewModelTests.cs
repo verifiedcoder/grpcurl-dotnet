@@ -2,6 +2,7 @@ using GrpCurl.Net.Studio.Tests.Unit.Fakes;
 using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Models;
+using GrpCurl.Net.Studio.ViewModels.Models.Diagnostics;
 using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
@@ -216,6 +217,88 @@ public sealed class SettingsDocumentViewModelTests
 
         vm.NetworkConnectTimeout.ShouldBe("99s");
         (store.SaveCount - savesBefore).ShouldBe(0);
+    }
+
+    // ── Diagnostics (FR-155) ─────────────────────────────────────────────────
+
+    private static SettingsDocumentViewModel WithDiagnostics(
+        FakeDiagnosticsLog log, out FakeClipboardService clipboard, out FakeLauncherService launcher)
+    {
+        clipboard = new FakeClipboardService();
+        launcher = new FakeLauncherService();
+        return new SettingsDocumentViewModel(
+            new FakeSettingsStore(), new FakeThemeService(), new FakeDialogService(), new FakeProtocService(),
+            secrets: null, new FakeUpdateService { CurrentVersion = "1.2.3" }, launcher, log, clipboard);
+    }
+
+    [Fact]
+    public void Diagnostics_entries_load_and_filter_by_level()
+    {
+        var log = new FakeDiagnosticsLog();
+        log.Entries.Add(new(DateTimeOffset.UtcNow, DiagnosticsLevel.Debug, "a", "debug line"));
+        log.Entries.Add(new(DateTimeOffset.UtcNow, DiagnosticsLevel.Information, "b", "info line"));
+        log.Entries.Add(new(DateTimeOffset.UtcNow, DiagnosticsLevel.Error, "c", "error line"));
+
+        var vm = WithDiagnostics(log, out _, out _);
+
+        // Default filter is Information, so Debug is hidden.
+        vm.DiagnosticsEntries.Select(e => e.Message).ShouldBe(["info line", "error line"]);
+
+        vm.DiagnosticsLevelFilter = DiagnosticsLevel.Error;
+        vm.DiagnosticsEntries.Select(e => e.Message).ShouldBe(["error line"]);
+    }
+
+    [Fact]
+    public void Diagnostics_search_filters_by_message_or_category()
+    {
+        var log = new FakeDiagnosticsLog();
+        log.Entries.Add(new(DateTimeOffset.UtcNow, DiagnosticsLevel.Information, "SecretStore", "backend: macOS Keychain"));
+        log.Entries.Add(new(DateTimeOffset.UtcNow, DiagnosticsLevel.Information, "Workspace", "opened project.gcnws.json"));
+        var vm = WithDiagnostics(log, out _, out _);
+
+        vm.DiagnosticsSearch = "keychain";
+        vm.DiagnosticsEntries.ShouldHaveSingleItem().Category.ShouldBe("SecretStore");
+
+        vm.DiagnosticsSearch = "workspace"; // matches the category
+        vm.DiagnosticsEntries.ShouldHaveSingleItem().Category.ShouldBe("Workspace");
+    }
+
+    [Fact]
+    public async Task Copy_diagnostics_bundle_includes_version_os_and_entries()
+    {
+        var log = new FakeDiagnosticsLog();
+        log.Entries.Add(new(DateTimeOffset.UtcNow, DiagnosticsLevel.Warning, "Net", "connect timeout"));
+        var vm = WithDiagnostics(log, out var clipboard, out _);
+
+        await vm.CopyDiagnosticsBundleCommand.ExecuteAsync(null);
+
+        var bundle = clipboard.Text.ShouldNotBeNull();
+        bundle.ShouldContain("Version: 1.2.3");
+        bundle.ShouldContain("OS:");
+        bundle.ShouldContain("connect timeout");
+        vm.DiagnosticsStatus.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task Open_log_folder_launches_the_folder()
+    {
+        var log = new FakeDiagnosticsLog();
+        var vm = WithDiagnostics(log, out _, out var launcher);
+
+        await vm.OpenLogFolderCommand.ExecuteAsync(null);
+
+        launcher.LaunchCount.ShouldBe(1);
+        launcher.LastUri.ShouldNotBeNull().ShouldStartWith("file:");
+    }
+
+    [Fact]
+    public void Without_a_diagnostics_log_the_section_is_unavailable()
+    {
+        var vm = new SettingsDocumentViewModel(new FakeSettingsStore(), new FakeThemeService(), new FakeDialogService());
+
+        vm.HasDiagnostics.ShouldBeFalse();
+        vm.OpenLogFolderCommand.CanExecute(null).ShouldBeFalse();
+        vm.CopyDiagnosticsBundleCommand.CanExecute(null).ShouldBeFalse();
     }
 
     // ── Updates (FR-156) ─────────────────────────────────────────────────────

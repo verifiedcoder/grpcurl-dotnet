@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.Studio.ViewModels.Models;
+using GrpCurl.Net.Studio.ViewModels.Models.Diagnostics;
 using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.ViewModels.Documents;
@@ -10,8 +11,8 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 ///     Apply button) and survive restarts. Each setting has a per-setting "reset to default"
 ///     affordance, plus a "reset all" (FR-159). Theme routes through the shared
 ///     <see cref="IThemeService" /> (live switch); other settings are written straight back through
-///     <see cref="ISettingsStore" />. General / Editor / Network / protoc / Security / History /
-///     Descriptor limits / Updates are active; Diagnostics remains a disabled placeholder.
+///     <see cref="ISettingsStore" />. All categories are active: General, Editor, Network, protoc,
+///     Security, History, Descriptor limits, Updates, and Diagnostics (FR-155 log viewer).
 /// </summary>
 public sealed partial class SettingsDocumentViewModel : DocumentViewModel
 {
@@ -21,6 +22,9 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
     private readonly IProtocService? _protoc;
     private readonly IUpdateService? _updates;
     private readonly ILauncherService? _launcher;
+    private readonly IDiagnosticsLog? _diagnostics;
+    private readonly IClipboardService? _clipboard;
+    private readonly List<DiagnosticsLogEntry> _allDiagnostics = [];
     private readonly SecretStoreInfo? _secretInfo;
     private readonly bool _loaded;
     private bool _applying;
@@ -117,6 +121,17 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
     [ObservableProperty]
     private string? _updateStatus;
 
+    // ── Diagnostics (FR-155) ─────────────────────────────────────────────────
+
+    [ObservableProperty]
+    private DiagnosticsLevel _diagnosticsLevelFilter = DiagnosticsLevel.Information;
+
+    [ObservableProperty]
+    private string _diagnosticsSearch = string.Empty;
+
+    [ObservableProperty]
+    private string? _diagnosticsStatus;
+
     public SettingsDocumentViewModel(
         ISettingsStore settings,
         IThemeService themeService,
@@ -124,7 +139,9 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
         IProtocService? protoc = null,
         ISecretStore? secrets = null,
         IUpdateService? updates = null,
-        ILauncherService? launcher = null)
+        ILauncherService? launcher = null,
+        IDiagnosticsLog? diagnostics = null,
+        IClipboardService? clipboard = null)
     {
         _settings = settings;
         _themeService = themeService;
@@ -132,8 +149,15 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
         _protoc = protoc;
         _updates = updates;
         _launcher = launcher;
+        _diagnostics = diagnostics;
+        _clipboard = clipboard;
         _secretInfo = secrets?.Info;
         Title = "Settings";
+
+        if (_diagnostics is not null)
+        {
+            _ = RefreshDiagnosticsAsync();
+        }
 
         LoadFrom(settings.Current, themeService.Current);
 
@@ -170,6 +194,16 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
     public IReadOnlyList<StartupBehavior> StartupOptions { get; } = Enum.GetValues<StartupBehavior>();
     public IReadOnlyList<ShellDialect> DialectOptions { get; } = Enum.GetValues<ShellDialect>();
     public IReadOnlyList<UpdateChannel> UpdateChannelOptions { get; } = Enum.GetValues<UpdateChannel>();
+
+    /// <summary>FR-155: the filtered diagnostics entries shown in the viewer (oldest first).</summary>
+    public System.Collections.ObjectModel.ObservableCollection<DiagnosticsLogEntry> DiagnosticsEntries { get; } = [];
+
+    public IReadOnlyList<DiagnosticsLevel> DiagnosticsLevelOptions { get; } = Enum.GetValues<DiagnosticsLevel>();
+
+    /// <summary>Whether the diagnostics log is wired (its actions are available).</summary>
+    public bool HasDiagnostics => _diagnostics is not null;
+
+    public bool HasNoDiagnosticsEntries => DiagnosticsEntries.Count == 0;
 
     /// <summary>FR-156: the running application version (or a dash when the update service isn't wired).</summary>
     public string AppVersion => _updates?.CurrentVersion ?? "—";
@@ -246,6 +280,83 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
 
         await _launcher.LaunchUriAsync(_updates.ReleasesUrl(UpdateChannel));
         UpdateStatus = $"Opened the {UpdateChannel.ToString().ToLowerInvariant()} releases page in your browser.";
+    }
+
+    partial void OnDiagnosticsLevelFilterChanged(DiagnosticsLevel value) => ApplyDiagnosticsFilter();
+    partial void OnDiagnosticsSearchChanged(string value) => ApplyDiagnosticsFilter();
+
+    /// <summary>FR-155: reloads the diagnostics entries from the log file and re-applies the filter.</summary>
+    [RelayCommand]
+    private async Task RefreshDiagnostics() => await RefreshDiagnosticsAsync();
+
+    private async Task RefreshDiagnosticsAsync()
+    {
+        if (_diagnostics is null)
+        {
+            return;
+        }
+
+        var entries = await _diagnostics.ReadRecentAsync();
+        _allDiagnostics.Clear();
+        _allDiagnostics.AddRange(entries);
+        ApplyDiagnosticsFilter();
+    }
+
+    private void ApplyDiagnosticsFilter()
+    {
+        var search = DiagnosticsSearch.Trim();
+
+        DiagnosticsEntries.Clear();
+
+        foreach (var entry in _allDiagnostics.Where(e =>
+                     e.Level >= DiagnosticsLevelFilter
+                     && (search.Length == 0
+                         || e.Message.Contains(search, StringComparison.OrdinalIgnoreCase)
+                         || e.Category.Contains(search, StringComparison.OrdinalIgnoreCase))))
+        {
+            DiagnosticsEntries.Add(entry);
+        }
+
+        OnPropertyChanged(nameof(HasNoDiagnosticsEntries));
+    }
+
+    /// <summary>FR-155: open the folder holding the diagnostics log file.</summary>
+    [RelayCommand(CanExecute = nameof(HasDiagnostics))]
+    private async Task OpenLogFolder()
+    {
+        if (_diagnostics is null || _launcher is null)
+        {
+            return;
+        }
+
+        await _launcher.LaunchUriAsync(new Uri(_diagnostics.LogFolderPath).AbsoluteUri);
+    }
+
+    /// <summary>
+    ///     FR-155: copy a diagnostics bundle — the logs plus app version and OS — to the clipboard. Contains
+    ///     no workspace content and no secrets (entries carry header names only, SEC-031).
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(HasDiagnostics))]
+    private async Task CopyDiagnosticsBundle()
+    {
+        if (_clipboard is null)
+        {
+            return;
+        }
+
+        var bundle = new System.Text.StringBuilder();
+        bundle.AppendLine("GrpCurl.Net Studio diagnostics");
+        bundle.AppendLine($"Version: {_updates?.CurrentVersion ?? "unknown"}");
+        bundle.AppendLine($"OS: {System.Runtime.InteropServices.RuntimeInformation.OSDescription}");
+        bundle.AppendLine();
+
+        foreach (var entry in _allDiagnostics)
+        {
+            bundle.AppendLine($"{entry.At:u} [{entry.Level}] {entry.Category}: {entry.Message}");
+        }
+
+        await _clipboard.SetTextAsync(bundle.ToString());
+        DiagnosticsStatus = "Copied the diagnostics bundle to the clipboard.";
     }
 
     /// <summary>FR-150: per-setting reset to its built-in default. Setting the property re-persists.</summary>

@@ -455,4 +455,42 @@ public sealed class MainWindowViewModelTests
         dialogs.LastMessageTitle.ShouldBe("Could not import workspace");
         store.Current.Connections.ShouldHaveSingleItem();
     }
+
+    // ── Command palette (Ctrl+K) ─────────────────────────────────────────────
+
+    [Fact]
+    public async Task The_command_palette_lists_commands_and_connections()
+    {
+        var vm = CreateWithWorkspace(out _, out _, out var dialogs, out _, out _);
+        IReadOnlyList<string>? titles = null;
+        dialogs.OnShowDialog = d =>
+        {
+            if (d is CommandPaletteViewModel p)
+            {
+                titles = p.Items.Select(i => i.Title).ToList();
+            }
+
+            return null; // dismiss without choosing
+        };
+
+        await vm.OpenCommandPaletteCommand.ExecuteAsync(null);
+
+        titles.ShouldNotBeNull();
+        titles.ShouldContain("Open Settings");
+        titles.ShouldContain("Export workspace…");
+        titles.ShouldContain("Go to connection: a"); // the seeded connection
+    }
+
+    [Fact]
+    public async Task The_command_palette_runs_the_chosen_action()
+    {
+        var vm = CreateWithWorkspace(out _, out _, out var dialogs, out _, out var documents);
+        dialogs.OnShowDialog = d => d is CommandPaletteViewModel p
+            ? p.Items.First(i => i.Title == "Open Settings")
+            : null;
+
+        await vm.OpenCommandPaletteCommand.ExecuteAsync(null);
+
+        documents.Documents.OfType<SettingsDocumentViewModel>().ShouldNotBeEmpty(); // the action ran
+    }
 }

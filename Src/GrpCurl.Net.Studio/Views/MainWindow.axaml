@@ -23,6 +23,7 @@
         <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveWorkspaceCommand}" />
         <KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding SaveWorkspaceAsCommand}" />
         <KeyBinding Gesture="Ctrl+H" Command="{Binding OpenHistoryCommand}" />
+        <KeyBinding Gesture="Ctrl+K" Command="{Binding OpenCommandPaletteCommand}" />
     </Window.KeyBindings>
 
     <DockPanel>
@@ -87,6 +88,9 @@
                 <Separator />
                 <MenuItem Header="_History" InputGesture="Ctrl+H" Command="{Binding OpenHistoryCommand}"
                           AutomationProperties.Name="History" />
+                <Separator />
+                <MenuItem Header="Command _Palette…" InputGesture="Ctrl+K" Command="{Binding OpenCommandPaletteCommand}"
+                          AutomationProperties.Name="Command palette" />
             </MenuItem>
             <MenuItem Header="_Connection">
                 <MenuItem Header="_Add Connection…" Command="{Binding Connections.AddConnectionCommand}"

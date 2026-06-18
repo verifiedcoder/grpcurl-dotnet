@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:GrpCurl.Net.Studio.ViewModels;assembly=GrpCurl.Net.Studio.ViewModels"
+             x:Class="GrpCurl.Net.Studio.Views.CommandPaletteView"
+             x:DataType="vm:CommandPaletteViewModel"
+             Width="560">
+
+    <!-- Type to filter; Up/Down to move; Enter to run; Esc to dismiss. -->
+    <UserControl.KeyBindings>
+        <KeyBinding Gesture="Down" Command="{Binding MoveDownCommand}" />
+        <KeyBinding Gesture="Up" Command="{Binding MoveUpCommand}" />
+        <KeyBinding Gesture="Enter" Command="{Binding AcceptCommand}" />
+        <KeyBinding Gesture="Escape" Command="{Binding CancelCommand}" />
+    </UserControl.KeyBindings>
+
+    <StackPanel Margin="12" Spacing="8">
+        <TextBox x:Name="Search" Text="{Binding Query}" Watermark="Type a command, connection, or request…"
+                 AutomationProperties.Name="Command palette search" />
+
+        <TextBlock Text="No matching commands." Opacity="0.6" FontSize="12"
+                   IsVisible="{Binding HasNoMatches}" />
+
+        <ListBox ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}"
+                 MaxHeight="360" AutomationProperties.Name="Command palette results">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:PaletteItem">
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,2">
+                        <TextBlock Grid.Column="0" Text="{Binding Title}" VerticalAlignment="Center" />
+                        <Border Grid.Column="1" Background="{DynamicResource Surface.PaneHeader}" CornerRadius="4" Padding="6,1">
+                            <TextBlock Text="{Binding Category}" FontSize="11" Opacity="0.7" />
+                        </Border>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </StackPanel>
+</UserControl>

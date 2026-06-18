@@ -33,6 +33,8 @@
             <MenuItem Header="_File">
                 <MenuItem Header="_New Workspace" InputGesture="Ctrl+N" Command="{Binding NewWorkspaceCommand}"
                           AutomationProperties.Name="New workspace" />
+                <MenuItem Header="New Workspace with _Example Connection" Command="{Binding NewWorkspaceFromTemplateCommand}"
+                          AutomationProperties.Name="New workspace with example connection" />
                 <MenuItem Header="_Open Workspace…" InputGesture="Ctrl+O" Command="{Binding OpenWorkspaceCommand}"
                           AutomationProperties.Name="Open workspace" />
                 <MenuItem Header="Open _Recent" ItemsSource="{Binding RecentWorkspaces}"

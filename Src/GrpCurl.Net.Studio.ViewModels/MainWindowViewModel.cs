@@ -294,6 +294,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         var items = new List<PaletteItem>
         {
             Command("New workspace", NewWorkspaceCommand),
+            Command("New workspace with example connection", NewWorkspaceFromTemplateCommand),
             Command("Open workspace…", OpenWorkspaceCommand),
             Command("Save workspace", SaveWorkspaceCommand),
             Command("Save workspace as…", SaveWorkspaceAsCommand),
@@ -343,14 +344,20 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>File → New: start a fresh empty workspace (untitled until Save As), after a dirty guard.</summary>
     [RelayCommand(CanExecute = nameof(CanManageWorkspaces))]
-    private async Task NewWorkspace()
+    private Task NewWorkspace() => CreateNewWorkspace(withStarterConnection: false);
+
+    /// <summary>File → New with Example Connection: a fresh workspace seeded with the FR-149 starter connection.</summary>
+    [RelayCommand(CanExecute = nameof(CanManageWorkspaces))]
+    private Task NewWorkspaceFromTemplate() => CreateNewWorkspace(withStarterConnection: true);
+
+    private async Task CreateNewWorkspace(bool withStarterConnection)
     {
         if (_workspaceStore is null || !await ConfirmDiscardIfDirtyAsync())
         {
             return;
         }
 
-        _workspaceStore.NewWorkspace();
+        _workspaceStore.NewWorkspace(withStarterConnection);
         OnWorkspaceSwitched();
     }
 

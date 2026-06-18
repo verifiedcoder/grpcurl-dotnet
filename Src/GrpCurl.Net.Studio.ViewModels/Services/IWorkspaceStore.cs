@@ -84,8 +84,11 @@ public interface IWorkspaceStore
     /// </summary>
     Task<WorkspaceModel> ReadAsync(string path, CancellationToken cancellationToken = default);
 
-    /// <summary>Replaces <see cref="Current" /> with a fresh empty workspace (a new identity, no saved path yet).</summary>
-    WorkspaceModel NewWorkspace();
+    /// <summary>
+    ///     Replaces <see cref="Current" /> with a fresh workspace (a new identity, no saved path yet). When
+    ///     <paramref name="withStarterConnection" /> is set, it is seeded with the FR-149 example connection.
+    /// </summary>
+    WorkspaceModel NewWorkspace(bool withStarterConnection = false);
 
     /// <summary>Removes <paramref name="path" /> from the recents (e.g. a dangling entry the user forgets).</summary>
     Task RemoveRecentAsync(string path, CancellationToken cancellationToken = default);

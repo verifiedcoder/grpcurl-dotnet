@@ -281,6 +281,18 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task New_with_example_connection_seeds_and_switches(/* FR-149 */)
+    {
+        var vm = CreateWithWorkspace(out var store, out _, out _, out var connections, out _);
+
+        await vm.NewWorkspaceFromTemplateCommand.ExecuteAsync(null);
+
+        store.CurrentPath.ShouldBeNull(); // untitled
+        store.Current.Connections.ShouldHaveSingleItem().Address.ShouldBe("localhost:9090");
+        connections.Connections.ShouldHaveSingleItem(); // the pane reloaded from the templated workspace
+    }
+
+    [Fact]
     public async Task Open_workspace_loads_the_picked_file_and_reloads_connections()
     {
         var vm = CreateWithWorkspace(out var store, out var picker, out _, out var connections, out _);

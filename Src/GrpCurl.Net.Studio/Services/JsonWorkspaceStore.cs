@@ -172,10 +172,10 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
         return DeserializeResolved(json, path);
     }
 
-    public WorkspaceModel NewWorkspace()
+    public WorkspaceModel NewWorkspace(bool withStarterConnection = false)
     {
         CancelPendingFlush();
-        Current = WorkspaceModel.Empty();
+        Current = withStarterConnection ? WorkspaceModel.StarterTemplate() : WorkspaceModel.Empty();
         CurrentPath = null; // untitled until the first Save As
         SetDirty(false);
         SetReadOnly(false); // a fresh untitled workspace has nothing on disk

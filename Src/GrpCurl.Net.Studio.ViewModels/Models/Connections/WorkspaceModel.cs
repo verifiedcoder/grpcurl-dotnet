@@ -49,6 +49,22 @@ public sealed class WorkspaceModel
     };
 
     /// <summary>
+    ///     FR-149: a fresh workspace seeded with one example connection (<c>localhost:9090</c>, plaintext,
+    ///     server reflection) so a first-time user has something to explore immediately.
+    /// </summary>
+    public static WorkspaceModel StarterTemplate()
+    {
+        var workspace = Empty();
+        workspace.Connections.Add(new SavedConnection
+        {
+            Name = "Example (localhost:9090)",
+            Address = "localhost:9090",
+            Transport = TransportMode.Plaintext
+        });
+        return workspace;
+    }
+
+    /// <summary>
     ///     A copy preserving identity (id/name/schemaVersion/overflow) with fresh collection instances.
     ///     Mutators clone the live workspace and replace just the collection they own, so a connection-list
     ///     save never wipes the workspace id or another section's data.

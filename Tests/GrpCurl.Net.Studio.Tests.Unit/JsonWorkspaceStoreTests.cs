@@ -99,6 +99,23 @@ public sealed class JsonWorkspaceStoreTests : IDisposable
     private static string JsonEscaped(string path) => path.Replace("\\", "\\\\");
 
     [Fact]
+    public void New_with_a_starter_connection_seeds_the_example_connection(/* FR-149 */)
+    {
+        var store = new JsonWorkspaceStore(Path_);
+
+        var workspace = store.NewWorkspace(withStarterConnection: true);
+
+        store.CurrentPath.ShouldBeNull(); // untitled until Save As
+        var connection = workspace.Connections.ShouldHaveSingleItem();
+        connection.Address.ShouldBe("localhost:9090");
+        connection.Transport.ShouldBe(TransportMode.Plaintext);
+    }
+
+    [Fact]
+    public void New_without_a_template_is_empty()
+        => new JsonWorkspaceStore(Path_).NewWorkspace().Connections.ShouldBeEmpty();
+
+    [Fact]
     public async Task A_read_only_file_opens_read_only_and_suppresses_autosave_until_save_as(/* FR-148 */)
     {
         var ct = TestContext.Current.CancellationToken;

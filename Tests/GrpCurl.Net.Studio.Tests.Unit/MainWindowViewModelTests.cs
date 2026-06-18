@@ -6,6 +6,7 @@ using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Descriptors;
+using GrpCurl.Net.Studio.ViewModels.Models.History;
 using GrpCurl.Net.Studio.ViewModels.Panes;
 using GrpCurl.Net.Studio.ViewModels.Services;
 
@@ -608,5 +609,62 @@ public sealed class MainWindowViewModelTests
 
         documents.Documents.OfType<InvocationDocumentViewModel>()
             .ShouldContain(t => t.MethodSymbol == "pkg.Greeter/SayHello");
+    }
+
+    // ── Command palette v2: history navigation ───────────────────────────────
+
+    private static HistoryEntry HistoryRow(string id, string connection, string method, bool truncated = false) => new(
+        HistoryEntry.CurrentVersion, id, new DateTimeOffset(2026, 6, 11, 14, 0, 0, TimeSpan.Zero), HistoryKind.Grpc,
+        new HistoryConnection(connection, "h:1", "plaintext", null), "/ws/x.gcnws.json", method,
+        new HistoryRequest("json", "{}", truncated, [], null, false, true, null, null, null),
+        new HistoryOutcome("OK", "success", 0, 5, 1, 1, null, false, null));
+
+    private static MainWindowViewModel CreateWithHistory(out FakeDialogService dialogs, out DocumentsViewModel documents, params HistoryEntry[] entries)
+    {
+        var store = new FakeWorkspaceStore(new WorkspaceModel { Id = "w", Name = "W", Connections = [new SavedConnection { Name = "prod", Address = "h:1" }] });
+        var history = new FakeHistoryStore();
+        history.Entries.AddRange(entries);
+        documents = EmptyDocuments();
+        dialogs = new FakeDialogService();
+        return new MainWindowViewModel(
+            new ThemeService(new FakeSettingsStore()), EmptyConnectionsPane(), EmptyExplorer(), new ConsoleViewModel(),
+            new InspectorViewModel(), documents, workspaceStore: store, dialogs: dialogs, history: history);
+    }
+
+    [Fact]
+    public async Task The_command_palette_lists_recent_calls_for_replay()
+    {
+        var vm = CreateWithHistory(out var dialogs, out _,
+            HistoryRow("e1", "prod", "pkg.Svc/Go"),
+            HistoryRow("e2", "prod", "pkg.Svc/Truncated", truncated: true));
+        IReadOnlyList<string>? titles = null;
+        dialogs.OnShowDialog = d =>
+        {
+            if (d is CommandPaletteViewModel p)
+            {
+                titles = p.Items.Select(i => i.Title).ToList();
+            }
+
+            return null;
+        };
+
+        await vm.OpenCommandPaletteCommand.ExecuteAsync(null);
+
+        titles.ShouldNotBeNull();
+        titles.ShouldContain("Replay: pkg.Svc/Go (prod)");
+        titles.ShouldNotContain("Replay: pkg.Svc/Truncated (prod)"); // body-truncated → not replayable
+    }
+
+    [Fact]
+    public async Task The_command_palette_replays_a_call_into_a_tab()
+    {
+        var vm = CreateWithHistory(out var dialogs, out var documents, HistoryRow("e1", "prod", "pkg.Svc/Go"));
+        dialogs.OnShowDialog = d => d is CommandPaletteViewModel p
+            ? p.Items.First(i => i.Title == "Replay: pkg.Svc/Go (prod)")
+            : null;
+
+        await vm.OpenCommandPaletteCommand.ExecuteAsync(null);
+
+        documents.Documents.OfType<InvocationDocumentViewModel>().ShouldContain(t => t.MethodSymbol == "pkg.Svc/Go");
     }
 }

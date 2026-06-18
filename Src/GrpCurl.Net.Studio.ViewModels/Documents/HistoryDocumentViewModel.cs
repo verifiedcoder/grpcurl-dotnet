@@ -137,10 +137,7 @@ public sealed partial class HistoryDocumentViewModel : DocumentViewModel
            || entry.Request.Body.Contains(search, StringComparison.OrdinalIgnoreCase);
 
     private bool IsReplayable(HistoryEntry entry)
-        => !entry.Request.BodyTruncated && ResolveConnection(entry) is not null;
-
-    private SavedConnection? ResolveConnection(HistoryEntry entry)
-        => _workspace.Current.Connections.FirstOrDefault(c => c.Name == entry.Connection.Name);
+        => !entry.Request.BodyTruncated && HistoryReplay.ResolveConnection(_workspace.Current, entry) is not null;
 
     private static string KindLabel(HistoryKind kind) => kind == HistoryKind.Grpc ? "gRPC" : "GraphQL";
 
@@ -173,7 +170,7 @@ public sealed partial class HistoryDocumentViewModel : DocumentViewModel
             return;
         }
 
-        if (ResolveConnection(row.Entry) is not { } connection)
+        if (HistoryReplay.ResolveConnection(_workspace.Current, row.Entry) is not { } connection)
         {
             await _dialogs.ShowMessageAsync("Connection no longer exists",
                 $"The connection '{row.Entry.Connection.Name}' is not in the current workspace, so this entry cannot be replayed.");
@@ -183,28 +180,8 @@ public sealed partial class HistoryDocumentViewModel : DocumentViewModel
         // FR-123: restore body + headers + options. A redacted secret value can't be recovered, so its
         // header is restored by name and flagged "value required"; ${VAR} headers come back verbatim and
         // re-resolve at send time. The replay is a plain draft (not bound to a saved request).
-        _host.OpenInvocation(connection, row.Entry.Method, BuildPrefill(row.Entry.Request));
+        _host.OpenInvocation(connection, row.Entry.Method, HistoryReplay.ToPrefill(row.Entry.Request));
     }
-
-    private static RequestPrefill BuildPrefill(HistoryRequest request)
-    {
-        var headers = request.Headers
-            .Select(h => h.Value == HistoryEntry.RedactedMarker
-                ? new PrefillHeader(h.Name, string.Empty, IsBin(h.Name), RequiresValue: true)
-                : new PrefillHeader(h.Name, h.Value, IsBin(h.Name)))
-            .ToList();
-
-        return new RequestPrefill(
-            request.Body,
-            request.BodyFormat == "text" ? RequestBodyFormat.Text : RequestBodyFormat.Json,
-            headers,
-            request.Deadline,
-            request.EmitDefaults,
-            request.AllowUnknownFields,
-            (request.MaxReceiveBytes ?? request.MaxSendBytes)?.ToString(CultureInfo.InvariantCulture));
-    }
-
-    private static bool IsBin(string name) => name.EndsWith("-bin", StringComparison.OrdinalIgnoreCase);
 
     [RelayCommand]
     private async Task DeleteSelected()

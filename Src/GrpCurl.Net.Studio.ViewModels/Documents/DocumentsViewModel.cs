@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GrpCurl.Net.Studio.ViewModels.Connections;
+using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Models.Session;
@@ -336,6 +337,15 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
 
         return state;
     }
+
+    /// <summary>
+    ///     FR-146/FR-151: restores the prior tabs on launch when the startup setting asks to reopen the last
+    ///     workspace and its tabs; a no-op when the setting is "start empty".
+    /// </summary>
+    public Task RestoreSessionOnStartupAsync(CancellationToken cancellationToken = default)
+        => _settings.Current.General.Startup == StartupBehavior.RestoreLastWorkspace
+            ? RestoreSessionAsync(cancellationToken)
+            : Task.CompletedTask;
 
     /// <summary>
     ///     Restores the previously open tabs for the current workspace as drafts (run state idle). Tabs whose

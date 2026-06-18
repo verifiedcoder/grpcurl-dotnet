@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using GrpCurl.Net.Studio.Theming;
 using GrpCurl.Net.Studio.ViewModels;
+using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Services;
 using GrpCurl.Net.Studio.Views;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,6 +38,10 @@ public sealed partial class App : Application
             new EditorOptionsManager(this, _services.GetRequiredService<ISettingsStore>()).Attach();
 
             desktop.MainWindow = new MainWindow { DataContext = viewModel };
+
+            // FR-146: reopen the previously open tabs (per the FR-151 startup setting) once the UI thread and
+            // dispatcher are running. Fire-and-forget: the restored tabs stream into the bound document list.
+            _ = _services.GetRequiredService<DocumentsViewModel>().RestoreSessionOnStartupAsync();
         }
 
         base.OnFrameworkInitializationCompleted();

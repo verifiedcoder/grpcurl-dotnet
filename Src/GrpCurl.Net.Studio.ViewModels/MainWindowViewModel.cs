@@ -453,7 +453,15 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         if (path is not null)
         {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             await _workspaceStore.ExportAsync(_workspaceStore.Current, path);
+            var ms = stopwatch.Elapsed.TotalMilliseconds;
+
+            // FR-004: mirror the export to the console (workspace name + duration; the file holds no secret literals).
+            Console.AppendCall(new ConsoleCallActivity(
+                $"Export workspace: {_workspaceStore.Current.Name}", 0, "written", false, $"{ms:0} ms",
+                [new CallTimingPhase("export", $"{ms:0} ms", 1.0)],
+                ConsoleActivityKind.Export, DateTimeOffset.UtcNow));
         }
     }
 

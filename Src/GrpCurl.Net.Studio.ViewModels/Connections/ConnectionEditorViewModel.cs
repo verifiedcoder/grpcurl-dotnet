@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.DescriptorSources;
 using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
+using GrpCurl.Net.Studio.ViewModels.Panes;
 using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.ViewModels.Connections;
@@ -23,6 +24,7 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
     private readonly IDialogService? _dialogService;
     private readonly ISecretStore? _secretStore;
     private readonly IProtocService? _protocService;
+    private readonly ConsoleViewModel? _console;
     private readonly string _id;
     private readonly DescriptorSourceConfig _descriptorSource;
 
@@ -133,7 +135,8 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
         IFilePickerService? filePicker = null,
         IDialogService? dialogService = null,
         ISecretStore? secretStore = null,
-        IProtocService? protocService = null)
+        IProtocService? protocService = null,
+        ConsoleViewModel? console = null)
     {
         _registry = registry;
         _profileStore = profileStore;
@@ -141,6 +144,7 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
         _dialogService = dialogService;
         _secretStore = secretStore;
         _protocService = protocService;
+        _console = console;
         IsEdit = existing is not null;
 
         var c = existing ?? new SavedConnection();
@@ -476,28 +480,49 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
     {
         IsTestRunning = true;
         LastTestResult = null;
-
-        // FR-039: re-validate referenced files exist before probing — a moved/renamed cert, key, protoset,
-        // or .proto would otherwise surface as an opaque Core failure deep into the connect.
-        if (FirstMissingPath() is { } missing)
-        {
-            LastTestResult = TestConnectionResult.Failure($"{missing.Label} not found at '{missing.Path}'.");
-            IsTestRunning = false;
-            return;
-        }
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
         try
         {
-            LastTestResult = await _registry.TestConnectionAsync(BuildConnection(), cancellationToken);
-        }
-        catch (OperationCanceledException)
-        {
-            LastTestResult = TestConnectionResult.Failure("Test cancelled.");
+            // FR-039: re-validate referenced files exist before probing — a moved/renamed cert, key, protoset,
+            // or .proto would otherwise surface as an opaque Core failure deep into the connect.
+            if (FirstMissingPath() is { } missing)
+            {
+                LastTestResult = TestConnectionResult.Failure($"{missing.Label} not found at '{missing.Path}'.");
+                return;
+            }
+
+            try
+            {
+                LastTestResult = await _registry.TestConnectionAsync(BuildConnection(), cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                LastTestResult = TestConnectionResult.Failure("Test cancelled.");
+            }
         }
         finally
         {
             IsTestRunning = false;
+            RecordTestActivity(stopwatch.Elapsed);
         }
+    }
+
+    /// <summary>FR-004: mirror the test-connection probe (name + outcome + duration, no secrets) to the console.</summary>
+    private void RecordTestActivity(TimeSpan elapsed)
+    {
+        if (_console is null || LastTestResult is null)
+        {
+            return;
+        }
+
+        var ms = elapsed.TotalMilliseconds;
+        var ok = LastTestResult.Ok;
+
+        _console.AppendCall(new ConsoleCallActivity(
+            $"Test connection: {Name}", ok ? 0 : 1, ok ? "connected" : "failed", !ok, $"{ms:0} ms",
+            [new CallTimingPhase("connect", $"{ms:0} ms", 1.0)],
+            ConsoleActivityKind.Connection, DateTimeOffset.UtcNow));
     }
 
     /// <summary>

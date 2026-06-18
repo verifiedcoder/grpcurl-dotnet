@@ -174,11 +174,21 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
             connection, method, body, _invocation, _descriptors, _dispatcher, _clipboard, _dialogs, _launcher, _validator,
             _filePicker, _settings.Current.Network.RingBufferSize, revealGate: _revealGate, documentHost: this,
             console: _console, inspector: _inspector, recorder: _recorder, savedRequests: _savedRequests,
-            environment: _environment);
+            environment: _environment, tlsProfile: ResolveTlsProfile(connection));
 
         document.CliDialect = _settings.Current.General.CliShellDialect;
         return document;
     }
+
+    /// <summary>
+    ///     Resolves a TLS connection's referenced profile (FR-012) from the live workspace, for
+    ///     copy-as-CLI TLS-flag rendering (B4). Returns null for plaintext connections, connections with
+    ///     no profile reference, or when no workspace is wired (e.g. in isolated tests).
+    /// </summary>
+    private TlsProfile? ResolveTlsProfile(SavedConnection connection)
+        => connection is { Transport: TransportMode.Tls, TlsProfileId: { } id }
+            ? _workspace?.Current.TlsProfiles.FirstOrDefault(p => p.Id == id)
+            : null;
 
     private static void ApplyPrefill(InvocationDocumentViewModel document, RequestPrefill prefill)
     {

@@ -467,7 +467,7 @@ public sealed class InvocationDocumentViewModelTests
     }
 
     [Fact]
-    public async Task Copy_as_cli_for_a_streaming_tab_marks_the_messages_interactive()
+    public async Task Copy_as_cli_for_a_streaming_tab_emits_a_runnable_json_array()
     {
         var descriptors = new FakeDescriptorService
         {
@@ -485,8 +485,8 @@ public sealed class InvocationDocumentViewModelTests
         await doc.CopyAsCliCommand.ExecuteAsync(null);
 
         var command = clipboard.Text.ShouldNotBeNull();
-        command.ShouldContain("# messages below were sent interactively");
-        command.ShouldContain("-d '{ \"x\": 1 }'");
+        command.ShouldNotContain("\n");                  // a single runnable line, not a comment + loose -d
+        command.ShouldContain("-d '[{ \"x\": 1 }]'");    // the client/bidi array grammar
     }
 
     [Fact]

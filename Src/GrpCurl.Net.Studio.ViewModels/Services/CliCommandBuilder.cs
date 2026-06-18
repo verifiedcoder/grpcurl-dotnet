@@ -15,10 +15,15 @@ namespace GrpCurl.Net.Studio.ViewModels.Services;
 /// </summary>
 public static class CliCommandBuilder
 {
-    /// <summary>The argument list for <c>grpcn</c>, starting at the <c>invoke</c> subcommand.</summary>
-    public static IReadOnlyList<string> BuildArgs(InvocationRequestModel request) => BuildArgs(request, includeBody: true);
+    /// <summary>
+    ///     The argument list for <c>grpcn</c>, starting at the <c>invoke</c> subcommand. <paramref name="tlsProfile" />
+    ///     is the connection's resolved TLS profile (FR-012); when present on a TLS connection its material is
+    ///     emitted as the matching CLI flags so the copied command validates the same way Studio does (FR-160).
+    /// </summary>
+    public static IReadOnlyList<string> BuildArgs(InvocationRequestModel request, TlsProfile? tlsProfile = null)
+        => BuildArgsCore(request, tlsProfile, request.RequestJson);
 
-    private static IReadOnlyList<string> BuildArgs(InvocationRequestModel request, bool includeBody)
+    private static List<string> BuildArgsCore(InvocationRequestModel request, TlsProfile? tlsProfile, string? dataPayload)
     {
         var connection = request.Connection;
         var args = new List<string> { "invoke" };
@@ -36,6 +41,7 @@ public static class CliCommandBuilder
         if (connection.Transport == TransportMode.Tls)
         {
             AddValue(args, "--servername", connection.ServerName);
+            AddTlsFlags(args, tlsProfile);
         }
 
         AddValue(args, "--user-agent", connection.UserAgent);
@@ -71,11 +77,10 @@ public static class CliCommandBuilder
             args.Add("text");
         }
 
-        // Streaming bodies are appended separately as interactive messages (FR-165), so skip the body here.
-        if (includeBody)
+        if (dataPayload is not null)
         {
             args.Add("-d");
-            args.Add(request.RequestJson);
+            args.Add(dataPayload);
         }
 
         args.Add(connection.Address);
@@ -84,12 +89,62 @@ public static class CliCommandBuilder
         return args;
     }
 
+    // FR-160/161: mirror ConnectionChannelMapper's TLS-profile mapping as CLI flags. Certificate/key
+    // material is a file path (safe to emit), but the client-cert password is a secret reference, so it
+    // becomes a ${VAR} placeholder — never the resolved value.
+    private static void AddTlsFlags(List<string> args, TlsProfile? profile)
+    {
+        if (profile is null)
+        {
+            return;
+        }
+
+        if (profile.InsecureSkipVerify)
+        {
+            args.Add("--insecure");
+        }
+
+        AddValue(args, "--cacert", profile.CaCertPath);
+        AddValue(args, "--cert", profile.ClientCertPath);
+        AddValue(args, "--key", profile.ClientKeyPath);
+
+        if (!string.IsNullOrWhiteSpace(profile.ClientCertPasswordSecretRef))
+        {
+            args.Add("--cert-password");
+            args.Add("${CLIENT_CERT_PASSWORD}");
+        }
+
+        AddValue(args, "--revocation-mode", profile.RevocationMode);
+
+        if (profile.ExportableClientKey)
+        {
+            args.Add("--exportable-key");
+        }
+    }
+
     /// <summary>A single shell-pasteable <c>grpcn invoke …</c> command line for the given dialect (FR-163).</summary>
-    public static string BuildCommand(InvocationRequestModel request, ShellDialect dialect = ShellDialect.Bash)
+    public static string BuildCommand(
+        InvocationRequestModel request, ShellDialect dialect = ShellDialect.Bash, TlsProfile? tlsProfile = null)
+        => Render(BuildArgsCore(request, tlsProfile, request.RequestJson), dialect);
+
+    /// <summary>
+    ///     FR-165: a streaming tab's equivalent command. Client/bidi messages are emitted as a single
+    ///     <c>-d '[{…},{…}]'</c> JSON array — the CLI's documented streaming-input grammar — so the copied
+    ///     command is runnable exactly as pasted, rather than a comment followed by loose <c>-d</c> lines
+    ///     that no shell would execute.
+    /// </summary>
+    public static string BuildStreamingCommand(
+        InvocationRequestModel request,
+        IReadOnlyList<string> messages,
+        ShellDialect dialect = ShellDialect.Bash,
+        TlsProfile? tlsProfile = null)
+        => Render(BuildArgsCore(request, tlsProfile, BuildStreamingPayload(messages)), dialect);
+
+    private static string Render(IReadOnlyList<string> args, ShellDialect dialect)
     {
         var sb = new StringBuilder("grpcn");
 
-        foreach (var arg in BuildArgs(request))
+        foreach (var arg in args)
         {
             sb.Append(' ').Append(ShellQuote(arg, dialect));
         }
@@ -97,29 +152,13 @@ public static class CliCommandBuilder
         return sb.ToString();
     }
 
-    /// <summary>
-    ///     FR-165: a streaming tab's equivalent command. The connection/options line ends with the target +
-    ///     method; the interactively-composed messages follow, each as a <c>-d</c>, under a comment marking
-    ///     them as sent live (the unary command round-trips through the parser; this is a faithful reference).
-    /// </summary>
-    public static string BuildStreamingCommand(
-        InvocationRequestModel request, IReadOnlyList<string> messages, ShellDialect dialect = ShellDialect.Bash)
+    private static string BuildStreamingPayload(IReadOnlyList<string> messages)
     {
-        var sb = new StringBuilder("grpcn");
+        // Each composed message is already a JSON value; wrap them in an array — the CLI's client/bidi
+        // streaming-input grammar (`--data '[{…},{…}]'`).
+        var items = messages.Select(m => m.Trim()).Where(m => m.Length > 0);
 
-        foreach (var arg in BuildArgs(request, includeBody: false))
-        {
-            sb.Append(' ').Append(ShellQuote(arg, dialect));
-        }
-
-        sb.Append('\n').Append("# messages below were sent interactively");
-
-        foreach (var message in messages)
-        {
-            sb.Append('\n').Append("-d ").Append(ShellQuote(message, dialect));
-        }
-
-        return sb.ToString();
+        return "[" + string.Join(",", items) + "]";
     }
 
     private static void AddValue(List<string> args, string flag, string? value)

@@ -101,21 +101,103 @@ public sealed class CliCommandBuilderTests
         CliCommandBuilder.BuildCommand(request).ShouldBe(CliCommandBuilder.BuildCommand(request, ShellDialect.Bash));
     }
 
-    // ── FR-165: streaming copy-as-CLI marks interactively-composed messages ───
+    // ── FR-165: streaming copy-as-CLI emits a runnable -d '[…]' array ─────────
 
     [Fact]
-    public void Streaming_command_appends_the_interactive_messages_under_a_comment()
+    public void Streaming_command_emits_a_runnable_json_array()
     {
         var request = new InvocationRequestModel(Conn(), "p.Chat/Stream", "{}", [], AllowUnknownFields: false);
 
         var command = CliCommandBuilder.BuildStreamingCommand(request, ["{ \"a\": 1 }", "{ \"b\": 2 }"]);
 
-        var lines = command.Split('\n');
-        lines[0].ShouldStartWith("grpcn invoke");
-        lines[0].ShouldEndWith("p.Chat/Stream");           // target + method end the options line
-        lines[0].ShouldNotContain("-d");                   // the body is not on the options line
-        lines.ShouldContain("# messages below were sent interactively");
-        command.ShouldContain("-d '{ \"a\": 1 }'");
-        command.ShouldContain("-d '{ \"b\": 2 }'");
+        // A single pasteable line — no comment, no loose -d lines — with the messages as a JSON array.
+        command.ShouldNotContain("\n");
+        command.ShouldStartWith("grpcn invoke");
+        command.ShouldContain("-d '[{ \"a\": 1 },{ \"b\": 2 }]'");
+        command.ShouldEndWith("p.Chat/Stream");
+    }
+
+    [Fact]
+    public void Streaming_command_skips_blank_messages()
+    {
+        var request = new InvocationRequestModel(Conn(), "p.Chat/Stream", "{}", [], AllowUnknownFields: false);
+
+        var command = CliCommandBuilder.BuildStreamingCommand(request, ["{\"a\":1}", "   ", ""]);
+
+        command.ShouldContain("-d '[{\"a\":1}]'");
+    }
+
+    // ── B4: TLS-profile material renders as matching CLI flags (secrets as ${VAR}) ──
+
+    [Fact]
+    public void Tls_profile_renders_matching_cli_flags()
+    {
+        var connection = new SavedConnection { Name = "c", Address = "host:443", Transport = TransportMode.Tls };
+        var request = new InvocationRequestModel(connection, "p.S/M", "{}", [], AllowUnknownFields: false);
+
+        var profile = new TlsProfile
+        {
+            CaCertPath = "/etc/ca.pem",
+            ClientCertPath = "/etc/client.pem",
+            ClientKeyPath = "/etc/client.key",
+            ClientCertPasswordSecretRef = "secret-ref-1",
+            RevocationMode = "nocheck",
+            ExportableClientKey = true
+        };
+
+        var command = CliCommandBuilder.BuildCommand(request, ShellDialect.Bash, profile);
+
+        command.ShouldContain("--cacert /etc/ca.pem");
+        command.ShouldContain("--cert /etc/client.pem");
+        command.ShouldContain("--key /etc/client.key");
+        command.ShouldContain("--revocation-mode nocheck");
+        command.ShouldContain("--exportable-key");
+        // FR-161: the secret password is a placeholder, never the secret ref or value.
+        command.ShouldContain("--cert-password '${CLIENT_CERT_PASSWORD}'");
+        command.ShouldNotContain("secret-ref-1");
+    }
+
+    [Fact]
+    public void Insecure_tls_profile_emits_insecure_flag()
+    {
+        var connection = new SavedConnection { Name = "c", Address = "host:443", Transport = TransportMode.Tls };
+        var request = new InvocationRequestModel(connection, "p.S/M", "{}", [], AllowUnknownFields: false);
+
+        var command = CliCommandBuilder.BuildCommand(request, ShellDialect.Bash, new TlsProfile { InsecureSkipVerify = true });
+
+        command.ShouldContain("--insecure");
+    }
+
+    [Fact]
+    public void Tls_command_with_profile_round_trips_through_the_real_cli_parser()
+    {
+        var connection = new SavedConnection { Name = "c", Address = "host:443", Transport = TransportMode.Tls };
+        var request = new InvocationRequestModel(connection, "p.S/M", "{}", [], AllowUnknownFields: false);
+        var profile = new TlsProfile
+        {
+            CaCertPath = "/etc/ca.pem",
+            ClientCertPath = "/etc/client.pem",
+            ClientKeyPath = "/etc/client.key",
+            ClientCertPasswordSecretRef = "ref",
+            RevocationMode = "nocheck",
+            ExportableClientKey = true
+        };
+
+        var root = new RootCommand();
+        root.Subcommands.Add(InvokeCommandHandler.Create());
+
+        var parse = root.Parse(CliCommandBuilder.BuildArgs(request, profile).ToArray());
+
+        parse.Errors.ShouldBeEmpty(string.Join("; ", parse.Errors.Select(e => e.Message)));
+    }
+
+    [Fact]
+    public void Plaintext_connection_ignores_a_tls_profile()
+    {
+        var request = new InvocationRequestModel(Conn(), "p.S/M", "{}", [], AllowUnknownFields: false);
+
+        var command = CliCommandBuilder.BuildCommand(request, ShellDialect.Bash, new TlsProfile { CaCertPath = "/etc/ca.pem" });
+
+        command.ShouldNotContain("--cacert");
     }
 }

@@ -214,6 +214,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private void ToggleConsole() => IsConsoleOpen = !IsConsoleOpen;
 
+    /// <summary>FR-003: the console clears its unread indicator when shown, and accrues it while collapsed.</summary>
+    partial void OnIsConsoleOpenChanged(bool value) => Console.SetActive(value);
+
     /// <summary>
     ///     Focus mode collapses all panes to maximise the document area, remembering the prior
     ///     pane state so toggling back restores it.

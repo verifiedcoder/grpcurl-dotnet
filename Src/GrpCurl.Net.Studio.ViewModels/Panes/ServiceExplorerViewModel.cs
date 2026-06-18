@@ -330,14 +330,20 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
 
         try
         {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             var result = await _descriptors.LoadAsync(connection, cts.Token);
+            stopwatch.Stop();
 
             if (cts.IsCancellationRequested)
             {
                 return;
             }
 
-            await _dispatcher.InvokeAsync(() => Apply(result));
+            await _dispatcher.InvokeAsync(() =>
+            {
+                Apply(result);
+                RecordDescriptorActivity(connection, result, stopwatch.Elapsed);
+            });
         }
         catch (OperationCanceledException)
         {
@@ -347,6 +353,25 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
                     ? ExplorerState.NoConnection
                     : _catalog.Services.Count == 0 ? ExplorerState.Empty : ExplorerState.Loaded);
         }
+    }
+
+    /// <summary>FR-004: log a descriptor load/refresh to the console with its outcome and total duration.</summary>
+    private void RecordDescriptorActivity(SavedConnection connection, DescriptorLoadResult result, TimeSpan elapsed)
+    {
+        if (_console is null)
+        {
+            return;
+        }
+
+        var ms = elapsed.TotalMilliseconds;
+        var outcome = result.Ok
+            ? result.Catalog is { } catalog ? $"{catalog.Services.Count} service(s)" : "loaded"
+            : "failed";
+
+        _console.AppendCall(new ConsoleCallActivity(
+            $"Describe: {connection.Name}", result.Ok ? 0 : 1, outcome, !result.Ok, $"{ms:0} ms",
+            [new CallTimingPhase("descriptor", $"{ms:0} ms", 1.0)],
+            ConsoleActivityKind.Descriptor, DateTimeOffset.UtcNow));
     }
 
     private void Apply(DescriptorLoadResult result)

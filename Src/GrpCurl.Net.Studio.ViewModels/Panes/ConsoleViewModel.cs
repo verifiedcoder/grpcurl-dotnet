@@ -16,6 +16,12 @@ public sealed partial class ConsoleViewModel : ViewModelBase
     [ObservableProperty]
     private ConsoleCallRowViewModel? _selectedCall;
 
+    /// <summary>FR-003: set when activity arrives while the console is collapsed; cleared when it's shown.</summary>
+    [ObservableProperty]
+    private bool _hasUnread;
+
+    private bool _isActive = true;
+
     public ConsoleViewModel(IInspector? inspector = null) => _inspector = inspector;
 
     public string Header => "Console";
@@ -31,11 +37,27 @@ public sealed partial class ConsoleViewModel : ViewModelBase
     /// <summary>Appends one line to the activity log.</summary>
     public void Append(string message) => Messages.Add(message);
 
-    /// <summary>FR-114: records a completed call as a selectable row with its inline total.</summary>
+    /// <summary>FR-004/FR-114: records an operation as a selectable row with its inline total.</summary>
     public void AppendCall(ConsoleCallActivity activity)
     {
         Calls.Add(new ConsoleCallRowViewModel(activity));
         OnPropertyChanged(nameof(HasActivity));
+
+        if (!_isActive)
+        {
+            HasUnread = true; // FR-003: new activity while collapsed shows an unread indicator
+        }
+    }
+
+    /// <summary>FR-003: the shell reports whether the console is visible; becoming visible clears the unread mark.</summary>
+    public void SetActive(bool active)
+    {
+        _isActive = active;
+
+        if (active)
+        {
+            HasUnread = false;
+        }
     }
 
     partial void OnSelectedCallChanged(ConsoleCallRowViewModel? value)

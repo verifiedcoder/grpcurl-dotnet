@@ -85,4 +85,43 @@ public sealed class InspectorAndConsoleTests
         console.Calls.ShouldBeEmpty();
         console.HasActivity.ShouldBeFalse();
     }
+
+    // ── FR-004: kind/time + FR-003 unread ────────────────────────────────────
+
+    [Fact]
+    public void A_row_carries_its_kind_label_and_time()
+    {
+        var console = new ConsoleViewModel();
+        console.AppendCall(new ConsoleCallActivity(
+            "Describe: alpha", 0, "2 service(s)", IsError: false, "8 ms", [],
+            ConsoleActivityKind.Descriptor, new DateTimeOffset(2026, 6, 18, 9, 30, 15, TimeSpan.Zero)));
+
+        var row = console.Calls.ShouldHaveSingleItem();
+        row.KindLabel.ShouldBe("describe");
+        row.TimeText.ShouldNotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public void Activity_while_collapsed_sets_the_unread_indicator_until_shown()
+    {
+        var console = new ConsoleViewModel();
+        console.SetActive(false); // collapsed
+
+        console.AppendCall(new ConsoleCallActivity("pkg.Svc/Go", 0, "OK", IsError: false, "5 ms", []));
+
+        console.HasUnread.ShouldBeTrue();
+
+        console.SetActive(true); // shown → cleared
+        console.HasUnread.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Activity_while_visible_does_not_set_unread()
+    {
+        var console = new ConsoleViewModel(); // active by default
+
+        console.AppendCall(new ConsoleCallActivity("pkg.Svc/Go", 0, "OK", IsError: false, "5 ms", []));
+
+        console.HasUnread.ShouldBeFalse();
+    }
 }

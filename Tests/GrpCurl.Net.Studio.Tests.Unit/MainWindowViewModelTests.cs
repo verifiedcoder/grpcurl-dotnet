@@ -336,6 +336,33 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void A_read_only_workspace_shows_the_banner(/* FR-148 */)
+    {
+        var vm = CreateWithWorkspace(out var store, out _, out _, out _, out _);
+        vm.IsReadOnlyBannerVisible.ShouldBeFalse();
+
+        store.SetReadOnly(true);
+        vm.IsReadOnlyBannerVisible.ShouldBeTrue();
+
+        store.SetReadOnly(false);
+        vm.IsReadOnlyBannerVisible.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Save_when_read_only_routes_to_save_as(/* FR-148 */)
+    {
+        var vm = CreateWithWorkspace(out var store, out var picker, out _, out _, out _);
+        await store.SaveAsAsync(store.Current, "/ws/demo.gcnws.json", TestContext.Current.CancellationToken);
+        store.SetReadOnly(true);
+        picker.SaveResult = "/ws/copy.gcnws.json";
+
+        await vm.SaveWorkspaceCommand.ExecuteAsync(null);
+
+        store.LastSavedAsPath.ShouldBe("/ws/copy.gcnws.json"); // routed to Save As, not flushed in place
+        store.SaveNowCount.ShouldBe(0);
+    }
+
+    [Fact]
     public async Task Reload_refreshes_the_connection_list()
     {
         var vm = CreateWithWorkspace(out var store, out _, out _, out var connections, out _);

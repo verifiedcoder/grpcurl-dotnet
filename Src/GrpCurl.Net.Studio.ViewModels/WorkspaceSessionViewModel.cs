@@ -20,6 +20,7 @@ public sealed partial class WorkspaceSessionViewModel : ViewModelBase
         _store = store;
         _dialogs = dialogs;
         _store.DirtyChanged += OnDirtyChanged;
+        _store.ReadOnlyChanged += OnReadOnlyChanged;
     }
 
     /// <summary>The workspace's display name.</summary>
@@ -30,8 +31,18 @@ public sealed partial class WorkspaceSessionViewModel : ViewModelBase
 
     public bool IsDirty => _store.IsDirty;
 
-    /// <summary>Status-bar text: the file label with a dirty dot, e.g. <c>project.gcnws.json ●</c>.</summary>
-    public string StatusText => IsDirty ? $"{FileLabel} ●" : FileLabel;
+    /// <summary>FR-148: the active file is read-only on disk (autosave disabled; Save As to keep changes).</summary>
+    public bool IsReadOnly => _store.IsCurrentReadOnly;
+
+    /// <summary>
+    ///     Status-bar text: the file label with a dirty dot, e.g. <c>project.gcnws.json ●</c>, or a
+    ///     <c>— read-only</c> suffix when the file can't be written (FR-148).
+    /// </summary>
+    public string StatusText => IsReadOnly
+        ? $"{FileLabel} — read-only"
+        : IsDirty
+            ? $"{FileLabel} ●"
+            : FileLabel;
 
     private bool CanReload => _store.CurrentPath is not null;
 
@@ -77,6 +88,7 @@ public sealed partial class WorkspaceSessionViewModel : ViewModelBase
         OnPropertyChanged(nameof(WorkspaceName));
         OnPropertyChanged(nameof(FileLabel));
         OnPropertyChanged(nameof(IsDirty));
+        OnPropertyChanged(nameof(IsReadOnly));
         OnPropertyChanged(nameof(StatusText));
         ReloadCommand.NotifyCanExecuteChanged();
     }
@@ -84,6 +96,12 @@ public sealed partial class WorkspaceSessionViewModel : ViewModelBase
     private void OnDirtyChanged(object? sender, EventArgs e)
     {
         OnPropertyChanged(nameof(IsDirty));
+        OnPropertyChanged(nameof(StatusText));
+    }
+
+    private void OnReadOnlyChanged(object? sender, EventArgs e)
+    {
+        OnPropertyChanged(nameof(IsReadOnly));
         OnPropertyChanged(nameof(StatusText));
     }
 }

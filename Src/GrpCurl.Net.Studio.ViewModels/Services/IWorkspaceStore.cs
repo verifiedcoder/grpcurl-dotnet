@@ -30,6 +30,16 @@ public interface IWorkspaceStore
     /// <summary>Raised whenever <see cref="IsDirty" /> changes.</summary>
     event EventHandler? DirtyChanged;
 
+    /// <summary>
+    ///     FR-148: true when the active workspace file is read-only on disk. Autosave and explicit Save are
+    ///     suppressed (changes stay in memory, dirty); the shell shows a banner and offers Save As instead.
+    ///     False for an untitled workspace (nothing on disk yet) and after a successful Save As to a writable path.
+    /// </summary>
+    bool IsCurrentReadOnly { get; }
+
+    /// <summary>Raised whenever <see cref="IsCurrentReadOnly" /> changes (open / load / new / save-as / reload).</summary>
+    event EventHandler? ReadOnlyChanged;
+
     /// <summary>Loads the default startup workspace (resilient: a corrupt/newer file is set aside).</summary>
     Task<WorkspaceModel> LoadAsync(CancellationToken cancellationToken = default);
 

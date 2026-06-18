@@ -98,8 +98,9 @@ public sealed class ListCommandHandlerTests(GrpcTestFixture fixture)
         var output = writer.ToString();
         var lines = output.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
 
-        lines.Length.ShouldBe(6);
+        lines.Length.ShouldBe(7);
 
+        output.ShouldContain("testing.TestService.DeprecatedCall");
         output.ShouldContain("testing.TestService.EmptyCall");
         output.ShouldContain("testing.TestService.UnaryCall");
         output.ShouldContain("testing.TestService.StreamingOutputCall");
@@ -108,12 +109,13 @@ public sealed class ListCommandHandlerTests(GrpcTestFixture fixture)
         output.ShouldContain("testing.TestService.HalfDuplexCall");
 
         // Methods should be sorted alphabetically
-        lines[0].ShouldContain("EmptyCall");
-        lines[1].ShouldContain("FullDuplexCall");
-        lines[2].ShouldContain("HalfDuplexCall");
-        lines[3].ShouldContain("StreamingInputCall");
-        lines[4].ShouldContain("StreamingOutputCall");
-        lines[5].ShouldContain("UnaryCall");
+        lines[0].ShouldContain("DeprecatedCall");
+        lines[1].ShouldContain("EmptyCall");
+        lines[2].ShouldContain("FullDuplexCall");
+        lines[3].ShouldContain("HalfDuplexCall");
+        lines[4].ShouldContain("StreamingInputCall");
+        lines[5].ShouldContain("StreamingOutputCall");
+        lines[6].ShouldContain("UnaryCall");
     }
 
     [Fact]

@@ -27,6 +27,8 @@ public sealed class StudioSettings
 
     public DescriptorLimitsSettings DescriptorLimits { get; set; } = new();
 
+    public UpdatesSettings Updates { get; set; } = new();
+
     /// <summary>Unknown/forward-compatible keys, preserved on save (SPEC-040 §6).</summary>
     [JsonExtensionData]
     public Dictionary<string, JsonElement>? Overflow { get; set; }
@@ -144,4 +146,20 @@ public sealed class DescriptorLimitsSettings
 
     public int MaxSymbols { get; set; }
         = GrpCurl.Net.DescriptorSources.DescriptorSourceOptions.DefaultMaxSymbols;
+}
+
+/// <summary>FR-156 Updates: the release channel to check and whether to check on launch (ADR-011).</summary>
+public sealed class UpdatesSettings
+{
+    public UpdateChannel Channel { get; set; } = UpdateChannel.Stable;
+
+    /// <summary>Check for a newer version when Studio starts (default on, FR-156).</summary>
+    public bool CheckOnLaunch { get; set; } = true;
+}
+
+/// <summary>FR-156 update release channel.</summary>
+public enum UpdateChannel
+{
+    Stable,
+    Preview
 }

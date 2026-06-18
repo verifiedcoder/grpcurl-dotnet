@@ -218,6 +218,67 @@ public sealed class SettingsDocumentViewModelTests
         (store.SaveCount - savesBefore).ShouldBe(0);
     }
 
+    // ── Updates (FR-156) ─────────────────────────────────────────────────────
+
+    [Fact]
+    public void Update_settings_load_and_expose_the_app_version()
+    {
+        var store = new FakeSettingsStore();
+        store.Current.Updates.Channel = UpdateChannel.Preview;
+        store.Current.Updates.CheckOnLaunch = false;
+        var updates = new FakeUpdateService { CurrentVersion = "2.3.4" };
+
+        var vm = new SettingsDocumentViewModel(
+            store, new FakeThemeService(), new FakeDialogService(), new FakeProtocService(), secrets: null,
+            updates, new FakeLauncherService());
+
+        vm.AppVersion.ShouldBe("2.3.4");
+        vm.UpdateChannel.ShouldBe(UpdateChannel.Preview);
+        vm.UpdateCheckOnLaunch.ShouldBeFalse();
+        vm.CanCheckForUpdates.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Changing_update_settings_persists()
+    {
+        var store = new FakeSettingsStore();
+        var vm = new SettingsDocumentViewModel(
+            store, new FakeThemeService(), new FakeDialogService(), new FakeProtocService(), secrets: null,
+            new FakeUpdateService(), new FakeLauncherService());
+
+        vm.UpdateChannel = UpdateChannel.Preview;
+        vm.UpdateCheckOnLaunch = false;
+
+        store.Current.Updates.Channel.ShouldBe(UpdateChannel.Preview);
+        store.Current.Updates.CheckOnLaunch.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Check_now_opens_the_channels_releases_page()
+    {
+        var store = new FakeSettingsStore();
+        var launcher = new FakeLauncherService();
+        var vm = new SettingsDocumentViewModel(
+            store, new FakeThemeService(), new FakeDialogService(), new FakeProtocService(), secrets: null,
+            new FakeUpdateService(), launcher) { UpdateChannel = UpdateChannel.Stable };
+
+        await vm.CheckForUpdatesCommand.ExecuteAsync(null);
+
+        launcher.LaunchCount.ShouldBe(1);
+        launcher.LastUri.ShouldBe("https://example.test/releases/latest"); // the stable channel URL
+        vm.UpdateStatus.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void Without_an_update_service_the_check_is_unavailable()
+    {
+        var vm = new SettingsDocumentViewModel(new FakeSettingsStore(), new FakeThemeService(), new FakeDialogService());
+
+        vm.CanCheckForUpdates.ShouldBeFalse();
+        vm.CheckForUpdatesCommand.CanExecute(null).ShouldBeFalse();
+        vm.AppVersion.ShouldBe("—");
+    }
+
     // ── History (FR-158) ─────────────────────────────────────────────────────
 
     [Fact]

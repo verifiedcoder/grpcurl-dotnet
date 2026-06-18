@@ -30,6 +30,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     private readonly ISecretStore? _secrets;
     private readonly ISavedRequestStore? _savedRequests;
     private readonly IEnvironmentService? _environment;
+    private readonly IUpdateService? _updates;
     private readonly IFilePickerService? _filePicker;
     private readonly ConsoleViewModel? _console;
     private readonly IInspector? _inspector;
@@ -60,7 +61,8 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         IWorkspaceStore? workspace = null,
         ISecretStore? secrets = null,
         ISavedRequestStore? savedRequests = null,
-        IEnvironmentService? environment = null)
+        IEnvironmentService? environment = null,
+        IUpdateService? updates = null)
     {
         _descriptors = descriptors;
         _dispatcher = dispatcher;
@@ -82,6 +84,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         _secrets = secrets;
         _savedRequests = savedRequests;
         _environment = environment;
+        _updates = updates;
     }
 
     public ObservableCollection<DocumentViewModel> Documents { get; } = [];
@@ -219,7 +222,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
             return;
         }
 
-        var document = new SettingsDocumentViewModel(_settings, _theme, _dialogs, _protoc, _secrets);
+        var document = new SettingsDocumentViewModel(_settings, _theme, _dialogs, _protoc, _secrets, _updates, _launcher);
         document.CloseRequested += OnDocumentCloseRequested;
 
         Documents.Add(document);

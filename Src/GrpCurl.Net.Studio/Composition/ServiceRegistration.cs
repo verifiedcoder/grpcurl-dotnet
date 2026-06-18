@@ -29,6 +29,7 @@ internal static class ServiceRegistration
         services.AddSingleton<IRevealGate, RevealGate>();
         services.AddSingleton<ILauncherService, LauncherService>();
         services.AddSingleton<IProtocService, ProtocService>();
+        services.AddSingleton<IUpdateService, UpdateService>(); // FR-156: version + releases URL for Settings → Updates
 
         // Connection layer (E1.1). The secret store picks its backend once at startup and logs the choice
         // (backend name only, SEC-025); the live backend is surfaced in Settings → Security (SEC-024).

@@ -155,9 +155,9 @@ public sealed class FakeWorkspaceStore : IWorkspaceStore
         return Task.FromResult(ReadResult ?? WorkspaceModel.Empty());
     }
 
-    public WorkspaceModel NewWorkspace()
+    public WorkspaceModel NewWorkspace(bool withStarterConnection = false)
     {
-        Current = WorkspaceModel.Empty();
+        Current = withStarterConnection ? WorkspaceModel.StarterTemplate() : WorkspaceModel.Empty();
         CurrentPath = null;
         return Current;
     }

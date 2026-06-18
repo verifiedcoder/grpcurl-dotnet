@@ -33,7 +33,7 @@ public sealed class SettingsDocumentUiTests(HeadlessSessionFixture fixture) : He
         texts.ShouldContain("History");          // FR-158: active section
         texts.ShouldContain("Descriptor limits"); // FR-157: active section
         texts.ShouldContain("Updates");          // FR-156: active section
-        texts.ShouldContain("Diagnostics");      // disabled placeholder
+        texts.ShouldContain("Diagnostics");      // FR-155: active section
 
         // FR-158: the history capture toggle renders as a real, named control.
         window.GetVisualDescendants().OfType<CheckBox>()
@@ -44,6 +44,40 @@ public sealed class SettingsDocumentUiTests(HeadlessSessionFixture fixture) : He
             .Any(b => Equals(b.GetValue(Avalonia.Automation.AutomationProperties.NameProperty), "Reset all settings"))
             .ShouldBeTrue();
     });
+
+    [Fact]
+    public Task Diagnostics_viewer_renders_log_entries() => RunOnUiThread(() =>
+    {
+        var log = new FakeDiagnosticsLog();
+        log.Entries.Add(new(System.DateTimeOffset.UtcNow,
+            GrpCurl.Net.Studio.ViewModels.Models.Diagnostics.DiagnosticsLevel.Warning, "Net", "connect timeout marker"));
+        var vm = new SettingsDocumentViewModel(
+            new InMemorySettingsStore(), new FakeThemeService(), new FakeDialogService(), new FakeProtocService(),
+            secrets: null, new FakeUpdateService(), new FakeLauncherService(), log, new FakeClipboardService());
+
+        var window = new Window { Content = new SettingsDocumentView { DataContext = vm }, Width = 700, Height = 600 };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        var texts = window.GetVisualDescendants().OfType<TextBlock>().SelectMany(Runs).ToList();
+        texts.ShouldContain("connect timeout marker"); // the seeded entry renders
+
+        window.GetVisualDescendants().OfType<Button>()
+            .Any(b => Equals(b.GetValue(Avalonia.Automation.AutomationProperties.NameProperty), "Copy diagnostics bundle"))
+            .ShouldBeTrue();
+    });
+
+    private static IEnumerable<string?> Runs(TextBlock block)
+    {
+        yield return block.Text;
+        foreach (var inline in block.Inlines ?? [])
+        {
+            if (inline is Avalonia.Controls.Documents.Run run)
+            {
+                yield return run.Text;
+            }
+        }
+    }
 
     [Fact]
     public Task Security_panel_shows_the_backend_and_fallback_limitation() => RunOnUiThread(() =>

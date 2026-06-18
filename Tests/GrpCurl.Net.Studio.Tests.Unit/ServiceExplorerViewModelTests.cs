@@ -69,6 +69,43 @@ public sealed class ServiceExplorerViewModelTests
     }
 
     [Fact]
+    public void Loading_descriptors_logs_a_console_activity()
+    {
+        var descriptors = new FakeDescriptorService { Result = DescriptorLoadResult.Success(SampleCatalog()) };
+        var selection = new ConnectionSelection();
+        var console = new ConsoleViewModel();
+        _ = new ServiceExplorerViewModel(
+            descriptors, selection, new FakeClipboardService(), new ImmediateUiDispatcher(), new FakeDocumentHost(), console: console);
+
+        selection.Set(new SavedConnection { Name = "alpha", Address = "h:1" });
+
+        var row = console.Calls.ShouldHaveSingleItem();
+        row.KindLabel.ShouldBe("describe");          // FR-004 descriptor operation
+        row.Method.ShouldBe("Describe: alpha");
+        row.StatusName.ShouldContain("service");     // "2 service(s)"
+        row.IsError.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void A_failed_descriptor_load_logs_an_error_activity()
+    {
+        var descriptors = new FakeDescriptorService
+        {
+            Result = DescriptorLoadResult.Failure(new DescriptorLoadError("nope", null, ReflectionUnavailable: false))
+        };
+        var selection = new ConnectionSelection();
+        var console = new ConsoleViewModel();
+        _ = new ServiceExplorerViewModel(
+            descriptors, selection, new FakeClipboardService(), new ImmediateUiDispatcher(), new FakeDocumentHost(), console: console);
+
+        selection.Set(new SavedConnection { Name = "beta", Address = "h:1" });
+
+        var row = console.Calls.ShouldHaveSingleItem();
+        row.IsError.ShouldBeTrue();
+        row.StatusName.ShouldBe("failed");
+    }
+
+    [Fact]
     public void Empty_catalog_yields_the_empty_state()
     {
         var (vm, descriptors, selection, _, _) = Create();

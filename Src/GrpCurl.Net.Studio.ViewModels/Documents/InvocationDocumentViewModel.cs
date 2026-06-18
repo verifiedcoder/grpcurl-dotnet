@@ -724,7 +724,8 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
             .ToList();
 
         _console.AppendCall(new ConsoleCallActivity(
-            MethodSymbol, status.Code, status.CodeName, status.Code != 0, $"{totalMs:0} ms", phases));
+            MethodSymbol, status.Code, status.CodeName, status.Code != 0, $"{totalMs:0} ms", phases,
+            ConsoleActivityKind.Invocation, DateTimeOffset.UtcNow));
     }
 
     /// <summary>Builds the Timing-tab rows with each phase's fraction of the total for the bar breakdown (FR-110).</summary>

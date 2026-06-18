@@ -6,7 +6,13 @@
     <Border Background="{DynamicResource Surface.ConsoleBg}">
         <Grid RowDefinitions="Auto,*">
             <Border Grid.Row="0" Background="{DynamicResource Surface.PaneHeader}" Padding="8,4">
-                <TextBlock Text="{Binding Header}" FontWeight="SemiBold" />
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Text="{Binding Header}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <!-- FR-003: unread activity that arrived while the console was collapsed. -->
+                    <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                             Fill="{DynamicResource Conn.Connecting}" IsVisible="{Binding HasUnread}"
+                             ToolTip.Tip="New activity" />
+                </StackPanel>
             </Border>
 
             <Panel Grid.Row="1">
@@ -24,12 +30,15 @@
                     </ListBox.Styles>
                     <ListBox.ItemTemplate>
                         <DataTemplate DataType="vm:ConsoleCallRowViewModel">
-                            <Grid ColumnDefinitions="*,Auto,Auto"
+                            <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto"
                                   TextElement.FontFamily="Cascadia Code,Consolas,monospace" TextElement.FontSize="12">
-                                <TextBlock Grid.Column="0" Text="{Binding Method}" TextTrimming="CharacterEllipsis" />
-                                <TextBlock Grid.Column="1" Text="{Binding StatusName}" Margin="8,0"
+                                <TextBlock Grid.Column="0" Text="{Binding TimeText}" Opacity="0.55" Margin="0,0,8,0" />
+                                <TextBlock Grid.Column="1" Text="{Binding KindLabel}" Opacity="0.7" Margin="0,0,8,0"
+                                           Foreground="{DynamicResource Status.Neutral}" />
+                                <TextBlock Grid.Column="2" Text="{Binding Method}" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Grid.Column="3" Text="{Binding StatusName}" Margin="8,0"
                                            Classes.error="{Binding IsError}" />
-                                <TextBlock Grid.Column="2" Text="{Binding TotalText}" Opacity="0.7" />
+                                <TextBlock Grid.Column="4" Text="{Binding TotalText}" Opacity="0.7" />
                             </Grid>
                         </DataTemplate>
                     </ListBox.ItemTemplate>

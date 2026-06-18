@@ -1450,4 +1450,174 @@ public sealed class SimpleDynamicMessageTests
     }
 
     #endregion
+
+    #region Nested / Repeated / Map / Any Unknown Field Tests (strict recursion)
+
+    [Fact]
+    public void ParseJson_UnknownFieldInNestedMessage_AllowUnknownFalse_ThrowsException()
+    {
+        // Arrange - unknown field nested inside the payload message
+        const string json = """{"payload": {"type": "COMPRESSABLE", "bogus": 1}}""";
+
+        var descriptor = TestDescriptorProvider.SimpleRequest;
+
+        // Act / Assert
+        var ex = Should.Throw<ArgumentException>(() =>
+            new SimpleDynamicMessage(descriptor, json, allowUnknownFields: false));
+
+        ex.Message.ShouldContain("Unknown field 'bogus'");
+    }
+
+    [Fact]
+    public void ParseJson_UnknownFieldInNestedMessage_AllowUnknownTrue_TracksWithDottedPath()
+    {
+        // Arrange
+        const string json = """{"payload": {"type": "COMPRESSABLE", "bogus": 1}}""";
+
+        var descriptor = TestDescriptorProvider.SimpleRequest;
+
+        // Act
+        var message = new SimpleDynamicMessage(descriptor, json, allowUnknownFields: true);
+
+        // Assert - nested unknown bubbles up to the root request as `payload.bogus`
+        message.UnknownFields.ShouldContain("payload.bogus");
+    }
+
+    [Fact]
+    public void ParseJson_UnknownFieldInRepeatedMessageElement_AllowUnknownFalse_ThrowsException()
+    {
+        // Arrange - unknown field inside a repeated message element
+        const string json = """{"responseParameters": [{"size": 100, "bogus": 1}]}""";
+
+        var descriptor = TestDescriptorProvider.StreamingOutputCallRequest;
+
+        // Act / Assert
+        var ex = Should.Throw<ArgumentException>(() =>
+            new SimpleDynamicMessage(descriptor, json, allowUnknownFields: false));
+
+        ex.Message.ShouldContain("Unknown field 'bogus'");
+    }
+
+    [Fact]
+    public void ParseJson_UnknownFieldInMapMessageValue_AllowUnknownFalse_ThrowsException()
+    {
+        // Arrange - unknown field inside a map<string, Payload> value
+        const string json = """{"message_map": {"a": {"type": "COMPRESSABLE", "bogus": 1}}}""";
+
+        var descriptor = TestDescriptorProvider.MapFieldsMessage;
+
+        // Act / Assert
+        var ex = Should.Throw<ArgumentException>(() =>
+            new SimpleDynamicMessage(descriptor, json, allowUnknownFields: false));
+
+        ex.Message.ShouldContain("Unknown field 'bogus'");
+    }
+
+    [Fact]
+    public void ParseJson_KnownFieldsInNestedMessage_AllowUnknownFalse_StillParses()
+    {
+        // Arrange - strict mode must not reject legitimate nested fields
+        const string json = """{"payload": {"type": "COMPRESSABLE", "body": "dGVzdA=="}}""";
+
+        var descriptor = TestDescriptorProvider.SimpleRequest;
+
+        // Act
+        var message = new SimpleDynamicMessage(descriptor, json, allowUnknownFields: false);
+
+        // Assert
+        var payloadField = descriptor.FindFieldByName("payload")!;
+        var nested = message.Fields[payloadField].ShouldBeOfType<SimpleDynamicMessage>();
+        nested.Fields[nested.Descriptor.FindFieldByName("type")!].ShouldBe(0);
+    }
+
+    #endregion
+
+    #region Special Float/Double JSON Emission Tests
+
+    [Fact]
+    public void ToJson_FloatNaN_EmitsQuotedString()
+    {
+        // Arrange
+        var descriptor = TestDescriptorProvider.AllScalarsMessage;
+        var message = new SimpleDynamicMessage(descriptor)
+        {
+            Fields = { [descriptor.FindFieldByName("float_val")!] = float.NaN }
+        };
+
+        // Act
+        var json = message.ToJson();
+
+        // Assert - bare NaN is invalid JSON; proto3 requires the quoted token
+        json.ShouldContain("\"float_val\":\"NaN\"");
+    }
+
+    [Fact]
+    public void ToJson_FloatInfinity_EmitsQuotedStrings()
+    {
+        // Arrange
+        var descriptor = TestDescriptorProvider.AllScalarsMessage;
+        var message = new SimpleDynamicMessage(descriptor)
+        {
+            Fields =
+            {
+                [descriptor.FindFieldByName("float_val")!] = float.PositiveInfinity,
+                [descriptor.FindFieldByName("double_val")!] = double.NegativeInfinity
+            }
+        };
+
+        // Act
+        var json = message.ToJson();
+
+        // Assert
+        json.ShouldContain("\"float_val\":\"Infinity\"");
+        json.ShouldContain("\"double_val\":\"-Infinity\"");
+    }
+
+    [Fact]
+    public void ToJson_SpecialFloats_ProduceParseableJson()
+    {
+        // Arrange - the original defect: a successful RPC's response with NaN/Infinity
+        // produced bare tokens that JsonDocument.Parse later rejected.
+        var descriptor = TestDescriptorProvider.AllScalarsMessage;
+        var message = new SimpleDynamicMessage(descriptor)
+        {
+            Fields =
+            {
+                [descriptor.FindFieldByName("float_val")!] = float.NaN,
+                [descriptor.FindFieldByName("double_val")!] = double.PositiveInfinity
+            }
+        };
+
+        // Act
+        var json = message.ToJson();
+
+        // Assert - must round-trip through a strict JSON parser
+        Should.NotThrow(() => System.Text.Json.JsonDocument.Parse(json));
+    }
+
+    [Fact]
+    public void ToJson_SpecialFloats_RoundTripBackToValues()
+    {
+        // Arrange
+        var descriptor = TestDescriptorProvider.AllScalarsMessage;
+        var floatField = descriptor.FindFieldByName("float_val")!;
+        var doubleField = descriptor.FindFieldByName("double_val")!;
+        var original = new SimpleDynamicMessage(descriptor)
+        {
+            Fields =
+            {
+                [floatField] = float.NegativeInfinity,
+                [doubleField] = double.NaN
+            }
+        };
+
+        // Act
+        var reparsed = new SimpleDynamicMessage(descriptor, original.ToJson());
+
+        // Assert
+        reparsed.Fields[floatField].ShouldBe(float.NegativeInfinity);
+        double.IsNaN((double)reparsed.Fields[doubleField]!).ShouldBeTrue();
+    }
+
+    #endregion
 }

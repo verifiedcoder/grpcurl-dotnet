@@ -12,7 +12,8 @@ public enum HistoryKind
 /// <summary>
 ///     One recorded invocation (SPEC-040 §5.1, schema <see cref="CurrentVersion" />). Written after every
 ///     completed/failed/cancelled call, gRPC or GraphQL. The on-disk form is already redacted (FR-121):
-///     header values are <see cref="HistoryHeader" />s whose secret values are <c>«redacted»</c>, and
+///     header values are <see cref="HistoryHeader" />s whose secret values are <see cref="RedactedMarker" />
+///     (<c>[redacted]</c>), and
 ///     <c>${VAR}</c> placeholders are kept unexpanded. Response bodies are absent unless opt-in capture is on.
 /// </summary>
 public sealed record HistoryEntry(

@@ -29,6 +29,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
     private readonly IDocumentHost? _documentHost;
     private readonly ISavedRequestSnippetIO? _snippetIO;
     private readonly ConsoleViewModel? _console;
+    private readonly IHistoryStore? _history;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(EditConnectionCommand))]
@@ -49,7 +50,8 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         ISavedRequestStore? savedRequests = null,
         IDocumentHost? documentHost = null,
         ISavedRequestSnippetIO? snippetIO = null,
-        ConsoleViewModel? console = null)
+        ConsoleViewModel? console = null,
+        IHistoryStore? history = null)
     {
         _workspaceStore = workspaceStore;
         _registry = registry;
@@ -64,6 +66,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         _documentHost = documentHost;
         _snippetIO = snippetIO;
         _console = console;
+        _history = history;
 
         Connections = [];
         Connections.CollectionChanged += OnConnectionsChanged;
@@ -265,15 +268,54 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
             return;
         }
 
-        var confirmed = await _dialogService.ConfirmAsync(
-            "Delete connection",
-            $"Delete '{item.Connection.Name}'? This cannot be undone.");
+        // FR-126: find this connection's history (by snapshot name + address) so the dialog can offer to purge it.
+        var historyIds = await MatchingHistoryIdsAsync(item.Connection);
+        bool purgeHistory;
 
-        if (confirmed)
+        if (historyIds.Count > 0)
         {
-            Connections.Remove(item);
-            await PersistAsync();
+            var choice = await _dialogService.ShowDialogAsync(
+                new DeleteConnectionDialogViewModel(item.Connection.Name, historyIds.Count));
+
+            if (choice is null)
+            {
+                return; // cancelled
+            }
+
+            purgeHistory = choice.Value;
         }
+        else if (!await _dialogService.ConfirmAsync(
+                     "Delete connection", $"Delete '{item.Connection.Name}'? This cannot be undone."))
+        {
+            return;
+        }
+        else
+        {
+            purgeHistory = false;
+        }
+
+        Connections.Remove(item);
+        await PersistAsync();
+
+        if (purgeHistory && _history is not null)
+        {
+            await _history.DeleteAsync(historyIds);
+        }
+    }
+
+    // FR-126: history entries whose snapshot connection (name + address) matches the one being deleted.
+    private async Task<IReadOnlyList<string>> MatchingHistoryIdsAsync(SavedConnection connection)
+    {
+        if (_history is null)
+        {
+            return [];
+        }
+
+        var entries = await _history.ReadAllAsync();
+        return entries
+            .Where(e => e.Connection.Name == connection.Name && e.Connection.Address == connection.Address)
+            .Select(e => e.Id)
+            .ToList();
     }
 
     /// <summary>Opens the editor for a connection by identity (the insecure banner's "Review connection…").</summary>

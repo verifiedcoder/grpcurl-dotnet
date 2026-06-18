@@ -377,6 +377,34 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void A_locked_workspace_shows_the_banner_with_the_holder(/* SPEC-040 §8 */)
+    {
+        var vm = CreateWithWorkspace(out var store, out _, out _, out _, out _);
+        vm.IsLockedBannerVisible.ShouldBeFalse();
+
+        store.SetLocked(true, new WorkspaceLockInfo(12345, "host", new DateTimeOffset(2026, 6, 18, 14, 2, 0, TimeSpan.Zero), "1.0"));
+
+        vm.IsLockedBannerVisible.ShouldBeTrue();
+        vm.LockedBannerText.ShouldContain("PID 12345");
+        vm.LockedBannerText.ShouldContain("host");
+
+        store.SetLocked(false);
+        vm.IsLockedBannerVisible.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Take_over_steals_the_lock_through_the_store(/* SPEC-040 §8 */)
+    {
+        var vm = CreateWithWorkspace(out var store, out _, out _, out _, out _);
+        store.SetLocked(true, new WorkspaceLockInfo(1, "h", new DateTimeOffset(2026, 6, 18, 12, 0, 0, TimeSpan.Zero), "1.0"));
+
+        await vm.TakeOverWorkspaceLockCommand.ExecuteAsync(null);
+
+        store.TakeOverCount.ShouldBe(1);
+        vm.IsLockedBannerVisible.ShouldBeFalse(); // cleared after taking over
+    }
+
+    [Fact]
     public async Task Reload_refreshes_the_connection_list()
     {
         var vm = CreateWithWorkspace(out var store, out _, out _, out var connections, out _);

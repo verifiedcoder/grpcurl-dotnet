@@ -132,6 +132,20 @@
             </DockPanel>
         </Border>
 
+        <!-- Locked-by-another-instance banner (SPEC-040 §8): a live foreign lock holds the workspace;
+             autosave is disabled and "Take over" steals the lock so this instance can edit + save. -->
+        <Border DockPanel.Dock="Top" x:Name="LockedBanner" IsVisible="{Binding IsLockedBannerVisible}"
+                Background="{DynamicResource Surface.PaneHeader}" BorderBrush="{DynamicResource Divider}"
+                BorderThickness="3,0,0,0" Padding="12,8">
+            <DockPanel LastChildFill="False">
+                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontWeight="SemiBold"
+                           TextWrapping="Wrap" Text="{Binding LockedBannerText}" />
+                <Button DockPanel.Dock="Right" Content="Take over" VerticalAlignment="Center"
+                        Command="{Binding TakeOverWorkspaceLockCommand}"
+                        AutomationProperties.Name="Take over workspace lock" />
+            </DockPanel>
+        </Border>
+
         <!-- Status bar -->
         <Border DockPanel.Dock="Bottom" x:Name="StatusBar" Height="28"
                 Background="{DynamicResource Surface.PaneHeader}"

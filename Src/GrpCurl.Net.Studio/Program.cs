@@ -36,8 +36,9 @@ internal static class Program
         finally
         {
             // FR-146: capture the final open-tab state on the way out (catches edits made after the last
-            // debounced persist), then stop the host.
+            // debounced persist). SPEC-040 §8: release the advisory workspace lock on clean close.
             host.Services.GetRequiredService<DocumentsViewModel>().FlushSessionAsync().GetAwaiter().GetResult();
+            host.Services.GetRequiredService<IWorkspaceStore>().ReleaseLock();
             host.StopAsync().GetAwaiter().GetResult();
         }
     }

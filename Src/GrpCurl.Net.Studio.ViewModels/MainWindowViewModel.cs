@@ -42,6 +42,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isReadOnlyBannerVisible;
 
+    /// <summary>SPEC-040 §8: shown while another live Studio instance holds the workspace lock.</summary>
+    [ObservableProperty]
+    private bool _isLockedBannerVisible;
+
+    [ObservableProperty]
+    private string _lockedBannerText = string.Empty;
+
     [ObservableProperty]
     private bool _isSidebarOpen = true;
 
@@ -122,13 +129,15 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             session.PropertyChanged += (_, _) => OnPropertyChanged(nameof(Title));
         }
 
-        // FR-148: the read-only banner follows the active workspace file's writability.
+        // FR-148 / SPEC-040 §8: the read-only and locked banners follow the active workspace file's state.
         if (_workspaceStore is not null)
         {
             _workspaceStore.ReadOnlyChanged += (_, _) => RefreshReadOnlyBanner();
+            _workspaceStore.LockChanged += (_, _) => RefreshLockBanner();
         }
 
         RefreshReadOnlyBanner();
+        RefreshLockBanner();
         RefreshRecents();
     }
 
@@ -180,6 +189,36 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>FR-148: shows the banner while the active workspace file is read-only on disk.</summary>
     public void RefreshReadOnlyBanner() => IsReadOnlyBannerVisible = _workspaceStore?.IsCurrentReadOnly ?? false;
+
+    /// <summary>SPEC-040 §8: shows the "Locked by PID … on host since …" banner while a live foreign lock holds the file.</summary>
+    public void RefreshLockBanner()
+    {
+        if (_workspaceStore is { IsLockedByAnother: true, ForeignLock: { } info })
+        {
+            IsLockedBannerVisible = true;
+            LockedBannerText = $"Locked by PID {info.Pid} on {info.Machine} since {info.AcquiredUtc.ToLocalTime():HH:mm}.";
+        }
+        else
+        {
+            IsLockedBannerVisible = false;
+            LockedBannerText = string.Empty;
+        }
+    }
+
+    /// <summary>SPEC-040 §8: steal the advisory lock so this instance can edit + save (the previous holder degrades).</summary>
+    [RelayCommand(CanExecute = nameof(CanManageWorkspaces))]
+    private async Task TakeOverWorkspaceLock()
+    {
+        if (_workspaceStore is null)
+        {
+            return;
+        }
+
+        await _workspaceStore.TakeOverLockAsync();
+        RefreshLockBanner();
+        Session?.Refresh();
+        OnPropertyChanged(nameof(Title));
+    }
 
     private bool IsInsecure(SavedConnection? connection)
     {

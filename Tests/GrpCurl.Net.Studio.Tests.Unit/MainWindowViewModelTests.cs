@@ -758,4 +758,43 @@ public sealed class MainWindowViewModelTests
         dialogs.ConfirmCount.ShouldBe(0);
         store.SaveNowCount.ShouldBe(1);
     }
+
+    [Fact]
+    public async Task Import_supplies_a_missing_secret_inline_and_stores_it_locally(/* SEC-041 */)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var store = new FakeWorkspaceStore(new WorkspaceModel { Id = "w", Name = "Local" })
+        {
+            ReadResult = new WorkspaceModel
+            {
+                Id = "src", Name = "Source",
+                Environments =
+                [
+                    new WorkspaceEnvironment
+                    {
+                        Id = "e", Name = "prod",
+                        Variables = [new EnvironmentVariable { Name = "TOKEN", Value = StringOrSecret.Secret("ref-2") }]
+                    }
+                ]
+            }
+        };
+        var picker = new FakeFilePickerService { OpenResult = "/in/ws.gcnws.json" };
+        var dialogs = new FakeDialogService
+        {
+            ConfirmResult = true, // accept the pre-merge summary
+            OnShowDialog = d => d is ImportSecretsDialogViewModel
+                ? new Dictionary<string, string> { ["ref-2"] = "tok" }
+                : null
+        };
+        var secrets = new FakeSecretStore();
+        var vm = new MainWindowViewModel(
+            new ThemeService(new FakeSettingsStore()), EmptyConnectionsPane(), EmptyExplorer(), new ConsoleViewModel(),
+            new InspectorViewModel(), EmptyDocuments(), workspaceStore: store,
+            session: new WorkspaceSessionViewModel(store, dialogs), filePicker: picker, dialogs: dialogs, secrets: secrets);
+
+        await vm.ImportWorkspaceCommand.ExecuteAsync(null);
+
+        (await secrets.GetAsync("ref-2", ct)).ShouldBe("tok"); // supplied secret stored under the imported keyref
+        store.SaveCount.ShouldBeGreaterThan(0);                 // merged workspace persisted
+    }
 }

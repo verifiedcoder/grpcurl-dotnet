@@ -725,6 +725,17 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
+        // SEC-041: offer to supply the dangling secrets inline (masked). The imported keyrefs are preserved by
+        // the merge, so storing a value under the same keyref makes the imported item resolve locally.
+        if (summary.MissingSecrets.Count > 0 && _secrets is not null
+            && await _dialogs.ShowDialogAsync(new ImportSecretsDialogViewModel(summary.MissingSecrets)) is { } supplied)
+        {
+            foreach (var (keyRef, value) in supplied)
+            {
+                await _secrets.SetAsync(keyRef, value);
+            }
+        }
+
         await _workspaceStore.SaveAsync(merged);
         OnWorkspaceSwitched();
     }

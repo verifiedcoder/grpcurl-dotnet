@@ -2,6 +2,7 @@ using System.IO;
 using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
+using GrpCurl.Net.Studio.ViewModels.Panes;
 using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.ViewModels.Connections;
@@ -18,6 +19,7 @@ public sealed partial class SavedRequestItemViewModel : ViewModelBase
     private readonly IDialogService? _dialogs;
     private readonly IFilePickerService? _filePicker;
     private readonly ISavedRequestSnippetIO? _snippetIO;
+    private readonly ConsoleViewModel? _console;
 
     public SavedRequestItemViewModel(
         SavedRequest request,
@@ -25,7 +27,8 @@ public sealed partial class SavedRequestItemViewModel : ViewModelBase
         ISavedRequestStore? store = null,
         IDialogService? dialogs = null,
         IFilePickerService? filePicker = null,
-        ISavedRequestSnippetIO? snippetIO = null)
+        ISavedRequestSnippetIO? snippetIO = null,
+        ConsoleViewModel? console = null)
     {
         Request = request;
         _open = open;
@@ -33,6 +36,7 @@ public sealed partial class SavedRequestItemViewModel : ViewModelBase
         _dialogs = dialogs;
         _filePicker = filePicker;
         _snippetIO = snippetIO;
+        _console = console;
     }
 
     public SavedRequest Request { get; }
@@ -73,7 +77,15 @@ public sealed partial class SavedRequestItemViewModel : ViewModelBase
 
         if (path is not null)
         {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             await _snippetIO.ExportAsync(Request, path);
+
+            // FR-004/#14: mirror the export to the console (operation + duration; the snippet holds no secret literals).
+            var ms = stopwatch.Elapsed.TotalMilliseconds;
+            _console?.AppendCall(new ConsoleCallActivity(
+                $"Export request: {Request.Name}", 0, "written", false, $"{ms:0} ms",
+                [new CallTimingPhase("export", $"{ms:0} ms", 1.0)],
+                ConsoleActivityKind.Export, DateTimeOffset.UtcNow));
         }
     }
 

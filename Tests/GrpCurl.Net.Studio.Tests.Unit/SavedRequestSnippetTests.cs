@@ -108,6 +108,22 @@ public sealed class SavedRequestSnippetTests : IDisposable
         picker.LastSaveSuggestedName.ShouldBe("say hello.grpcnreq.json");
     }
 
+    [Fact]
+    public async Task Exporting_a_request_records_a_console_activity(/* FR-004 / #14 */)
+    {
+        var picker = new FakeFilePickerService { SaveResult = "/out/hello.grpcnreq.json" };
+        var console = new ConsoleViewModel();
+        var item = new SavedRequestItemViewModel(
+            Sample(), _ => Task.CompletedTask, store: null, dialogs: new FakeDialogService(),
+            picker, new FakeSavedRequestSnippetIO(), console);
+
+        await item.ExportCommand.ExecuteAsync(null);
+
+        var row = console.Calls.ShouldHaveSingleItem();
+        row.KindLabel.ShouldBe("export");
+        row.Method.ShouldContain("say hello");
+    }
+
     // ── sidebar import (ConnectionsPaneViewModel) ────────────────────────────
 
     private static ConnectionsPaneViewModel Pane(

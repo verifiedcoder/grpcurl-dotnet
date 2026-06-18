@@ -5,6 +5,7 @@ using GrpCurl.Net.Studio.ViewModels;
 using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
+using GrpCurl.Net.Studio.ViewModels.Models.Descriptors;
 using GrpCurl.Net.Studio.ViewModels.Panes;
 using GrpCurl.Net.Studio.ViewModels.Services;
 
@@ -545,5 +546,67 @@ public sealed class MainWindowViewModelTests
         await vm.OpenCommandPaletteCommand.ExecuteAsync(null);
 
         documents.Documents.OfType<SettingsDocumentViewModel>().ShouldNotBeEmpty(); // the action ran
+    }
+
+    // ── Command palette v2: method navigation ────────────────────────────────
+
+    private static ServiceCatalog MethodCatalog() => new(
+    [
+        new ServiceEntry("pkg.Greeter", [new ServiceMethod("SayHello", "pkg.Greeter/SayHello", StreamingShape.Unary, "pkg.Req", "pkg.Resp")]),
+        new ServiceEntry("pkg.Admin", [new ServiceMethod("Reload", "pkg.Admin/Reload", StreamingShape.Unary, "pkg.Empty", "pkg.Empty")])
+    ], []);
+
+    private static MainWindowViewModel CreateWithLoadedMethods(out FakeDialogService dialogs, out DocumentsViewModel documents)
+    {
+        var selection = new ConnectionSelection();
+        var descriptors = new FakeDescriptorService { Result = DescriptorLoadResult.Success(MethodCatalog()) };
+        var explorer = new ServiceExplorerViewModel(descriptors, selection, new FakeClipboardService(), new ImmediateUiDispatcher(), new FakeDocumentHost());
+        var connection = new SavedConnection { Name = "prod", Address = "h:1" };
+        var store = new FakeWorkspaceStore(new WorkspaceModel { Id = "w", Name = "W", Connections = [connection] });
+        var connections = new ConnectionsPaneViewModel(store, new FakeConnectionRegistry(), new FakeDialogService(), selection);
+        documents = EmptyDocuments();
+        dialogs = new FakeDialogService();
+        var vm = new MainWindowViewModel(
+            new ThemeService(new FakeSettingsStore()), connections, explorer, new ConsoleViewModel(),
+            new InspectorViewModel(), documents, dialogs: dialogs);
+
+        connections.SelectedConnection = connections.Connections[0]; // drives the explorer load + sets the active connection
+        return vm;
+    }
+
+    [Fact]
+    public async Task The_command_palette_lists_methods_of_the_active_connection()
+    {
+        var vm = CreateWithLoadedMethods(out var dialogs, out _);
+        IReadOnlyList<string>? titles = null;
+        dialogs.OnShowDialog = d =>
+        {
+            if (d is CommandPaletteViewModel p)
+            {
+                titles = p.Items.Select(i => i.Title).ToList();
+            }
+
+            return null;
+        };
+
+        await vm.OpenCommandPaletteCommand.ExecuteAsync(null);
+
+        titles.ShouldNotBeNull();
+        titles.ShouldContain("Invoke method: pkg.Greeter/SayHello");
+        titles.ShouldContain("Invoke method: pkg.Admin/Reload");
+    }
+
+    [Fact]
+    public async Task The_command_palette_method_opens_an_invocation_tab()
+    {
+        var vm = CreateWithLoadedMethods(out var dialogs, out var documents);
+        dialogs.OnShowDialog = d => d is CommandPaletteViewModel p
+            ? p.Items.First(i => i.Title == "Invoke method: pkg.Greeter/SayHello")
+            : null;
+
+        await vm.OpenCommandPaletteCommand.ExecuteAsync(null);
+
+        documents.Documents.OfType<InvocationDocumentViewModel>()
+            .ShouldContain(t => t.MethodSymbol == "pkg.Greeter/SayHello");
     }
 }

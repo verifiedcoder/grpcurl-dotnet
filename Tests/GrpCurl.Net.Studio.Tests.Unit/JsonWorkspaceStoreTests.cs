@@ -60,6 +60,45 @@ public sealed class JsonWorkspaceStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task File_references_beneath_the_workspace_are_stored_relative_but_resolve_to_absolute(/* FR-147 */)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var protosetAbs = Path.Combine(_dir, "protos", "svc.protoset");
+        var caAbs = Path.Combine(_dir, "tls", "ca.pem");
+        var outsideAbs = Path.GetFullPath(Path.Combine(_dir, "..", "shared", "import.protoset"));
+
+        var workspace = new WorkspaceModel
+        {
+            Connections =
+            [
+                new SavedConnection
+                {
+                    Name = "svc", Address = "h:1", Transport = TransportMode.Plaintext,
+                    DescriptorSource = new DescriptorSourceConfig { ProtosetPaths = [protosetAbs, outsideAbs] }
+                }
+            ],
+            TlsProfiles = [new TlsProfile { Name = "p", CaCertPath = caAbs }]
+        };
+
+        await new JsonWorkspaceStore(Path_).SaveAsync(workspace, ct);
+
+        // On disk: paths beneath the workspace dir are relative (forward-slash); the outside one stays absolute.
+        var raw = await File.ReadAllTextAsync(Path_, ct);
+        raw.ShouldContain("protos/svc.protoset");
+        raw.ShouldContain("tls/ca.pem");
+        raw.ShouldNotContain(protosetAbs.Replace('\\', '/'));
+        raw.ShouldContain(JsonEscaped(outsideAbs));
+
+        // In memory after load: every reference is absolute again.
+        var reloaded = await new JsonWorkspaceStore(Path_).LoadAsync(ct);
+        reloaded.Connections[0].DescriptorSource.ProtosetPaths.ShouldBe([protosetAbs, outsideAbs]);
+        reloaded.TlsProfiles[0].CaCertPath.ShouldBe(caAbs);
+    }
+
+    // Paths embedded in JSON have backslashes escaped; normalise to compare against an absolute Windows path.
+    private static string JsonEscaped(string path) => path.Replace("\\", "\\\\");
+
+    [Fact]
     public async Task Enum_serializes_as_string()
     {
         var ct = TestContext.Current.CancellationToken;

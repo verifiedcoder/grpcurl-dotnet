@@ -15,4 +15,11 @@ public interface IUpdateService
 
     /// <summary>The releases page to open for <paramref name="channel" /> (manual "Check now", FR-156).</summary>
     string ReleasesUrl(UpdateChannel channel);
+
+    /// <summary>
+    ///     FR-156: compares the running version against the latest release on <paramref name="channel" /> (GitHub
+    ///     releases API). Offline-safe — any network/parse failure returns <see cref="UpdateCheckResult.Failed" />
+    ///     rather than throwing. No download or apply is performed (ADR-011).
+    /// </summary>
+    Task<UpdateCheckResult> CheckForUpdateAsync(UpdateChannel channel, CancellationToken cancellationToken = default);
 }

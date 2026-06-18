@@ -406,9 +406,12 @@
                     <TextBlock Text="{Binding AppVersion}" VerticalAlignment="Center" />
                 </DockPanel>
                 <TextBlock Classes="settingHint" TextWrapping="Wrap"
-                           Text="Studio does not auto-update; Check now opens the releases page so you can download and install with consent (ADR-011)." />
+                           Text="Studio does not auto-update; Check now compares your version against the latest release and, if newer, lets you open it to download and install with consent (ADR-011)." />
                 <TextBlock Text="{Binding UpdateStatus}" FontSize="12" Opacity="0.8" Margin="0,2,0,0"
                            IsVisible="{Binding UpdateStatus, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                <Button Content="Open release page" Margin="0,4,0,0"
+                        Command="{Binding OpenLatestReleaseCommand}" IsVisible="{Binding UpdateAvailable}"
+                        AutomationProperties.Name="Open the latest release page" />
             </StackPanel>
 
             <StackPanel Spacing="2">

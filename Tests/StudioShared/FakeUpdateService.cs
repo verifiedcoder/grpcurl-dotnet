@@ -10,4 +10,15 @@ public sealed class FakeUpdateService : IUpdateService
 
     public string ReleasesUrl(UpdateChannel channel)
         => channel == UpdateChannel.Stable ? "https://example.test/releases/latest" : "https://example.test/releases";
+
+    /// <summary>Scripted result for <see cref="CheckForUpdateAsync" /> (FR-156).</summary>
+    public UpdateCheckResult CheckResult { get; set; } = UpdateCheckResult.UpToDate;
+
+    public UpdateChannel? LastCheckedChannel { get; private set; }
+
+    public Task<UpdateCheckResult> CheckForUpdateAsync(UpdateChannel channel, CancellationToken cancellationToken = default)
+    {
+        LastCheckedChannel = channel;
+        return Task.FromResult(CheckResult);
+    }
 }

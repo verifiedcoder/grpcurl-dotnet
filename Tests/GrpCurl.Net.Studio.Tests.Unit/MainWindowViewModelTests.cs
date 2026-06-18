@@ -797,4 +797,19 @@ public sealed class MainWindowViewModelTests
         (await secrets.GetAsync("ref-2", ct)).ShouldBe("tok"); // supplied secret stored under the imported keyref
         store.SaveCount.ShouldBeGreaterThan(0);                 // merged workspace persisted
     }
+
+    [Fact]
+    public void An_available_update_is_surfaced_and_opens_settings(/* FR-156 */)
+    {
+        var vm = CreateWithWorkspace(out _, out _, out _, out _, out var documents);
+        vm.IsUpdateAvailable.ShouldBeFalse();
+
+        vm.ShowUpdateAvailable("v2.0.0");
+
+        vm.IsUpdateAvailable.ShouldBeTrue();
+        vm.UpdateAvailableText.ShouldContain("v2.0.0");
+
+        vm.OpenUpdateSettingsCommand.Execute(null);
+        documents.Documents.OfType<SettingsDocumentViewModel>().ShouldNotBeEmpty();
+    }
 }

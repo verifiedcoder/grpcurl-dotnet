@@ -263,7 +263,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
             return;
         }
 
-        var document = new HistoryDocumentViewModel(_history, _settings, _workspace, this, _dialogs, _dispatcher, _filePicker);
+        var document = new HistoryDocumentViewModel(_history, _settings, _workspace, this, _dialogs, _dispatcher, _filePicker, _console);
         document.CloseRequested += OnDocumentCloseRequested;
 
         Documents.Add(document);

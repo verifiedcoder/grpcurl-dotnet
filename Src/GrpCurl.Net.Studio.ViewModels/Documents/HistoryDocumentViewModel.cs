@@ -5,6 +5,7 @@ using System.Globalization;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.History;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
+using GrpCurl.Net.Studio.ViewModels.Panes;
 using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.ViewModels.Documents;
@@ -25,6 +26,7 @@ public sealed partial class HistoryDocumentViewModel : DocumentViewModel
     private readonly IDialogService _dialogs;
     private readonly IFilePickerService? _filePicker;
     private readonly IUiDispatcher _dispatcher;
+    private readonly ConsoleViewModel? _console;
 
     private IReadOnlyList<HistoryEntry> _all = [];
 
@@ -54,7 +56,8 @@ public sealed partial class HistoryDocumentViewModel : DocumentViewModel
         IDocumentHost host,
         IDialogService dialogs,
         IUiDispatcher dispatcher,
-        IFilePickerService? filePicker = null)
+        IFilePickerService? filePicker = null,
+        ConsoleViewModel? console = null)
     {
         _history = history;
         _settings = settings;
@@ -63,6 +66,7 @@ public sealed partial class HistoryDocumentViewModel : DocumentViewModel
         _dialogs = dialogs;
         _filePicker = filePicker;
         _dispatcher = dispatcher;
+        _console = console;
 
         Title = "History";
         ConnectionOptions = [All];
@@ -228,7 +232,25 @@ public sealed partial class HistoryDocumentViewModel : DocumentViewModel
 
         if (path is not null)
         {
-            await _history.ExportAsync(path, Rows.Select(r => r.Entry).ToList());
+            var entries = Rows.Select(r => r.Entry).ToList();
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            await _history.ExportAsync(path, entries);
+            RecordExportActivity($"Export history: {entries.Count} entr{(entries.Count == 1 ? "y" : "ies")}", stopwatch.Elapsed);
         }
+    }
+
+    // FR-004/#14: mirror the export to the console (operation + duration; the NDJSON holds no secret values).
+    private void RecordExportActivity(string title, TimeSpan elapsed)
+    {
+        if (_console is null)
+        {
+            return;
+        }
+
+        var ms = elapsed.TotalMilliseconds;
+        _console.AppendCall(new ConsoleCallActivity(
+            title, 0, "written", false, $"{ms:0} ms",
+            [new CallTimingPhase("export", $"{ms:0} ms", 1.0)],
+            ConsoleActivityKind.Export, DateTimeOffset.UtcNow));
     }
 }

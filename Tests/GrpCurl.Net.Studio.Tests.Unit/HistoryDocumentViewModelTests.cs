@@ -3,6 +3,7 @@ using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.History;
+using GrpCurl.Net.Studio.ViewModels.Panes;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
 
@@ -183,6 +184,25 @@ public sealed class HistoryDocumentViewModelTests
 
         store.ExportedPath.ShouldBe("/tmp/history.ndjson");
         store.ExportedEntries!.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task Export_records_a_console_activity(/* FR-004 / #14 */)
+    {
+        var store = new FakeHistoryStore();
+        store.Entries.Add(Entry("e1"));
+        var picker = new FakeFilePickerService { SaveResult = "/tmp/history.ndjson" };
+        var console = new ConsoleViewModel();
+        var doc = new HistoryDocumentViewModel(
+            store, new FakeSettingsStore(), new FakeWorkspaceStore(), new FakeDocumentHost(),
+            new FakeDialogService(), new ImmediateUiDispatcher(), picker, console);
+        await doc.LoadAsync();
+
+        await doc.ExportCommand.ExecuteAsync(null);
+
+        var row = console.Calls.ShouldHaveSingleItem();
+        row.KindLabel.ShouldBe("export");
+        row.Method.ShouldContain("Export history");
     }
 
     [Fact]

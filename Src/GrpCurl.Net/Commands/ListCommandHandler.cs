@@ -353,7 +353,9 @@ internal static class ListCommandHandler
 
         PositionalArgumentGuard.RejectOptionLikeValues("list", output, ("address", address), ("service", service));
 
-        var maxTimeSpan = maxTime is not null ? GrpcChannelFactory.ParseDuration(maxTime) : (TimeSpan?)null;
+        var maxTimeSpan = maxTime is not null
+            ? ErrorRenderer.ConvertOption(() => GrpcChannelFactory.ParseDuration(maxTime), output)
+            : (TimeSpan?)null;
 
         using var deadlineCts = maxTimeSpan is not null
             ? new CancellationTokenSource(maxTimeSpan.Value)
@@ -390,12 +392,18 @@ internal static class ListCommandHandler
             ClientCertPath = cert,
             ClientKeyPath = key,
             ClientCertPassword = certPassword,
-            ConnectTimeout = connectTimeout is not null ? GrpcChannelFactory.ParseDuration(connectTimeout) : null,
-            KeepaliveTime = keepaliveTime is not null ? GrpcChannelFactory.ParseDuration(keepaliveTime) : null,
-            KeepaliveTimeout = keepaliveTimeout is not null ? GrpcChannelFactory.ParseDuration(keepaliveTimeout) : null,
+            ConnectTimeout = connectTimeout is not null
+                ? ErrorRenderer.ConvertOption(() => GrpcChannelFactory.ParseDuration(connectTimeout), output)
+                : null,
+            KeepaliveTime = keepaliveTime is not null
+                ? ErrorRenderer.ConvertOption(() => GrpcChannelFactory.ParseDuration(keepaliveTime), output)
+                : null,
+            KeepaliveTimeout = keepaliveTimeout is not null
+                ? ErrorRenderer.ConvertOption(() => GrpcChannelFactory.ParseDuration(keepaliveTimeout), output)
+                : null,
             Authority = authority,
             ServerName = serverName,
-            RevocationMode = GrpcChannelFactory.ParseRevocationMode(revocationMode),
+            RevocationMode = ErrorRenderer.ConvertOption(() => GrpcChannelFactory.ParseRevocationMode(revocationMode), output),
             ExportableClientKey = exportableKey
         };
 

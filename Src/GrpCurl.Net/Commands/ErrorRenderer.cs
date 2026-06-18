@@ -60,6 +60,33 @@ internal static class ErrorRenderer
     }
 
     /// <summary>
+    ///     Runs a post-parse option conversion that may throw <see cref="ArgumentException" />
+    ///     for a malformed value (e.g. <c>--max-time</c>, <c>--connect-timeout</c>,
+    ///     <c>--max-msg-sz</c>, <c>--revocation-mode</c>, the keepalive durations). On failure
+    ///     it renders a Usage envelope and throws a silent <see cref="GrpcCommandException" />
+    ///     with exit code 2, so a bad option <em>value</em> maps to the usage contract rather
+    ///     than falling through to the generic internal-error path (exit 1).
+    /// </summary>
+    public static T ConvertOption<T>(Func<T> convert, OutputFormat format)
+    {
+        try
+        {
+            return convert();
+        }
+        catch (ArgumentException ex)
+        {
+            RenderAndThrow(new ErrorEnvelope
+            {
+                Category = ErrorCategory.Usage,
+                ExitCode = 2,
+                Message = ex.Message
+            }, format);
+
+            throw; // unreachable: RenderAndThrow is annotated [DoesNotReturn].
+        }
+    }
+
+    /// <summary>
     ///     SocketsHttpHandler silently honours HTTP(S)_PROXY/ALL_PROXY, so a call routed
     ///     through an unexpected proxy fails with an error that mentions neither the proxy
     ///     nor the variable. For connection-shaped failures (network errors and UNAVAILABLE)

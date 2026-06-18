@@ -19,7 +19,7 @@ public static class WorkspaceMerger
         var profileNames = new HashSet<string>(merged.TlsProfiles.Select(p => p.Name), StringComparer.Ordinal);
         var environmentNames = new HashSet<string>(merged.Environments.Select(e => e.Name), StringComparer.Ordinal);
 
-        var secretsToReenter = 0;
+        var missingSecrets = new List<MissingSecret>();
 
         // Profiles first: imported connections reference them, so build the old→new id map here.
         var profileIdMap = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -34,7 +34,8 @@ public static class WorkspaceMerger
 
             if (!string.IsNullOrWhiteSpace(profile.ClientCertPasswordSecretRef))
             {
-                secretsToReenter++;
+                missingSecrets.Add(new MissingSecret(
+                    $"TLS profile '{profile.Name}' — client-certificate password", profile.ClientCertPasswordSecretRef));
             }
 
             merged.TlsProfiles.Add(profile);
@@ -64,13 +65,18 @@ public static class WorkspaceMerger
         {
             environment.Id = NewId();
             environment.Name = Dedup(environment.Name, environmentNames);
-            secretsToReenter += environment.Variables.Count(v => v.IsSecret);
+
+            foreach (var variable in environment.Variables.Where(v => v.IsSecret && v.Value.SecretRef is not null))
+            {
+                missingSecrets.Add(new MissingSecret(
+                    $"Environment '{environment.Name}' — variable '{variable.Name}'", variable.Value.SecretRef!));
+            }
 
             merged.Environments.Add(environment);
             addedEnvironments.Add(environment.Name);
         }
 
-        return (merged, new WorkspaceMergeSummary(addedConnections, addedProfiles, addedEnvironments, secretsToReenter));
+        return (merged, new WorkspaceMergeSummary(addedConnections, addedProfiles, addedEnvironments, missingSecrets));
     }
 
     private static string NewId() => Guid.NewGuid().ToString();
@@ -90,16 +96,22 @@ public static class WorkspaceMerger
     }
 }
 
+/// <summary>One secret an import will leave dangling locally (SEC-041): a display name + the keyref to supply a value for.</summary>
+public sealed record MissingSecret(string DisplayName, string KeyRef);
+
 /// <summary>
 ///     What a <see cref="WorkspaceMerger.Merge" /> will add, for the pre-merge confirmation (FR-164) and for
-///     surfacing the secrets the user must re-enter afterwards (SEC-041).
+///     surfacing the secrets the user can supply inline afterwards (SEC-041).
 /// </summary>
 public sealed record WorkspaceMergeSummary(
     IReadOnlyList<string> Connections,
     IReadOnlyList<string> Profiles,
     IReadOnlyList<string> Environments,
-    int SecretsToReenter)
+    IReadOnlyList<MissingSecret> MissingSecrets)
 {
+    /// <summary>The number of secret values the import can't carry (they live only in the source machine's keychain).</summary>
+    public int SecretsToReenter => MissingSecrets.Count;
+
     public int TotalAdded => Connections.Count + Profiles.Count + Environments.Count;
 
     public bool IsEmpty => TotalAdded == 0;

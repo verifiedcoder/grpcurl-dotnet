@@ -114,6 +114,11 @@ public sealed class WorkspaceMergerTests
 
         summary.SecretsToReenter.ShouldBe(2); // the PKCS12 password + the secret variable
         summary.Describe().ShouldContain("re-entered");
+
+        // SEC-041: each dangling secret is listed by name + keyref so it can be supplied inline on import.
+        summary.MissingSecrets.Select(m => m.KeyRef).ShouldBe(["ref-1", "ref-2"], ignoreOrder: true);
+        summary.MissingSecrets.ShouldContain(m => m.DisplayName.Contains("mtls") && m.DisplayName.Contains("password"));
+        summary.MissingSecrets.ShouldContain(m => m.DisplayName.Contains("TOKEN"));
     }
 
     [Fact]

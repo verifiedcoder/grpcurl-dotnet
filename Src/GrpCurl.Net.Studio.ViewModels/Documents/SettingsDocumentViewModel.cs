@@ -122,6 +122,16 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
     [ObservableProperty]
     private string? _updateStatus;
 
+    /// <summary>FR-156: set when the last check found a newer release; drives the "Open release" affordance.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(OpenLatestReleaseCommand))]
+    private bool _updateAvailable;
+
+    [ObservableProperty]
+    private string? _latestVersion;
+
+    private string? _latestReleaseUrl;
+
     // ── Diagnostics (FR-155) ─────────────────────────────────────────────────
 
     [ObservableProperty]
@@ -323,7 +333,11 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
     partial void OnUpdateChannelChanged(UpdateChannel value) => Persist(s => s.Updates.Channel = value);
     partial void OnUpdateCheckOnLaunchChanged(bool value) => Persist(s => s.Updates.CheckOnLaunch = value);
 
-    /// <summary>FR-156: a manual, consent-respecting check — opens the channel's releases page in the browser.</summary>
+    /// <summary>
+    ///     FR-156: a manual, consent-respecting check — compares the running version against the channel's latest
+    ///     release. On an available update it offers to open that release; if the check fails (offline), it falls
+    ///     back to opening the releases page so the user can look manually. Nothing is ever downloaded (ADR-011).
+    /// </summary>
     [RelayCommand(CanExecute = nameof(CanCheckForUpdates))]
     private async Task CheckForUpdates()
     {
@@ -332,8 +346,43 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
             return;
         }
 
-        await _launcher.LaunchUriAsync(_updates.ReleasesUrl(UpdateChannel));
-        UpdateStatus = $"Opened the {UpdateChannel.ToString().ToLowerInvariant()} releases page in your browser.";
+        UpdateStatus = "Checking for updates…";
+        var result = await _updates.CheckForUpdateAsync(UpdateChannel);
+
+        switch (result.Availability)
+        {
+            case UpdateAvailability.UpdateAvailable:
+                UpdateAvailable = true;
+                LatestVersion = result.LatestVersion;
+                _latestReleaseUrl = result.ReleaseUrl;
+                UpdateStatus = $"Update available: {result.LatestVersion} (you have {_updates.CurrentVersion}).";
+                break;
+
+            case UpdateAvailability.UpToDate:
+                UpdateAvailable = false;
+                LatestVersion = null;
+                _latestReleaseUrl = null;
+                UpdateStatus = $"You're on the latest version ({_updates.CurrentVersion}).";
+                break;
+
+            default: // CheckFailed — offline or unreachable; let the user check manually.
+                UpdateAvailable = false;
+                UpdateStatus = "Couldn't check for updates (offline or GitHub unreachable). Opening the releases page…";
+                await _launcher.LaunchUriAsync(_updates.ReleasesUrl(UpdateChannel));
+                break;
+        }
+    }
+
+    private bool CanOpenLatestRelease => UpdateAvailable && _launcher is not null;
+
+    /// <summary>FR-156: open the page for the release the last check found (consent-respecting, no auto-download).</summary>
+    [RelayCommand(CanExecute = nameof(CanOpenLatestRelease))]
+    private async Task OpenLatestRelease()
+    {
+        if (_launcher is not null)
+        {
+            await _launcher.LaunchUriAsync(_latestReleaseUrl ?? _updates?.ReleasesUrl(UpdateChannel) ?? string.Empty);
+        }
     }
 
     partial void OnDiagnosticsLevelFilterChanged(DiagnosticsLevel value) => ApplyDiagnosticsFilter();

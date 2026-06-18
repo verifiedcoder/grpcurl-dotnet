@@ -336,20 +336,51 @@ public sealed class SettingsDocumentViewModelTests
         store.Current.Updates.CheckOnLaunch.ShouldBeFalse();
     }
 
+    private static SettingsDocumentViewModel CreateForUpdates(FakeUpdateService updates, FakeLauncherService launcher)
+        => new(new FakeSettingsStore(), new FakeThemeService(), new FakeDialogService(), new FakeProtocService(), secrets: null,
+            updates, launcher) { UpdateChannel = UpdateChannel.Stable };
+
     [Fact]
-    public async Task Check_now_opens_the_channels_releases_page()
+    public async Task Check_now_reports_an_available_update_without_auto_opening()
     {
-        var store = new FakeSettingsStore();
+        var updates = new FakeUpdateService { CheckResult = UpdateCheckResult.Available("v2.0.0", "https://example.test/v2") };
         var launcher = new FakeLauncherService();
-        var vm = new SettingsDocumentViewModel(
-            store, new FakeThemeService(), new FakeDialogService(), new FakeProtocService(), secrets: null,
-            new FakeUpdateService(), launcher) { UpdateChannel = UpdateChannel.Stable };
+        var vm = CreateForUpdates(updates, launcher);
+
+        await vm.CheckForUpdatesCommand.ExecuteAsync(null);
+
+        vm.UpdateAvailable.ShouldBeTrue();
+        vm.LatestVersion.ShouldBe("v2.0.0");
+        launcher.LaunchCount.ShouldBe(0); // ADR-011: nothing opened until the user acts
+
+        vm.OpenLatestReleaseCommand.CanExecute(null).ShouldBeTrue();
+        await vm.OpenLatestReleaseCommand.ExecuteAsync(null);
+        launcher.LastUri.ShouldBe("https://example.test/v2");
+    }
+
+    [Fact]
+    public async Task Check_now_reports_up_to_date_without_opening_a_page()
+    {
+        var launcher = new FakeLauncherService();
+        var vm = CreateForUpdates(new FakeUpdateService { CheckResult = UpdateCheckResult.UpToDate }, launcher);
+
+        await vm.CheckForUpdatesCommand.ExecuteAsync(null);
+
+        vm.UpdateAvailable.ShouldBeFalse();
+        launcher.LaunchCount.ShouldBe(0);
+        vm.UpdateStatus.ShouldNotBeNull().ShouldContain("latest");
+    }
+
+    [Fact]
+    public async Task Check_now_falls_back_to_the_releases_page_when_the_check_fails()
+    {
+        var launcher = new FakeLauncherService();
+        var vm = CreateForUpdates(new FakeUpdateService { CheckResult = UpdateCheckResult.Failed }, launcher);
 
         await vm.CheckForUpdatesCommand.ExecuteAsync(null);
 
         launcher.LaunchCount.ShouldBe(1);
-        launcher.LastUri.ShouldBe("https://example.test/releases/latest"); // the stable channel URL
-        vm.UpdateStatus.ShouldNotBeNull();
+        launcher.LastUri.ShouldBe("https://example.test/releases/latest"); // manual fallback
     }
 
     [Fact]

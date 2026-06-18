@@ -25,6 +25,7 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
 
     private CancellationTokenSource? _flushCts;
     private bool _isDirty;
+    private bool _isReadOnly;
 
     public JsonWorkspaceStore()
         : this(
@@ -55,12 +56,17 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
 
     public event EventHandler? DirtyChanged;
 
+    public bool IsCurrentReadOnly => _isReadOnly;
+
+    public event EventHandler? ReadOnlyChanged;
+
     public IReadOnlyList<RecentWorkspace> RecentWorkspaces
         => _recent.Select(p => new RecentWorkspace(p, File.Exists(p))).ToList();
 
     public async Task<WorkspaceModel> LoadAsync(CancellationToken cancellationToken = default)
     {
         CurrentPath = _defaultPath;
+        RefreshReadOnly(_defaultPath);
 
         if (!File.Exists(_defaultPath))
         {
@@ -96,6 +102,7 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
         Current = workspace;
         CurrentPath = path;
         SetDirty(false);
+        RefreshReadOnly(path);
         await PromoteRecentAsync(path, cancellationToken).ConfigureAwait(false);
         return workspace;
     }
@@ -107,6 +114,11 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
         Current = workspace;
         SetDirty(true);
         CancelPendingFlush();
+
+        if (_isReadOnly)
+        {
+            return; // FR-148: autosave is disabled for a read-only file; the change stays in memory (dirty).
+        }
 
         if (_debounce <= TimeSpan.Zero)
         {
@@ -135,6 +147,7 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
         var json = await File.ReadAllTextAsync(CurrentPath, cancellationToken).ConfigureAwait(false);
         Current = DeserializeResolved(json, CurrentPath); // strict — surfaces a corrupt/newer file
         SetDirty(false);
+        RefreshReadOnly(CurrentPath); // the file's permissions may have changed since open
     }
 
     public async Task SaveAsAsync(WorkspaceModel workspace, string path, CancellationToken cancellationToken = default)
@@ -144,6 +157,7 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
         Current = workspace;
         CurrentPath = path;
         SetDirty(false);
+        RefreshReadOnly(path); // FR-148: Save As to a writable path clears read-only
         await PromoteRecentAsync(path, cancellationToken).ConfigureAwait(false);
     }
 
@@ -164,6 +178,7 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
         Current = WorkspaceModel.Empty();
         CurrentPath = null; // untitled until the first Save As
         SetDirty(false);
+        SetReadOnly(false); // a fresh untitled workspace has nothing on disk
         return Current;
     }
 
@@ -178,9 +193,9 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
     /// <summary>Writes the current workspace to its path and clears dirty; a no-op for an untitled workspace.</summary>
     private async Task FlushAsync(CancellationToken cancellationToken)
     {
-        if (CurrentPath is null)
+        if (CurrentPath is null || _isReadOnly)
         {
-            return; // untitled — nowhere to autosave; stays dirty until Save As
+            return; // untitled (no path) or read-only (FR-148) — no write; stays dirty until Save As
         }
 
         await WriteAtomicAsync(CurrentPath, Current, cancellationToken).ConfigureAwait(false);
@@ -222,6 +237,22 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
 
         _isDirty = value;
         DirtyChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    // FR-148: a backing file is read-only when it exists on disk and the OS marks it non-writable
+    // (Windows ReadOnly attribute, or no owner write permission on Unix). Untitled = never read-only.
+    private void RefreshReadOnly(string? path)
+        => SetReadOnly(path is not null && File.Exists(path) && new FileInfo(path).IsReadOnly);
+
+    private void SetReadOnly(bool value)
+    {
+        if (_isReadOnly == value)
+        {
+            return;
+        }
+
+        _isReadOnly = value;
+        ReadOnlyChanged?.Invoke(this, EventArgs.Empty);
     }
 
     // Deserialise then resolve FR-147 relative file references back to absolute against the file's directory,

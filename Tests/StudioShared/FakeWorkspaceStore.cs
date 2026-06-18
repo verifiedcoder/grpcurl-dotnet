@@ -48,6 +48,22 @@ public sealed class FakeWorkspaceStore : IWorkspaceStore
         DirtyChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    public bool IsCurrentReadOnly { get; private set; }
+
+    public event EventHandler? ReadOnlyChanged;
+
+    /// <summary>Test helper: drive the read-only flag (and raise <see cref="ReadOnlyChanged" />) directly (FR-148).</summary>
+    public void SetReadOnly(bool value)
+    {
+        if (IsCurrentReadOnly == value)
+        {
+            return;
+        }
+
+        IsCurrentReadOnly = value;
+        ReadOnlyChanged?.Invoke(this, EventArgs.Empty);
+    }
+
     public IReadOnlyList<RecentWorkspace> RecentWorkspaces
         => _recent.Select(p => new RecentWorkspace(p, Exists: true)).ToList();
 

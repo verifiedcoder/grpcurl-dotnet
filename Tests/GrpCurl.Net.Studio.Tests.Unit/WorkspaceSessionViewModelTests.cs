@@ -32,6 +32,19 @@ public sealed class WorkspaceSessionViewModelTests
     }
 
     [Fact]
+    public async Task A_read_only_workspace_shows_a_read_only_status(/* FR-148 */)
+    {
+        var session = Create(out var store, out _);
+        await StoreSaveAs(store, "/tmp/locked.gcnws.json");
+        session.Refresh();
+
+        store.SetReadOnly(true);
+
+        session.IsReadOnly.ShouldBeTrue();
+        session.StatusText.ShouldBe("locked.gcnws.json — read-only");
+    }
+
+    [Fact]
     public void An_untitled_workspace_is_labelled_untitled()
     {
         var session = Create(out _, out _);

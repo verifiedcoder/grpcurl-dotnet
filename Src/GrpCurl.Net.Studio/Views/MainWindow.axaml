@@ -116,6 +116,20 @@
             </DockPanel>
         </Border>
 
+        <!-- Read-only workspace banner (FR-148): pinned below the menu while the active workspace file
+             is read-only on disk; autosave is disabled and Save As is offered. -->
+        <Border DockPanel.Dock="Top" x:Name="ReadOnlyBanner" IsVisible="{Binding IsReadOnlyBannerVisible}"
+                Background="{DynamicResource Surface.PaneHeader}" BorderBrush="{DynamicResource Divider}"
+                BorderThickness="3,0,0,0" Padding="12,8">
+            <DockPanel LastChildFill="False">
+                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontWeight="SemiBold"
+                           TextWrapping="Wrap" Text="{Binding ReadOnlyBannerText}" />
+                <Button DockPanel.Dock="Right" Content="Save As…" VerticalAlignment="Center"
+                        Command="{Binding SaveWorkspaceAsCommand}"
+                        AutomationProperties.Name="Save workspace as" />
+            </DockPanel>
+        </Border>
+
         <!-- Status bar -->
         <Border DockPanel.Dock="Bottom" x:Name="StatusBar" Height="28"
                 Background="{DynamicResource Surface.PaneHeader}"

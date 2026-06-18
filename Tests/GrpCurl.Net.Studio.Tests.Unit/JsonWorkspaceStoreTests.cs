@@ -99,6 +99,42 @@ public sealed class JsonWorkspaceStoreTests : IDisposable
     private static string JsonEscaped(string path) => path.Replace("\\", "\\\\");
 
     [Fact]
+    public async Task A_read_only_file_opens_read_only_and_suppresses_autosave_until_save_as(/* FR-148 */)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var roPath = Path.Combine(_dir, "locked.gcnws.json");
+
+        // Write a valid workspace, then mark the file read-only on disk (cross-platform).
+        await new JsonWorkspaceStore(Path_).SaveAsAsync(new WorkspaceModel { Name = "Locked" }, roPath, ct);
+        File.SetAttributes(roPath, FileAttributes.ReadOnly);
+
+        try
+        {
+            var store = new JsonWorkspaceStore(Path_);
+            await store.OpenAsync(roPath, ct);
+            store.IsCurrentReadOnly.ShouldBeTrue();
+
+            var before = await File.ReadAllTextAsync(roPath, ct);
+
+            // Autosave is suppressed: the change stays in memory (dirty), the file is untouched.
+            await store.SaveAsync(new WorkspaceModel { Name = "Edited" }, ct);
+            store.Current.Name.ShouldBe("Edited");
+            store.IsDirty.ShouldBeTrue();
+            (await File.ReadAllTextAsync(roPath, ct)).ShouldBe(before);
+
+            // Save As to a writable path clears read-only and writes.
+            var writable = Path.Combine(_dir, "copy.gcnws.json");
+            await store.SaveAsAsync(store.Current, writable, ct);
+            store.IsCurrentReadOnly.ShouldBeFalse();
+            File.Exists(writable).ShouldBeTrue();
+        }
+        finally
+        {
+            File.SetAttributes(roPath, FileAttributes.Normal); // let the temp dir clean up on Windows
+        }
+    }
+
+    [Fact]
     public async Task Enum_serializes_as_string()
     {
         var ct = TestContext.Current.CancellationToken;

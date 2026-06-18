@@ -36,6 +36,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private string _insecureBannerText = string.Empty;
 
+    /// <summary>FR-148: shown while the active workspace file is read-only on disk (autosave disabled).</summary>
+    [ObservableProperty]
+    private bool _isReadOnlyBannerVisible;
+
     [ObservableProperty]
     private bool _isSidebarOpen = true;
 
@@ -114,8 +118,19 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             session.PropertyChanged += (_, _) => OnPropertyChanged(nameof(Title));
         }
 
+        // FR-148: the read-only banner follows the active workspace file's writability.
+        if (_workspaceStore is not null)
+        {
+            _workspaceStore.ReadOnlyChanged += (_, _) => RefreshReadOnlyBanner();
+        }
+
+        RefreshReadOnlyBanner();
         RefreshRecents();
     }
+
+    /// <summary>FR-148: the message shown in the read-only banner.</summary>
+    public string ReadOnlyBannerText
+        => "This workspace file is read-only. Changes won't be saved automatically — use File → Save As to keep them.";
 
     /// <summary>
     ///     The document area is shown once there is anything to render in it — a connection exists (the
@@ -158,6 +173,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             InsecureBannerText = string.Empty;
         }
     }
+
+    /// <summary>FR-148: shows the banner while the active workspace file is read-only on disk.</summary>
+    public void RefreshReadOnlyBanner() => IsReadOnlyBannerVisible = _workspaceStore?.IsCurrentReadOnly ?? false;
 
     private bool IsInsecure(SavedConnection? connection)
     {
@@ -397,7 +415,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        if (_workspaceStore.CurrentPath is null)
+        // FR-148: an untitled or read-only file has nowhere to autosave/flush — route to Save As instead.
+        if (_workspaceStore.CurrentPath is null || _workspaceStore.IsCurrentReadOnly)
         {
             await SaveWorkspaceAs();
             return;

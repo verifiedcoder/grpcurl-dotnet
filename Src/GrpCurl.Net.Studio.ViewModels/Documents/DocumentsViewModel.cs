@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using GrpCurl.Net.Studio.ViewModels.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
+using GrpCurl.Net.Studio.ViewModels.Models.Session;
 using GrpCurl.Net.Studio.ViewModels.Panes;
 using GrpCurl.Net.Studio.ViewModels.Services;
 
@@ -38,6 +39,11 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     private readonly IHistoryRecorder? _recorder;
     private readonly IHistoryStore? _history;
     private readonly IWorkspaceStore? _workspace;
+    private readonly ISessionStore? _session;
+    private readonly TimeSpan _sessionDebounce;
+
+    private CancellationTokenSource? _persistCts;
+    private bool _suppressPersist;
 
     [ObservableProperty]
     private DocumentViewModel? _selectedDocument;
@@ -64,7 +70,9 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         ISavedRequestStore? savedRequests = null,
         IEnvironmentService? environment = null,
         IUpdateService? updates = null,
-        IDiagnosticsLog? diagnostics = null)
+        IDiagnosticsLog? diagnostics = null,
+        ISessionStore? session = null,
+        TimeSpan? sessionDebounce = null)
     {
         _descriptors = descriptors;
         _dispatcher = dispatcher;
@@ -88,6 +96,12 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         _environment = environment;
         _updates = updates;
         _diagnostics = diagnostics;
+        _session = session;
+        _sessionDebounce = sessionDebounce ?? TimeSpan.FromSeconds(1);
+
+        // FR-146: any change to the open tabs (or which is active) re-snapshots the session, debounced.
+        // BuildSession reads every tab's live draft, so switching/closing tabs persists their current bodies.
+        Documents.CollectionChanged += (_, _) => SchedulePersist();
     }
 
     public ObservableCollection<DocumentViewModel> Documents { get; } = [];
@@ -285,5 +299,147 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
                 ? null
                 : Documents[Math.Min(index, Documents.Count - 1)];
         }
+    }
+
+    partial void OnSelectedDocumentChanged(DocumentViewModel? value) => SchedulePersist();
+
+    // ── FR-146: UI session capture + restore ─────────────────────────────────
+
+    /// <summary>Snapshots the open invocation/describe tabs (with their live drafts) for the active workspace.</summary>
+    public SessionState BuildSession()
+    {
+        var state = new SessionState
+        {
+            WorkspaceId = _workspace?.Current.Id,
+            ActiveTabIndex = SelectedDocument is null ? -1 : Documents.IndexOf(SelectedDocument)
+        };
+
+        foreach (var document in Documents)
+        {
+            switch (document)
+            {
+                case InvocationDocumentViewModel invocation:
+                    state.Tabs.Add(new SessionTab(
+                        SessionTabKind.Invocation, invocation.Connection.Id, invocation.MethodSymbol,
+                        invocation.RequestJson, invocation.BodyFormat,
+                        invocation.Headers
+                            .Select(h => new SessionHeader(h.Name, h.Value, h.IsBin, h.RequiresValue)).ToList(),
+                        NullIfEmpty(invocation.Deadline), invocation.EmitDefaults, invocation.AllowUnknownFields,
+                        NullIfEmpty(invocation.MaxMessageSize)));
+                    break;
+
+                case DescribeDocumentViewModel describe:
+                    state.Tabs.Add(new SessionTab(SessionTabKind.Describe, describe.Connection.Id, describe.CurrentSymbol));
+                    break;
+            }
+        }
+
+        return state;
+    }
+
+    /// <summary>
+    ///     Restores the previously open tabs for the current workspace as drafts (run state idle). Tabs whose
+    ///     connection no longer exists, or that belong to a different workspace, are skipped.
+    /// </summary>
+    public async Task RestoreSessionAsync(CancellationToken cancellationToken = default)
+    {
+        if (_session is null || _workspace is null)
+        {
+            return;
+        }
+
+        var state = await _session.LoadAsync(cancellationToken).ConfigureAwait(false);
+
+        if (state.WorkspaceId is null || state.WorkspaceId != _workspace.Current.Id)
+        {
+            return; // a different (or no) workspace than the one whose tabs were saved
+        }
+
+        _suppressPersist = true; // opening the restored tabs shouldn't re-persist the same session
+
+        try
+        {
+            foreach (var tab in state.Tabs)
+            {
+                var connection = _workspace.Current.Connections.FirstOrDefault(c => c.Id == tab.ConnectionId);
+
+                if (connection is null)
+                {
+                    continue;
+                }
+
+                if (tab.Kind == SessionTabKind.Describe)
+                {
+                    OpenDescribe(connection, tab.Symbol, newTab: true);
+                }
+                else
+                {
+                    OpenInvocation(connection, tab.Symbol, ToPrefill(tab));
+                }
+            }
+
+            if (state.ActiveTabIndex >= 0 && state.ActiveTabIndex < Documents.Count)
+            {
+                SelectedDocument = Documents[state.ActiveTabIndex];
+            }
+        }
+        finally
+        {
+            _suppressPersist = false;
+        }
+    }
+
+    /// <summary>Writes the current session immediately (cancelling any pending debounce); used on shutdown.</summary>
+    public async Task FlushSessionAsync(CancellationToken cancellationToken = default)
+    {
+        _persistCts?.Cancel();
+        await PersistNowAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    private static RequestPrefill ToPrefill(SessionTab tab) => new(
+        tab.Body ?? string.Empty,
+        tab.BodyFormat,
+        (tab.Headers ?? []).Select(h => new PrefillHeader(h.Name, h.Value, h.IsBin, h.RequiresValue)).ToList(),
+        tab.Deadline,
+        tab.EmitDefaults,
+        tab.AllowUnknownFields,
+        tab.MaxMessageSize);
+
+    private static string? NullIfEmpty(string value) => string.IsNullOrWhiteSpace(value) ? null : value;
+
+    private void SchedulePersist()
+    {
+        if (_session is null || _suppressPersist)
+        {
+            return;
+        }
+
+        _persistCts?.Cancel();
+        var cts = new CancellationTokenSource();
+        _persistCts = cts;
+        _ = DelayedPersistAsync(cts.Token);
+    }
+
+    private async Task DelayedPersistAsync(CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(_sessionDebounce, token).ConfigureAwait(false);
+            await PersistNowAsync(token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // Superseded by a newer change or an explicit flush.
+        }
+    }
+
+    private async Task PersistNowAsync(CancellationToken cancellationToken)
+    {
+        if (_session is null)
+        {
+            return;
+        }
+
+        await _session.SaveAsync(BuildSession(), cancellationToken).ConfigureAwait(false);
     }
 }

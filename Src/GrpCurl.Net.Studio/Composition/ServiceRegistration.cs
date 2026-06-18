@@ -46,6 +46,9 @@ internal static class ServiceRegistration
 
         services.AddSingleton<IWorkspaceStore, JsonWorkspaceStore>();
 
+        // UI session (FR-146): machine-local record of open tabs, restored on launch per the startup setting.
+        services.AddSingleton<ISessionStore, JsonSessionStore>();
+
         // History (E3.3): append-only NDJSON store of redacted invocations + the recorder (SPEC-040 §5).
         services.AddSingleton<IHistoryStore, JsonHistoryStore>();
         services.AddSingleton<IHistoryRecorder, HistoryRecorder>();

@@ -70,7 +70,7 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
         try
         {
             var json = await File.ReadAllTextAsync(_defaultPath, cancellationToken).ConfigureAwait(false);
-            Current = WorkspaceSerializer.Deserialize(json);
+            Current = DeserializeResolved(json, _defaultPath);
         }
         catch (Exception ex) when (ex is WorkspaceSchemaException or IOException)
         {
@@ -90,7 +90,7 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
 
         // Strict: WorkspaceSerializer throws WorkspaceSchemaException for a corrupt/newer file. We let it
         // propagate so the open flow can show the message, leaving Current/CurrentPath untouched.
-        var workspace = WorkspaceSerializer.Deserialize(json);
+        var workspace = DeserializeResolved(json, path);
 
         CancelPendingFlush();
         Current = workspace;
@@ -133,7 +133,7 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
 
         CancelPendingFlush();
         var json = await File.ReadAllTextAsync(CurrentPath, cancellationToken).ConfigureAwait(false);
-        Current = WorkspaceSerializer.Deserialize(json); // strict — surfaces a corrupt/newer file
+        Current = DeserializeResolved(json, CurrentPath); // strict — surfaces a corrupt/newer file
         SetDirty(false);
     }
 
@@ -155,7 +155,7 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
     {
         // Read-only preview for a merge: deserialize strictly, but leave Current/CurrentPath/recents alone.
         var json = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
-        return WorkspaceSerializer.Deserialize(json);
+        return DeserializeResolved(json, path);
     }
 
     public WorkspaceModel NewWorkspace()
@@ -224,12 +224,22 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
         DirtyChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    // Deserialise then resolve FR-147 relative file references back to absolute against the file's directory,
+    // so the in-memory model always holds absolute paths regardless of how they were stored on disk.
+    private static WorkspaceModel DeserializeResolved(string json, string filePath)
+        => WorkspacePathPortability.ToAbsolute(WorkspaceSerializer.Deserialize(json), DirectoryOf(filePath));
+
+    private static string DirectoryOf(string path) => Path.GetDirectoryName(Path.GetFullPath(path))!;
+
     private static async Task WriteAtomicAsync(string path, WorkspaceModel workspace, CancellationToken cancellationToken)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
 
+        // FR-147: store file references relative to this file's directory when they live beneath it.
+        var portable = WorkspacePathPortability.ToRelative(workspace, DirectoryOf(path));
+
         var tempPath = path + ".tmp";
-        await File.WriteAllBytesAsync(tempPath, WorkspaceSerializer.SerializeToUtf8(workspace), cancellationToken).ConfigureAwait(false);
+        await File.WriteAllBytesAsync(tempPath, WorkspaceSerializer.SerializeToUtf8(portable), cancellationToken).ConfigureAwait(false);
 
         File.Move(tempPath, path, overwrite: true);
     }

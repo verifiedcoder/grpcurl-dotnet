@@ -12,7 +12,7 @@ namespace GrpCurl.Net.Studio.Services.Secrets;
 ///     without a key file, and works headlessly (no keyring service required).
 /// </summary>
 [SupportedOSPlatform("windows")]
-internal sealed class WindowsDpapiSecretStore : ISecretStore
+internal sealed class WindowsDpapiSecretStore : ISecretBackend
 {
     private readonly string _dataPath;
     private readonly SemaphoreSlim _gate = new(1, 1);

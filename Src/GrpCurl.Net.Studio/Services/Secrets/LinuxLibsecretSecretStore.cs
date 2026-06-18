@@ -11,7 +11,7 @@ namespace GrpCurl.Net.Studio.Services.Secrets;
 ///     the encrypted-file store.
 /// </summary>
 [SupportedOSPlatform("linux")]
-internal sealed class LinuxLibsecretSecretStore : ISecretStore
+internal sealed class LinuxLibsecretSecretStore : ISecretBackend
 {
     private const string Lib = "libsecret-1.so.0";
     private const string SchemaName = "org.grpcurl.studio.Secret";

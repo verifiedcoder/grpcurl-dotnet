@@ -11,7 +11,7 @@ namespace GrpCurl.Net.Studio.Services.Secrets;
 ///     the facade falls back to the encrypted-file store.
 /// </summary>
 [SupportedOSPlatform("macos")]
-internal sealed class MacKeychainSecretStore : ISecretStore
+internal sealed class MacKeychainSecretStore : ISecretBackend
 {
     private const string Service = "GrpCurl.Net Studio";
 

@@ -146,4 +146,22 @@ public sealed class SecretStoreTests : IDisposable
     [Fact]
     public void Facade_info_is_a_secret_store_info()
         => new SecretStore(_dir).Info.ShouldBeOfType<SecretStoreInfo>();
+
+    [Fact]
+    public async Task Facade_lists_and_forgets_keyrefs_through_its_index(/* SEC-027 */)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var store = new SecretStore(_dir);
+        var a = Guid.NewGuid().ToString("N");
+        var b = Guid.NewGuid().ToString("N");
+
+        await store.SetAsync(a, "x", ct);
+        await store.SetAsync(b, "y", ct);
+        await store.SetAsync(a, "x2", ct); // overwriting an existing keyref must not duplicate the index entry
+
+        (await store.ListAsync(ct)).ShouldBe([a, b], ignoreOrder: true);
+
+        await store.DeleteAsync(a, ct);
+        (await store.ListAsync(ct)).ShouldBe([b]);
+    }
 }

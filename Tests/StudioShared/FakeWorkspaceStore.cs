@@ -64,6 +64,39 @@ public sealed class FakeWorkspaceStore : IWorkspaceStore
         ReadOnlyChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    public bool IsLockedByAnother { get; private set; }
+
+    public WorkspaceLockInfo? ForeignLock { get; private set; }
+
+    public event EventHandler? LockChanged;
+
+    public int TakeOverCount { get; private set; }
+
+    public int ReleaseLockCount { get; private set; }
+
+    /// <summary>Test helper: drive the foreign-lock state (and raise <see cref="LockChanged" />) directly (SPEC-040 §8).</summary>
+    public void SetLocked(bool value, WorkspaceLockInfo? holder = null)
+    {
+        ForeignLock = value ? holder : null;
+
+        if (IsLockedByAnother == value)
+        {
+            return;
+        }
+
+        IsLockedByAnother = value;
+        LockChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public Task TakeOverLockAsync(CancellationToken cancellationToken = default)
+    {
+        TakeOverCount++;
+        SetLocked(false);
+        return Task.CompletedTask;
+    }
+
+    public void ReleaseLock() => ReleaseLockCount++;
+
     public IReadOnlyList<RecentWorkspace> RecentWorkspaces
         => _recent.Select(p => new RecentWorkspace(p, Exists: true)).ToList();
 

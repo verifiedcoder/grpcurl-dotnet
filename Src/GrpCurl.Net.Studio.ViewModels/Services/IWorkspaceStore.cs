@@ -40,6 +40,24 @@ public interface IWorkspaceStore
     /// <summary>Raised whenever <see cref="IsCurrentReadOnly" /> changes (open / load / new / save-as / reload).</summary>
     event EventHandler? ReadOnlyChanged;
 
+    /// <summary>
+    ///     SPEC-040 §8: true when another live Studio instance holds the advisory lock on the active file.
+    ///     Like read-only, autosave and Save are suppressed; the shell shows a banner with a "Take over" action.
+    /// </summary>
+    bool IsLockedByAnother { get; }
+
+    /// <summary>The foreign lock holder (pid / machine / acquired-at) while <see cref="IsLockedByAnother" />, else null.</summary>
+    WorkspaceLockInfo? ForeignLock { get; }
+
+    /// <summary>Raised whenever <see cref="IsLockedByAnother" /> changes.</summary>
+    event EventHandler? LockChanged;
+
+    /// <summary>Steals the advisory lock for the active file (SPEC-040 §8 "Take over"), clearing the locked state.</summary>
+    Task TakeOverLockAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Releases the advisory lock this instance holds on the active file (clean close).</summary>
+    void ReleaseLock();
+
     /// <summary>Loads the default startup workspace (resilient: a corrupt/newer file is set aside).</summary>
     Task<WorkspaceModel> LoadAsync(CancellationToken cancellationToken = default);
 

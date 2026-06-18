@@ -2,6 +2,7 @@ using System.Collections.Specialized;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using GrpCurl.Net.Studio.ViewModels.Connections;
 using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
@@ -246,6 +247,76 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <summary>Opens (or focuses) the History tab (FR-120).</summary>
     [RelayCommand]
     private void OpenHistory() => Documents.OpenHistory();
+
+    // ── Command palette (Ctrl+K, SPEC-020) ───────────────────────────────────
+
+    /// <summary>Opens the command palette and runs the chosen action once it closes.</summary>
+    [RelayCommand]
+    private async Task OpenCommandPalette()
+    {
+        if (_dialogs is null)
+        {
+            return;
+        }
+
+        var chosen = await _dialogs.ShowDialogAsync(new CommandPaletteViewModel(BuildPaletteItems()));
+
+        if (chosen is not null)
+        {
+            await chosen.InvokeAsync();
+        }
+    }
+
+    /// <summary>Builds the palette entries: app commands, then connections, then their saved requests.</summary>
+    private IReadOnlyList<PaletteItem> BuildPaletteItems()
+    {
+        var items = new List<PaletteItem>
+        {
+            Command("New workspace", NewWorkspaceCommand),
+            Command("Open workspace…", OpenWorkspaceCommand),
+            Command("Save workspace", SaveWorkspaceCommand),
+            Command("Save workspace as…", SaveWorkspaceAsCommand),
+            Command("Reload workspace from disk", ReloadWorkspaceCommand),
+            Command("Import workspace…", ImportWorkspaceCommand),
+            Command("Export workspace…", ExportWorkspaceCommand),
+            Sync("Add connection", () => Connections.AddConnectionCommand.Execute(null)),
+            Sync("Open Settings", OpenSettings),
+            Sync("Open History", OpenHistory),
+            Sync("Toggle sidebar", ToggleSidebar),
+            Sync("Toggle console", ToggleConsole),
+            Sync("Toggle inspector", ToggleInspector),
+            Sync("Toggle focus mode", ToggleFocusMode),
+            ThemeItem("Theme: System", AppTheme.System),
+            ThemeItem("Theme: Light", AppTheme.Light),
+            ThemeItem("Theme: Dark", AppTheme.Dark)
+        };
+
+        foreach (var connection in Connections.Connections)
+        {
+            var item = connection;
+            items.Add(new PaletteItem($"Go to connection: {item.Name}", "Connection",
+                () => { SelectConnection(item); return Task.CompletedTask; }));
+
+            foreach (var request in item.SavedRequests)
+            {
+                var saved = request;
+                items.Add(new PaletteItem($"Open request: {saved.Name}", "Saved request", () => saved.OpenCommand.ExecuteAsync(null)));
+            }
+        }
+
+        return items;
+    }
+
+    private void SelectConnection(ConnectionListItemViewModel item) => Connections.SelectedConnection = item;
+
+    private static PaletteItem Command(string title, IAsyncRelayCommand command)
+        => new(title, "Command", () => command.ExecuteAsync(null));
+
+    private static PaletteItem Sync(string title, Action action)
+        => new(title, "Command", () => { action(); return Task.CompletedTask; });
+
+    private PaletteItem ThemeItem(string title, AppTheme theme)
+        => new(title, "Command", () => _theme.SetAsync(theme));
 
     // ── E3.1: workspace file operations (File menu) ──────────────────────────
 

@@ -164,4 +164,34 @@ public sealed class JsonHistoryStoreTests : IDisposable
 
         (await store.ReadAllAsync(Ct)).Select(e => e.Id).ShouldBe(["e4"]); // tighter cap applied live
     }
+
+    [Fact]
+    public async Task Repeated_reads_are_served_from_cache_until_the_file_changes(/* #5 */)
+    {
+        var store = new JsonHistoryStore(Path_);
+        await store.AppendAsync(Entry("e1"), Ct);
+
+        var first = await store.ReadAllAsync(Ct);
+        var second = await store.ReadAllAsync(Ct);
+        second.ShouldBeSameAs(first); // unchanged file → cached parse reused
+
+        await store.AppendAsync(Entry("e2"), Ct);
+        var third = await store.ReadAllAsync(Ct);
+        third.ShouldNotBeSameAs(first); // the write invalidated the cache
+        third.Select(e => e.Id).ShouldBe(["e1", "e2"]);
+    }
+
+    [Fact]
+    public async Task An_external_write_is_picked_up_by_the_signature_check(/* #5 */)
+    {
+        var store = new JsonHistoryStore(Path_);
+        await store.AppendAsync(Entry("e1"), Ct);
+        (await store.ReadAllAsync(Ct)).Count.ShouldBe(1); // warm the cache
+
+        // Simulate another instance appending a line directly to the file.
+        await File.AppendAllTextAsync(Path_,
+            System.Text.Json.JsonSerializer.Serialize(Entry("e2"), GrpCurl.Net.Studio.Services.HistoryJsonContext.Default.HistoryEntry) + "\n", Ct);
+
+        (await store.ReadAllAsync(Ct)).Select(e => e.Id).ShouldBe(["e1", "e2"]); // re-read, not stale cache
+    }
 }

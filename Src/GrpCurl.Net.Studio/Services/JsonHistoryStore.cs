@@ -7,7 +7,9 @@ namespace GrpCurl.Net.Studio.Services;
 
 /// <summary>
 ///     NDJSON-backed <see cref="IHistoryStore" /> (SPEC-040 §5, ADR-008). Each entry is one UTF-8 line,
-///     appended with a single write + flush. The file is the only source of truth (no binary index in v1).
+///     appended with a single write + flush. The file is the only source of truth; an in-memory parse cache
+///     keyed on the file's (length, last-write) signature avoids re-parsing on repeated reads (#5) — any write
+///     changes the signature and forces a re-read, so there is no separate on-disk index to keep in sync.
 ///     Retention evicts oldest-unpinned-first once the entry or byte cap is exceeded; eviction, pin toggles,
 ///     and deletes rewrite via the atomic temp-and-rename pattern. Reads tolerate a truncated tail line.
 /// </summary>
@@ -21,6 +23,12 @@ internal sealed class JsonHistoryStore : IHistoryStore
     private readonly long _maxBytes;
     private readonly ISettingsStore? _settings;
     private readonly SemaphoreSlim _gate = new(1, 1);
+
+    // SPEC-040 §5 (#5): an in-memory parse cache keyed on the file's (length, last-write) signature — a cheap
+    // stand-in for an on-disk index. Repeated reads (re-opening the History tab) skip re-parsing; any write,
+    // ours or another instance's, changes the signature and forces a re-read, so the file stays the source of truth.
+    private List<HistoryEntry>? _cachedEntries;
+    private (long Length, long Ticks)? _cacheSignature;
 
     public JsonHistoryStore(ISettingsStore settings)
         : this(Path.Combine(
@@ -55,6 +63,7 @@ internal sealed class JsonHistoryStore : IHistoryStore
         {
             Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
             await File.AppendAllTextAsync(_path, Serialize(entry) + "\n", Utf8NoBom, cancellationToken).ConfigureAwait(false);
+            InvalidateCache();
 
             await EnforceRetentionAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -151,7 +160,17 @@ internal sealed class JsonHistoryStore : IHistoryStore
     {
         if (!File.Exists(_path))
         {
+            _cachedEntries = null;
+            _cacheSignature = null;
             return [];
+        }
+
+        var info = new FileInfo(_path);
+        var signature = (info.Length, info.LastWriteTimeUtc.Ticks);
+
+        if (_cacheSignature == signature && _cachedEntries is not null)
+        {
+            return _cachedEntries; // unchanged since the last parse
         }
 
         var entries = new List<HistoryEntry>();
@@ -180,12 +199,22 @@ internal sealed class JsonHistoryStore : IHistoryStore
             }
         }
 
+        _cachedEntries = entries;
+        _cacheSignature = signature;
         return entries;
+    }
+
+    // Belt-and-suspenders for the rare same-length, same-tick rewrite the signature check could miss.
+    private void InvalidateCache()
+    {
+        _cachedEntries = null;
+        _cacheSignature = null;
     }
 
     private async Task RewriteAsync(IReadOnlyList<HistoryEntry> entries, CancellationToken cancellationToken)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
+        InvalidateCache();
 
         if (entries.Count == 0)
         {

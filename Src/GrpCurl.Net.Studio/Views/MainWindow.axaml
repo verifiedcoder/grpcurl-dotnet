@@ -156,6 +156,12 @@
                            Text="{Binding Session.StatusText, FallbackValue='No workspace'}"
                            AutomationProperties.Name="Workspace status" />
 
+                <!-- FR-156: subtle "update available" link from the launch-time check; opens Settings → Updates. -->
+                <Button DockPanel.Dock="Left" Margin="16,0,0,0" Padding="6,1" FontSize="12" VerticalAlignment="Center"
+                        Content="{Binding UpdateAvailableText}" Command="{Binding OpenUpdateSettingsCommand}"
+                        IsVisible="{Binding IsUpdateAvailable}" Foreground="{DynamicResource Conn.Connecting}"
+                        AutomationProperties.Name="Update available" />
+
                 <!-- E3.2 (FR-133/138): the active-environment switcher + manager entry, beside the version. -->
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                     <TextBlock Text="Env:" VerticalAlignment="Center" Opacity="0.7" />

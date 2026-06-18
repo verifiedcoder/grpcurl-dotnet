@@ -4,6 +4,7 @@ using Avalonia.Markup.Xaml;
 using GrpCurl.Net.Studio.Theming;
 using GrpCurl.Net.Studio.ViewModels;
 using GrpCurl.Net.Studio.ViewModels.Documents;
+using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Services;
 using GrpCurl.Net.Studio.Views;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,8 +43,29 @@ public sealed partial class App : Application
             // FR-146: reopen the previously open tabs (per the FR-151 startup setting) once the UI thread and
             // dispatcher are running. Fire-and-forget: the restored tabs stream into the bound document list.
             _ = _services.GetRequiredService<DocumentsViewModel>().RestoreSessionOnStartupAsync();
+
+            // FR-156: when the user opted into checking on launch, compare against the latest release in the
+            // background (offline-safe) and surface a status-bar link if a newer version exists. No auto-apply.
+            _ = CheckForUpdateOnLaunchAsync(_services, viewModel);
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private static async Task CheckForUpdateOnLaunchAsync(IServiceProvider services, MainWindowViewModel viewModel)
+    {
+        var settings = services.GetRequiredService<ISettingsStore>().Current.Updates;
+
+        if (!settings.CheckOnLaunch)
+        {
+            return;
+        }
+
+        var result = await services.GetRequiredService<IUpdateService>().CheckForUpdateAsync(settings.Channel);
+
+        if (result is { Availability: UpdateAvailability.UpdateAvailable, LatestVersion: { } version })
+        {
+            viewModel.ShowUpdateAvailable(version);
+        }
     }
 }

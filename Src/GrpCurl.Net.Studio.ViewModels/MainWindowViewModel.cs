@@ -50,6 +50,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private string _lockedBannerText = string.Empty;
 
+    /// <summary>FR-156: set when a launch-time update check found a newer release; shown in the status bar.</summary>
+    [ObservableProperty]
+    private bool _isUpdateAvailable;
+
+    [ObservableProperty]
+    private string _updateAvailableText = string.Empty;
+
     [ObservableProperty]
     private bool _isSidebarOpen = true;
 
@@ -207,6 +214,17 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             LockedBannerText = string.Empty;
         }
     }
+
+    /// <summary>FR-156: surface that a launch-time check found a newer release (the shell shows a status-bar link).</summary>
+    public void ShowUpdateAvailable(string latestVersion)
+    {
+        UpdateAvailableText = $"Update available: {latestVersion}";
+        IsUpdateAvailable = true;
+    }
+
+    /// <summary>FR-156: open Settings → Updates so the user can review and download the update (consent-respecting).</summary>
+    [RelayCommand]
+    private void OpenUpdateSettings() => Documents.OpenSettings();
 
     /// <summary>SPEC-040 §8: steal the advisory lock so this instance can edit + save (the previous holder degrades).</summary>
     [RelayCommand(CanExecute = nameof(CanManageWorkspaces))]

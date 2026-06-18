@@ -21,11 +21,15 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
     private readonly string _defaultPath;
     private readonly string _recentPath;
     private readonly TimeSpan _debounce;
+    private readonly WorkspaceLockManager _lock;
     private readonly List<string> _recent = [];
 
     private CancellationTokenSource? _flushCts;
     private bool _isDirty;
     private bool _isReadOnly;
+    private bool _isLockedByAnother;
+    private bool _haveLock;
+    private WorkspaceLockInfo? _foreignLock;
 
     public JsonWorkspaceStore()
         : this(
@@ -38,12 +42,14 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
     }
 
     // Test seam: point the store at a temp file; recents live beside it. Tests default to a zero
-    // debounce so an autosave flushes synchronously within the awaited SaveAsync.
-    internal JsonWorkspaceStore(string path, TimeSpan? autosaveDebounce = null)
+    // debounce so an autosave flushes synchronously within the awaited SaveAsync, and inject a lock
+    // manager with a deterministic identity/clock to exercise the SPEC-040 §8 multi-instance rules.
+    internal JsonWorkspaceStore(string path, TimeSpan? autosaveDebounce = null, WorkspaceLockManager? lockManager = null)
     {
         _defaultPath = path;
         CurrentPath = path;
         _debounce = autosaveDebounce ?? TimeSpan.Zero;
+        _lock = lockManager ?? WorkspaceLockManager.Default();
         _recentPath = Path.Combine(Path.GetDirectoryName(path) ?? ".", RecentFileName);
         LoadRecent();
     }
@@ -60,6 +66,12 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
 
     public event EventHandler? ReadOnlyChanged;
 
+    public bool IsLockedByAnother => _isLockedByAnother;
+
+    public WorkspaceLockInfo? ForeignLock => _foreignLock;
+
+    public event EventHandler? LockChanged;
+
     public IReadOnlyList<RecentWorkspace> RecentWorkspaces
         => _recent.Select(p => new RecentWorkspace(p, File.Exists(p))).ToList();
 
@@ -67,6 +79,7 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
     {
         CurrentPath = _defaultPath;
         RefreshReadOnly(_defaultPath);
+        AcquireLockFor(_defaultPath);
 
         if (!File.Exists(_defaultPath))
         {
@@ -99,10 +112,12 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
         var workspace = DeserializeResolved(json, path);
 
         CancelPendingFlush();
+        ReleaseHeldLock();
         Current = workspace;
         CurrentPath = path;
         SetDirty(false);
         RefreshReadOnly(path);
+        AcquireLockFor(path);
         await PromoteRecentAsync(path, cancellationToken).ConfigureAwait(false);
         return workspace;
     }
@@ -115,9 +130,9 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
         SetDirty(true);
         CancelPendingFlush();
 
-        if (_isReadOnly)
+        if (_isReadOnly || _isLockedByAnother)
         {
-            return; // FR-148: autosave is disabled for a read-only file; the change stays in memory (dirty).
+            return; // FR-148 / SPEC-040 §8: autosave is off for a read-only or foreign-locked file (stays dirty).
         }
 
         if (_debounce <= TimeSpan.Zero)
@@ -153,11 +168,13 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
     public async Task SaveAsAsync(WorkspaceModel workspace, string path, CancellationToken cancellationToken = default)
     {
         CancelPendingFlush();
+        ReleaseHeldLock();
         await WriteAtomicAsync(path, workspace, cancellationToken).ConfigureAwait(false);
         Current = workspace;
         CurrentPath = path;
         SetDirty(false);
         RefreshReadOnly(path); // FR-148: Save As to a writable path clears read-only
+        AcquireLockFor(path);  // SPEC-040 §8: hold the lock on the new active file
         await PromoteRecentAsync(path, cancellationToken).ConfigureAwait(false);
     }
 
@@ -175,10 +192,12 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
     public WorkspaceModel NewWorkspace(bool withStarterConnection = false)
     {
         CancelPendingFlush();
+        ReleaseHeldLock();
         Current = withStarterConnection ? WorkspaceModel.StarterTemplate() : WorkspaceModel.Empty();
         CurrentPath = null; // untitled until the first Save As
         SetDirty(false);
         SetReadOnly(false); // a fresh untitled workspace has nothing on disk
+        SetLocked(false, null);
         return Current;
     }
 
@@ -193,9 +212,17 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
     /// <summary>Writes the current workspace to its path and clears dirty; a no-op for an untitled workspace.</summary>
     private async Task FlushAsync(CancellationToken cancellationToken)
     {
-        if (CurrentPath is null || _isReadOnly)
+        if (CurrentPath is null || _isReadOnly || _isLockedByAnother)
         {
-            return; // untitled (no path) or read-only (FR-148) — no write; stays dirty until Save As
+            return; // untitled, read-only (FR-148), or foreign-locked (SPEC-040 §8) — no write; stays dirty
+        }
+
+        // SPEC-040 §8: a holder detects the loss of its lock on its next save attempt — if another instance
+        // has taken over, degrade to read-only-locked instead of writing over them.
+        if (_haveLock && !_lock.StillOwned(CurrentPath))
+        {
+            SetLocked(true, _lock.Holder(CurrentPath));
+            return;
         }
 
         await WriteAtomicAsync(CurrentPath, Current, cancellationToken).ConfigureAwait(false);
@@ -254,6 +281,51 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
         _isReadOnly = value;
         ReadOnlyChanged?.Invoke(this, EventArgs.Empty);
     }
+
+    // SPEC-040 §8: take the advisory lock for the new active file; a live foreign lock leaves us locked-out.
+    private void AcquireLockFor(string path)
+    {
+        var result = _lock.Acquire(path);
+        _haveLock = result.Acquired;
+        SetLocked(!result.Acquired, result.Holder);
+    }
+
+    private void ReleaseHeldLock()
+    {
+        if (_haveLock && CurrentPath is not null)
+        {
+            _lock.Release(CurrentPath);
+        }
+
+        _haveLock = false;
+    }
+
+    private void SetLocked(bool locked, WorkspaceLockInfo? holder)
+    {
+        _foreignLock = locked ? holder : null;
+
+        if (_isLockedByAnother == locked)
+        {
+            return;
+        }
+
+        _isLockedByAnother = locked;
+        LockChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public Task TakeOverLockAsync(CancellationToken cancellationToken = default)
+    {
+        if (CurrentPath is not null)
+        {
+            _lock.TakeOver(CurrentPath); // SPEC-040 §8: steal the lock; the previous holder degrades on its next save
+            _haveLock = true;
+            SetLocked(false, null);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public void ReleaseLock() => ReleaseHeldLock();
 
     // Deserialise then resolve FR-147 relative file references back to absolute against the file's directory,
     // so the in-memory model always holds absolute paths regardless of how they were stored on disk.

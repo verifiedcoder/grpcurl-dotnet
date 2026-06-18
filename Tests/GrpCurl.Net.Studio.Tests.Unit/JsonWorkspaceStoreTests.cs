@@ -115,6 +115,63 @@ public sealed class JsonWorkspaceStoreTests : IDisposable
     public void New_without_a_template_is_empty()
         => new JsonWorkspaceStore(Path_).NewWorkspace().Connections.ShouldBeEmpty();
 
+    private static readonly DateTimeOffset LockNow = new(2026, 6, 18, 12, 0, 0, TimeSpan.Zero);
+
+    private static WorkspaceLockManager LockManager(int pid)
+        => new(pid, "host", "1.0", () => LockNow, _ => true);
+
+    [Fact]
+    public async Task A_foreign_lock_opens_the_workspace_locked_and_suppresses_autosave_until_taken_over(/* SPEC-040 §8 */)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var path = Path.Combine(_dir, "shared.gcnws.json");
+        await new JsonWorkspaceStore(Path_).SaveAsAsync(new WorkspaceModel { Name = "Shared" }, path, ct);
+
+        LockManager(100).TakeOver(path); // a live foreign instance (pid 100) holds the lock
+
+        var store = new JsonWorkspaceStore(Path_, lockManager: LockManager(200));
+        await store.OpenAsync(path, ct);
+
+        store.IsLockedByAnother.ShouldBeTrue();
+        store.ForeignLock!.Pid.ShouldBe(100);
+
+        // Autosave is suppressed while foreign-locked: the change stays in memory, the file is untouched.
+        var before = await File.ReadAllTextAsync(path, ct);
+        await store.SaveAsync(new WorkspaceModel { Name = "Edited" }, ct);
+        store.IsDirty.ShouldBeTrue();
+        (await File.ReadAllTextAsync(path, ct)).ShouldBe(before);
+
+        // Take over → no longer locked, and saves land.
+        await store.TakeOverLockAsync(ct);
+        store.IsLockedByAnother.ShouldBeFalse();
+        await store.SaveAsync(new WorkspaceModel { Name = "Edited2" }, ct);
+        (await File.ReadAllTextAsync(path, ct)).ShouldContain("Edited2");
+    }
+
+    [Fact]
+    public async Task Losing_the_lock_to_another_instance_degrades_on_the_next_save(/* SPEC-040 §8 */)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var path = Path.Combine(_dir, "owned.gcnws.json");
+
+        var writer = new JsonWorkspaceStore(Path_);
+        await writer.SaveAsAsync(new WorkspaceModel { Name = "Owned" }, path, ct);
+        writer.ReleaseLock(); // leave the file with no lingering lock
+
+        var store = new JsonWorkspaceStore(Path_, lockManager: LockManager(200));
+        await store.OpenAsync(path, ct);
+        store.IsLockedByAnother.ShouldBeFalse();
+
+        LockManager(300).TakeOver(path); // another instance steals the lock
+
+        var before = await File.ReadAllTextAsync(path, ct);
+        await store.SaveAsync(new WorkspaceModel { Name = "Edited" }, ct);
+
+        store.IsLockedByAnother.ShouldBeTrue();
+        store.ForeignLock!.Pid.ShouldBe(300);
+        (await File.ReadAllTextAsync(path, ct)).ShouldBe(before);
+    }
+
     [Fact]
     public async Task A_read_only_file_opens_read_only_and_suppresses_autosave_until_save_as(/* FR-148 */)
     {

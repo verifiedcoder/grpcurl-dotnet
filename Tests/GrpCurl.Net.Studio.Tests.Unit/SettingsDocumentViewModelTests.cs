@@ -410,4 +410,58 @@ public sealed class SettingsDocumentViewModelTests
         vm.HistoryMaxEntries.ShouldBe(StudioSettings.Defaults().History.MaxEntries);
         store.Current.History.MaxEntries.ShouldBe(StudioSettings.Defaults().History.MaxEntries);
     }
+
+    // ── Security audit (SEC-027) ─────────────────────────────────────────────
+
+    private static SettingsDocumentViewModel CreateWithSecrets(FakeSecretStore secrets, FakeDialogService dialogs)
+        => new(new FakeSettingsStore(), new FakeThemeService(), dialogs, new FakeProtocService(), secrets: secrets,
+            new FakeUpdateService(), new FakeLauncherService());
+
+    [Fact]
+    public async Task Security_section_lists_stored_secret_keyrefs()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var secrets = new FakeSecretStore();
+        await secrets.SetAsync("studio/v1/a", "x", ct);
+        await secrets.SetAsync("studio/v1/b", "y", ct);
+        var vm = CreateWithSecrets(secrets, new FakeDialogService());
+
+        await vm.RefreshSecretsCommand.ExecuteAsync(null);
+
+        vm.SecretKeyRefs.ShouldBe(["studio/v1/a", "studio/v1/b"], ignoreOrder: true);
+        vm.HasNoSecretKeyRefs.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Deleting_a_secret_removes_it_after_confirmation()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var secrets = new FakeSecretStore();
+        await secrets.SetAsync("studio/v1/a", "x", ct);
+        var dialogs = new FakeDialogService { ConfirmResult = true };
+        var vm = CreateWithSecrets(secrets, dialogs);
+        await vm.RefreshSecretsCommand.ExecuteAsync(null);
+
+        await vm.DeleteSecretCommand.ExecuteAsync("studio/v1/a");
+
+        (await secrets.ExistsAsync("studio/v1/a", ct)).ShouldBeFalse();
+        vm.SecretKeyRefs.ShouldBeEmpty();
+        vm.HasNoSecretKeyRefs.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Declining_the_delete_confirmation_keeps_the_secret()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var secrets = new FakeSecretStore();
+        await secrets.SetAsync("studio/v1/a", "x", ct);
+        var dialogs = new FakeDialogService { ConfirmResult = false };
+        var vm = CreateWithSecrets(secrets, dialogs);
+        await vm.RefreshSecretsCommand.ExecuteAsync(null);
+
+        await vm.DeleteSecretCommand.ExecuteAsync("studio/v1/a");
+
+        (await secrets.ExistsAsync("studio/v1/a", ct)).ShouldBeTrue(); // declined → untouched
+        vm.SecretKeyRefs.ShouldHaveSingleItem();
+    }
 }

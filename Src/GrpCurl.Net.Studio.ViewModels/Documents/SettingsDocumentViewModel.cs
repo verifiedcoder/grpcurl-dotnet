@@ -25,6 +25,7 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
     private readonly IDiagnosticsLog? _diagnostics;
     private readonly IClipboardService? _clipboard;
     private readonly List<DiagnosticsLogEntry> _allDiagnostics = [];
+    private readonly ISecretStore? _secrets;
     private readonly SecretStoreInfo? _secretInfo;
     private readonly bool _loaded;
     private bool _applying;
@@ -151,12 +152,18 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
         _launcher = launcher;
         _diagnostics = diagnostics;
         _clipboard = clipboard;
+        _secrets = secrets;
         _secretInfo = secrets?.Info;
         Title = "Settings";
 
         if (_diagnostics is not null)
         {
             _ = RefreshDiagnosticsAsync();
+        }
+
+        if (_secrets is not null)
+        {
+            _ = RefreshSecretsAsync(); // SEC-027: populate the audit list
         }
 
         LoadFrom(settings.Current, themeService.Current);
@@ -189,6 +196,53 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
 
     /// <summary>The verbatim honest-limitation text for the fallback backend (SEC-024), or null.</summary>
     public string? SecretBackendLimitation => _secretInfo?.LimitationNote;
+
+    /// <summary>SEC-027: the keyrefs the secret store holds (names only, never values), for audit + cleanup.</summary>
+    public System.Collections.ObjectModel.ObservableCollection<string> SecretKeyRefs { get; } = [];
+
+    public bool HasNoSecretKeyRefs => SecretKeyRefs.Count == 0;
+
+    /// <summary>SEC-027: reloads the stored-keyref list from the secret store.</summary>
+    [RelayCommand]
+    private async Task RefreshSecrets() => await RefreshSecretsAsync();
+
+    private async Task RefreshSecretsAsync()
+    {
+        if (_secrets is null)
+        {
+            return;
+        }
+
+        var keyRefs = await _secrets.ListAsync();
+        SecretKeyRefs.Clear();
+
+        foreach (var keyRef in keyRefs)
+        {
+            SecretKeyRefs.Add(keyRef);
+        }
+
+        OnPropertyChanged(nameof(HasNoSecretKeyRefs));
+    }
+
+    /// <summary>SEC-027: permanently delete one stored secret by keyref (after confirmation), then refresh.</summary>
+    [RelayCommand]
+    private async Task DeleteSecret(string? keyRef)
+    {
+        if (_secrets is null || string.IsNullOrEmpty(keyRef))
+        {
+            return;
+        }
+
+        if (!await _dialogs.ConfirmAsync(
+                "Delete secret?",
+                $"Permanently delete the stored secret '{keyRef}'? Any connection or environment referencing it will need the value re-entered."))
+        {
+            return;
+        }
+
+        await _secrets.DeleteAsync(keyRef);
+        await RefreshSecretsAsync();
+    }
 
     public IReadOnlyList<AppTheme> ThemeOptions { get; } = Enum.GetValues<AppTheme>();
     public IReadOnlyList<StartupBehavior> StartupOptions { get; } = Enum.GetValues<StartupBehavior>();

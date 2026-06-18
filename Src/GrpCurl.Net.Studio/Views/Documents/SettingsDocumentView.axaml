@@ -227,6 +227,31 @@
                         BorderBrush="{DynamicResource Status.Server}" BorderThickness="3,0,0,0">
                     <TextBlock Text="{Binding SecretBackendLimitation}" TextWrapping="Wrap" FontSize="12" />
                 </Border>
+
+                <!-- SEC-027: stored-secret audit + cleanup. Lists keyrefs (names only, never values). -->
+                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,10,0,0">
+                    <TextBlock Classes="settingLabel" Text="Stored secrets" VerticalAlignment="Center" />
+                    <Button Content="Refresh" Command="{Binding RefreshSecretsCommand}"
+                            AutomationProperties.Name="Refresh stored secrets" />
+                </StackPanel>
+                <TextBlock Classes="settingHint"
+                           Text="Keyrefs only (names, never values). Deleting one means any connection or environment using it must have the value re-entered." />
+                <TextBlock Text="No secrets stored." Opacity="0.7" Margin="0,2,0,0"
+                           IsVisible="{Binding HasNoSecretKeyRefs}" />
+                <ItemsControl ItemsSource="{Binding SecretKeyRefs}" Margin="0,2,0,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <Grid ColumnDefinitions="*,Auto" Margin="0,2">
+                                <TextBlock Grid.Column="0" Text="{Binding}"
+                                           FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                <Button Grid.Column="1" Content="Delete" FontSize="11"
+                                        Command="{Binding #Root.((docs:SettingsDocumentViewModel)DataContext).DeleteSecretCommand}"
+                                        CommandParameter="{Binding}"
+                                        AutomationProperties.Name="Delete stored secret" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </StackPanel>
 
             <!-- ───────── History (FR-158) ───────── -->

@@ -391,6 +391,20 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task Export_mirrors_an_export_activity_to_the_console()
+    {
+        var vm = CreateWithWorkspace(out _, out var picker, out _, out _, out _);
+        picker.SaveResult = "/ws/share.gcnws.json";
+
+        await vm.ExportWorkspaceCommand.ExecuteAsync(null);
+
+        var row = vm.Console.Calls.ShouldHaveSingleItem();
+        row.KindLabel.ShouldBe("export");
+        row.Method.ShouldBe("Export workspace: Demo");
+        row.IsError.ShouldBeFalse();
+    }
+
+    [Fact]
     public async Task Export_cancelled_at_the_picker_writes_nothing()
     {
         var vm = CreateWithWorkspace(out var store, out var picker, out _, out _, out _);

@@ -2,6 +2,7 @@ using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
+using GrpCurl.Net.Studio.ViewModels.Panes;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
 
@@ -106,6 +107,36 @@ public sealed class ConnectionEditorViewModelTests
         vm.LastTestResult!.Ok.ShouldBeTrue();
         vm.LastTestResult.ServiceCount.ShouldBe(3);
         registry.LastTested!.Address.ShouldBe("localhost:9090");
+    }
+
+    [Fact]
+    public async Task Test_connection_mirrors_a_connect_activity_to_the_console()
+    {
+        var console = new ConsoleViewModel();
+        var registry = new FakeConnectionRegistry { Result = TestConnectionResult.Success(2) };
+        var vm = new ConnectionEditorViewModel(registry, console: console) { Name = "prod", Address = "localhost:9090" };
+
+        await vm.TestConnectionCommand.ExecuteAsync(null);
+
+        var row = console.Calls.ShouldHaveSingleItem();
+        row.KindLabel.ShouldBe("connect");
+        row.Method.ShouldBe("Test connection: prod");
+        row.StatusName.ShouldBe("connected");
+        row.IsError.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task A_failed_test_connection_is_recorded_as_an_error_row()
+    {
+        var console = new ConsoleViewModel();
+        var registry = new FakeConnectionRegistry { Result = TestConnectionResult.Failure("unreachable") };
+        var vm = new ConnectionEditorViewModel(registry, console: console) { Name = "prod", Address = "localhost:9090" };
+
+        await vm.TestConnectionCommand.ExecuteAsync(null);
+
+        var row = console.Calls.ShouldHaveSingleItem();
+        row.StatusName.ShouldBe("failed");
+        row.IsError.ShouldBeTrue();
     }
 
     [Fact]

@@ -28,6 +28,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
     private readonly ISavedRequestStore? _savedRequests;
     private readonly IDocumentHost? _documentHost;
     private readonly ISavedRequestSnippetIO? _snippetIO;
+    private readonly ConsoleViewModel? _console;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(EditConnectionCommand))]
@@ -47,7 +48,8 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         IProtocService? protocService = null,
         ISavedRequestStore? savedRequests = null,
         IDocumentHost? documentHost = null,
-        ISavedRequestSnippetIO? snippetIO = null)
+        ISavedRequestSnippetIO? snippetIO = null,
+        ConsoleViewModel? console = null)
     {
         _workspaceStore = workspaceStore;
         _registry = registry;
@@ -61,6 +63,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         _savedRequests = savedRequests;
         _documentHost = documentHost;
         _snippetIO = snippetIO;
+        _console = console;
 
         Connections = [];
         Connections.CollectionChanged += OnConnectionsChanged;
@@ -203,7 +206,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
     private async Task AddConnection()
     {
         var editor = new ConnectionEditorViewModel(
-            _registry, existing: null, _settings?.Current.Network, _profileStore, _filePicker, _dialogService, _secretStore, _protocService);
+            _registry, existing: null, _settings?.Current.Network, _profileStore, _filePicker, _dialogService, _secretStore, _protocService, _console);
         var saved = await _dialogService.ShowDialogAsync(editor);
 
         if (saved is not null)
@@ -224,7 +227,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         }
 
         var editor = new ConnectionEditorViewModel(
-            _registry, item.Connection, networkDefaults: null, _profileStore, _filePicker, _dialogService, _secretStore, _protocService);
+            _registry, item.Connection, networkDefaults: null, _profileStore, _filePicker, _dialogService, _secretStore, _protocService, _console);
         var saved = await _dialogService.ShowDialogAsync(editor);
 
         if (saved is not null)

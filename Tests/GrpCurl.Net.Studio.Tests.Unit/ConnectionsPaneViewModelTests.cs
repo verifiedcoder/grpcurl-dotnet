@@ -2,6 +2,7 @@ using GrpCurl.Net.Studio.Services;
 using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
+using GrpCurl.Net.Studio.ViewModels.Models.History;
 using GrpCurl.Net.Studio.ViewModels.Panes;
 using GrpCurl.Net.Studio.ViewModels.Services;
 
@@ -142,6 +143,59 @@ public sealed class ConnectionsPaneViewModelTests
         pane.Connections.ShouldBeEmpty();
         pane.HasConnections.ShouldBeFalse();
         store.SaveCount.ShouldBe(1);
+    }
+
+    // ── FR-126: history purge on connection delete ───────────────────────────
+
+    private static HistoryEntry Hist(string id, string connectionName, string address) => new(
+        HistoryEntry.CurrentVersion, id, new DateTimeOffset(2026, 6, 11, 12, 0, 0, TimeSpan.Zero), HistoryKind.Grpc,
+        new HistoryConnection(connectionName, address, "plaintext", null), null, "pkg.Svc/M",
+        new HistoryRequest("json", "{}", false, [], null, false, true, null, null, null),
+        new HistoryOutcome("OK", "success", 0, 1, 1, 1, null, false, null));
+
+    private static ConnectionsPaneViewModel CreateWithHistory(out FakeDialogService dialogs, out FakeHistoryStore history)
+    {
+        var store = new FakeWorkspaceStore(new WorkspaceModel { Connections = [new SavedConnection { Name = "a", Address = "h:1" }] });
+        dialogs = new FakeDialogService();
+        history = new FakeHistoryStore();
+        history.Entries.AddRange([Hist("e1", "a", "h:1"), Hist("e2", "a", "h:1"), Hist("e3", "other", "h:9")]);
+        return new ConnectionsPaneViewModel(store, new FakeConnectionRegistry(), dialogs, new ConnectionSelection(), history: history);
+    }
+
+    [Fact]
+    public async Task Delete_purges_matching_history_when_the_box_is_ticked()
+    {
+        var pane = CreateWithHistory(out var dialogs, out var history);
+        dialogs.OnShowDialog = d => d is DeleteConnectionDialogViewModel ? (bool?)true : null;
+
+        await pane.DeleteConnectionCommand.ExecuteAsync(pane.Connections[0]);
+
+        pane.Connections.ShouldBeEmpty();
+        history.Entries.Select(e => e.Id).ShouldBe(["e3"]); // only the other connection's entry survives
+    }
+
+    [Fact]
+    public async Task Delete_keeps_history_when_the_box_is_unticked()
+    {
+        var pane = CreateWithHistory(out var dialogs, out var history);
+        dialogs.OnShowDialog = d => d is DeleteConnectionDialogViewModel ? (bool?)false : null;
+
+        await pane.DeleteConnectionCommand.ExecuteAsync(pane.Connections[0]);
+
+        pane.Connections.ShouldBeEmpty();
+        history.Entries.Count.ShouldBe(3); // connection gone, history untouched
+    }
+
+    [Fact]
+    public async Task Cancelling_the_delete_dialog_keeps_the_connection_and_history()
+    {
+        var pane = CreateWithHistory(out var dialogs, out var history);
+        dialogs.OnShowDialog = _ => null; // cancelled
+
+        await pane.DeleteConnectionCommand.ExecuteAsync(pane.Connections[0]);
+
+        pane.Connections.Count.ShouldBe(1);
+        history.Entries.Count.ShouldBe(3);
     }
 
     // ── FR-145: saved requests nested under their connection ─────────────────

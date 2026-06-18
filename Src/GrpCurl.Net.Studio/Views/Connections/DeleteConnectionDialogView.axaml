@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conn="clr-namespace:GrpCurl.Net.Studio.ViewModels.Connections;assembly=GrpCurl.Net.Studio.ViewModels"
+             x:Class="GrpCurl.Net.Studio.Views.Connections.DeleteConnectionDialogView"
+             x:DataType="conn:DeleteConnectionDialogViewModel"
+             Width="420">
+    <StackPanel Margin="20" Spacing="12">
+        <TextBlock Text="Delete connection" FontSize="16" FontWeight="SemiBold" />
+        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+        <CheckBox IsChecked="{Binding PurgeHistory}" IsVisible="{Binding HasHistory}"
+                  Content="{Binding HistoryOptionText}" AutomationProperties.Name="Also delete history" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+            <Button Content="Cancel" Command="{Binding CancelCommand}" MinWidth="80"
+                    AutomationProperties.Name="Cancel" />
+            <Button Content="Delete" Command="{Binding DeleteCommand}" MinWidth="80" IsDefault="True"
+                    AutomationProperties.Name="Delete connection" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

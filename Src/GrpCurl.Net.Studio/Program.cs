@@ -1,5 +1,6 @@
 using Avalonia;
 using GrpCurl.Net.Studio.Composition;
+using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -34,6 +35,9 @@ internal static class Program
         }
         finally
         {
+            // FR-146: capture the final open-tab state on the way out (catches edits made after the last
+            // debounced persist), then stop the host.
+            host.Services.GetRequiredService<DocumentsViewModel>().FlushSessionAsync().GetAwaiter().GetResult();
             host.StopAsync().GetAwaiter().GetResult();
         }
     }

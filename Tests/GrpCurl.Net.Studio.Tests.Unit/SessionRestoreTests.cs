@@ -1,6 +1,7 @@
 using GrpCurl.Net.Studio.Services;
 using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels.Documents;
+using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Descriptors;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
@@ -12,7 +13,7 @@ namespace GrpCurl.Net.Studio.Tests.Unit;
 /// <summary>FR-146: capture the open tabs to the UI session and restore them as drafts on launch.</summary>
 public sealed class SessionRestoreTests
 {
-    private static DocumentsViewModel Create(ISessionStore session, IWorkspaceStore workspace)
+    private static DocumentsViewModel Create(ISessionStore session, IWorkspaceStore workspace, InMemorySettingsStore? settings = null)
     {
         var descriptors = new FakeDescriptorService
         {
@@ -22,7 +23,7 @@ public sealed class SessionRestoreTests
 
         return new DocumentsViewModel(
             descriptors, new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner(),
-            new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator(), new InMemorySettingsStore(),
+            new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator(), settings ?? new InMemorySettingsStore(),
             new FakeThemeService(), workspace: workspace, session: session, sessionDebounce: TimeSpan.Zero);
     }
 
@@ -137,6 +138,40 @@ public sealed class SessionRestoreTests
         await docs.RestoreSessionAsync(TestContext.Current.CancellationToken);
 
         docs.Documents.ShouldHaveSingleItem().ShouldBeOfType<DescribeDocumentViewModel>().CurrentSymbol.ShouldBe("pkg.Other");
+    }
+
+    [Fact]
+    public async Task RestoreSessionOnStartupAsync_restores_when_the_setting_is_restore_last_workspace()
+    {
+        var (workspace, _) = Workspace();
+        var session = new FakeSessionStore
+        {
+            State = new SessionState { WorkspaceId = "ws-1", Tabs = [new SessionTab(SessionTabKind.Describe, "conn-1", "pkg.Svc")] }
+        };
+        var settings = new InMemorySettingsStore();
+        settings.Current.General.Startup = StartupBehavior.RestoreLastWorkspace;
+        var docs = Create(session, workspace, settings);
+
+        await docs.RestoreSessionOnStartupAsync(TestContext.Current.CancellationToken);
+
+        docs.Documents.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public async Task RestoreSessionOnStartupAsync_is_a_noop_when_the_setting_is_start_empty()
+    {
+        var (workspace, _) = Workspace();
+        var session = new FakeSessionStore
+        {
+            State = new SessionState { WorkspaceId = "ws-1", Tabs = [new SessionTab(SessionTabKind.Describe, "conn-1", "pkg.Svc")] }
+        };
+        var settings = new InMemorySettingsStore();
+        settings.Current.General.Startup = StartupBehavior.StartEmpty;
+        var docs = Create(session, workspace, settings);
+
+        await docs.RestoreSessionOnStartupAsync(TestContext.Current.CancellationToken);
+
+        docs.Documents.ShouldBeEmpty();
     }
 
     [Fact]

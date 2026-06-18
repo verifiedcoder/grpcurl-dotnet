@@ -111,6 +111,17 @@ public sealed class StreamRowAndPumpTests
         }
     }
 
+    private static async IAsyncEnumerable<int> CountingRange(int count, Action onYield, [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        for (var i = 0; i < count; i++)
+        {
+            ct.ThrowIfCancellationRequested();
+            onYield();
+            yield return i;
+            await Task.Yield();
+        }
+    }
+
     [Fact]
     public async Task Pump_applies_every_item_in_batches()
     {
@@ -149,5 +160,37 @@ public sealed class StreamRowAndPumpTests
                 cts.Token));
 
         applied.ShouldNotBeEmpty(); // already-applied items preserved
+    }
+
+    [Fact]
+    public async Task Pump_backpressures_a_slow_consumer_with_a_bounded_queue()
+    {
+        var produced = 0;
+        var firstBatchReceived = new TaskCompletionSource();
+        var releaseConsumer = new TaskCompletionSource();
+
+        var run = new StreamDispatchPump().RunAsync(
+            CountingRange(1000, () => Interlocked.Increment(ref produced), TestContext.Current.CancellationToken),
+            async _ =>
+            {
+                firstBatchReceived.TrySetResult();
+                await releaseConsumer.Task; // hold the UI thread so the producer cannot drain ahead
+            },
+            TestContext.Current.CancellationToken,
+            capacity: 1);
+
+        // Once the consumer has taken the first batch and is blocked, give the producer ample time
+        // to race ahead. A bounded(1) Wait queue caps how far past the consumer it can get; the old
+        // unbounded queue would let it produce all 1000 regardless of consumer speed.
+        await firstBatchReceived.Task;
+        await Task.Delay(50, TestContext.Current.CancellationToken);
+
+        Volatile.Read(ref produced).ShouldBeLessThan(1000);
+
+        releaseConsumer.SetResult();
+        await run;
+
+        // After releasing, everything still drains through.
+        Volatile.Read(ref produced).ShouldBe(1000);
     }
 }

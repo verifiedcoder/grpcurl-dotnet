@@ -3,21 +3,36 @@ using System.Threading.Channels;
 namespace GrpCurl.Net.Studio.ViewModels.Services;
 
 /// <summary>
-///     Batches a streaming event sequence for the UI (ADR-013): a producer drains the source into an
-///     unbounded queue; a consumer flushes everything currently available in one <paramref name="apply" />
+///     Batches a streaming event sequence for the UI (ADR-013): a producer drains the source into a
+///     bounded queue; a consumer flushes everything currently available in one <paramref name="apply" />
 ///     call, so a flood collapses into a few large batches (≥30 fps) while a trickle stays responsive.
-///     The <paramref name="apply" /> callback marshals onto the UI thread (via <c>IUiDispatcher</c>);
-///     this type stays UI-framework-free and deterministic for headless tests. Cancellation surfaces
-///     after every already-queued event has been applied (cancel-preserves-received, FR-084).
+///     The queue is bounded with <see cref="BoundedChannelFullMode.Wait" /> so a hot server stream the UI
+///     cannot render fast enough backpressures the producer — which stops pulling from the source, which
+///     backpressures <c>InvocationService</c>'s own bounded channel into HTTP/2 flow control rather than
+///     growing memory without bound. The <paramref name="apply" /> callback marshals onto the UI thread
+///     (via <c>IUiDispatcher</c>); this type stays UI-framework-free and deterministic for headless tests.
+///     Cancellation surfaces after every already-queued event has been applied (cancel-preserves-received,
+///     FR-084).
 /// </summary>
 public sealed class StreamDispatchPump
 {
+    /// <summary>
+    ///     Default UI-queue capacity. Matches <c>InvocationService</c>'s source channel so the two stages
+    ///     hold a comparable backlog before backpressure propagates to the wire.
+    /// </summary>
+    public const int DefaultCapacity = 1000;
+
     public async Task RunAsync<T>(
         IAsyncEnumerable<T> source,
         Func<IReadOnlyList<T>, Task> apply,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        int capacity = DefaultCapacity)
     {
-        var queue = Channel.CreateUnbounded<T>(new UnboundedChannelOptions { SingleReader = true });
+        var queue = Channel.CreateBounded<T>(new BoundedChannelOptions(capacity)
+        {
+            SingleReader = true,
+            FullMode = BoundedChannelFullMode.Wait
+        });
 
         var producer = Task.Run(async () =>
         {

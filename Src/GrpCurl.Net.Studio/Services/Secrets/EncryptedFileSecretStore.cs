@@ -14,7 +14,7 @@ namespace GrpCurl.Net.Studio.Services.Secrets;
 ///     binds the ciphertext to this machine + user, but the derivation inputs sit on the same disk, so it is
 ///     weaker than a native keychain — the honest limitation in <see cref="Info" /> says so (SEC-024).
 /// </summary>
-internal sealed class EncryptedFileSecretStore : ISecretStore
+internal sealed class EncryptedFileSecretStore : ISecretBackend
 {
     /// <summary>SEC-024: the verbatim honest-limitation text surfaced in Settings → Security.</summary>
     internal const string FallbackLimitation =

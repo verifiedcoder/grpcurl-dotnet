@@ -27,4 +27,7 @@ public sealed class FakeSecretStore : ISecretStore
 
     public Task<bool> ExistsAsync(string keyRef, CancellationToken cancellationToken = default)
         => Task.FromResult(_values.ContainsKey(keyRef));
+
+    public Task<IReadOnlyList<string>> ListAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult<IReadOnlyList<string>>(_values.Keys.ToList());
 }

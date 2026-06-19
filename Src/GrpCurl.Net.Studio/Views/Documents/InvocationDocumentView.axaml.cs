@@ -17,9 +17,9 @@ namespace GrpCurl.Net.Studio.Views.Documents;
 public sealed partial class InvocationDocumentView : UserControl
 {
     private readonly SquiggleRenderer _squiggles = new();
-    private TextEditor? _requestEditor;
-    private TextEditor? _responseEditor;
-    private FoldingManager? _responseFolding;
+    private readonly TextEditor? _requestEditor;
+    private readonly TextEditor? _responseEditor;
+    private readonly FoldingManager? _responseFolding;
     private InvocationDocumentViewModel? _viewModel;
     private bool _syncingRequest;
 

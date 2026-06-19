@@ -120,13 +120,16 @@ internal sealed class LinuxLibsecretSecretStore : ISecretBackend
         public SecretSchemaAttribute[] Attributes;
     }
 
-    [DllImport(Lib, CharSet = CharSet.Ansi)]
+    // BestFitMapping=false + ThrowOnUnmappableChar=true (CA2101): on Ansi string marshaling, disable
+    // best-fit character mapping (a homoglyph-substitution hazard) and fail loudly rather than silently
+    // corrupting a secret with an unmappable character. On Unix the Ansi charset marshals as UTF-8.
+    [DllImport(Lib, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)]
     private static extern int secret_password_store_sync(ref SecretSchema schema, string? collection, string label, string password, IntPtr cancellable, out IntPtr error, string attr, string value, IntPtr terminator);
 
-    [DllImport(Lib, CharSet = CharSet.Ansi)]
+    [DllImport(Lib, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)]
     private static extern IntPtr secret_password_lookup_sync(ref SecretSchema schema, IntPtr cancellable, out IntPtr error, string attr, string value, IntPtr terminator);
 
-    [DllImport(Lib, CharSet = CharSet.Ansi)]
+    [DllImport(Lib, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)]
     private static extern int secret_password_clear_sync(ref SecretSchema schema, IntPtr cancellable, out IntPtr error, string attr, string value, IntPtr terminator);
 
     [DllImport(Lib)]

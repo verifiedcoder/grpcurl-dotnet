@@ -170,14 +170,14 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
 
     private InvocationDocumentViewModel CreateInvocationTab(SavedConnection connection, string method, string? body)
     {
-        var document = new InvocationDocumentViewModel(
+        return new InvocationDocumentViewModel(
             connection, method, body, _invocation, _descriptors, _dispatcher, _clipboard, _dialogs, _launcher, _validator,
             _filePicker, _settings.Current.Network.RingBufferSize, revealGate: _revealGate, documentHost: this,
             console: _console, inspector: _inspector, recorder: _recorder, savedRequests: _savedRequests,
-            environment: _environment, tlsProfile: ResolveTlsProfile(connection));
-
-        document.CliDialect = _settings.Current.General.CliShellDialect;
-        return document;
+            environment: _environment, tlsProfile: ResolveTlsProfile(connection))
+        {
+            CliDialect = _settings.Current.General.CliShellDialect
+        };
     }
 
     /// <summary>

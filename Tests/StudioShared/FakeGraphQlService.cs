@@ -113,6 +113,16 @@ public sealed class FakeGraphQlService : IGraphQlService
         return OnValidateMapping?.Invoke(mappingText) ?? MappingProblems;
     }
 
+    public IReadOnlyList<GraphQlProblem> MappingSchemaProblems { get; set; } = [];
+
+    public int ValidateSchemaCount { get; private set; }
+
+    public Task<IReadOnlyList<GraphQlProblem>> ValidateMappingSchemaAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken)
+    {
+        ValidateSchemaCount++;
+        return Task.FromResult(MappingSchemaProblems);
+    }
+
     public GraphQlTranslationResult TranslationResult { get; set; } = new([]);
 
     public Func<GraphQlExecutionRequest, CancellationToken, Task<GraphQlTranslationResult>>? OnTranslate { get; set; }

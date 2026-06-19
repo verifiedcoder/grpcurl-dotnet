@@ -178,6 +178,11 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
 
     public bool HasMappingProblems => MappingProblems.Count > 0;
 
+    /// <summary>Descriptor-aware mapping problems (GQL-046); populated on demand by Validate (hits the descriptor set).</summary>
+    public ObservableCollection<GraphQlProblem> MappingSchemaProblems { get; } = [];
+
+    public bool HasMappingSchemaProblems => MappingSchemaProblems.Count > 0;
+
     /// <summary>Pre-flight translation inspector rows (GQL-050/051); loaded on demand, no RPC.</summary>
     public ObservableCollection<GraphQlFieldTranslation> TranslationFields { get; } = [];
 
@@ -882,6 +887,25 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
         {
             await _clipboard.SetTextAsync(ResponseJson);
         }
+    }
+
+    /// <summary>GQL-046: validate every mapping entry against the descriptor set (advisory; never blocks Execute).</summary>
+    [RelayCommand(IncludeCancelCommand = true)]
+    private async Task ValidateMappingSchema(CancellationToken cancellationToken)
+    {
+        var problems = await _graphql.ValidateMappingSchemaAsync(BuildRequest(), cancellationToken);
+
+        await _dispatcher.InvokeAsync(() =>
+        {
+            MappingSchemaProblems.Clear();
+
+            foreach (var problem in problems)
+            {
+                MappingSchemaProblems.Add(problem);
+            }
+
+            OnPropertyChanged(nameof(HasMappingSchemaProblems));
+        });
     }
 
     /// <summary>GQL-050: load the pre-flight translation inspector (request JSON per field, no RPC).</summary>

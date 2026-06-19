@@ -581,6 +581,186 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
         }
     }
 
+    public async Task<IReadOnlyList<GraphQlProblem>> ValidateMappingSchemaAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken)
+    {
+        MappingConfig config;
+        try
+        {
+            config = await LoadMappingAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception)
+        {
+            return []; // the synchronous schema validation already reports load/parse errors
+        }
+
+        if (config.Operations.Count == 0)
+        {
+            return [];
+        }
+
+        var connection = request.Connection;
+        var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
+        var options = ConnectionChannelMapper.ToChannelOptions(connection, null, profile, password);
+        var reflectionMetadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
+        var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
+
+        await using var session = await DescriptorSourceFactory.CreateAsync(
+            connection.Address, protosets, protos, imports,
+            channelOptions: options,
+            reflectionMetadata: reflectionMetadata,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        return await ValidateEntriesAsync(config, session.Source, request.DefaultService, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>The descriptor-aware checks (GQL-046), separated from session setup so they can be tested offline.</summary>
+    internal static async Task<IReadOnlyList<GraphQlProblem>> ValidateEntriesAsync(
+        MappingConfig config, IDescriptorSource source, string? defaultService, CancellationToken cancellationToken)
+    {
+        var problems = new List<GraphQlProblem>();
+
+        foreach (var entry in config.Operations)
+        {
+            var serviceName = entry.Service ?? config.Defaults.Service ?? defaultService;
+
+            if (string.IsNullOrEmpty(serviceName))
+            {
+                problems.Add(Problem($"`{entry.GraphqlField}`: no service set (add the entry's service, defaults.service, or a default-service)."));
+                continue;
+            }
+
+            if (await source.FindSymbolAsync(serviceName, cancellationToken).ConfigureAwait(false) is not Google.Protobuf.Reflection.ServiceDescriptor service)
+            {
+                var hint = Closest(await source.ListServicesAsync(cancellationToken).ConfigureAwait(false), serviceName);
+                problems.Add(Problem($"`{entry.GraphqlField}`: service '{serviceName}' was not found{Did(hint)}."));
+                continue;
+            }
+
+            var method = service.Methods.FirstOrDefault(m => string.Equals(m.Name, entry.Method, StringComparison.Ordinal));
+
+            if (method is null)
+            {
+                var hint = Closest(service.Methods.Select(m => m.Name), entry.Method);
+                problems.Add(Problem($"`{entry.GraphqlField}`: method '{serviceName}/{entry.Method}' was not found{Did(hint)}."));
+                continue;
+            }
+
+            var actualKind = method.IsServerStreaming ? MethodKind.ServerStreaming : MethodKind.Unary;
+            if (entry.Kind != actualKind)
+            {
+                problems.Add(Problem($"`{entry.GraphqlField}`: kind '{KindName(entry.Kind)}' does not match {serviceName}/{method.Name} ({KindName(actualKind)})."));
+            }
+
+            foreach (var (argName, rule) in entry.Arguments)
+            {
+                var path = rule switch
+                {
+                    ArgumentRule.PathRule p when p.Path != "." => p.Path,
+                    ArgumentRule.Rename r => r.GrpcFieldName,
+                    _ => null
+                };
+
+                if (path is not null)
+                {
+                    AddPathProblem(problems, entry.GraphqlField, $"argument `{argName}`", path, method.InputType);
+                }
+            }
+
+            if (entry.SelectionFieldMaskPath is { } maskPath)
+            {
+                AddPathProblem(problems, entry.GraphqlField, "$selection fieldMask", maskPath, method.InputType);
+            }
+
+            if (entry.Response?.Unwrap is { } unwrap && method.OutputType.FindFieldByName(unwrap) is null)
+            {
+                var hint = Closest(method.OutputType.Fields.InDeclarationOrder().Select(f => f.Name), unwrap);
+                problems.Add(Problem($"`{entry.GraphqlField}`: response.unwrap '{unwrap}' is not a field of {method.OutputType.Name}{Did(hint)}."));
+            }
+        }
+
+        return problems;
+    }
+
+    private static void AddPathProblem(List<GraphQlProblem> problems, string field, string label, string path, Google.Protobuf.Reflection.MessageDescriptor inputType)
+    {
+        var current = inputType;
+        var segments = path.Split('.');
+
+        for (var i = 0; i < segments.Length; i++)
+        {
+            var f = current.FindFieldByName(segments[i]);
+
+            if (f is null)
+            {
+                var hint = Closest(current.Fields.InDeclarationOrder().Select(x => x.Name), segments[i]);
+                problems.Add(Problem($"`{field}`: {label} path '{path}' — '{segments[i]}' is not a field of {current.Name}{Did(hint)}."));
+                return;
+            }
+
+            if (i < segments.Length - 1)
+            {
+                if (f.FieldType != Google.Protobuf.Reflection.FieldType.Message || f.MessageType is null)
+                {
+                    problems.Add(Problem($"`{field}`: {label} path '{path}' — '{segments[i]}' is not a message field, cannot descend into it."));
+                    return;
+                }
+
+                current = f.MessageType;
+            }
+        }
+    }
+
+    private static GraphQlProblem Problem(string message) => new(message, GraphQlProblemKind.Configuration);
+
+    private static string KindName(MethodKind kind) => kind == MethodKind.ServerStreaming ? "serverStreaming" : "unary";
+
+    private static string Did(string? hint) => hint is null ? string.Empty : $" (did you mean '{hint}'?)";
+
+    /// <summary>The closest candidate within a small edit distance, or null when none is close enough.</summary>
+    internal static string? Closest(IEnumerable<string> candidates, string target)
+    {
+        string? best = null;
+        var bestDistance = int.MaxValue;
+
+        foreach (var candidate in candidates)
+        {
+            var distance = Levenshtein(candidate, target);
+            if (distance < bestDistance)
+            {
+                bestDistance = distance;
+                best = candidate;
+            }
+        }
+
+        return best is not null && bestDistance <= 3 ? best : null;
+    }
+
+    private static int Levenshtein(string a, string b)
+    {
+        var d = new int[a.Length + 1, b.Length + 1];
+
+        for (var i = 0; i <= a.Length; i++)
+        {
+            d[i, 0] = i;
+        }
+
+        for (var j = 0; j <= b.Length; j++)
+        {
+            d[0, j] = j;
+        }
+
+        for (var i = 1; i <= a.Length; i++)
+        {
+            for (var j = 1; j <= b.Length; j++)
+            {
+                var cost = a[i - 1] == b[j - 1] ? 0 : 1;
+                d[i, j] = Math.Min(Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1), d[i - 1, j - 1] + cost);
+            }
+        }
+
+        return d[a.Length, b.Length];
+    }
+
     public IReadOnlyList<GraphQlProblem> ValidateMapping(string mappingText)
     {
         try

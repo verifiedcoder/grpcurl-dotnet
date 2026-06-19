@@ -65,4 +65,12 @@ public interface IGraphQlService
     ///     because it matches no request field (the Finding-4 guard, GQL-047). Needs the descriptor set.
     /// </summary>
     Task<GraphQlTranslationResult> TranslateAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken);
+
+    /// <summary>
+    ///     Descriptor-aware validation of every mapping entry against the live descriptor set (GQL-046):
+    ///     the service/method exist, the kind matches the method's streaming shape, each argument path and
+    ///     <c>$selection</c> FieldMask path lands on a real request field, and <c>response.unwrap</c> names a
+    ///     real response field — with "did you mean" hints. Advisory: never blocks execution on its own.
+    /// </summary>
+    Task<IReadOnlyList<GraphQlProblem>> ValidateMappingSchemaAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken);
 }

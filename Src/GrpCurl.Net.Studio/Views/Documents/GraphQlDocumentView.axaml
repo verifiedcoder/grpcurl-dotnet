@@ -241,7 +241,7 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <!-- GQL-044/045: inline mapping buffer (YAML/JSON) with live schema validation. -->
+            <!-- GQL-044/045/046: inline mapping buffer (YAML/JSON) with live schema validation + descriptor-aware checks. -->
             <Expander Header="Mapping (YAML)">
                 <StackPanel Spacing="4">
                     <Border BorderBrush="{DynamicResource Status.Neutral}" BorderThickness="1" CornerRadius="3" MinHeight="120">
@@ -250,7 +250,20 @@
                                        FontSize="{DynamicResource Editor.FontSize}"
                                        AutomationProperties.Name="Mapping YAML" />
                     </Border>
+                    <Button Content="Validate against server" Command="{Binding ValidateMappingSchemaCommand}" Padding="6,0"
+                            HorizontalAlignment="Left"
+                            ToolTip.Tip="Check each mapping entry against the descriptors (service/method/kind/paths)" />
+                    <!-- GQL-045 schema problems. -->
                     <ItemsControl ItemsSource="{Binding MappingProblems}" IsVisible="{Binding HasMappingProblems}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="gql:GraphQlProblem">
+                                <TextBlock Text="{Binding Message}" FontSize="11" TextWrapping="Wrap"
+                                           Foreground="{DynamicResource Status.Server}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <!-- GQL-046 descriptor-aware problems (advisory, with "did you mean"). -->
+                    <ItemsControl ItemsSource="{Binding MappingSchemaProblems}" IsVisible="{Binding HasMappingSchemaProblems}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="gql:GraphQlProblem">
                                 <TextBlock Text="{Binding Message}" FontSize="11" TextWrapping="Wrap"

@@ -32,7 +32,7 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
             var parsed = GraphQLDocumentParser.Parse(document);
 
             var operations = parsed.Operations
-                .Select(op => new GraphQlOperationInfo(op.Name, ToKind(op.OperationType)))
+                .Select(op => new GraphQlOperationInfo(op.Name, ToKind(op.OperationType)) { Variables = ToVariables(op) })
                 .ToList();
 
             return new GraphQlParseResult(operations, []);
@@ -178,6 +178,29 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
             _ => GraphQlFieldState.Queued
         };
     }
+
+    private static IReadOnlyList<GraphQlVariableInfo> ToVariables(GraphQLOperation op)
+    {
+        if (op.VariableDefinitions is null)
+        {
+            return [];
+        }
+
+        return op.VariableDefinitions
+            .Select(v => new GraphQlVariableInfo(
+                v.Variable.Name.StringValue,
+                PrintType(v.Type),
+                Required: v.Type is GraphQLParser.AST.GraphQLNonNullType && v.DefaultValue is null))
+            .ToList();
+    }
+
+    private static string PrintType(GraphQLParser.AST.GraphQLType type) => type switch
+    {
+        GraphQLParser.AST.GraphQLNonNullType nn => PrintType(nn.Type) + "!",
+        GraphQLParser.AST.GraphQLListType list => "[" + PrintType(list.Type) + "]",
+        GraphQLParser.AST.GraphQLNamedType named => named.Name.StringValue,
+        _ => "?"
+    };
 
     private static GraphQlOperationKind ToKind(GraphQLOperationType type) => type switch
     {

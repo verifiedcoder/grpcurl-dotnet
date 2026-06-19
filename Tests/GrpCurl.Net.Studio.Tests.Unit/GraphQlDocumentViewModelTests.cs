@@ -335,6 +335,73 @@ public sealed class GraphQlDocumentViewModelTests
         vm.ImportVariablesCommand.CanExecute(null).ShouldBeFalse();
     }
 
+    private static GraphQlParseResult QueryWithVars()
+        => new([
+            new GraphQlOperationInfo("Q", GraphQlOperationKind.Query)
+            {
+                Variables = [new GraphQlVariableInfo("big", "Int!", Required: true), new GraphQlVariableInfo("name", "String", Required: false)]
+            }
+        ], []);
+
+    [Fact]
+    public void Selecting_an_operation_builds_the_quick_var_rows()
+    {
+        var vm = Create(out _, out _);
+
+        vm.ApplyParse(QueryWithVars());
+
+        vm.HasVariableRows.ShouldBeTrue();
+        vm.VariableRows.Select(r => r.Name).ShouldBe(["big", "name"]);
+        vm.VariableRows[0].Required.ShouldBeTrue();
+        vm.VariableRows[0].Type.ShouldBe("Int!");
+    }
+
+    [Fact]
+    public void Setting_variables_json_populates_grid_values()
+    {
+        var vm = Create(out _, out _);
+        vm.ApplyParse(QueryWithVars());
+
+        vm.VariablesJson = "{ \"big\": 5, \"name\": \"hi\" }";
+
+        vm.VariableRows.Single(r => r.Name == "big").Value.ShouldBe("5");
+        vm.VariableRows.Single(r => r.Name == "name").Value.ShouldBe("\"hi\"");
+    }
+
+    [Fact]
+    public void Editing_a_grid_value_rebuilds_the_variables_json()
+    {
+        var vm = Create(out _, out _);
+        vm.ApplyParse(QueryWithVars());
+
+        vm.VariableRows.Single(r => r.Name == "big").Value = "42";
+
+        var json = System.Text.Json.Nodes.JsonNode.Parse(vm.VariablesJson)!.AsObject();
+        json["big"]!.GetValue<int>().ShouldBe(42);
+    }
+
+    [Fact]
+    public void A_required_unbound_variable_is_warned()
+    {
+        var vm = Create(out _, out _);
+
+        vm.ApplyParse(QueryWithVars()); // big is required and unbound
+
+        vm.HasVariableWarnings.ShouldBeTrue();
+        vm.VariableWarnings.ShouldContain(p => p.Message.Contains("$big") && p.Message.Contains("required"));
+    }
+
+    [Fact]
+    public void An_undeclared_bound_variable_is_warned()
+    {
+        var vm = Create(out _, out _);
+        vm.ApplyParse(QueryWithVars());
+
+        vm.VariablesJson = "{ \"big\": 1, \"name\": \"x\", \"extra\": true }";
+
+        vm.VariableWarnings.ShouldContain(p => p.Message.Contains("$extra") && p.Message.Contains("not declared"));
+    }
+
     [Fact]
     public void Re_parsing_keeps_the_prior_selection_when_the_operation_still_exists()
     {

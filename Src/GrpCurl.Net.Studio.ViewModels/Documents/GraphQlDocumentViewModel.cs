@@ -7,6 +7,8 @@ using GrpCurl.Net.Studio.ViewModels.Services;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace GrpCurl.Net.Studio.ViewModels.Documents;
 
@@ -32,6 +34,7 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     private readonly Func<string, TextWriter> _writerFactory;
     private readonly Func<string, long, CancellationToken, Task<string>> _fileReader;
     private CancellationTokenSource? _parseCts;
+    private bool _syncingVars;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsInFlight), nameof(IsCompleted), nameof(HasResponse), nameof(IsCancelled))]
@@ -135,6 +138,15 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     /// <summary>Per-root-field execution progress rows (GQL-024 / AC-6); populated live during Execute.</summary>
     public ObservableCollection<GraphQlFieldProgressRow> FieldProgress { get; } = [];
 
+    /// <summary>Quick-vars grid rows for the selected operation's declared variables (GQL-018).</summary>
+    public ObservableCollection<GraphQlVariableRow> VariableRows { get; } = [];
+
+    /// <summary>Unbound-required / undeclared-bound variable warnings (GQL-019).</summary>
+    public ObservableCollection<GraphQlProblem> VariableWarnings { get; } = [];
+
+    public bool HasVariableRows => VariableRows.Count > 0;
+    public bool HasVariableWarnings => VariableWarnings.Count > 0;
+
     /// <summary>Debounce before the document is re-parsed after an edit; tests shorten it.</summary>
     internal TimeSpan ParseDebounce { get; set; } = TimeSpan.FromMilliseconds(300);
 
@@ -154,6 +166,158 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     private bool CanExecute => State != RunState.InFlight && SelectedOperation is not null && !HasSyntaxError && !HasHeaderErrors;
 
     partial void OnDocumentChanged(string value) => ScheduleParse();
+
+    // GQL-018: the selected operation determines the quick-vars rows; rebuild them when it changes.
+    partial void OnSelectedOperationChanged(GraphQlOperationInfo? value) => RebuildVariableRows();
+
+    // GQL-018: a JSON edit (typing or import) re-pulls grid values + recomputes warnings, unless the grid drove it.
+    partial void OnVariablesJsonChanged(string value)
+    {
+        if (!_syncingVars)
+        {
+            PullValuesFromJson();
+        }
+    }
+
+    private void RebuildVariableRows()
+    {
+        foreach (var row in VariableRows)
+        {
+            row.PropertyChanged -= OnVariableRowChanged;
+        }
+
+        VariableRows.Clear();
+
+        foreach (var variable in SelectedOperation?.Variables ?? [])
+        {
+            var row = new GraphQlVariableRow(variable.Name, variable.Type, variable.Required);
+            row.PropertyChanged += OnVariableRowChanged;
+            VariableRows.Add(row);
+        }
+
+        OnPropertyChanged(nameof(HasVariableRows));
+        PullValuesFromJson();
+    }
+
+    private void OnVariableRowChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(GraphQlVariableRow.Value) && !_syncingVars)
+        {
+            PushRowsToJson();
+        }
+    }
+
+    /// <summary>Reads each grid row's value from the variables JSON and recomputes the warnings.</summary>
+    private void PullValuesFromJson()
+    {
+        var obj = TryParseVariables(VariablesJson);
+
+        _syncingVars = true;
+        try
+        {
+            foreach (var row in VariableRows)
+            {
+                row.Value = obj is not null && obj.TryGetPropertyValue(row.Name, out var node)
+                    ? node?.ToJsonString() ?? "null"
+                    : string.Empty;
+            }
+        }
+        finally
+        {
+            _syncingVars = false;
+        }
+
+        RecomputeWarnings(obj);
+    }
+
+    /// <summary>Rebuilds the variables JSON from the grid rows (a value parses as JSON, else is a string).</summary>
+    private void PushRowsToJson()
+    {
+        var obj = new JsonObject();
+
+        foreach (var row in VariableRows)
+        {
+            if (string.IsNullOrWhiteSpace(row.Value))
+            {
+                continue;
+            }
+
+            JsonNode? node;
+            try
+            {
+                node = JsonNode.Parse(row.Value);
+            }
+            catch (JsonException)
+            {
+                node = JsonValue.Create(row.Value);
+            }
+
+            obj[row.Name] = node;
+        }
+
+        _syncingVars = true;
+        try
+        {
+            VariablesJson = obj.Count == 0 ? string.Empty : obj.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+        }
+        finally
+        {
+            _syncingVars = false;
+        }
+
+        RecomputeWarnings(obj);
+    }
+
+    private void RecomputeWarnings(JsonObject? variables)
+    {
+        VariableWarnings.Clear();
+
+        var declared = SelectedOperation?.Variables ?? [];
+
+        foreach (var variable in declared)
+        {
+            var bound = variables is not null && variables.TryGetPropertyValue(variable.Name, out var node) && node is not null;
+
+            if (variable.Required && !bound)
+            {
+                VariableWarnings.Add(new GraphQlProblem(
+                    $"${variable.Name} ({variable.Type}) is required but not provided.", GraphQlProblemKind.Variables));
+            }
+        }
+
+        if (variables is not null)
+        {
+            var names = declared.Select(v => v.Name).ToHashSet(StringComparer.Ordinal);
+
+            foreach (var pair in variables)
+            {
+                if (!names.Contains(pair.Key))
+                {
+                    VariableWarnings.Add(new GraphQlProblem(
+                        $"${pair.Key} is set but not declared by the operation.", GraphQlProblemKind.Variables));
+                }
+            }
+        }
+
+        OnPropertyChanged(nameof(HasVariableWarnings));
+    }
+
+    private static JsonObject? TryParseVariables(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return null;
+        }
+
+        try
+        {
+            return JsonNode.Parse(json) as JsonObject;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
 
     private void ScheduleParse()
     {

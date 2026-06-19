@@ -18,9 +18,23 @@ public sealed class GraphQlServiceParseTests
 
         result.Ok.ShouldBeTrue();
         result.Operations.Count.ShouldBe(3);
-        result.Operations[0].ShouldBe(new GraphQlOperationInfo("GetA", GraphQlOperationKind.Query));
-        result.Operations[1].ShouldBe(new GraphQlOperationInfo("SetB", GraphQlOperationKind.Mutation));
-        result.Operations[2].ShouldBe(new GraphQlOperationInfo("OnC", GraphQlOperationKind.Subscription));
+        (result.Operations[0].Name, result.Operations[0].Kind).ShouldBe(("GetA", GraphQlOperationKind.Query));
+        (result.Operations[1].Name, result.Operations[1].Kind).ShouldBe(("SetB", GraphQlOperationKind.Mutation));
+        (result.Operations[2].Name, result.Operations[2].Kind).ShouldBe(("OnC", GraphQlOperationKind.Subscription));
+    }
+
+    [Fact]
+    public void Parse_reports_each_operations_declared_variables_with_required_flags()
+    {
+        var result = Service().Parse("query Sizes($big: Int!, $name: String = \"x\", $tags: [String!]) { a }");
+
+        var variables = result.Operations.ShouldHaveSingleItem().Variables;
+        variables.Count.ShouldBe(3);
+
+        variables[0].ShouldBe(new GraphQlVariableInfo("big", "Int!", Required: true));
+        // A non-null type with a default is not "required" (the default supplies it).
+        variables[1].ShouldBe(new GraphQlVariableInfo("name", "String", Required: false));
+        variables[2].ShouldBe(new GraphQlVariableInfo("tags", "[String!]", Required: false));
     }
 
     [Fact]

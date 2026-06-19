@@ -27,13 +27,22 @@ public enum GraphQlProblemKind
 }
 
 /// <summary>
-///     One operation discovered while parsing a document — drives the operation picker (GQL-012). The
-///     name is null for an anonymous operation.
+///     A declared operation variable (GQL-018): its name, printed GraphQL type (e.g. <c>Int!</c>,
+///     <c>[String!]</c>), and whether it is required (a non-null type with no default).
+/// </summary>
+public sealed record GraphQlVariableInfo(string Name, string Type, bool Required);
+
+/// <summary>
+///     One operation discovered while parsing a document — drives the operation picker (GQL-012) and the
+///     quick-vars grid (GQL-018). The name is null for an anonymous operation.
 /// </summary>
 public sealed record GraphQlOperationInfo(string? Name, GraphQlOperationKind Kind)
 {
     /// <summary>Picker label: the operation name, or a placeholder for the anonymous operation.</summary>
     public string DisplayName => Name ?? "(anonymous)";
+
+    /// <summary>The operation's declared variables (drives the quick-vars grid + unbound/undeclared warnings).</summary>
+    public IReadOnlyList<GraphQlVariableInfo> Variables { get; init; } = [];
 }
 
 /// <summary>A problem surfaced in the Problems strip / editor squiggle. Line/column are 1-based when known.</summary>

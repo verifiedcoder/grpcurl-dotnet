@@ -1,8 +1,8 @@
-using System.Globalization;
 using Avalonia;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
+using System.Globalization;
 
 namespace GrpCurl.Net.Studio.Converters;
 

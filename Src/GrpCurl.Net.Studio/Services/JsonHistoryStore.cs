@@ -1,7 +1,7 @@
-using System.Text;
-using System.Text.Json;
 using GrpCurl.Net.Studio.ViewModels.Models.History;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Text;
+using System.Text.Json;
 
 namespace GrpCurl.Net.Studio.Services;
 
@@ -13,7 +13,7 @@ namespace GrpCurl.Net.Studio.Services;
 ///     Retention evicts oldest-unpinned-first once the entry or byte cap is exceeded; eviction, pin toggles,
 ///     and deletes rewrite via the atomic temp-and-rename pattern. Reads tolerate a truncated tail line.
 /// </summary>
-internal sealed class JsonHistoryStore : IHistoryStore
+internal sealed class JsonHistoryStore : IHistoryStore, IDisposable
 {
     private const string AppFolderName = "GrpCurlNet.Studio";
     private const string FileName = "history.ndjson";
@@ -61,7 +61,7 @@ internal sealed class JsonHistoryStore : IHistoryStore
 
         try
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
+            _ = Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
             await File.AppendAllTextAsync(_path, Serialize(entry) + "\n", Utf8NoBom, cancellationToken).ConfigureAwait(false);
             InvalidateCache();
 
@@ -69,7 +69,7 @@ internal sealed class JsonHistoryStore : IHistoryStore
         }
         finally
         {
-            _gate.Release();
+            _ = _gate.Release();
         }
     }
 
@@ -83,7 +83,7 @@ internal sealed class JsonHistoryStore : IHistoryStore
         }
         finally
         {
-            _gate.Release();
+            _ = _gate.Release();
         }
     }
 
@@ -105,7 +105,7 @@ internal sealed class JsonHistoryStore : IHistoryStore
 
         foreach (var entry in entries)
         {
-            builder.Append(Serialize(entry)).Append('\n');
+            _ = builder.Append(Serialize(entry)).Append('\n');
         }
 
         await File.WriteAllTextAsync(path, builder.ToString(), Utf8NoBom, cancellationToken).ConfigureAwait(false);
@@ -121,7 +121,7 @@ internal sealed class JsonHistoryStore : IHistoryStore
         }
         finally
         {
-            _gate.Release();
+            _ = _gate.Release();
         }
     }
 
@@ -213,7 +213,7 @@ internal sealed class JsonHistoryStore : IHistoryStore
 
     private async Task RewriteAsync(IReadOnlyList<HistoryEntry> entries, CancellationToken cancellationToken)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
+        _ = Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
         InvalidateCache();
 
         if (entries.Count == 0)
@@ -226,7 +226,7 @@ internal sealed class JsonHistoryStore : IHistoryStore
 
         foreach (var entry in entries)
         {
-            builder.Append(Serialize(entry)).Append('\n');
+            _ = builder.Append(Serialize(entry)).Append('\n');
         }
 
         var tempPath = _path + ".tmp-" + Guid.NewGuid().ToString("N");
@@ -238,4 +238,9 @@ internal sealed class JsonHistoryStore : IHistoryStore
         => JsonSerializer.Serialize(entry, HistoryJsonContext.Default.HistoryEntry);
 
     private static readonly UTF8Encoding Utf8NoBom = new(encoderShouldEmitUTF8Identifier: false);
+
+    public void Dispose()
+    {
+        throw new NotImplementedException();
+    }
 }

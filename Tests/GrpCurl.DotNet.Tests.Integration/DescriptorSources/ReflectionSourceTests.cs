@@ -90,7 +90,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
 
         // Act
         // Assert
-        await Should.ThrowAsync<OperationCanceledException>(() =>
+        _ = await Should.ThrowAsync<OperationCanceledException>(() =>
             source.ListServicesAsync(cts.Token));
     }
 
@@ -110,8 +110,8 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
         var symbol = await source.FindSymbolAsync("testing.TestService", TestContext.Current.CancellationToken);
 
         // Assert
-        symbol.ShouldNotBeNull();
-        symbol.ShouldBeOfType<ServiceDescriptor>();
+        _ = symbol.ShouldNotBeNull();
+        _ = symbol.ShouldBeOfType<ServiceDescriptor>();
         symbol.FullName.ShouldBe("testing.TestService");
     }
 
@@ -142,8 +142,8 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
         var symbol = await source.FindSymbolAsync("testing.UnimplementedService", TestContext.Current.CancellationToken);
 
         // Assert
-        symbol.ShouldNotBeNull();
-        symbol.ShouldBeOfType<ServiceDescriptor>();
+        _ = symbol.ShouldNotBeNull();
+        _ = symbol.ShouldBeOfType<ServiceDescriptor>();
     }
 
     #endregion
@@ -161,8 +161,8 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
         var symbol = await source.FindSymbolAsync("testing.TestService.UnaryCall", TestContext.Current.CancellationToken);
 
         // Assert
-        symbol.ShouldNotBeNull();
-        symbol.ShouldBeOfType<MethodDescriptor>();
+        _ = symbol.ShouldNotBeNull();
+        _ = symbol.ShouldBeOfType<MethodDescriptor>();
         symbol.FullName.ShouldBe("testing.TestService.UnaryCall");
     }
 
@@ -178,14 +178,14 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
         var empty = await source.FindSymbolAsync("testing.TestService.EmptyCall", TestContext.Current.CancellationToken);
 
         // Assert
-        empty.ShouldNotBeNull();
-        empty.ShouldBeOfType<MethodDescriptor>();
+        _ = empty.ShouldNotBeNull();
+        _ = empty.ShouldBeOfType<MethodDescriptor>();
 
         // Act - Unary
         var unary = await source.FindSymbolAsync("testing.TestService.UnaryCall", TestContext.Current.CancellationToken);
 
         // Assert
-        unary.ShouldNotBeNull();
+        _ = unary.ShouldNotBeNull();
 
         var unaryMethod = (MethodDescriptor)unary;
 
@@ -196,7 +196,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
         var serverStreaming = await source.FindSymbolAsync("testing.TestService.StreamingOutputCall", TestContext.Current.CancellationToken);
 
         // Assert
-        serverStreaming.ShouldNotBeNull();
+        _ = serverStreaming.ShouldNotBeNull();
 
         var serverStreamingMethod = (MethodDescriptor)serverStreaming;
 
@@ -207,7 +207,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
         var clientStreaming = await source.FindSymbolAsync("testing.TestService.StreamingInputCall", TestContext.Current.CancellationToken);
 
         // Assert
-        clientStreaming.ShouldNotBeNull();
+        _ = clientStreaming.ShouldNotBeNull();
 
         var clientStreamingMethod = (MethodDescriptor)clientStreaming;
 
@@ -218,7 +218,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
         var bidi = await source.FindSymbolAsync("testing.TestService.FullDuplexCall", TestContext.Current.CancellationToken);
 
         // Assert
-        bidi.ShouldNotBeNull();
+        _ = bidi.ShouldNotBeNull();
 
         var bidiMethod = (MethodDescriptor)bidi;
 
@@ -242,8 +242,8 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
         var symbol = await source.FindSymbolAsync("testing.SimpleRequest", TestContext.Current.CancellationToken);
 
         // Assert
-        symbol.ShouldNotBeNull();
-        symbol.ShouldBeOfType<MessageDescriptor>();
+        _ = symbol.ShouldNotBeNull();
+        _ = symbol.ShouldBeOfType<MessageDescriptor>();
         symbol.FullName.ShouldBe("testing.SimpleRequest");
     }
 
@@ -269,8 +269,8 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
         {
             var symbol = await source.FindSymbolAsync(name, TestContext.Current.CancellationToken);
 
-            symbol.ShouldNotBeNull();
-            symbol.ShouldBeOfType<MessageDescriptor>();
+            _ = symbol.ShouldNotBeNull();
+            _ = symbol.ShouldBeOfType<MessageDescriptor>();
             symbol.FullName.ShouldBe(name);
         }
     }
@@ -291,8 +291,8 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
         var symbol = await source.FindSymbolAsync("testing.PayloadType", TestContext.Current.CancellationToken);
 
         // Assert
-        symbol.ShouldNotBeNull();
-        symbol.ShouldBeOfType<EnumDescriptor>();
+        _ = symbol.ShouldNotBeNull();
+        _ = symbol.ShouldBeOfType<EnumDescriptor>();
         symbol.FullName.ShouldBe("testing.PayloadType");
     }
 
@@ -312,8 +312,8 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
         var messageSymbol = await source.FindSymbolAsync("testing.SimpleRequest", TestContext.Current.CancellationToken);
 
         // Assert
-        messageSymbol.ShouldNotBeNull();
-        messageSymbol.ShouldBeOfType<MessageDescriptor>();
+        _ = messageSymbol.ShouldNotBeNull();
+        _ = messageSymbol.ShouldBeOfType<MessageDescriptor>();
 
         // Act - Access fields from the message descriptor
         var messageDescriptor = (MessageDescriptor)messageSymbol;
@@ -321,8 +321,8 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
         var responseSizeField = messageDescriptor.FindFieldByName("response_size");
 
         // Assert
-        responseTypeField.ShouldNotBeNull();
-        responseSizeField.ShouldNotBeNull();
+        _ = responseTypeField.ShouldNotBeNull();
+        _ = responseSizeField.ShouldNotBeNull();
         responseTypeField.FieldType.ShouldBe(FieldType.Enum);
         responseSizeField.FieldType.ShouldBe(FieldType.Int32);
     }
@@ -340,10 +340,10 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
         var source = new ReflectionSource(channel);
 
         // Act
-        await source.FindSymbolAsync("testing.TestService", TestContext.Current.CancellationToken);
+        _ = await source.FindSymbolAsync("testing.TestService", TestContext.Current.CancellationToken);
 
         // Assert
-        source.FileDescriptorSet.ShouldNotBeNull();
+        _ = source.FileDescriptorSet.ShouldNotBeNull();
         source.FileDescriptorSet.File.ShouldNotBeEmpty();
     }
 
@@ -365,7 +365,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
         {
             var result = await source.FindSymbolAsync("testing.TestService", TestContext.Current.CancellationToken);
 
-            result.ShouldNotBeNull();
+            _ = result.ShouldNotBeNull();
         }
     }
 
@@ -462,7 +462,7 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
 
         // Act
         // Assert
-        await Should.ThrowAsync<OperationCanceledException>(() =>
+        _ = await Should.ThrowAsync<OperationCanceledException>(() =>
             source.FindSymbolAsync("testing.TestService", cts.Token));
     }
 
@@ -478,8 +478,8 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
         var symbol = await source.FindSymbolAsync("testing.MapFieldsMessage", TestContext.Current.CancellationToken);
 
         // Assert
-        symbol.ShouldNotBeNull();
-        symbol.ShouldBeOfType<MessageDescriptor>();
+        _ = symbol.ShouldNotBeNull();
+        _ = symbol.ShouldBeOfType<MessageDescriptor>();
         symbol.FullName.ShouldBe("testing.MapFieldsMessage");
     }
 
@@ -495,8 +495,8 @@ public sealed class ReflectionSourceTests(GrpcTestFixture fixture)
         var symbol = await source.FindSymbolAsync("testing.OneofMessage", TestContext.Current.CancellationToken);
 
         // Assert
-        symbol.ShouldNotBeNull();
-        symbol.ShouldBeOfType<MessageDescriptor>();
+        _ = symbol.ShouldNotBeNull();
+        _ = symbol.ShouldBeOfType<MessageDescriptor>();
         symbol.FullName.ShouldBe("testing.OneofMessage");
     }
 

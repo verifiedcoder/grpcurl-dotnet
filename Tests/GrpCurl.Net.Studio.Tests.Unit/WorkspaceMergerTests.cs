@@ -30,7 +30,7 @@ public sealed class WorkspaceMergerTests
         summary.Connections.ShouldBe(["staging"]);
         summary.Environments.ShouldBe(["prod"]);
         summary.TotalAdded.ShouldBe(2);
-        current.Connections.ShouldHaveSingleItem(); // the source workspace is untouched
+        _ = current.Connections.ShouldHaveSingleItem(); // the source workspace is untouched
     }
 
     [Fact]

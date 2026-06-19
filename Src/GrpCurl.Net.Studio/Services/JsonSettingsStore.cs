@@ -1,6 +1,6 @@
-using System.Text.Json;
 using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Text.Json;
 
 namespace GrpCurl.Net.Studio.Services;
 
@@ -62,7 +62,7 @@ internal sealed class JsonSettingsStore : ISettingsStore
 
     public async Task SaveAsync(StudioSettings settings, CancellationToken cancellationToken = default)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
+        _ = Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
 
         var tempPath = _path + ".tmp";
 

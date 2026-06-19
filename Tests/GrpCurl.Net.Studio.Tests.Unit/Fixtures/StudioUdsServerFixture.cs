@@ -38,16 +38,16 @@ public sealed class StudioUdsServerFixture : IAsyncLifetime
         SocketPath = Path.Combine(Path.GetTempPath(), $"grpcn-uds-{Guid.NewGuid():N}.sock");
 
         var builder = WebApplication.CreateBuilder();
-        builder.Services.AddGrpc();
-        builder.Services.AddGrpcReflection();
-        builder.Logging.SetMinimumLevel(LogLevel.Warning);
+        _ = builder.Services.AddGrpc();
+        _ = builder.Services.AddGrpcReflection();
+        _ = builder.Logging.SetMinimumLevel(LogLevel.Warning);
 
-        builder.WebHost.ConfigureKestrel(options =>
+        _ = builder.WebHost.ConfigureKestrel(options =>
             options.ListenUnixSocket(SocketPath, listenOptions => listenOptions.Protocols = HttpProtocols.Http2));
 
         _app = builder.Build();
-        _app.MapGrpcService<TestServiceImpl>();
-        _app.MapGrpcReflectionService();
+        _ = _app.MapGrpcService<TestServiceImpl>();
+        _ = _app.MapGrpcReflectionService();
 
         await _app.StartAsync();
     }

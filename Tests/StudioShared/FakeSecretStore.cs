@@ -21,7 +21,7 @@ public sealed class FakeSecretStore : ISecretStore
 
     public Task DeleteAsync(string keyRef, CancellationToken cancellationToken = default)
     {
-        _values.Remove(keyRef);
+        _ = _values.Remove(keyRef);
         return Task.CompletedTask;
     }
 

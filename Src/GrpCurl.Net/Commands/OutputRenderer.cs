@@ -220,7 +220,7 @@ internal static class OutputRenderer
         {
             foreach (var f in oneof.Fields)
             {
-                oneofFieldSet.Add(f);
+                _ = oneofFieldSet.Add(f);
             }
         }
 

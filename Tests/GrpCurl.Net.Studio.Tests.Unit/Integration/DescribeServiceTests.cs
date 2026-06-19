@@ -1,9 +1,9 @@
-using System.Text.Json;
 using GrpCurl.Net.Studio.Services;
 using GrpCurl.Net.Studio.Tests.Unit.Fixtures;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Descriptors;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Text.Json;
 
 namespace GrpCurl.Net.Studio.Tests.Unit.Integration;
 
@@ -54,7 +54,7 @@ public sealed class DescribeServiceTests(StudioPlaintextServerFixture server)
         var message = (MessageDescription)await Describe("testing.StreamingOutputCallRequest");
 
         var responseType = message.Fields.Single(f => f.Name == "response_type");
-        responseType.Link.ShouldNotBeNull();
+        _ = responseType.Link.ShouldNotBeNull();
         responseType.Link!.FullName.ShouldBe("testing.PayloadType");
 
         var responseParams = message.Fields.Single(f => f.Name == "response_parameters");
@@ -106,7 +106,7 @@ public sealed class DescribeServiceTests(StudioPlaintextServerFixture server)
             PlaintextReflection(server.Address), "testing.NoSuchType", TestContext.Current.CancellationToken);
 
         result.Ok.ShouldBeFalse();
-        result.Error.ShouldNotBeNull();
+        _ = result.Error.ShouldNotBeNull();
     }
 
     [Fact]
@@ -132,7 +132,7 @@ public sealed class DescribeServiceTests(StudioPlaintextServerFixture server)
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(
+        _ = await Should.ThrowAsync<OperationCanceledException>(
             async () => await descriptors.DescribeAsync(PlaintextReflection(server.Address), "testing.TestService", cts.Token));
     }
 

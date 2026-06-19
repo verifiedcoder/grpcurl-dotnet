@@ -47,7 +47,7 @@ internal static partial class GrpcChannelFactory
         }
 
         // Ensure address has a scheme
-        if (!address.StartsWith("http://") && !address.StartsWith("https://"))
+        if (!address.StartsWith("http://", StringComparison.Ordinal) && !address.StartsWith("https://", StringComparison.Ordinal))
         {
             address = options.Plaintext ? $"http://{address}" : $"https://{address}";
         }
@@ -151,7 +151,7 @@ internal static partial class GrpcChannelFactory
                 using var chainPolicy = new X509Chain();
 
                 chainPolicy.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
-                chainPolicy.ChainPolicy.CustomTrustStore.Add(caCert);
+                _ = chainPolicy.ChainPolicy.CustomTrustStore.Add(caCert);
                 chainPolicy.ChainPolicy.RevocationMode = revocationMode;
 
                 using var x509Cert = X509CertificateLoader.LoadCertificate(certificate.GetRawCertData());

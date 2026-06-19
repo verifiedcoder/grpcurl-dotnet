@@ -76,7 +76,7 @@ internal static class TestCaseRunner
         }
 
         // The single request is sent implicitly when the call is issued, which closes the send side.
-        context.AllSent.TrySetResult();
+        _ = context.AllSent.TrySetResult();
 
         var result = new ClientResponseResult();
 
@@ -119,7 +119,7 @@ internal static class TestCaseRunner
             await Task.Delay((int)request.RequestDelayMs);
         }
 
-        context.AllSent.TrySetResult();
+        _ = context.AllSent.TrySetResult();
 
         var result = new ClientResponseResult();
         var afterNumResponses = AfterNumResponses(request);
@@ -211,7 +211,7 @@ internal static class TestCaseRunner
         finally
         {
             context.StreamDone = true;
-            context.ResponseGate.Release(1_000_000);
+            _ = context.ResponseGate.Release(1_000_000);
         }
 
         result.NumUnsentRequests = request.RequestMessages.Count - Volatile.Read(ref context.Sent);
@@ -246,7 +246,7 @@ internal static class TestCaseRunner
 
                         ResultBuilder.AddPayload(result.Payloads, msg.Message, method);
                         received++;
-                        context.ResponseGate.Release(); // unblock the next full-duplex send
+                        _ = context.ResponseGate.Release(); // unblock the next full-duplex send
                         if (!ShouldRecordResponse(received, afterNumResponses))
                         {
                             cts.Cancel();
@@ -271,7 +271,7 @@ internal static class TestCaseRunner
         finally
         {
             context.StreamDone = true;
-            context.ResponseGate.Release(1_000_000);
+            _ = context.ResponseGate.Release(1_000_000);
         }
 
         result.NumUnsentRequests = request.RequestMessages.Count - Volatile.Read(ref context.Sent);
@@ -300,7 +300,7 @@ internal static class TestCaseRunner
             yield return UnpackToDynamic(any, method.InputType);
 
             // Post-yield runs after the write was confirmed and the next message is pulled.
-            Interlocked.Increment(ref context.Sent);
+            _ = Interlocked.Increment(ref context.Sent);
 
             if (fullDuplex)
             {
@@ -316,7 +316,7 @@ internal static class TestCaseRunner
             await Task.Delay(Timeout.Infinite, cancellationToken);
         }
 
-        context.AllSent.TrySetResult();
+        _ = context.AllSent.TrySetResult();
     }
 
     // Reconstruct an RpcException carrying the captured trailers so the shared ResultBuilder decodes
@@ -493,11 +493,16 @@ internal static class TestCaseRunner
     }
 
     /// <summary>Streaming bookkeeping shared by the request source and the response consumer.</summary>
-    private sealed class StreamContext
+    private sealed class StreamContext : IDisposable
     {
         public readonly TaskCompletionSource AllSent = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public readonly SemaphoreSlim ResponseGate = new(0);
         public volatile bool StreamDone;
         public int Sent;
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

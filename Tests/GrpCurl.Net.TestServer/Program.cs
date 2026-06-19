@@ -1,7 +1,7 @@
-using System.Security.Cryptography.X509Certificates;
 using GrpCurl.Net.TestServer.Services;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
+using System.Security.Cryptography.X509Certificates;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,12 +18,12 @@ if (useTls)
     var serverCert = LoadServerCertificate(certPath, keyPath, tlsCertPassword);
     var trustedClientCa = LoadTrustedClientCa(clientCaPath, requireClientCert);
 
-    builder.WebHost.ConfigureKestrel(options =>
+    _ = builder.WebHost.ConfigureKestrel(options =>
     {
         options.ListenLocalhost(port, listenOptions =>
         {
             listenOptions.Protocols = HttpProtocols.Http2;
-            listenOptions.UseHttps(httpsOptions =>
+            _ = listenOptions.UseHttps(httpsOptions =>
             {
                 httpsOptions.ServerCertificate = serverCert;
 
@@ -40,7 +40,7 @@ if (useTls)
 }
 else
 {
-    builder.WebHost.ConfigureKestrel(options =>
+    _ = builder.WebHost.ConfigureKestrel(options =>
     {
         options.ListenLocalhost(port, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
     });
@@ -129,7 +129,7 @@ static bool ValidateClientCertificate(
     using var validationChain = new X509Chain();
 
     validationChain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
-    validationChain.ChainPolicy.CustomTrustStore.Add(trustedCa);
+    _ = validationChain.ChainPolicy.CustomTrustStore.Add(trustedCa);
     validationChain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
     validationChain.ChainPolicy.VerificationFlags = X509VerificationFlags.NoFlag;
 

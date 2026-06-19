@@ -21,7 +21,7 @@ internal static class ProtoFileEmitter
     {
         var outputRoot = Path.GetFullPath(outputDirectory);
 
-        Directory.CreateDirectory(outputRoot);
+        _ = Directory.CreateDirectory(outputRoot);
 
         var emittedFiles = new HashSet<string>(StringComparer.Ordinal);
 
@@ -61,7 +61,7 @@ internal static class ProtoFileEmitter
 
         if (!string.IsNullOrEmpty(targetDir))
         {
-            Directory.CreateDirectory(targetDir);
+            _ = Directory.CreateDirectory(targetDir);
         }
 
         if (!force && File.Exists(targetPath))
@@ -136,43 +136,43 @@ internal static class ProtoFileEmitter
         // Edition / syntax pragma: stick with the legacy 'syntax' keyword that grpcurl
         // and most consumers expect. FileDescriptor.Syntax is marked obsolete in newer
         // Google.Protobuf but it's still the most reliable signal of proto2 vs proto3.
-        #pragma warning disable CS0618
-        sb.Append("syntax = \"").Append(file.Syntax.ToString().ToLowerInvariant()).AppendLine("\";");
-        #pragma warning restore CS0618
-        sb.AppendLine();
+#pragma warning disable CS0618
+        _ = sb.Append("syntax = \"").Append(file.Syntax.ToString().ToLowerInvariant()).AppendLine("\";");
+#pragma warning restore CS0618
+        _ = sb.AppendLine();
 
         if (!string.IsNullOrEmpty(file.Package))
         {
-            sb.Append("package ").Append(file.Package).AppendLine(";");
-            sb.AppendLine();
+            _ = sb.Append("package ").Append(file.Package).AppendLine(";");
+            _ = sb.AppendLine();
         }
 
         foreach (var dep in file.Dependencies)
         {
-            sb.Append("import \"").Append(dep.Name).AppendLine("\";");
+            _ = sb.Append("import \"").Append(dep.Name).AppendLine("\";");
         }
 
         if (file.Dependencies.Count > 0)
         {
-            sb.AppendLine();
+            _ = sb.AppendLine();
         }
 
         foreach (var enm in file.EnumTypes)
         {
             EmitEnum(enm, sb, 0);
-            sb.AppendLine();
+            _ = sb.AppendLine();
         }
 
         foreach (var msg in file.MessageTypes)
         {
             EmitMessage(msg, sb, 0);
-            sb.AppendLine();
+            _ = sb.AppendLine();
         }
 
         foreach (var svc in file.Services)
         {
             EmitService(svc, sb);
-            sb.AppendLine();
+            _ = sb.AppendLine();
         }
 
         return sb.ToString();
@@ -182,7 +182,7 @@ internal static class ProtoFileEmitter
     {
         var pad = new string(' ', indent * 2);
 
-        sb.Append(pad).Append("message ").Append(msg.Name).AppendLine(" {");
+        _ = sb.Append(pad).Append("message ").Append(msg.Name).AppendLine(" {");
 
         var oneofFields = new HashSet<FieldDescriptor>();
 
@@ -190,7 +190,7 @@ internal static class ProtoFileEmitter
         {
             foreach (var f in oneof.Fields)
             {
-                oneofFields.Add(f);
+                _ = oneofFields.Add(f);
             }
         }
 
@@ -207,17 +207,17 @@ internal static class ProtoFileEmitter
                     continue;
                 }
 
-                sb.Append(pad).Append("  oneof ").Append(oneof.Name).AppendLine(" {");
+                _ = sb.Append(pad).Append("  oneof ").Append(oneof.Name).AppendLine(" {");
 
                 foreach (var oneofField in oneof.Fields)
                 {
-                    sb.Append(pad).Append("    ")
+                    _ = sb.Append(pad).Append("    ")
                       .Append(FormatType(oneofField)).Append(' ')
                       .Append(oneofField.Name).Append(" = ")
                       .Append(oneofField.FieldNumber).AppendLine(";");
                 }
 
-                sb.Append(pad).AppendLine("  }");
+                _ = sb.Append(pad).AppendLine("  }");
             }
             else
             {
@@ -225,7 +225,7 @@ internal static class ProtoFileEmitter
                     ? "repeated "
                     : "";
 
-                sb.Append(pad).Append("  ").Append(label)
+                _ = sb.Append(pad).Append("  ").Append(label)
                   .Append(FormatType(field)).Append(' ')
                   .Append(field.Name).Append(" = ")
                   .Append(field.FieldNumber).AppendLine(";");
@@ -247,39 +247,39 @@ internal static class ProtoFileEmitter
             EmitMessage(nestedMsg, sb, indent + 1);
         }
 
-        sb.Append(pad).AppendLine("}");
+        _ = sb.Append(pad).AppendLine("}");
     }
 
     private static void EmitEnum(EnumDescriptor enm, StringBuilder sb, int indent)
     {
         var pad = new string(' ', indent * 2);
 
-        sb.Append(pad).Append("enum ").Append(enm.Name).AppendLine(" {");
+        _ = sb.Append(pad).Append("enum ").Append(enm.Name).AppendLine(" {");
 
         foreach (var value in enm.Values)
         {
-            sb.Append(pad).Append("  ").Append(value.Name).Append(" = ").Append(value.Number).AppendLine(";");
+            _ = sb.Append(pad).Append("  ").Append(value.Name).Append(" = ").Append(value.Number).AppendLine(";");
         }
 
-        sb.Append(pad).AppendLine("}");
+        _ = sb.Append(pad).AppendLine("}");
     }
 
     private static void EmitService(ServiceDescriptor svc, StringBuilder sb)
     {
-        sb.Append("service ").Append(svc.Name).AppendLine(" {");
+        _ = sb.Append("service ").Append(svc.Name).AppendLine(" {");
 
         foreach (var method in svc.Methods)
         {
             var requestStream = method.IsClientStreaming ? "stream " : "";
             var responseStream = method.IsServerStreaming ? "stream " : "";
 
-            sb.Append("  rpc ").Append(method.Name)
+            _ = sb.Append("  rpc ").Append(method.Name)
               .Append(" (").Append(requestStream).Append('.').Append(method.InputType.FullName).Append(')')
               .Append(" returns ")
               .Append('(').Append(responseStream).Append('.').Append(method.OutputType.FullName).AppendLine(");");
         }
 
-        sb.AppendLine("}");
+        _ = sb.AppendLine("}");
     }
 
     private static string FormatType(FieldDescriptor field)

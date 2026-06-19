@@ -1,7 +1,7 @@
-using System.Collections.ObjectModel;
-using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GrpCurl.Net.Studio.ViewModels.Models.Descriptors;
+using System.Collections.ObjectModel;
+using System.Windows.Input;
 
 namespace GrpCurl.Net.Studio.ViewModels.Explorer;
 

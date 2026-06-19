@@ -197,7 +197,7 @@ public sealed class SessionRestoreTests
 
         await docs.RestoreSessionOnStartupAsync(TestContext.Current.CancellationToken);
 
-        docs.Documents.ShouldHaveSingleItem();
+        _ = docs.Documents.ShouldHaveSingleItem();
     }
 
     [Fact]
@@ -227,7 +227,7 @@ public sealed class SessionRestoreTests
         docs.OpenDescribe(connection, "pkg.Svc");
         await docs.FlushSessionAsync(TestContext.Current.CancellationToken);
 
-        session.LastSaved.ShouldNotBeNull();
+        _ = session.LastSaved.ShouldNotBeNull();
         session.LastSaved!.WorkspaceId.ShouldBe("ws-1");
         session.LastSaved.Tabs.ShouldHaveSingleItem().Symbol.ShouldBe("pkg.Svc");
     }

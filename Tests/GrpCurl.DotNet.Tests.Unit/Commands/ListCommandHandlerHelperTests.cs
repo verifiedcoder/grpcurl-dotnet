@@ -118,7 +118,7 @@ public sealed class ListCommandHandlerHelperTests
                 verbose: false,
                 cancellationToken: TestContext.Current.CancellationToken));
 
-        exception.ShouldNotBeNull();
+        _ = exception.ShouldNotBeNull();
     }
 
     #endregion

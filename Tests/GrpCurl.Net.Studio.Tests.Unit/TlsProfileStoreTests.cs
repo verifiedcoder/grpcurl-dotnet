@@ -44,7 +44,7 @@ public sealed class TlsProfileStoreTests
         await store.SaveAsync(new TlsProfile { Name = "p" }, TestContext.Current.CancellationToken);
 
         workspace.Current.Connections.ShouldHaveSingleItem().Name.ShouldBe("conn");
-        workspace.Current.TlsProfiles.ShouldHaveSingleItem();
+        _ = workspace.Current.TlsProfiles.ShouldHaveSingleItem();
     }
 
     [Fact]
@@ -84,7 +84,7 @@ public sealed class TlsProfileStoreTests
 
         await store.DeleteAsync("missing", TestContext.Current.CancellationToken);
 
-        store.Profiles.ShouldHaveSingleItem();
+        _ = store.Profiles.ShouldHaveSingleItem();
     }
 
     [Fact]

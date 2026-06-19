@@ -12,7 +12,7 @@ public sealed class FileDiagnosticsLogTests : IDisposable
 {
     private readonly string _dir = Path.Combine(Path.GetTempPath(), "grpcn-diag-" + Guid.NewGuid().ToString("N"));
 
-    private CancellationToken Ct => TestContext.Current.CancellationToken;
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     public FileDiagnosticsLogTests() => Directory.CreateDirectory(_dir);
 

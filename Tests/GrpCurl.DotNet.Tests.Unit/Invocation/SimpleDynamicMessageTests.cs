@@ -19,7 +19,7 @@ public sealed class SimpleDynamicMessageTests
         var message = new SimpleDynamicMessage(descriptor);
 
         // Assert
-        message.ShouldNotBeNull();
+        _ = message.ShouldNotBeNull();
         message.Descriptor.ShouldBe(descriptor);
         message.Fields.ShouldBeEmpty();
         message.RepeatedFields.ShouldBeEmpty();
@@ -36,7 +36,7 @@ public sealed class SimpleDynamicMessageTests
         var message = new SimpleDynamicMessage(descriptor, null);
 
         // Assert
-        message.ShouldNotBeNull();
+        _ = message.ShouldNotBeNull();
         message.Fields.ShouldBeEmpty();
     }
 
@@ -50,7 +50,7 @@ public sealed class SimpleDynamicMessageTests
         var message = new SimpleDynamicMessage(descriptor, "{}");
 
         // Assert
-        message.ShouldNotBeNull();
+        _ = message.ShouldNotBeNull();
         message.Fields.ShouldBeEmpty();
     }
 
@@ -72,7 +72,7 @@ public sealed class SimpleDynamicMessageTests
         // Assert
         var field = descriptor.FindFieldByName("response_size");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.Fields.ContainsKey(field).ShouldBeTrue();
         message.Fields[field].ShouldBe(42);
@@ -92,7 +92,7 @@ public sealed class SimpleDynamicMessageTests
         // Assert
         var field = descriptor.FindFieldByName("fill_username");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.Fields.ContainsKey(field).ShouldBeTrue();
         message.Fields[field].ShouldBe(true);
@@ -112,7 +112,7 @@ public sealed class SimpleDynamicMessageTests
         // Assert
         var field = descriptor.FindFieldByName("fill_username");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.Fields.ContainsKey(field).ShouldBeTrue();
         message.Fields[field].ShouldBe(false);
@@ -136,7 +136,7 @@ public sealed class SimpleDynamicMessageTests
         // Assert
         var field = descriptor.FindFieldByName("response_type");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.Fields.ContainsKey(field).ShouldBeTrue();
         message.Fields[field].ShouldBe(0); // COMPRESSABLE = 0
@@ -156,7 +156,7 @@ public sealed class SimpleDynamicMessageTests
         // Assert
         var field = descriptor.FindFieldByName("response_type");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.Fields.ContainsKey(field).ShouldBeTrue();
         message.Fields[field].ShouldBe(1); // UNCOMPRESSABLE = 1
@@ -195,14 +195,14 @@ public sealed class SimpleDynamicMessageTests
         // Assert
         var payloadField = descriptor.FindFieldByName("payload");
 
-        payloadField.ShouldNotBeNull();
+        _ = payloadField.ShouldNotBeNull();
 
         message.Fields.ContainsKey(payloadField).ShouldBeTrue();
 
         var nestedMessage = message.Fields[payloadField].ShouldBeOfType<SimpleDynamicMessage>();
         var typeField = nestedMessage.Descriptor.FindFieldByName("type");
 
-        typeField.ShouldNotBeNull();
+        _ = typeField.ShouldNotBeNull();
 
         nestedMessage.Fields[typeField].ShouldBe(0); // COMPRESSABLE = 0
     }
@@ -221,7 +221,7 @@ public sealed class SimpleDynamicMessageTests
         // Assert
         var payloadField = descriptor.FindFieldByName("payload");
 
-        payloadField.ShouldNotBeNull();
+        _ = payloadField.ShouldNotBeNull();
 
         message.Fields.ContainsKey(payloadField).ShouldBeTrue();
         message.Fields[payloadField].ShouldBeNull();
@@ -245,7 +245,7 @@ public sealed class SimpleDynamicMessageTests
         // Assert
         var field = descriptor.FindFieldByName("response_parameters");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.RepeatedFields.ContainsKey(field).ShouldBeTrue();
         message.RepeatedFields[field].ShouldBeEmpty();
@@ -265,14 +265,14 @@ public sealed class SimpleDynamicMessageTests
         // Assert
         var field = descriptor.FindFieldByName("response_parameters");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.RepeatedFields.ContainsKey(field).ShouldBeTrue();
-        message.RepeatedFields[field].ShouldHaveSingleItem();
+        _ = message.RepeatedFields[field].ShouldHaveSingleItem();
 
         var nestedMessage = message.RepeatedFields[field][0].ShouldBeOfType<SimpleDynamicMessage>();
 
-        nestedMessage.ShouldNotBeNull();
+        _ = nestedMessage.ShouldNotBeNull();
     }
 
     [Fact]
@@ -289,7 +289,7 @@ public sealed class SimpleDynamicMessageTests
         // Assert
         var field = descriptor.FindFieldByName("response_parameters");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.RepeatedFields.ContainsKey(field).ShouldBeTrue();
         message.RepeatedFields[field].Count.ShouldBe(3);
@@ -326,7 +326,7 @@ public sealed class SimpleDynamicMessageTests
         var message = new SimpleDynamicMessage(descriptor, json, allowUnknownFields: true);
 
         // Assert
-        message.UnknownFields.ShouldHaveSingleItem();
+        _ = message.UnknownFields.ShouldHaveSingleItem();
         message.UnknownFields.ShouldContain("unknownField");
     }
 
@@ -495,7 +495,7 @@ public sealed class SimpleDynamicMessageTests
         // Assert
         var field = descriptor.FindFieldByName("response_size");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         parsedMessage.Fields.ContainsKey(field).ShouldBeTrue();
         parsedMessage.Fields[field].ShouldBe(42);
@@ -528,13 +528,13 @@ public sealed class SimpleDynamicMessageTests
         // Assert
         var payloadField = descriptor.FindFieldByName("payload");
 
-        payloadField.ShouldNotBeNull();
+        _ = payloadField.ShouldNotBeNull();
         parsedMessage.Fields.ContainsKey(payloadField).ShouldBeTrue();
 
         var nestedMessage = parsedMessage.Fields[payloadField].ShouldBeOfType<SimpleDynamicMessage>();
         var typeField = nestedMessage.Descriptor.FindFieldByName("type");
 
-        typeField.ShouldNotBeNull();
+        _ = typeField.ShouldNotBeNull();
 
         nestedMessage.Fields[typeField].ShouldBe(1); // UNCOMPRESSABLE = 1
     }
@@ -566,7 +566,7 @@ public sealed class SimpleDynamicMessageTests
         // Assert
         var field = descriptor.FindFieldByName("response_parameters");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         parsedMessage.RepeatedFields.ContainsKey(field).ShouldBeTrue();
         parsedMessage.RepeatedFields[field].Count.ShouldBe(3);
@@ -590,7 +590,7 @@ public sealed class SimpleDynamicMessageTests
         // Assert
         var field = descriptor.FindFieldByName("body");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.Fields.ContainsKey(field).ShouldBeTrue();
 
@@ -613,7 +613,7 @@ public sealed class SimpleDynamicMessageTests
         // Assert
         var field = descriptor.FindFieldByName("body");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.Fields.ContainsKey(field).ShouldBeTrue();
 
@@ -712,7 +712,7 @@ public sealed class SimpleDynamicMessageTests
         // Assert
         var field = descriptor.FindFieldByName("fill_username");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.Fields.ContainsKey(field).ShouldBeTrue();
     }
@@ -731,7 +731,7 @@ public sealed class SimpleDynamicMessageTests
         // Assert
         var field = descriptor.FindFieldByName("fill_username");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.Fields.ContainsKey(field).ShouldBeTrue();
     }
@@ -750,7 +750,7 @@ public sealed class SimpleDynamicMessageTests
         // Assert
         var field = descriptor.FindFieldByName("fill_username");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.Fields.ContainsKey(field).ShouldBeTrue();
     }
@@ -769,7 +769,7 @@ public sealed class SimpleDynamicMessageTests
 
         // Act
         // Assert
-        Should.Throw<System.Text.Json.JsonException>(() => new SimpleDynamicMessage(descriptor, json));
+        _ = Should.Throw<System.Text.Json.JsonException>(() => new SimpleDynamicMessage(descriptor, json));
     }
 
     [Fact]
@@ -782,7 +782,7 @@ public sealed class SimpleDynamicMessageTests
 
         // Act
         // Assert
-        Should.Throw<InvalidOperationException>(() => new SimpleDynamicMessage(descriptor, json));
+        _ = Should.Throw<InvalidOperationException>(() => new SimpleDynamicMessage(descriptor, json));
     }
 
     #endregion
@@ -1132,7 +1132,7 @@ public sealed class SimpleDynamicMessageTests
 
         // Assert
         message.Fields[descriptor.FindFieldByName("double_val")!].ShouldBe(3.14);
-        message.Fields[descriptor.FindFieldByName("float_val")!].ShouldBeOfType<float>();
+        _ = message.Fields[descriptor.FindFieldByName("float_val")!].ShouldBeOfType<float>();
         message.Fields[descriptor.FindFieldByName("int32_val")!].ShouldBe(42);
         message.Fields[descriptor.FindFieldByName("int64_val")!].ShouldBe(123456789L);
         message.Fields[descriptor.FindFieldByName("uint32_val")!].ShouldBe(100u);
@@ -1145,7 +1145,7 @@ public sealed class SimpleDynamicMessageTests
         message.Fields[descriptor.FindFieldByName("sfixed64_val")!].ShouldBe(-444L);
         message.Fields[descriptor.FindFieldByName("bool_val")!].ShouldBe(true);
         message.Fields[descriptor.FindFieldByName("string_val")!].ShouldBe("hello scalars");
-        message.Fields[descriptor.FindFieldByName("bytes_val")!].ShouldBeOfType<ByteString>();
+        _ = message.Fields[descriptor.FindFieldByName("bytes_val")!].ShouldBeOfType<ByteString>();
     }
 
     [Fact]
@@ -1296,7 +1296,7 @@ public sealed class SimpleDynamicMessageTests
         // Assert
         var field = descriptor.FindFieldByName("float_val");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.Fields.ContainsKey(field).ShouldBeTrue();
 
@@ -1319,7 +1319,7 @@ public sealed class SimpleDynamicMessageTests
         // Assert
         var field = descriptor.FindFieldByName("float_val");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.Fields.ContainsKey(field).ShouldBeTrue();
 
@@ -1342,7 +1342,7 @@ public sealed class SimpleDynamicMessageTests
         // Assert
         var field = descriptor.FindFieldByName("float_val");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.Fields.ContainsKey(field).ShouldBeTrue();
 
@@ -1369,7 +1369,7 @@ public sealed class SimpleDynamicMessageTests
         // Assert
         var field = descriptor.FindFieldByName("int64_val");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.Fields.ContainsKey(field).ShouldBeTrue();
         message.Fields[field].ShouldBe(long.MaxValue);
@@ -1389,7 +1389,7 @@ public sealed class SimpleDynamicMessageTests
         // Assert
         var field = descriptor.FindFieldByName("uint64_val");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.Fields.ContainsKey(field).ShouldBeTrue();
         message.Fields[field].ShouldBe(ulong.MaxValue);
@@ -1592,7 +1592,7 @@ public sealed class SimpleDynamicMessageTests
         var json = message.ToJson();
 
         // Assert - must round-trip through a strict JSON parser
-        Should.NotThrow(() => System.Text.Json.JsonDocument.Parse(json));
+        _ = Should.NotThrow(() => System.Text.Json.JsonDocument.Parse(json));
     }
 
     [Fact]

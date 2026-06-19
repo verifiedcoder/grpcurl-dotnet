@@ -1,6 +1,3 @@
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using Grpc.Core;
@@ -9,6 +6,9 @@ using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Services;
 using GrpCurl.Net.Utilities;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 namespace GrpCurl.Net.Studio.Services;
 
@@ -222,7 +222,7 @@ internal sealed partial class InvocationRunner(IInvocationService invocation, IT
         _ => new StreamEventModel(StreamEventKind.Warning, -1, ev.WallClock, ev.ElapsedMs, "unknown event")
     };
 
-    private StreamEventModel StatusRow(StatusReceived st, ErrorContext ctx)
+    private static StreamEventModel StatusRow(StatusReceived st, ErrorContext ctx)
     {
         var ok = st.Status.Code == 0;
         var status = new InvocationStatusModel(st.Status.Code, st.Status.CodeName, st.Status.Detail);

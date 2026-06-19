@@ -20,7 +20,7 @@ public sealed class InvocationResultTests
         };
 
         // Assert
-        result.Response.ShouldNotBeNull();
+        _ = result.Response.ShouldNotBeNull();
         result.Response.ShouldBeSameAs(message);
     }
 
@@ -43,7 +43,7 @@ public sealed class InvocationResultTests
         };
 
         // Assert
-        result.ResponseHeaders.ShouldNotBeNull();
+        _ = result.ResponseHeaders.ShouldNotBeNull();
         result.ResponseHeaders.Count.ShouldBe(1);
     }
 
@@ -66,7 +66,7 @@ public sealed class InvocationResultTests
         };
 
         // Assert
-        result.ResponseTrailers.ShouldNotBeNull();
+        _ = result.ResponseTrailers.ShouldNotBeNull();
         result.ResponseTrailers.Count.ShouldBe(1);
     }
 

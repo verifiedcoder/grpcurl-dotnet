@@ -282,7 +282,7 @@ public sealed class InvocationDocumentViewModelTests
         await doc.InvokeCommand.ExecuteAsync(null);
 
         doc.HasError.ShouldBeTrue();
-        doc.Error.ShouldNotBeNull();
+        _ = doc.Error.ShouldNotBeNull();
         doc.Error!.Headline.ShouldBe("missing");
         doc.HasErrorSuggestions.ShouldBeTrue();
         doc.HasErrorDetails.ShouldBeTrue();
@@ -436,7 +436,7 @@ public sealed class InvocationDocumentViewModelTests
 
         await doc.CopyAsCliCommand.ExecuteAsync(null);
 
-        clipboard.Text.ShouldNotBeNull();
+        _ = clipboard.Text.ShouldNotBeNull();
         clipboard.Text!.ShouldStartWith("grpcn invoke");
         clipboard.Text.ShouldContain("pkg.Svc/Go");
         clipboard.Text.ShouldContain("--max-time 5s");
@@ -512,7 +512,7 @@ public sealed class InvocationDocumentViewModelTests
         var doc = CreateStreaming(StreamingShape.ClientStreaming, out _);
 
         doc.HasComposer.ShouldBeTrue();
-        doc.Composer.ShouldNotBeNull();
+        _ = doc.Composer.ShouldNotBeNull();
     }
 
     [Fact]

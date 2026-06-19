@@ -1,5 +1,3 @@
-using System.Collections.Specialized;
-using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.Studio.ViewModels.Connections;
@@ -9,6 +7,7 @@ using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.History;
 using GrpCurl.Net.Studio.ViewModels.Panes;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Collections.Specialized;
 
 namespace GrpCurl.Net.Studio.ViewModels;
 
@@ -155,7 +154,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     }
 
     /// <summary>FR-148: the message shown in the read-only banner.</summary>
-    public string ReadOnlyBannerText
+    public static string ReadOnlyBannerText
         => "This workspace file is read-only. Changes won't be saved automatically — use File → Save As to keep them.";
 
     /// <summary>
@@ -502,7 +501,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        _workspaceStore.NewWorkspace(withStarterConnection);
+        _ = _workspaceStore.NewWorkspace(withStarterConnection);
         OnWorkspaceSwitched();
     }
 
@@ -772,7 +771,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     {
         try
         {
-            await _workspaceStore!.OpenAsync(path);
+            _ = await _workspaceStore!.OpenAsync(path);
             OnWorkspaceSwitched();
         }
         catch (WorkspaceSchemaException ex)

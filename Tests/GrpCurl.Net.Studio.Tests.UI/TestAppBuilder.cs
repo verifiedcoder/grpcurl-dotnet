@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Headless;
-using GrpCurl.Net.Studio;
 
 namespace GrpCurl.Net.Studio.Tests.UI;
 

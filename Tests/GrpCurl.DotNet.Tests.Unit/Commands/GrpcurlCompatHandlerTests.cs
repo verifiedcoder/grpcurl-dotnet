@@ -46,7 +46,7 @@ public sealed class GrpcurlCompatHandlerTests
         var rewritten = GrpcurlCompatHandler.TryRewrite(["-plaintext", "localhost:9090"]);
 
         // Assert
-        rewritten.ShouldNotBeNull();
+        _ = rewritten.ShouldNotBeNull();
         rewritten[0].ShouldBe("list");
         rewritten.ShouldContain("--plaintext");
         rewritten.ShouldContain("localhost:9090");
@@ -65,7 +65,7 @@ public sealed class GrpcurlCompatHandlerTests
         ]);
 
         // Assert
-        rewritten.ShouldNotBeNull();
+        _ = rewritten.ShouldNotBeNull();
         rewritten[0].ShouldBe("describe");
         rewritten.ShouldContain("my.pkg.Service");
     }
@@ -85,7 +85,7 @@ public sealed class GrpcurlCompatHandlerTests
         ]);
 
         // Assert
-        rewritten.ShouldNotBeNull();
+        _ = rewritten.ShouldNotBeNull();
         rewritten![0].ShouldBe("invoke");
         rewritten.ShouldContain("--plaintext");
         rewritten.ShouldContain("--data");
@@ -107,7 +107,7 @@ public sealed class GrpcurlCompatHandlerTests
         ]);
 
         // Assert
-        rewritten.ShouldNotBeNull();
+        _ = rewritten.ShouldNotBeNull();
         rewritten.ShouldContain("--max-time");
         rewritten.ShouldContain("30s");
     }
@@ -127,7 +127,7 @@ public sealed class GrpcurlCompatHandlerTests
         ]);
 
         // Assert
-        rewritten.ShouldNotBeNull();
+        _ = rewritten.ShouldNotBeNull();
         rewritten.ShouldContain("--import-path");
         rewritten.ShouldContain("./protos");
         rewritten.ShouldContain("--proto");

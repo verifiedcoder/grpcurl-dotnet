@@ -1,8 +1,8 @@
-using System.Text.Json.Nodes;
 using Gql2Grpc.Configuration;
 using Gql2Grpc.GraphQL;
 using Gql2Grpc.Translation;
 using GrpCurl.Net.TestServer.Protos;
+using System.Text.Json.Nodes;
 
 namespace Gql2Grpc.Tests.Unit.Translation;
 
@@ -265,7 +265,7 @@ public sealed class JsonRequestTranslatorTests
             []);
 
         // Act / Assert
-        Should.Throw<UnknownArgumentException>(() =>
+        _ = Should.Throw<UnknownArgumentException>(() =>
             _translator.Translate(selection, entry, defaults, NestedTypesMessage.Descriptor));
     }
 

@@ -45,6 +45,6 @@ public sealed class PanesUiTests(HeadlessSessionFixture fixture) : HeadlessTestB
         // Selecting the row routes its breakdown to the inspector (FR-114).
         list.SelectedItem = console.Calls[0];
         Dispatcher.UIThread.RunJobs();
-        inspector.Content.ShouldBeOfType<CallTimingContent>();
+        _ = inspector.Content.ShouldBeOfType<CallTimingContent>();
     });
 }

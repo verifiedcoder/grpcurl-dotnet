@@ -32,8 +32,8 @@ public sealed class ProtosetSourceTests
         var source = await ProtosetSource.LoadFromFileAsync(_testProtosetPath, TestContext.Current.CancellationToken);
 
         // Assert
-        source.ShouldNotBeNull();
-        source.FileDescriptorSet.ShouldNotBeNull();
+        _ = source.ShouldNotBeNull();
+        _ = source.FileDescriptorSet.ShouldNotBeNull();
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public sealed class ProtosetSourceTests
 
         // Act
         // Assert
-        await Should.ThrowAsync<FileNotFoundException>(() =>
+        _ = await Should.ThrowAsync<FileNotFoundException>(() =>
             ProtosetSource.LoadFromFileAsync(nonExistentPath, TestContext.Current.CancellationToken));
     }
 
@@ -59,7 +59,7 @@ public sealed class ProtosetSourceTests
 
         // Act
         // Assert
-        await Should.ThrowAsync<Exception>(() =>
+        _ = await Should.ThrowAsync<Exception>(() =>
             ProtosetSource.LoadFromFileAsync(_invalidProtosetPath, TestContext.Current.CancellationToken));
     }
 
@@ -72,7 +72,7 @@ public sealed class ProtosetSourceTests
         var source = await ProtosetSource.LoadFromFileAsync(_emptyProtosetPath, TestContext.Current.CancellationToken);
 
         // Assert
-        source.ShouldNotBeNull();
+        _ = source.ShouldNotBeNull();
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public sealed class ProtosetSourceTests
 
         // Act
         // Assert
-        await Should.ThrowAsync<TaskCanceledException>(() =>
+        _ = await Should.ThrowAsync<TaskCanceledException>(() =>
             ProtosetSource.LoadFromFileAsync(_testProtosetPath, cts.Token));
     }
 
@@ -169,7 +169,7 @@ public sealed class ProtosetSourceTests
         var source = await ProtosetSource.LoadFromFilesAsync(paths, TestContext.Current.CancellationToken);
 
         // Assert
-        source.ShouldNotBeNull();
+        _ = source.ShouldNotBeNull();
 
         var services = await source.ListServicesAsync(TestContext.Current.CancellationToken);
 
@@ -186,7 +186,7 @@ public sealed class ProtosetSourceTests
         var source = await ProtosetSource.LoadFromFilesAsync(emptyPaths, TestContext.Current.CancellationToken);
 
         // Assert
-        source.ShouldNotBeNull();
+        _ = source.ShouldNotBeNull();
 
         var services = await source.ListServicesAsync(TestContext.Current.CancellationToken);
 
@@ -203,7 +203,7 @@ public sealed class ProtosetSourceTests
         var source = await ProtosetSource.LoadFromFilesAsync(paths, TestContext.Current.CancellationToken);
 
         // Assert
-        source.ShouldNotBeNull();
+        _ = source.ShouldNotBeNull();
 
         var services = await source.ListServicesAsync(TestContext.Current.CancellationToken);
 
@@ -285,8 +285,8 @@ public sealed class ProtosetSourceTests
         var symbol = await source.FindSymbolAsync("testing.TestService", TestContext.Current.CancellationToken);
 
         // Assert
-        symbol.ShouldNotBeNull();
-        symbol.ShouldBeOfType<ServiceDescriptor>();
+        _ = symbol.ShouldNotBeNull();
+        _ = symbol.ShouldBeOfType<ServiceDescriptor>();
         symbol.FullName.ShouldBe("testing.TestService");
     }
 
@@ -317,8 +317,8 @@ public sealed class ProtosetSourceTests
         var symbol = await source.FindSymbolAsync("testing.TestService.UnaryCall", TestContext.Current.CancellationToken);
 
         // Assert
-        symbol.ShouldNotBeNull();
-        symbol.ShouldBeOfType<MethodDescriptor>();
+        _ = symbol.ShouldNotBeNull();
+        _ = symbol.ShouldBeOfType<MethodDescriptor>();
         symbol.FullName.ShouldBe("testing.TestService.UnaryCall");
     }
 
@@ -335,17 +335,17 @@ public sealed class ProtosetSourceTests
         var bidi = await source.FindSymbolAsync("testing.TestService.FullDuplexCall", TestContext.Current.CancellationToken);
 
         // Assert
-        unary.ShouldNotBeNull();
-        unary.ShouldBeOfType<MethodDescriptor>();
+        _ = unary.ShouldNotBeNull();
+        _ = unary.ShouldBeOfType<MethodDescriptor>();
 
-        serverStreaming.ShouldNotBeNull();
-        serverStreaming.ShouldBeOfType<MethodDescriptor>();
+        _ = serverStreaming.ShouldNotBeNull();
+        _ = serverStreaming.ShouldBeOfType<MethodDescriptor>();
 
-        clientStreaming.ShouldNotBeNull();
-        clientStreaming.ShouldBeOfType<MethodDescriptor>();
+        _ = clientStreaming.ShouldNotBeNull();
+        _ = clientStreaming.ShouldBeOfType<MethodDescriptor>();
 
-        bidi.ShouldNotBeNull();
-        bidi.ShouldBeOfType<MethodDescriptor>();
+        _ = bidi.ShouldNotBeNull();
+        _ = bidi.ShouldBeOfType<MethodDescriptor>();
     }
 
     #endregion
@@ -362,8 +362,8 @@ public sealed class ProtosetSourceTests
         var symbol = await source.FindSymbolAsync("testing.SimpleRequest", TestContext.Current.CancellationToken);
 
         // Assert
-        symbol.ShouldNotBeNull();
-        symbol.ShouldBeOfType<MessageDescriptor>();
+        _ = symbol.ShouldNotBeNull();
+        _ = symbol.ShouldBeOfType<MessageDescriptor>();
         symbol.FullName.ShouldBe("testing.SimpleRequest");
     }
 
@@ -392,8 +392,8 @@ public sealed class ProtosetSourceTests
         {
             var symbol = await source.FindSymbolAsync(name, TestContext.Current.CancellationToken);
 
-            symbol.ShouldNotBeNull();
-            symbol.ShouldBeOfType<MessageDescriptor>();
+            _ = symbol.ShouldNotBeNull();
+            _ = symbol.ShouldBeOfType<MessageDescriptor>();
             symbol.FullName.ShouldBe(name);
         }
     }
@@ -412,8 +412,8 @@ public sealed class ProtosetSourceTests
         var symbol = await source.FindSymbolAsync("testing.PayloadType", TestContext.Current.CancellationToken);
 
         // Assert
-        symbol.ShouldNotBeNull();
-        symbol.ShouldBeOfType<EnumDescriptor>();
+        _ = symbol.ShouldNotBeNull();
+        _ = symbol.ShouldBeOfType<EnumDescriptor>();
         symbol.FullName.ShouldBe("testing.PayloadType");
     }
 
@@ -427,8 +427,8 @@ public sealed class ProtosetSourceTests
         var symbol = await source.FindSymbolAsync("testing.PayloadType.COMPRESSABLE", TestContext.Current.CancellationToken);
 
         // Assert
-        symbol.ShouldNotBeNull();
-        symbol.ShouldBeOfType<EnumValueDescriptor>();
+        _ = symbol.ShouldNotBeNull();
+        _ = symbol.ShouldBeOfType<EnumValueDescriptor>();
     }
 
     #endregion
@@ -445,8 +445,8 @@ public sealed class ProtosetSourceTests
         var symbol = await source.FindSymbolAsync("testing.SimpleRequest.response_size", TestContext.Current.CancellationToken);
 
         // Assert
-        symbol.ShouldNotBeNull();
-        symbol.ShouldBeOfType<FieldDescriptor>();
+        _ = symbol.ShouldNotBeNull();
+        _ = symbol.ShouldBeOfType<FieldDescriptor>();
     }
 
     [Fact]
@@ -459,7 +459,7 @@ public sealed class ProtosetSourceTests
         var symbol = await source.FindSymbolAsync("testing.SimpleRequest.payload", TestContext.Current.CancellationToken);
 
         // Assert
-        symbol.ShouldNotBeNull();
+        _ = symbol.ShouldNotBeNull();
 
         var field = symbol.ShouldBeOfType<FieldDescriptor>();
 
@@ -476,7 +476,7 @@ public sealed class ProtosetSourceTests
         var symbol = await source.FindSymbolAsync("testing.StreamingOutputCallRequest.response_parameters", TestContext.Current.CancellationToken);
 
         // Assert
-        symbol.ShouldNotBeNull();
+        _ = symbol.ShouldNotBeNull();
 
         var field = symbol.ShouldBeOfType<FieldDescriptor>();
 
@@ -539,7 +539,7 @@ public sealed class ProtosetSourceTests
         var source = await ProtosetSource.LoadFromFileAsync(_testProtosetPath, TestContext.Current.CancellationToken);
 
         // Assert
-        source.FileDescriptorSet.ShouldNotBeNull();
+        _ = source.FileDescriptorSet.ShouldNotBeNull();
         source.FileDescriptorSet.File.ShouldNotBeEmpty();
     }
 
@@ -569,7 +569,7 @@ public sealed class ProtosetSourceTests
         var source = await ProtosetSource.LoadFromFileAsync(_wellKnownTypesProtosetPath, TestContext.Current.CancellationToken);
 
         // Assert
-        source.ShouldNotBeNull();
+        _ = source.ShouldNotBeNull();
     }
 
     [Fact]
@@ -582,8 +582,8 @@ public sealed class ProtosetSourceTests
         var symbol = await source.FindSymbolAsync("google.protobuf.Timestamp", TestContext.Current.CancellationToken);
 
         // Assert
-        symbol.ShouldNotBeNull();
-        symbol.ShouldBeOfType<MessageDescriptor>();
+        _ = symbol.ShouldNotBeNull();
+        _ = symbol.ShouldBeOfType<MessageDescriptor>();
     }
 
     [Fact]
@@ -596,8 +596,8 @@ public sealed class ProtosetSourceTests
         var symbol = await source.FindSymbolAsync("google.protobuf.Duration", TestContext.Current.CancellationToken);
 
         // Assert
-        symbol.ShouldNotBeNull();
-        symbol.ShouldBeOfType<MessageDescriptor>();
+        _ = symbol.ShouldNotBeNull();
+        _ = symbol.ShouldBeOfType<MessageDescriptor>();
     }
 
     #endregion
@@ -614,7 +614,7 @@ public sealed class ProtosetSourceTests
         var symbol = await source.FindSymbolAsync("testing.TestService.UnaryCall", TestContext.Current.CancellationToken) as MethodDescriptor;
 
         // Assert
-        symbol.ShouldNotBeNull();
+        _ = symbol.ShouldNotBeNull();
         symbol.IsClientStreaming.ShouldBeFalse();
         symbol.IsServerStreaming.ShouldBeFalse();
         symbol.InputType.FullName.ShouldBe("testing.SimpleRequest");
@@ -631,7 +631,7 @@ public sealed class ProtosetSourceTests
         var symbol = await source.FindSymbolAsync("testing.TestService.StreamingOutputCall", TestContext.Current.CancellationToken) as MethodDescriptor;
 
         // Assert
-        symbol.ShouldNotBeNull();
+        _ = symbol.ShouldNotBeNull();
         symbol.IsClientStreaming.ShouldBeFalse();
         symbol.IsServerStreaming.ShouldBeTrue();
     }
@@ -646,7 +646,7 @@ public sealed class ProtosetSourceTests
         var symbol = await source.FindSymbolAsync("testing.TestService.StreamingInputCall", TestContext.Current.CancellationToken) as MethodDescriptor;
 
         // Assert
-        symbol.ShouldNotBeNull();
+        _ = symbol.ShouldNotBeNull();
         symbol.IsClientStreaming.ShouldBeTrue();
         symbol.IsServerStreaming.ShouldBeFalse();
     }
@@ -661,7 +661,7 @@ public sealed class ProtosetSourceTests
         var symbol = await source.FindSymbolAsync("testing.TestService.FullDuplexCall", TestContext.Current.CancellationToken) as MethodDescriptor;
 
         // Assert
-        symbol.ShouldNotBeNull();
+        _ = symbol.ShouldNotBeNull();
         symbol.IsClientStreaming.ShouldBeTrue();
         symbol.IsServerStreaming.ShouldBeTrue();
     }
@@ -705,7 +705,7 @@ public sealed class ProtosetSourceTests
         // Assert
         foreach (var result in results)
         {
-            result.ShouldNotBeNull();
+            _ = result.ShouldNotBeNull();
         }
     }
 

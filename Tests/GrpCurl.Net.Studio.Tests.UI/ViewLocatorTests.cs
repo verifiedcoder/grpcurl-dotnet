@@ -1,12 +1,10 @@
-using System.Runtime.CompilerServices;
-using Avalonia.Controls;
-using GrpCurl.Net.Studio;
 using GrpCurl.Net.Studio.Tests.UI.Headless;
 using GrpCurl.Net.Studio.ViewModels;
 using GrpCurl.Net.Studio.ViewModels.Connections;
 using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Explorer;
 using GrpCurl.Net.Studio.ViewModels.Panes;
+using System.Runtime.CompilerServices;
 
 namespace GrpCurl.Net.Studio.Tests.UI;
 
@@ -74,7 +72,7 @@ public sealed class ViewLocatorTests(HeadlessSessionFixture fixture) : HeadlessT
 
         // The locator returns a TextBlock fallback ("View not found: ...") when the view is
         // missing; a real view is any other control type.
-        view.ShouldNotBeNull();
+        _ = view.ShouldNotBeNull();
         var expectedViewName = viewModelType.FullName!
             .Replace(".ViewModels.", ".Views.", StringComparison.Ordinal)
             .Replace("ViewModel", "View", StringComparison.Ordinal);

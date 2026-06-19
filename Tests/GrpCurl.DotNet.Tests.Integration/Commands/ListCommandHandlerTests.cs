@@ -325,7 +325,7 @@ public sealed class ListCommandHandlerTests(GrpcTestFixture fixture)
 
         // Act
         // Assert
-        await Should.ThrowAsync<GrpcCommandException>(() =>
+        _ = await Should.ThrowAsync<GrpcCommandException>(() =>
             ListCommandHandler.ExecuteAsync(
                 address: null,
                 service: null,

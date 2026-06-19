@@ -1,8 +1,8 @@
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.Studio.ViewModels.Connections;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Collections.ObjectModel;
 
 namespace GrpCurl.Net.Studio.ViewModels;
 
@@ -54,7 +54,7 @@ public sealed partial class EnvironmentSwitcherViewModel : ViewModelBase
     [RelayCommand]
     private async Task Manage()
     {
-        await _dialogs.ShowDialogAsync(new EnvironmentManagerViewModel(_store, _dialogs, _secrets));
+        _ = await _dialogs.ShowDialogAsync(new EnvironmentManagerViewModel(_store, _dialogs, _secrets));
         Reload();
     }
 

@@ -20,7 +20,7 @@ public sealed partial class HistoryRowViewModel : ViewModelBase
 
     public string Id => Entry.Id;
 
-    public string TimeText => Entry.At.LocalDateTime.ToString("yyyy-MM-dd HH:mm:ss");
+    public string TimeText => Entry.At.LocalDateTime.ToString("yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
 
     public string Method => Entry.Method;
 

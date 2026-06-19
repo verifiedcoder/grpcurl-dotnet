@@ -130,7 +130,7 @@ public sealed partial class TlsProfileEditorViewModel : DialogViewModel<TlsProfi
     public IReadOnlyList<TlsValidationMode> ValidationModes { get; } =
         [TlsValidationMode.SystemRoots, TlsValidationMode.CustomCa, TlsValidationMode.SkipVerification];
 
-    public IReadOnlyList<string> RevocationModeOptions => RevocationModes;
+    public static IReadOnlyList<string> RevocationModeOptions => RevocationModes;
 
     public bool IsCustomCa => SelectedValidationMode == TlsValidationMode.CustomCa;
 

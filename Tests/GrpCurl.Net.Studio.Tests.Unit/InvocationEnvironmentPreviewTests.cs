@@ -57,7 +57,7 @@ public sealed class InvocationEnvironmentPreviewTests
         env.SetActive("e1");
 
         var raised = 0;
-        row.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(HeaderRowViewModel.ResolvedPreview)) raised++; };
+        row.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(HeaderRowViewModel.ResolvedPreview)) { raised++; } };
 
         env.SetActive(null); // FR-133: switching refreshes visible previews
 

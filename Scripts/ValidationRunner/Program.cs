@@ -19,7 +19,7 @@ internal static class Program
             var repoRoot = LocateRepoRoot();
             publishDir = Path.Combine(Path.GetTempPath(), "grpcurl-validation-" + Guid.NewGuid().ToString("N"));
 
-            Directory.CreateDirectory(publishDir);
+            _ = Directory.CreateDirectory(publishDir);
 
             var publishedCli = Path.Combine(publishDir, "GrpCurl.Net.dll");
             var publishedServer = Path.Combine(publishDir, "GrpCurl.Net.TestServer.dll");
@@ -47,7 +47,7 @@ internal static class Program
 
             await Console.Out.WriteLineAsync($"== Starting TestServer on port {plaintextPort}");
 
-            serverProcess = StartProcess("dotnet", [publishedServer, "--port", plaintextPort.ToString()]);
+            serverProcess = StartProcess("dotnet", [publishedServer, "--port", plaintextPort.ToString(System.Globalization.CultureInfo.InvariantCulture)]);
 
             if (!await WaitForPort("127.0.0.1", plaintextPort, TimeSpan.FromSeconds(30)).ConfigureAwait(false))
             {
@@ -357,7 +357,7 @@ internal static class Program
             }
 
             process.Kill(entireProcessTree: true);
-            process.WaitForExit(5000);
+            _ = process.WaitForExit(5000);
         }
         catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
         {

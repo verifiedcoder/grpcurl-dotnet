@@ -1,6 +1,6 @@
-using System.Text.Json.Nodes;
 using Gql2Grpc.Commands;
 using Gql2Grpc.Tests.Fixtures;
+using System.Text.Json.Nodes;
 
 namespace Gql2Grpc.Tests.Integration.EndToEnd;
 

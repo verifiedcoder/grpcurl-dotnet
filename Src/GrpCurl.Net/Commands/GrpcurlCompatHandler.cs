@@ -145,7 +145,7 @@ internal static class GrpcurlCompatHandler
     /// </summary>
     private static bool TryMapFlag(string arg, string[] args, ref int index, List<string> output)
     {
-        if (!arg.StartsWith('-') || arg.StartsWith("--"))
+        if (!arg.StartsWith('-') || arg.StartsWith("--", StringComparison.Ordinal))
         {
             return false;
         }

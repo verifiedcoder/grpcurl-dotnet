@@ -54,7 +54,7 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
         }
 
         // Assert
-        caughtException.ShouldNotBeNull();
+        _ = caughtException.ShouldNotBeNull();
 
         responses.Count.ShouldBeGreaterThanOrEqualTo(2);
         responses.Count.ShouldBeLessThan(5);
@@ -78,7 +78,7 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
         // Act
         // Assert
         // The pre-cancelled token should cause an immediate exception before any iteration
-        await Should.ThrowAsync<OperationCanceledException>(async () =>
+        _ = await Should.ThrowAsync<OperationCanceledException>(async () =>
         {
             await foreach (var _ in invoker.InvokeServerStreamingAsync(methodDescriptor, request, cancellationToken: cts.Token))
             {
@@ -108,7 +108,7 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
 
         // Act
         // Assert
-        await Should.ThrowAsync<OperationCanceledException>(() =>
+        _ = await Should.ThrowAsync<OperationCanceledException>(() =>
             invoker.InvokeClientStreamingAsync(methodDescriptor, ToAsyncEnumerable(requests), cancellationToken: cts.Token));
     }
 
@@ -128,15 +128,15 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
         var response = await invoker.InvokeClientStreamingAsync(methodDescriptor, ToAsyncEnumerable(requests), cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
-        response.ShouldNotBeNull();
+        _ = response.ShouldNotBeNull();
 
         var dynamicResponse = response as SimpleDynamicMessage;
 
-        dynamicResponse.ShouldNotBeNull();
+        _ = dynamicResponse.ShouldNotBeNull();
 
         var sizeField = dynamicResponse.Descriptor.FindFieldByName("aggregated_payload_size");
 
-        sizeField.ShouldNotBeNull();
+        _ = sizeField.ShouldNotBeNull();
 
         var totalSize = (int)dynamicResponse.Fields[sizeField]!;
 
@@ -168,7 +168,7 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
         // Act
         // Assert
         // The pre-cancelled token should cause an immediate exception before any iteration
-        await Should.ThrowAsync<OperationCanceledException>(async () =>
+        _ = await Should.ThrowAsync<OperationCanceledException>(async () =>
         {
             await foreach (var _ in invoker.InvokeDuplexStreamingAsync(methodDescriptor, ToAsyncEnumerable(requests), cancellationToken: cts.Token))
             {
@@ -253,7 +253,7 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
         }
 
         // Assert
-        responses.ShouldHaveSingleItem();
+        _ = responses.ShouldHaveSingleItem();
     }
 
     [Fact]
@@ -272,7 +272,7 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
         var response = await invoker.InvokeClientStreamingAsync(methodDescriptor, ToAsyncEnumerable(requests), headers: metadata, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
-        response.ShouldNotBeNull();
+        _ = response.ShouldNotBeNull();
     }
 
     [Fact]
@@ -299,7 +299,7 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
         }
 
         // Assert
-        responses.ShouldHaveSingleItem();
+        _ = responses.ShouldHaveSingleItem();
     }
 
     #endregion
@@ -329,7 +329,7 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
 
         foreach (var dynamicResponse in responses.Select(response => response as SimpleDynamicMessage))
         {
-            dynamicResponse.ShouldNotBeNull();
+            _ = dynamicResponse.ShouldNotBeNull();
 
             var payloadField = dynamicResponse.Descriptor.FindFieldByName("payload");
 
@@ -356,15 +356,15 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
         var response = await invoker.InvokeClientStreamingAsync(methodDescriptor, ToAsyncEnumerable(requests), cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
-        response.ShouldNotBeNull();
+        _ = response.ShouldNotBeNull();
 
         var dynamicResponse = response as SimpleDynamicMessage;
 
-        dynamicResponse.ShouldNotBeNull();
+        _ = dynamicResponse.ShouldNotBeNull();
 
         var sizeField = dynamicResponse.Descriptor.FindFieldByName("aggregated_payload_size");
 
-        sizeField.ShouldNotBeNull();
+        _ = sizeField.ShouldNotBeNull();
 
         var totalSize = (int)dynamicResponse.Fields[sizeField]!;
 
@@ -387,8 +387,8 @@ public sealed class StreamingScenarioTests(GrpcTestFixture fixture)
     {
         var symbol = await source.FindSymbolAsync(methodName);
 
-        symbol.ShouldNotBeNull();
-        symbol.ShouldBeOfType<MethodDescriptor>();
+        _ = symbol.ShouldNotBeNull();
+        _ = symbol.ShouldBeOfType<MethodDescriptor>();
 
         return (MethodDescriptor)symbol;
     }

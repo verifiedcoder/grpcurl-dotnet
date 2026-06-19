@@ -132,7 +132,7 @@ public sealed class MainWindowViewModelTests
 
         vm.OpenSettingsCommand.Execute(null);
 
-        vm.Documents.Documents.OfType<SettingsDocumentViewModel>().ShouldHaveSingleItem();
+        _ = vm.Documents.Documents.OfType<SettingsDocumentViewModel>().ShouldHaveSingleItem();
     }
 
     // ── SEC-014 insecure-skip-verify banner ──────────────────────────────────
@@ -178,7 +178,7 @@ public sealed class MainWindowViewModelTests
         var doc = new StubDocument(connection);
         documents.Documents.Add(doc);
 
-        documents.Documents.Remove(doc);
+        _ = documents.Documents.Remove(doc);
 
         vm.IsInsecureBannerVisible.ShouldBeFalse();
     }
@@ -270,11 +270,11 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public void Recent_workspaces_are_exposed_from_the_store()
     {
-        var vm = CreateWithWorkspace(out var store, out _, out _, out _, out _);
+        _ = CreateWithWorkspace(out var store, out _, out _, out _, out _);
         store.SeedRecent("/a/one.gcnws.json", "/b/two.gcnws.json");
 
         // RefreshRecents runs in the ctor; re-create to pick up the seeded list.
-        vm = new MainWindowViewModel(
+        var vm = new MainWindowViewModel(
             new ThemeService(new FakeSettingsStore()),
             new ConnectionsPaneViewModel(store, new FakeConnectionRegistry(), new FakeDialogService(), new ConnectionSelection()),
             EmptyExplorer(), new ConsoleViewModel(), new InspectorViewModel(), EmptyDocuments(),
@@ -307,7 +307,7 @@ public sealed class MainWindowViewModelTests
 
         store.CurrentPath.ShouldBeNull(); // untitled
         store.Current.Connections.ShouldHaveSingleItem().Address.ShouldBe("localhost:9090");
-        connections.Connections.ShouldHaveSingleItem(); // the pane reloaded from the templated workspace
+        _ = connections.Connections.ShouldHaveSingleItem(); // the pane reloaded from the templated workspace
     }
 
     [Fact]
@@ -346,7 +346,7 @@ public sealed class MainWindowViewModelTests
     public async Task Save_when_untitled_routes_to_save_as()
     {
         var vm = CreateWithWorkspace(out var store, out var picker, out _, out _, out _);
-        store.NewWorkspace(); // CurrentPath becomes null
+        _ = store.NewWorkspace(); // CurrentPath becomes null
         picker.SaveResult = "/ws/named.gcnws.json";
 
         await vm.SaveWorkspaceCommand.ExecuteAsync(null);
@@ -469,7 +469,7 @@ public sealed class MainWindowViewModelTests
 
         await vm.ExportWorkspaceCommand.ExecuteAsync(null);
 
-        store.LastExport.ShouldNotBeNull();
+        _ = store.LastExport.ShouldNotBeNull();
         store.LastExport!.Value.Path.ShouldBe("/ws/share.gcnws.json");
         store.LastExport.Value.Workspace.Name.ShouldBe("Demo");
         store.CurrentPath.ShouldNotBe("/ws/share.gcnws.json"); // export doesn't change the active file
@@ -525,7 +525,7 @@ public sealed class MainWindowViewModelTests
 
         await vm.ImportWorkspaceCommand.ExecuteAsync(null);
 
-        store.Current.Connections.ShouldHaveSingleItem(); // only the original "a"
+        _ = store.Current.Connections.ShouldHaveSingleItem(); // only the original "a"
     }
 
     [Fact]
@@ -539,7 +539,7 @@ public sealed class MainWindowViewModelTests
 
         dialogs.ConfirmCount.ShouldBe(0);
         dialogs.LastMessageTitle.ShouldBe("Nothing to import");
-        store.Current.Connections.ShouldHaveSingleItem();
+        _ = store.Current.Connections.ShouldHaveSingleItem();
     }
 
     [Fact]
@@ -552,7 +552,7 @@ public sealed class MainWindowViewModelTests
         await vm.ImportWorkspaceCommand.ExecuteAsync(null);
 
         dialogs.LastMessageTitle.ShouldBe("Could not import workspace");
-        store.Current.Connections.ShouldHaveSingleItem();
+        _ = store.Current.Connections.ShouldHaveSingleItem();
     }
 
     // ── Command palette (Ctrl+K) ─────────────────────────────────────────────
@@ -574,7 +574,7 @@ public sealed class MainWindowViewModelTests
 
         await vm.OpenCommandPaletteCommand.ExecuteAsync(null);
 
-        titles.ShouldNotBeNull();
+        _ = titles.ShouldNotBeNull();
         titles.ShouldContain("Open Settings");
         titles.ShouldContain("Export workspace…");
         titles.ShouldContain("Go to connection: a"); // the seeded connection
@@ -636,7 +636,7 @@ public sealed class MainWindowViewModelTests
 
         await vm.OpenCommandPaletteCommand.ExecuteAsync(null);
 
-        titles.ShouldNotBeNull();
+        _ = titles.ShouldNotBeNull();
         titles.ShouldContain("Invoke method: pkg.Greeter/SayHello");
         titles.ShouldContain("Invoke method: pkg.Admin/Reload");
     }
@@ -694,7 +694,7 @@ public sealed class MainWindowViewModelTests
 
         await vm.OpenCommandPaletteCommand.ExecuteAsync(null);
 
-        titles.ShouldNotBeNull();
+        _ = titles.ShouldNotBeNull();
         titles.ShouldContain("Replay: pkg.Svc/Go (prod)");
         titles.ShouldNotContain("Replay: pkg.Svc/Truncated (prod)"); // body-truncated → not replayable
     }

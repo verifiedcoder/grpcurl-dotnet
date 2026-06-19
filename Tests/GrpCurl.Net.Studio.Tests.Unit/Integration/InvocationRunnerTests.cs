@@ -80,7 +80,7 @@ public sealed class InvocationRunnerTests(StudioPlaintextServerFixture server)
             TestContext.Current.CancellationToken);
 
         result.Ok.ShouldBeFalse();
-        result.Error.ShouldNotBeNull();
+        _ = result.Error.ShouldNotBeNull();
         result.Error!.StatusCode.ShouldBe(7); // PermissionDenied
         result.Error.Severity.ShouldBe(StatusSeverity.Caller);
         result.Error.Headline.ShouldBe("denied");
@@ -96,7 +96,7 @@ public sealed class InvocationRunnerTests(StudioPlaintextServerFixture server)
             TestContext.Current.CancellationToken);
 
         result.Ok.ShouldBeFalse();
-        result.ErrorMessage.ShouldNotBeNull();
+        _ = result.ErrorMessage.ShouldNotBeNull();
         result.ErrorMessage!.ShouldContain("not found");
     }
 
@@ -108,7 +108,7 @@ public sealed class InvocationRunnerTests(StudioPlaintextServerFixture server)
             TestContext.Current.CancellationToken);
 
         result.Ok.ShouldBeTrue(result.ErrorMessage);
-        result.ResponseHeaders.ShouldNotBeNull();
+        _ = result.ResponseHeaders.ShouldNotBeNull();
     }
 
     [Fact]
@@ -134,7 +134,7 @@ public sealed class InvocationRunnerTests(StudioPlaintextServerFixture server)
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(
+        _ = await Should.ThrowAsync<OperationCanceledException>(
             async () => await Runner().InvokeUnaryAsync(Request("testing.TestService/EmptyCall", "{}"), cts.Token));
     }
 
@@ -165,7 +165,7 @@ public sealed class InvocationRunnerTests(StudioPlaintextServerFixture server)
             TestContext.Current.CancellationToken);
 
         result.Ok.ShouldBeFalse();
-        result.ErrorMessage.ShouldNotBeNull();
+        _ = result.ErrorMessage.ShouldNotBeNull();
         result.ErrorMessage!.ShouldContain("STUDIO_NO_SUCH_VAR");
     }
 }

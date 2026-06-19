@@ -81,7 +81,7 @@ public sealed class SecretStoreTests : IDisposable
 
         info.BackendName.ShouldBe("Encrypted file (fallback)");
         info.IsOsKeychain.ShouldBeFalse(); // SEC-024: false only for the fallback
-        info.LimitationNote.ShouldNotBeNull();
+        _ = info.LimitationNote.ShouldNotBeNull();
         info.LimitationNote.ShouldContain("Secret Service"); // recommends a keyring provider
     }
 
@@ -139,7 +139,7 @@ public sealed class SecretStoreTests : IDisposable
 
         // SEC-024/025: a backend is chosen at startup, surfaced via Info, and logged (name only).
         store.Info.BackendName.ShouldNotBeNullOrWhiteSpace();
-        logged.ShouldNotBeNull();
+        _ = logged.ShouldNotBeNull();
         logged.ShouldContain(store.Info.BackendName);
     }
 

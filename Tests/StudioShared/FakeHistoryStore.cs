@@ -34,13 +34,13 @@ public sealed class FakeHistoryStore : IHistoryStore
 
     public Task DeleteAsync(IReadOnlyCollection<string> ids, CancellationToken cancellationToken = default)
     {
-        Entries.RemoveAll(e => ids.Contains(e.Id));
+        _ = Entries.RemoveAll(e => ids.Contains(e.Id));
         return Task.CompletedTask;
     }
 
     public Task ClearAsync(bool keepPinned = false, CancellationToken cancellationToken = default)
     {
-        Entries.RemoveAll(e => !keepPinned || !e.Pinned);
+        _ = Entries.RemoveAll(e => !keepPinned || !e.Pinned);
         return Task.CompletedTask;
     }
 

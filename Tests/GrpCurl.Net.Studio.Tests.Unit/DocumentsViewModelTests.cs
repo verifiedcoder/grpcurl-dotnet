@@ -102,8 +102,8 @@ public sealed class DocumentsViewModelTests
         docs.OpenSettings();
         docs.OpenSettings();
 
-        docs.Documents.OfType<SettingsDocumentViewModel>().ShouldHaveSingleItem();
-        docs.SelectedDocument.ShouldBeOfType<SettingsDocumentViewModel>();
+        _ = docs.Documents.OfType<SettingsDocumentViewModel>().ShouldHaveSingleItem();
+        _ = docs.SelectedDocument.ShouldBeOfType<SettingsDocumentViewModel>();
     }
 
     [Fact]
@@ -113,7 +113,7 @@ public sealed class DocumentsViewModelTests
 
         docs.OpenDescribe(Conn(), "pkg.Alpha");
 
-        docs.Documents.ShouldHaveSingleItem();
+        _ = docs.Documents.ShouldHaveSingleItem();
         docs.SelectedDocument.ShouldBe(docs.Documents[0]);
         ((DescribeDocumentViewModel)docs.Documents[0]).CurrentSymbol.ShouldBe("pkg.Alpha");
     }
@@ -127,7 +127,7 @@ public sealed class DocumentsViewModelTests
         docs.OpenDescribe(connection, "pkg.Alpha");
         docs.OpenDescribe(connection, "pkg.Alpha");
 
-        docs.Documents.ShouldHaveSingleItem();
+        _ = docs.Documents.ShouldHaveSingleItem();
     }
 
     [Fact]
@@ -153,7 +153,7 @@ public sealed class DocumentsViewModelTests
 
         beta.CloseCommand.Execute(null);
 
-        docs.Documents.ShouldHaveSingleItem();
+        _ = docs.Documents.ShouldHaveSingleItem();
         ((DescribeDocumentViewModel)docs.Documents[0]).CurrentSymbol.ShouldBe("pkg.Alpha");
         docs.SelectedDocument.ShouldBe(docs.Documents[0]);
     }
@@ -165,7 +165,7 @@ public sealed class DocumentsViewModelTests
 
         docs.OpenInvocation(Conn(), "pkg.Svc/Go", "{}");
 
-        docs.Documents.ShouldHaveSingleItem().ShouldBeOfType<InvocationDocumentViewModel>();
+        _ = docs.Documents.ShouldHaveSingleItem().ShouldBeOfType<InvocationDocumentViewModel>();
         docs.SelectedDocument.ShouldBe(docs.Documents[0]);
     }
 

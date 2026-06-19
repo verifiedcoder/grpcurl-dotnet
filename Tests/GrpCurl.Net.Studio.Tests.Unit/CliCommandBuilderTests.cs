@@ -1,10 +1,10 @@
-using System.CommandLine;
 using GrpCurl.Net.Commands;
 using GrpCurl.Net.Studio.ViewModels.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.CommandLine;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
 

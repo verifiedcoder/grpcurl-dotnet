@@ -218,7 +218,7 @@ internal static class TestCaseRunner
 
         // The single request is sent implicitly by invoking, which also closes the send
         // side — so "after close-send" cancellation is armed from this point.
-        context.AllSent.TrySetResult();
+        _ = context.AllSent.TrySetResult();
 
         var result = new ClientResponseResult();
 
@@ -258,7 +258,7 @@ internal static class TestCaseRunner
             await Task.Delay((int)request.RequestDelayMs);
         }
 
-        context.AllSent.TrySetResult();
+        _ = context.AllSent.TrySetResult();
 
         var result = new ClientResponseResult();
 
@@ -403,7 +403,7 @@ internal static class TestCaseRunner
                 ResultBuilder.AddPayload(result.Payloads, message, method);
 
                 received++;
-                context.ResponseGate.Release();
+                _ = context.ResponseGate.Release();
 
                 if (afterNumResponses > 0 && received >= afterNumResponses)
                 {
@@ -426,7 +426,7 @@ internal static class TestCaseRunner
             // Unblock a full-duplex request source that may still be gated; it observes
             // StreamDone and stops sending.
             context.StreamDone = true;
-            context.ResponseGate.Release(1_000_000);
+            _ = context.ResponseGate.Release(1_000_000);
         }
     }
 
@@ -462,7 +462,7 @@ internal static class TestCaseRunner
 
             // Post-yield code only runs after the consumer's WriteAsync succeeded and it
             // pulled the next message, so this counts confirmed-written messages.
-            Interlocked.Increment(ref context.Sent);
+            _ = Interlocked.Increment(ref context.Sent);
 
             if (fullDuplex)
             {
@@ -483,7 +483,7 @@ internal static class TestCaseRunner
             await Task.Delay(Timeout.Infinite, cancellationToken);
         }
 
-        context.AllSent.TrySetResult();
+        _ = context.AllSent.TrySetResult();
     }
 
     private static uint AfterNumResponses(ClientCompatRequest request) =>
@@ -532,7 +532,7 @@ internal static class TestCaseRunner
 ///     Per-test coordination state shared between the request source, the response read
 ///     loop, and the cancellation scheduler.
 /// </summary>
-internal sealed class StreamContext
+internal sealed class StreamContext : IDisposable
 {
     /// <summary>Number of request messages confirmed written to the call.</summary>
     public int Sent;
@@ -545,4 +545,9 @@ internal sealed class StreamContext
 
     /// <summary>Set when the response stream has completed or errored.</summary>
     public volatile bool StreamDone;
+
+    public void Dispose()
+    {
+        throw new NotImplementedException();
+    }
 }

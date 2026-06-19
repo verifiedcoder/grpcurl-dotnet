@@ -1,9 +1,9 @@
-using System.Runtime.CompilerServices;
 using Google.Protobuf.WellKnownTypes;
 using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Runtime.CompilerServices;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
 
@@ -70,7 +70,7 @@ public sealed class StreamRowAndPumpTests
 
         await row.CopyAsNdjsonCommand.ExecuteAsync(null);
 
-        clipboard.Text.ShouldNotBeNull();
+        _ = clipboard.Text.ShouldNotBeNull();
         clipboard.Text!.ShouldContain("\"kind\":\"message\"");
         clipboard.Text.ShouldContain("\"index\":3");
         clipboard.Text.ShouldContain("\"compact\":true");
@@ -128,7 +128,7 @@ public sealed class StreamRowAndPumpTests
         var applied = new List<int>();
         var batches = 0;
 
-        await new StreamDispatchPump().RunAsync(
+        await StreamDispatchPump.RunAsync(
             Range(100, TestContext.Current.CancellationToken),
             batch => { batches++; applied.AddRange(batch); return Task.CompletedTask; },
             TestContext.Current.CancellationToken);
@@ -144,8 +144,8 @@ public sealed class StreamRowAndPumpTests
         using var cts = new CancellationTokenSource();
         var applied = new List<int>();
 
-        await Should.ThrowAsync<OperationCanceledException>(async () =>
-            await new StreamDispatchPump().RunAsync(
+        _ = await Should.ThrowAsync<OperationCanceledException>(async () =>
+            await StreamDispatchPump.RunAsync(
                 Range(1_000_000, cts.Token),
                 batch =>
                 {
@@ -169,11 +169,11 @@ public sealed class StreamRowAndPumpTests
         var firstBatchReceived = new TaskCompletionSource();
         var releaseConsumer = new TaskCompletionSource();
 
-        var run = new StreamDispatchPump().RunAsync(
+        var run = StreamDispatchPump.RunAsync(
             CountingRange(1000, () => Interlocked.Increment(ref produced), TestContext.Current.CancellationToken),
-            async _ =>
+            async _batch =>
             {
-                firstBatchReceived.TrySetResult();
+                _ = firstBatchReceived.TrySetResult();
                 await releaseConsumer.Task; // hold the UI thread so the producer cannot drain ahead
             },
             TestContext.Current.CancellationToken,

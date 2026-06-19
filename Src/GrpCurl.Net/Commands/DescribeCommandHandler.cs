@@ -840,7 +840,7 @@ internal static class DescribeCommandHandler
         {
             foreach (var f in oneof.Fields)
             {
-                oneofFields.Add(f);
+                _ = oneofFields.Add(f);
             }
         }
 

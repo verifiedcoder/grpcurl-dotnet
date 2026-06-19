@@ -1,9 +1,9 @@
-using System.Text;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.History;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Services;
 using GrpCurl.Net.Utilities;
+using System.Text;
 
 namespace GrpCurl.Net.Studio.Services;
 
@@ -119,7 +119,7 @@ internal sealed class HistoryRecorder(
             }
 
             bytes += rune.Utf8SequenceLength;
-            builder.Append(rune.ToString());
+            _ = builder.Append(rune.ToString());
         }
 
         truncated = true;

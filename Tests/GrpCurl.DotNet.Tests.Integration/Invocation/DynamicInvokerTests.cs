@@ -28,8 +28,8 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
         var result = await invoker.InvokeUnaryAsync(methodDescriptor, request, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
-        result.ShouldNotBeNull();
-        result.Response.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
+        _ = result.Response.ShouldNotBeNull();
     }
 
     [Fact]
@@ -47,8 +47,8 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
         var result = await invoker.InvokeUnaryAsync(methodDescriptor, request, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
-        result.ShouldNotBeNull();
-        result.Response.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
+        _ = result.Response.ShouldNotBeNull();
     }
 
     [Fact]
@@ -67,14 +67,14 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
         var response = result.Response as SimpleDynamicMessage;
 
         // Assert
-        result.ShouldNotBeNull();
-        response.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
+        _ = response.ShouldNotBeNull();
 
         var payloadField = response.Descriptor.FindFieldByName("payload");
 
         if (payloadField is not null && response.Fields.TryGetValue(payloadField, out var payload))
         {
-            payload.ShouldNotBeNull();
+            _ = payload.ShouldNotBeNull();
         }
     }
 
@@ -94,8 +94,8 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
         var result = await invoker.InvokeUnaryAsync(methodDescriptor, request, metadata, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
-        result.ShouldNotBeNull();
-        result.Response.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
+        _ = result.Response.ShouldNotBeNull();
     }
 
     [Fact]
@@ -116,7 +116,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
 
         // Act
         // Assert
-        await Should.ThrowAsync<OperationCanceledException>(() =>
+        _ = await Should.ThrowAsync<OperationCanceledException>(() =>
             invoker.InvokeUnaryAsync(methodDescriptor, request, cancellationToken: cts.Token));
     }
 
@@ -143,7 +143,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
         }
 
         // Assert
-        responses.ShouldHaveSingleItem();
+        _ = responses.ShouldHaveSingleItem();
     }
 
     [Fact]
@@ -205,11 +205,11 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
         // Assert
         await foreach (var response in invoker.InvokeServerStreamingAsync(methodDescriptor, request, cancellationToken: TestContext.Current.CancellationToken))
         {
-            response.ShouldNotBeNull();
+            _ = response.ShouldNotBeNull();
 
             var dynamicResponse = response as SimpleDynamicMessage;
 
-            dynamicResponse.ShouldNotBeNull();
+            _ = dynamicResponse.ShouldNotBeNull();
         }
     }
 
@@ -235,15 +235,15 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
         var response = await invoker.InvokeClientStreamingAsync(methodDescriptor, ToAsyncEnumerable(requests), cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
-        response.ShouldNotBeNull();
+        _ = response.ShouldNotBeNull();
 
         var dynamicResponse = response as SimpleDynamicMessage;
 
-        dynamicResponse.ShouldNotBeNull();
+        _ = dynamicResponse.ShouldNotBeNull();
 
         var sizeField = dynamicResponse.Descriptor.FindFieldByName("aggregated_payload_size");
 
-        sizeField.ShouldNotBeNull();
+        _ = sizeField.ShouldNotBeNull();
 
         dynamicResponse.Fields.ContainsKey(sizeField).ShouldBeTrue();
     }
@@ -268,15 +268,15 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
         var response = await invoker.InvokeClientStreamingAsync(methodDescriptor, ToAsyncEnumerable(requests), cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
-        response.ShouldNotBeNull();
+        _ = response.ShouldNotBeNull();
 
         var dynamicResponse = response as SimpleDynamicMessage;
 
-        dynamicResponse.ShouldNotBeNull();
+        _ = dynamicResponse.ShouldNotBeNull();
 
         var sizeField = dynamicResponse.Descriptor.FindFieldByName("aggregated_payload_size");
 
-        sizeField.ShouldNotBeNull();
+        _ = sizeField.ShouldNotBeNull();
 
         var totalSize = (int)dynamicResponse.Fields[sizeField]!;
 
@@ -299,11 +299,11 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
         var response = await invoker.InvokeClientStreamingAsync(methodDescriptor, ToAsyncEnumerable(requests), cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
-        response.ShouldNotBeNull();
+        _ = response.ShouldNotBeNull();
 
         var dynamicResponse = response as SimpleDynamicMessage;
 
-        dynamicResponse.ShouldNotBeNull();
+        _ = dynamicResponse.ShouldNotBeNull();
 
         var sizeField = dynamicResponse.Descriptor.FindFieldByName("aggregated_payload_size");
 
@@ -340,7 +340,7 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
         }
 
         // Assert
-        responses.ShouldHaveSingleItem();
+        _ = responses.ShouldHaveSingleItem();
     }
 
     [Fact]
@@ -445,8 +445,8 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
         var result = await invoker.InvokeUnaryAsync(methodDescriptor, request, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
-        result.ShouldNotBeNull();
-        result.ResponseHeaders.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
+        _ = result.ResponseHeaders.ShouldNotBeNull();
     }
 
     [Fact]
@@ -464,8 +464,8 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
         var result = await invoker.InvokeUnaryAsync(methodDescriptor, request, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
-        result.ShouldNotBeNull();
-        result.ResponseTrailers.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
+        _ = result.ResponseTrailers.ShouldNotBeNull();
     }
 
     #endregion
@@ -513,8 +513,8 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
         var result = await invoker.InvokeUnaryAsync(methodDescriptor, request, deadline: deadline, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
-        result.ShouldNotBeNull();
-        result.Response.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
+        _ = result.Response.ShouldNotBeNull();
     }
 
     [Fact]
@@ -554,11 +554,11 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
         var response = await invoker.InvokeClientStreamingAsync(methodDescriptor, EmptyAsyncEnumerable(), cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
-        response.ShouldNotBeNull();
+        _ = response.ShouldNotBeNull();
 
         var dynamicResponse = response as SimpleDynamicMessage;
 
-        dynamicResponse.ShouldNotBeNull();
+        _ = dynamicResponse.ShouldNotBeNull();
     }
 
     #endregion
@@ -586,8 +586,8 @@ public sealed class DynamicInvokerTests(GrpcTestFixture fixture)
         var symbol = await source.FindSymbolAsync(methodName);
 
         // Assert
-        symbol.ShouldNotBeNull();
-        symbol.ShouldBeOfType<MethodDescriptor>();
+        _ = symbol.ShouldNotBeNull();
+        _ = symbol.ShouldBeOfType<MethodDescriptor>();
 
         return (MethodDescriptor)symbol;
     }

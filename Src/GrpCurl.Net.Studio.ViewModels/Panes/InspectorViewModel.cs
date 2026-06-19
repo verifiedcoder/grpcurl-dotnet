@@ -15,7 +15,7 @@ public sealed partial class InspectorViewModel : ViewModelBase, IInspector
     [NotifyPropertyChangedFor(nameof(IsEmpty))]
     public partial InspectorContent Content { get; set; } = EmptyInspectorContent.Instance;
 
-    public string Header => "Inspector";
+    public static string Header => "Inspector";
 
     public bool IsEmpty => Content is EmptyInspectorContent;
 

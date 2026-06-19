@@ -1,7 +1,7 @@
 using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels.Connections;
-using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models;
+using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
 
@@ -220,7 +220,7 @@ public sealed class ConnectionEditorDescriptorSourceTests : IDisposable
 
         await vm.TestConnectionCommand.ExecuteAsync(null);
 
-        vm.LastTestResult.ShouldNotBeNull();
+        _ = vm.LastTestResult.ShouldNotBeNull();
         vm.LastTestResult!.Ok.ShouldBeFalse();
         vm.LastTestResult.Message.ShouldContain("Protoset file not found");
         vm.LastTestResult.Message.ShouldContain("/no/such/schema.protoset");
@@ -255,11 +255,11 @@ public sealed class ConnectionEditorDescriptorSourceTests : IDisposable
 
         vm.MaxFileDescriptorsOverride = "-5";
 
-        vm.LimitsError.ShouldNotBeNull();
+        _ = vm.LimitsError.ShouldNotBeNull();
         vm.SaveCommand.CanExecute(null).ShouldBeFalse();
 
         vm.MaxFileDescriptorsOverride = "abc";
-        vm.LimitsError.ShouldNotBeNull();
+        _ = vm.LimitsError.ShouldNotBeNull();
 
         vm.MaxFileDescriptorsOverride = ""; // blank clears the error (use default)
         vm.LimitsError.ShouldBeNull();

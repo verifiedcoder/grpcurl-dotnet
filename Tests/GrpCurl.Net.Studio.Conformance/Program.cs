@@ -88,7 +88,7 @@ internal static class Program
         }
         finally
         {
-            Throttle.Release();
+            _ = Throttle.Release();
         }
 
         var payload = response.ToByteArray();
@@ -106,7 +106,7 @@ internal static class Program
         }
         finally
         {
-            StdoutLock.Release();
+            _ = StdoutLock.Release();
         }
     }
 }

@@ -194,7 +194,7 @@ public sealed class ListDescribeProtoOptionTests : IDisposable
                     protoFiles: [_protoPath]));
 
             ex.ExitCode.ShouldBe(3);
-            ex.Envelope.ShouldNotBeNull();
+            _ = ex.Envelope.ShouldNotBeNull();
             ex.Envelope.Category.ShouldBe(ErrorCategory.Schema);
             ex.Envelope.Message.ShouldContain("protoc not found on PATH");
             ex.Envelope.Message.ShouldNotContain("Protoset file not found");
@@ -242,7 +242,7 @@ public sealed class ListDescribeProtoOptionTests : IDisposable
                     protosetOut: null));
 
             ex.ExitCode.ShouldBe(2);
-            ex.Envelope.ShouldNotBeNull();
+            _ = ex.Envelope.ShouldNotBeNull();
             ex.Envelope.Category.ShouldBe(ErrorCategory.Usage);
         }
         finally

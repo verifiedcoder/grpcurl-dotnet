@@ -18,7 +18,7 @@ public sealed class GrpcChannelFactoryMetadataTests
         var entry = metadata.Get("x-custom");
 
         // Assert
-        entry.ShouldNotBeNull();
+        _ = entry.ShouldNotBeNull();
         entry.Value.ShouldBe("hello");
         entry.IsBinary.ShouldBeFalse();
     }
@@ -34,7 +34,7 @@ public sealed class GrpcChannelFactoryMetadataTests
         var entry = metadata.Get("trace-bin");
 
         // Assert
-        entry.ShouldNotBeNull();
+        _ = entry.ShouldNotBeNull();
         entry.IsBinary.ShouldBeTrue();
         entry.ValueBytes.ShouldBe([1, 2, 3, 4]);
     }
@@ -66,7 +66,7 @@ public sealed class GrpcChannelFactoryMetadataTests
         var entry = metadata.Get("grpc-status-details-bin");
 
         // Assert
-        entry.ShouldNotBeNull();
+        _ = entry.ShouldNotBeNull();
         entry.IsBinary.ShouldBeTrue();
         entry.ValueBytes.ShouldBe(payload);
     }
@@ -82,7 +82,7 @@ public sealed class GrpcChannelFactoryMetadataTests
         var entry = metadata.Get("custom-bin");
 
         // Assert
-        entry.ShouldNotBeNull();
+        _ = entry.ShouldNotBeNull();
         entry.IsBinary.ShouldBeTrue();
     }
 

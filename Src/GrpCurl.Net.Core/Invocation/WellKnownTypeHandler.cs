@@ -1,4 +1,3 @@
-using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using System.Globalization;
 using System.Text;
@@ -415,17 +414,17 @@ internal static class WellKnownTypeHandler
         // Format as RFC 3339
         var dateTime = DateTime.UnixEpoch.AddSeconds(seconds);
 
-        sb.Append('"');
-        sb.Append(dateTime.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture));
+        _ = sb.Append('"');
+        _ = sb.Append(dateTime.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture));
 
         if (nanos != 0)
         {
-            sb.Append('.');
-            sb.Append(nanos.ToString("D9", CultureInfo.InvariantCulture).TrimEnd('0'));
+            _ = sb.Append('.');
+            _ = sb.Append(nanos.ToString("D9", CultureInfo.InvariantCulture).TrimEnd('0'));
         }
 
-        sb.Append('Z');
-        sb.Append('"');
+        _ = sb.Append('Z');
+        _ = sb.Append('"');
     }
 
     public static void WriteDurationJson(StringBuilder sb, SimpleDynamicMessage duration)
@@ -465,23 +464,23 @@ internal static class WellKnownTypeHandler
 
         // Format as string like "1.000340012s". A leading '-' is needed when the value is
         // negative but the seconds component is zero (e.g. "-0.5s").
-        sb.Append('"');
+        _ = sb.Append('"');
 
         if (seconds == 0 && nanos < 0)
         {
-            sb.Append('-');
+            _ = sb.Append('-');
         }
 
-        sb.Append(seconds);
+        _ = sb.Append(seconds);
 
         if (nanos != 0)
         {
-            sb.Append('.');
-            sb.Append(Math.Abs(nanos).ToString("D9", CultureInfo.InvariantCulture).TrimEnd('0'));
+            _ = sb.Append('.');
+            _ = sb.Append(Math.Abs(nanos).ToString("D9", CultureInfo.InvariantCulture).TrimEnd('0'));
         }
 
-        sb.Append('s');
-        sb.Append('"');
+        _ = sb.Append('s');
+        _ = sb.Append('"');
     }
 
     public static void WriteWrapperJson(StringBuilder sb, SimpleDynamicMessage wrapper, MessageDescriptor messageType, Action<StringBuilder, FieldDescriptor, object?> writeJsonValue)
@@ -495,14 +494,14 @@ internal static class WellKnownTypeHandler
         }
         else
         {
-            sb.Append("null");
+            _ = sb.Append("null");
         }
     }
 
     public static void WriteEmptyJson(StringBuilder sb)
     {
         // Empty is encoded as empty JSON object
-        sb.Append("{}");
+        _ = sb.Append("{}");
     }
 
     public static void WriteFieldMaskJson(StringBuilder sb, SimpleDynamicMessage fieldMask)
@@ -510,7 +509,7 @@ internal static class WellKnownTypeHandler
         // FieldMask is encoded as a single string with comma-separated paths
         var pathsField = fieldMask.Descriptor.FindFieldByNumber(1);
 
-        sb.Append('"');
+        _ = sb.Append('"');
 
         if (pathsField is not null && fieldMask.RepeatedFields.TryGetValue(pathsField, out var paths) && paths.Count > 0)
         {
@@ -518,14 +517,14 @@ internal static class WellKnownTypeHandler
             {
                 if (i > 0)
                 {
-                    sb.Append(',');
+                    _ = sb.Append(',');
                 }
 
-                sb.Append(paths[i]);
+                _ = sb.Append(paths[i]);
             }
         }
 
-        sb.Append('"');
+        _ = sb.Append('"');
     }
 
     public static void WriteStructJson(StringBuilder sb, SimpleDynamicMessage structMsg, Action<StringBuilder, SimpleDynamicMessage> writeValueJson)
@@ -533,7 +532,7 @@ internal static class WellKnownTypeHandler
         // Struct is encoded as a JSON object
         var fieldsField = structMsg.Descriptor.FindFieldByNumber(1);
 
-        sb.Append('{');
+        _ = sb.Append('{');
 
         if (fieldsField is not null && structMsg.MapFields.TryGetValue(fieldsField, out var fields))
         {
@@ -543,14 +542,14 @@ internal static class WellKnownTypeHandler
             {
                 if (!first)
                 {
-                    sb.Append(',');
+                    _ = sb.Append(',');
                 }
 
                 first = false;
 
-                sb.Append('"');
-                sb.Append(key);
-                sb.Append("\":");
+                _ = sb.Append('"');
+                _ = sb.Append(key);
+                _ = sb.Append("\":");
 
                 if (value is SimpleDynamicMessage valueMsg)
                 {
@@ -558,12 +557,12 @@ internal static class WellKnownTypeHandler
                 }
                 else
                 {
-                    sb.Append("null");
+                    _ = sb.Append("null");
                 }
             }
         }
 
-        sb.Append('}');
+        _ = sb.Append('}');
     }
 
     public static void WriteValueJson(StringBuilder sb, SimpleDynamicMessage value, Action<StringBuilder, SimpleDynamicMessage> writeStructJson, Action<StringBuilder, SimpleDynamicMessage> writeListValueJson)
@@ -579,21 +578,21 @@ internal static class WellKnownTypeHandler
         // Check which field is set in the oneof
         if (nullField is not null && value.Fields.ContainsKey(nullField))
         {
-            sb.Append("null");
+            _ = sb.Append("null");
         }
         else if (numberField is not null && value.Fields.TryGetValue(numberField, out var numberValue))
         {
-            sb.Append(((double)numberValue!).ToString("G", CultureInfo.InvariantCulture));
+            _ = sb.Append(((double)numberValue!).ToString("G", CultureInfo.InvariantCulture));
         }
         else if (stringField is not null && value.Fields.TryGetValue(stringField, out var stringValue))
         {
-            sb.Append('"');
-            sb.Append(JsonEncodedText.Encode((string)stringValue!).ToString());
-            sb.Append('"');
+            _ = sb.Append('"');
+            _ = sb.Append(JsonEncodedText.Encode((string)stringValue!).ToString());
+            _ = sb.Append('"');
         }
         else if (boolField is not null && value.Fields.TryGetValue(boolField, out var boolValue))
         {
-            sb.Append((bool)boolValue! ? "true" : "false");
+            _ = sb.Append((bool)boolValue! ? "true" : "false");
         }
         else if (structField is not null && value.Fields.TryGetValue(structField, out var structValue) && structValue is SimpleDynamicMessage structMsg)
         {
@@ -605,7 +604,7 @@ internal static class WellKnownTypeHandler
         }
         else
         {
-            sb.Append("null");
+            _ = sb.Append("null");
         }
     }
 
@@ -614,7 +613,7 @@ internal static class WellKnownTypeHandler
         // ListValue is encoded as a JSON array
         var valuesField = listValue.Descriptor.FindFieldByNumber(1);
 
-        sb.Append('[');
+        _ = sb.Append('[');
 
         if (valuesField is not null && listValue.RepeatedFields.TryGetValue(valuesField, out var values))
         {
@@ -622,7 +621,7 @@ internal static class WellKnownTypeHandler
             {
                 if (i > 0)
                 {
-                    sb.Append(',');
+                    _ = sb.Append(',');
                 }
 
                 if (values[i] is SimpleDynamicMessage valueMsg)
@@ -631,11 +630,11 @@ internal static class WellKnownTypeHandler
                 }
                 else
                 {
-                    sb.Append("null");
+                    _ = sb.Append("null");
                 }
             }
         }
 
-        sb.Append(']');
+        _ = sb.Append(']');
     }
 }

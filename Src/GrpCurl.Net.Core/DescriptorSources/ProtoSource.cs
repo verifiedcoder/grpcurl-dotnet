@@ -116,7 +116,7 @@ internal static class ProtoSource
                 var stdoutTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
                 var stderrTask = process.StandardError.ReadToEndAsync(cancellationToken);
 
-                await Task.WhenAll(stdoutTask, stderrTask).ConfigureAwait(false);
+                _ = await Task.WhenAll(stdoutTask, stderrTask).ConfigureAwait(false);
                 await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
 
                 if (process.ExitCode == 0)

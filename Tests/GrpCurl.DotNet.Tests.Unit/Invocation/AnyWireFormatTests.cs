@@ -3,8 +3,8 @@ using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
 using GrpCurl.Net.Invocation;
 using System.Text.Json;
-using Type = Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type;
 using Label = Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label;
+using Type = Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type;
 
 namespace GrpCurl.Net.Tests.Unit.Invocation;
 
@@ -18,8 +18,6 @@ public sealed class AnyWireFormatTests
     // Self-contained schema: a holder with an Any field, and a sibling message used as the
     // embedded payload (same file → resolvable from the holder's descriptor closure).
     private static readonly MessageDescriptor AnyHolder = BuildSchema();
-
-    private static MessageDescriptor EmbeddedDescriptor => AnyHolder.File.MessageTypes.Single(m => m.Name == "Embedded");
 
     private static MessageDescriptor AnyDescriptor => AnyHolder.FindFieldByNumber(1).MessageType;
 
@@ -92,7 +90,7 @@ public sealed class AnyWireFormatTests
         const string json = """{"detail":{"@type":"type.googleapis.com/unknown.NotLoaded","x":1}}""";
 
         // Act / Assert
-        Should.Throw<ArgumentException>(() => new SimpleDynamicMessage(AnyHolder, json));
+        _ = Should.Throw<ArgumentException>(() => new SimpleDynamicMessage(AnyHolder, json));
     }
 
     [Fact]

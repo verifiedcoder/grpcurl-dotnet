@@ -2,8 +2,8 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.Tests.UI.Headless;
+using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Descriptors;
 using GrpCurl.Net.Studio.ViewModels.Panes;
@@ -108,7 +108,7 @@ public sealed class ServiceExplorerUiTests(HeadlessSessionFixture fixture) : Hea
 
         // FR-059: the deprecated service's label carries the strikethrough class.
         var service = window.GetVisualDescendants().OfType<TextBlock>().FirstOrDefault(t => t.Text == "pkg.Old");
-        service.ShouldNotBeNull();
+        _ = service.ShouldNotBeNull();
         service!.Classes.ShouldContain("deprecated");
 
         // FR-029: the A→Z sort toggle is present in the header.
@@ -127,7 +127,7 @@ public sealed class ServiceExplorerUiTests(HeadlessSessionFixture fixture) : Hea
         var export = window.GetVisualDescendants().OfType<Button>()
             .FirstOrDefault(b => Equals(b.GetValue(Avalonia.Automation.AutomationProperties.NameProperty), "Export schema"));
 
-        export.ShouldNotBeNull();
+        _ = export.ShouldNotBeNull();
         export!.IsEffectivelyVisible.ShouldBeTrue();
     });
 }

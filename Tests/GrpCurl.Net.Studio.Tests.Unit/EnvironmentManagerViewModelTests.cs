@@ -13,7 +13,7 @@ namespace GrpCurl.Net.Studio.Tests.Unit;
 /// </summary>
 public sealed class EnvironmentManagerViewModelTests
 {
-    private CancellationToken Ct => TestContext.Current.CancellationToken;
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     private static EnvironmentManagerViewModel Create(
         out FakeDialogService dialog, out IEnvironmentStore store, out FakeSecretStore secrets, WorkspaceModel? workspace = null)
@@ -104,7 +104,7 @@ public sealed class EnvironmentManagerViewModelTests
 
         await vm.DeleteEnvironmentCommand.ExecuteAsync(vm.Environments.Single());
 
-        store.Environments.ShouldHaveSingleItem();
+        _ = store.Environments.ShouldHaveSingleItem();
     }
 
     [Fact]

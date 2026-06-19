@@ -8,6 +8,9 @@
     <!-- C0: run IDE/style analyzers at build so the root .editorconfig governs them in CI, not just
          the IDE. Adopted rules sit at suggestion until Track C fixes each category and elevates it. -->
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!-- Required for IDE0005 (remove unnecessary usings) to run at build. CS1591 (missing XML doc) is
+         already in NoWarn below, so this only enables the unused-using check, not doc-comment nagging. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <DefaultItemExcludes>$(DefaultItemExcludes);bin\**;obj\**;artifacts\**</DefaultItemExcludes>
     <Authors>verifiedcoder</Authors>
@@ -18,9 +21,11 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
-    <!-- CS1591: don't require XML docs on every public symbol. Consumer-facing
-         types are documented by hand via Docs/filterConfig.yml. -->
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <!-- CS1591: don't require XML docs on every public symbol. Consumer-facing types are documented by
+         hand via Docs/filterConfig.yml. CS1573/1574/1572/1734/1735: GenerateDocumentationFile (enabled
+         above for IDE0005) also turns on XML-doc *validation* (param/cref/paramref matching); we don't
+         gate on doc-comment completeness, so suppress that family for consistency with CS1591. -->
+    <NoWarn>$(NoWarn);CS1591;CS1573;CS1574;CS1572;CS1734;CS1735</NoWarn>
   </PropertyGroup>
 
 </Project>

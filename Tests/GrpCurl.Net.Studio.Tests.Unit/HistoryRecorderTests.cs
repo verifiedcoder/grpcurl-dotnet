@@ -11,7 +11,7 @@ namespace GrpCurl.Net.Studio.Tests.Unit;
 /// response opt-in, capture on/off, and outcome mapping.</summary>
 public sealed class HistoryRecorderTests
 {
-    private CancellationToken Ct => TestContext.Current.CancellationToken;
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     private static InvocationRequestModel Request(IReadOnlyList<HeaderEntry>? headers = null, string body = "{ \"x\": 1 }") => new(
         new SavedConnection { Name = "staging", Address = "api.example.com:443", Transport = TransportMode.Tls },

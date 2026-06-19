@@ -1,10 +1,10 @@
-using System.Collections.ObjectModel;
-using System.Threading.Channels;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Collections.ObjectModel;
+using System.Threading.Channels;
 
 namespace GrpCurl.Net.Studio.ViewModels.Documents;
 
@@ -101,7 +101,7 @@ public sealed partial class StreamComposerViewModel : ViewModelBase
     public void End()
     {
         IsActive = false;
-        _channel?.Writer.TryComplete();
+        _ = (_channel?.Writer.TryComplete());
     }
 
     [RelayCommand(CanExecute = nameof(CanSend))]
@@ -118,7 +118,7 @@ public sealed partial class StreamComposerViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanSend))]
     private void CompleteSending()
     {
-        _channel?.Writer.TryComplete();
+        _ = (_channel?.Writer.TryComplete());
         SendingComplete = true;
     }
 

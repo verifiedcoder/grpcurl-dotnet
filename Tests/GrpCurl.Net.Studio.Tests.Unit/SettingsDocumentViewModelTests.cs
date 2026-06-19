@@ -276,7 +276,7 @@ public sealed class SettingsDocumentViewModelTests
         bundle.ShouldContain("Version: 1.2.3");
         bundle.ShouldContain("OS:");
         bundle.ShouldContain("connect timeout");
-        vm.DiagnosticsStatus.ShouldNotBeNull();
+        _ = vm.DiagnosticsStatus.ShouldNotBeNull();
     }
 
     [Fact]
@@ -493,6 +493,6 @@ public sealed class SettingsDocumentViewModelTests
         await vm.DeleteSecretCommand.ExecuteAsync("studio/v1/a");
 
         (await secrets.ExistsAsync("studio/v1/a", ct)).ShouldBeTrue(); // declined → untouched
-        vm.SecretKeyRefs.ShouldHaveSingleItem();
+        _ = vm.SecretKeyRefs.ShouldHaveSingleItem();
     }
 }

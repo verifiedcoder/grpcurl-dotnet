@@ -52,7 +52,7 @@ public sealed class ProtoFileEmitterTests
             await ProtoFileEmitter.WriteAsync(source, outDir, force: false, TestContext.Current.CancellationToken);
 
             // Assert
-            await Should.ThrowAsync<IOException>(async () =>
+            _ = await Should.ThrowAsync<IOException>(async () =>
             {
                 await ProtoFileEmitter.WriteAsync(source, outDir, force: false, TestContext.Current.CancellationToken);
             });

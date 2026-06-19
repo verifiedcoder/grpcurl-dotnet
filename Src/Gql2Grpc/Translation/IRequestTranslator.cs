@@ -1,6 +1,6 @@
+using Google.Protobuf.Reflection;
 using Gql2Grpc.Configuration;
 using Gql2Grpc.GraphQL;
-using Google.Protobuf.Reflection;
 
 namespace Gql2Grpc.Translation;
 

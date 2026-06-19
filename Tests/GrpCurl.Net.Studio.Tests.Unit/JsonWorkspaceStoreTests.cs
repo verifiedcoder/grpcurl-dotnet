@@ -130,7 +130,7 @@ public sealed class JsonWorkspaceStoreTests : IDisposable
         LockManager(100).TakeOver(path); // a live foreign instance (pid 100) holds the lock
 
         var store = new JsonWorkspaceStore(Path_, lockManager: LockManager(200));
-        await store.OpenAsync(path, ct);
+        _ = await store.OpenAsync(path, ct);
 
         store.IsLockedByAnother.ShouldBeTrue();
         store.ForeignLock!.Pid.ShouldBe(100);
@@ -159,7 +159,7 @@ public sealed class JsonWorkspaceStoreTests : IDisposable
         writer.ReleaseLock(); // leave the file with no lingering lock
 
         var store = new JsonWorkspaceStore(Path_, lockManager: LockManager(200));
-        await store.OpenAsync(path, ct);
+        _ = await store.OpenAsync(path, ct);
         store.IsLockedByAnother.ShouldBeFalse();
 
         LockManager(300).TakeOver(path); // another instance steals the lock
@@ -185,7 +185,7 @@ public sealed class JsonWorkspaceStoreTests : IDisposable
         try
         {
             var store = new JsonWorkspaceStore(Path_);
-            await store.OpenAsync(roPath, ct);
+            _ = await store.OpenAsync(roPath, ct);
             store.IsCurrentReadOnly.ShouldBeTrue();
 
             var before = await File.ReadAllTextAsync(roPath, ct);
@@ -289,7 +289,7 @@ public sealed class JsonWorkspaceStoreTests : IDisposable
         var target = DocPath("broken");
         await File.WriteAllTextAsync(target, "{ not json", ct);
 
-        await Should.ThrowAsync<WorkspaceSchemaException>(() => new JsonWorkspaceStore(Path_).OpenAsync(target, ct));
+        _ = await Should.ThrowAsync<WorkspaceSchemaException>(() => new JsonWorkspaceStore(Path_).OpenAsync(target, ct));
     }
 
     [Fact]
@@ -417,7 +417,7 @@ public sealed class JsonWorkspaceStoreTests : IDisposable
     {
         var ct = TestContext.Current.CancellationToken;
         var store = new JsonWorkspaceStore(Path_);
-        store.NewWorkspace(); // CurrentPath becomes null
+        _ = store.NewWorkspace(); // CurrentPath becomes null
 
         await store.SaveAsync(Named("untitled-edit"), ct);
 

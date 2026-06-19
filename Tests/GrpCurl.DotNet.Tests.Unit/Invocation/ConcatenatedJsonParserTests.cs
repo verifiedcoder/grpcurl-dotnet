@@ -14,7 +14,7 @@ public sealed class ConcatenatedJsonParserTests
         var result = InvokeCommandHandler.ParseConcatenatedJsonObjects(json);
 
         // Assert
-        result.ShouldHaveSingleItem();
+        _ = result.ShouldHaveSingleItem();
         result[0].ShouldContain("key");
         result[0].ShouldContain("value");
     }
@@ -102,7 +102,7 @@ public sealed class ConcatenatedJsonParserTests
         var result = InvokeCommandHandler.ParseConcatenatedJsonObjects(json);
 
         // Assert
-        result.ShouldHaveSingleItem();
+        _ = result.ShouldHaveSingleItem();
         result[0].ShouldBe("{}");
     }
 }

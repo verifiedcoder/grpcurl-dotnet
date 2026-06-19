@@ -68,7 +68,7 @@ operations:
 
         // Assert
         config.Operations[0].Arguments.ShouldContainKey("a");
-        config.Operations[0].Arguments["a"].ShouldBeOfType<ArgumentRule.Rename>();
+        _ = config.Operations[0].Arguments["a"].ShouldBeOfType<ArgumentRule.Rename>();
     }
 
     [Fact]
@@ -95,7 +95,7 @@ operations:
         // Assert
         args["a"].ShouldBeOfType<ArgumentRule.PathRule>().Path.ShouldBe("p.q");
         args["b"].ShouldBeOfType<ArgumentRule.Literal>().Value.ShouldBe("hello");
-        args["c"].ShouldBeOfType<ArgumentRule.SkipArgument>();
+        _ = args["c"].ShouldBeOfType<ArgumentRule.SkipArgument>();
         config.Operations[0].SelectionFieldMaskPath.ShouldBe("read_mask");
     }
 
@@ -117,7 +117,7 @@ operations:
         var path = WriteTemp(yaml, ".yaml");
 
         // Assert
-        await Should.ThrowAsync<InvalidDataException>(async () =>
+        _ = await Should.ThrowAsync<InvalidDataException>(async () =>
             await MappingConfigLoader.LoadAsync(path, TestContext.Current.CancellationToken));
     }
 

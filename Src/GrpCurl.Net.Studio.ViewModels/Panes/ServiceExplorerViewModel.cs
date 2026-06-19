@@ -1,10 +1,10 @@
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.Studio.ViewModels.Explorer;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Descriptors;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Collections.ObjectModel;
 
 namespace GrpCurl.Net.Studio.ViewModels.Panes;
 
@@ -118,7 +118,7 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
         }
     }
 
-    public string Header => "Service Explorer";
+    public static string Header => "Service Explorer";
 
     public ObservableCollection<ServiceNodeViewModel> Services { get; }
 
@@ -275,7 +275,7 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
         // The dialog service is yes/no, so the reveal affordance rides on the confirmation (FR-103).
         if (await _dialog.ConfirmAsync("Export complete", summary + "\n\nReveal in the file manager?") && _launcher is not null)
         {
-            await _launcher.LaunchUriAsync(new Uri(revealTarget).AbsoluteUri);
+            _ = await _launcher.LaunchUriAsync(new Uri(revealTarget).AbsoluteUri);
         }
     }
 
@@ -348,7 +348,7 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
         catch (OperationCanceledException)
         {
             // Superseded or user-cancelled: settle into a neutral state based on what we have.
-            await _dispatcher.InvokeAsync(() =>
+            _ = await _dispatcher.InvokeAsync(() =>
                 State = _catalog is null
                     ? ExplorerState.NoConnection
                     : _catalog.Services.Count == 0 ? ExplorerState.Empty : ExplorerState.Loaded);
@@ -475,7 +475,7 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
         }
 
         var info = await _protoc.DetectAsync();
-        await _dispatcher.InvokeAsync(() => ProtocDetail = info.Found ? $"protoc: {info.Message}" : null);
+        _ = await _dispatcher.InvokeAsync(() => ProtocDetail = info.Found ? $"protoc: {info.Message}" : null);
     }
 
     /// <summary>FR-020: surface a selected method's signature in the inspector.</summary>

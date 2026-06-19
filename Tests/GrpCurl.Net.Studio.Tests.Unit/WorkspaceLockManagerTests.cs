@@ -40,20 +40,20 @@ public sealed class WorkspaceLockManagerTests : IDisposable
     [Fact]
     public void A_live_foreign_lock_blocks_acquisition()
     {
-        Manager(pid: 100).Acquire(Ws); // first instance holds it
+        _ = Manager(pid: 100).Acquire(Ws); // first instance holds it
 
         var second = Manager(pid: 200, alive: _ => true); // pid 100 still alive
         var result = second.Acquire(Ws);
 
         result.Acquired.ShouldBeFalse();
-        result.Holder.ShouldNotBeNull();
+        _ = result.Holder.ShouldNotBeNull();
         result.Holder!.Pid.ShouldBe(100);
     }
 
     [Fact]
     public void A_lock_held_by_a_dead_pid_on_the_same_machine_is_stale_and_reacquired()
     {
-        Manager(pid: 100).Acquire(Ws);
+        _ = Manager(pid: 100).Acquire(Ws);
 
         var second = Manager(pid: 200, alive: pid => pid != 100); // pid 100 is gone
         var result = second.Acquire(Ws);
@@ -65,7 +65,7 @@ public sealed class WorkspaceLockManagerTests : IDisposable
     [Fact]
     public void A_lock_from_a_different_machine_is_not_treated_as_stale_by_pid()
     {
-        Manager(pid: 100, machine: "host-a").Acquire(Ws);
+        _ = Manager(pid: 100, machine: "host-a").Acquire(Ws);
 
         // Different machine: we cannot verify the PID, so a recent lock is honoured (not stale).
         var second = Manager(pid: 100, machine: "host-b", alive: _ => false);
@@ -78,7 +78,7 @@ public sealed class WorkspaceLockManagerTests : IDisposable
     [Fact]
     public void A_lock_older_than_24h_is_stale()
     {
-        Manager(now: T0).Acquire(Ws);
+        _ = Manager(now: T0).Acquire(Ws);
 
         var later = Manager(pid: 200, now: T0.AddHours(25));
         later.Acquire(Ws).Acquired.ShouldBeTrue();
@@ -96,7 +96,7 @@ public sealed class WorkspaceLockManagerTests : IDisposable
     public void Take_over_steals_the_lock_so_the_previous_holder_no_longer_owns_it()
     {
         var first = Manager(pid: 100);
-        first.Acquire(Ws);
+        _ = first.Acquire(Ws);
 
         var second = Manager(pid: 200);
         second.TakeOver(Ws);
@@ -109,11 +109,11 @@ public sealed class WorkspaceLockManagerTests : IDisposable
     public void Release_deletes_our_lock_but_leaves_a_foreign_lock_alone()
     {
         var first = Manager(pid: 100);
-        first.Acquire(Ws);
+        _ = first.Acquire(Ws);
         first.Release(Ws);
         File.Exists(WorkspaceLockManager.LockPathFor(Ws)).ShouldBeFalse();
 
-        first.Acquire(Ws); // re-acquire
+        _ = first.Acquire(Ws); // re-acquire
         var foreign = Manager(pid: 200);
         foreign.Release(Ws); // not ours — must not delete
         File.Exists(WorkspaceLockManager.LockPathFor(Ws)).ShouldBeTrue();

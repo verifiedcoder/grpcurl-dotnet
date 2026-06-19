@@ -1,6 +1,6 @@
-using System.Text.Json;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Text.Json;
 
 namespace GrpCurl.Net.Studio.Services;
 
@@ -221,7 +221,7 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
         // has taken over, degrade to read-only-locked instead of writing over them.
         if (_haveLock && !_lock.StillOwned(CurrentPath))
         {
-            SetLocked(true, _lock.Holder(CurrentPath));
+            SetLocked(true, WorkspaceLockManager.Holder(CurrentPath));
             return;
         }
 
@@ -336,7 +336,7 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
 
     private static async Task WriteAtomicAsync(string path, WorkspaceModel workspace, CancellationToken cancellationToken)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        _ = Directory.CreateDirectory(Path.GetDirectoryName(path)!);
 
         // FR-147: store file references relative to this file's directory when they live beneath it.
         var portable = WorkspacePathPortability.ToRelative(workspace, DirectoryOf(path));
@@ -350,7 +350,7 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
     private async Task PromoteRecentAsync(string path, CancellationToken cancellationToken)
     {
         var full = Path.GetFullPath(path);
-        _recent.RemoveAll(p => PathsEqual(p, full));
+        _ = _recent.RemoveAll(p => PathsEqual(p, full));
         _recent.Insert(0, full);
 
         if (_recent.Count > MaxRecent)
@@ -387,7 +387,7 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
     {
         try
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(_recentPath)!);
+            _ = Directory.CreateDirectory(Path.GetDirectoryName(_recentPath)!);
             var json = JsonSerializer.Serialize(_recent, RecentWorkspacesJsonContext.Default.ListString);
             await File.WriteAllTextAsync(_recentPath, json, cancellationToken).ConfigureAwait(false);
         }

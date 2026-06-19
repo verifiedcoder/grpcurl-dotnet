@@ -61,7 +61,7 @@ internal sealed class DialogService : IDialogService
         return result;
     }
 
-    private async Task<string> ShowPromptAsync(string title, string message, IReadOnlyList<string> buttons)
+    private static async Task<string> ShowPromptAsync(string title, string message, IReadOnlyList<string> buttons)
     {
         var chosen = buttons[0];
 
@@ -85,7 +85,7 @@ internal sealed class DialogService : IDialogService
         foreach (var label in buttons)
         {
             var button = new Button { Content = label, MinWidth = 80 };
-            button.SetValue(Avalonia.Automation.AutomationProperties.NameProperty, label);
+            _ = button.SetValue(Avalonia.Automation.AutomationProperties.NameProperty, label);
             button.Click += (_, _) =>
             {
                 chosen = label;

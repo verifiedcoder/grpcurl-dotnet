@@ -385,7 +385,7 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
                     rpcHeaders: null,
                     protosetOut: null));
 
-            exception.ShouldNotBeNull();
+            _ = exception.ShouldNotBeNull();
         }
         finally
         {
@@ -433,7 +433,7 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
                     rpcHeaders: null,
                     protosetOut: null));
 
-            exception.ShouldNotBeNull();
+            _ = exception.ShouldNotBeNull();
         }
         finally
         {
@@ -481,7 +481,7 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
                     rpcHeaders: null,
                     protosetOut: null));
 
-            exception.ShouldNotBeNull();
+            _ = exception.ShouldNotBeNull();
         }
         finally
         {
@@ -529,7 +529,7 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
                     rpcHeaders: null,
                     protosetOut: null));
 
-            exception.ShouldNotBeNull();
+            _ = exception.ShouldNotBeNull();
         }
         finally
         {
@@ -578,7 +578,7 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
                     rpcHeaders: null,
                     protosetOut: null));
 
-            exception.ShouldNotBeNull();
+            _ = exception.ShouldNotBeNull();
         }
         finally
         {
@@ -632,7 +632,7 @@ public sealed class InvokeCommandHandlerTests(GrpcTestFixture fixture)
                     protosetOut: null,
                     output: OutputFormat.Json));
 
-            exception.ShouldNotBeNull();
+            _ = exception.ShouldNotBeNull();
             exception.ExitCode.ShouldBe(64 + 13);
 
             stdout.ToString().ShouldBeEmpty();

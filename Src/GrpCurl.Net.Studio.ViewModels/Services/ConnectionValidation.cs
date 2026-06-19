@@ -64,7 +64,7 @@ public static class ConnectionValidation
 
         try
         {
-            GrpcChannelFactory.ParseDuration(duration);
+            _ = GrpcChannelFactory.ParseDuration(duration);
             return null;
         }
         catch (ArgumentException ex)

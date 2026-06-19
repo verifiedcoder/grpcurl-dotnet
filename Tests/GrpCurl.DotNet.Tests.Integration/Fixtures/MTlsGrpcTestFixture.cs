@@ -59,16 +59,16 @@ public sealed class MTlsGrpcTestFixture : IAsyncLifetime
 
         var builder = WebApplication.CreateBuilder();
 
-        builder.Services.AddGrpc();
-        builder.Services.AddGrpcReflection();
-        builder.Logging.SetMinimumLevel(LogLevel.Warning);
+        _ = builder.Services.AddGrpc();
+        _ = builder.Services.AddGrpcReflection();
+        _ = builder.Logging.SetMinimumLevel(LogLevel.Warning);
 
-        builder.WebHost.ConfigureKestrel(options =>
+        _ = builder.WebHost.ConfigureKestrel(options =>
         {
             options.ListenLocalhost(Port, listenOptions =>
             {
                 listenOptions.Protocols = HttpProtocols.Http2;
-                listenOptions.UseHttps(httpsOptions =>
+                _ = listenOptions.UseHttps(httpsOptions =>
                 {
                     httpsOptions.ServerCertificate = serverCert;
                     httpsOptions.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
@@ -81,8 +81,8 @@ public sealed class MTlsGrpcTestFixture : IAsyncLifetime
 
         _app = builder.Build();
 
-        _app.MapGrpcService<TestServiceImpl>();
-        _app.MapGrpcReflectionService();
+        _ = _app.MapGrpcService<TestServiceImpl>();
+        _ = _app.MapGrpcReflectionService();
 
         await _app.StartAsync();
     }
@@ -133,7 +133,7 @@ public sealed class MTlsGrpcTestFixture : IAsyncLifetime
         using var chain = new X509Chain();
 
         chain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
-        chain.ChainPolicy.CustomTrustStore.Add(trustedCa);
+        _ = chain.ChainPolicy.CustomTrustStore.Add(trustedCa);
         chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
 
         return chain.Build(clientCertificate);

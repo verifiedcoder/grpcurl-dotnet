@@ -1,6 +1,6 @@
+using GrpCurl.Net.Studio.ViewModels.Services;
 using System.ComponentModel;
 using System.Text.Json;
-using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.Services.Secrets;
 
@@ -12,7 +12,7 @@ namespace GrpCurl.Net.Studio.Services.Secrets;
 ///     it transparently switches to the fallback (defence in depth); migration of already-stored secrets
 ///     between backends is out of scope for v1 (SEC-025) — a missed keyref means the user re-enters the value.
 /// </summary>
-internal sealed class SecretStore : ISecretStore
+internal sealed class SecretStore : ISecretStore, IDisposable
 {
     private const string ProbeKeyRef = "studio/v1/app/probe";
     private const string IndexFileName = "secret-keyrefs.json";
@@ -81,7 +81,7 @@ internal sealed class SecretStore : ISecretStore
         }
         finally
         {
-            _indexGate.Release();
+            _ = _indexGate.Release();
         }
     }
 
@@ -101,7 +101,7 @@ internal sealed class SecretStore : ISecretStore
         }
         finally
         {
-            _indexGate.Release();
+            _ = _indexGate.Release();
         }
 
         static bool Add(List<string> keys, string keyRef)
@@ -127,7 +127,7 @@ internal sealed class SecretStore : ISecretStore
 
     private void WriteIndex(List<string> keys)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(_indexPath)!);
+        _ = Directory.CreateDirectory(Path.GetDirectoryName(_indexPath)!);
         var tempPath = _indexPath + ".tmp";
         File.WriteAllText(tempPath, JsonSerializer.Serialize(keys));
         File.Move(tempPath, _indexPath, overwrite: true);
@@ -139,7 +139,7 @@ internal sealed class SecretStore : ISecretStore
         {
             // A lookup of an absent sentinel is non-interactive: it returns false on a working backend and
             // throws only when the backend itself is unavailable (no library, no D-Bus, locked).
-            native.ExistsAsync(ProbeKeyRef).GetAwaiter().GetResult();
+            _ = native.ExistsAsync(ProbeKeyRef).GetAwaiter().GetResult();
             return true;
         }
         catch (Exception ex) when (IsNativeFailure(ex))
@@ -198,4 +198,9 @@ internal sealed class SecretStore : ISecretStore
         or Win32Exception
         or TypeInitializationException
         or PlatformNotSupportedException;
+
+    public void Dispose()
+    {
+        throw new NotImplementedException();
+    }
 }

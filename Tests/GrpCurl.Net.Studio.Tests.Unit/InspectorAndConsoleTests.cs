@@ -16,7 +16,7 @@ public sealed class InspectorAndConsoleTests
         var inspector = new InspectorViewModel();
 
         inspector.IsEmpty.ShouldBeTrue();
-        inspector.Content.ShouldBeOfType<EmptyInspectorContent>();
+        _ = inspector.Content.ShouldBeOfType<EmptyInspectorContent>();
     }
 
     [Fact]
@@ -29,7 +29,7 @@ public sealed class InspectorAndConsoleTests
         inspector.Content.ShouldBeOfType<MessageContent>().Title.ShouldBe("Message #1");
 
         inspector.ShowCallTiming(SampleTiming());
-        inspector.Content.ShouldBeOfType<CallTimingContent>();
+        _ = inspector.Content.ShouldBeOfType<CallTimingContent>();
 
         inspector.Clear();
         inspector.IsEmpty.ShouldBeTrue();
@@ -81,7 +81,7 @@ public sealed class InspectorAndConsoleTests
 
         console.Append("[descriptor] duplicate file a.proto");
 
-        console.Messages.ShouldHaveSingleItem();
+        _ = console.Messages.ShouldHaveSingleItem();
         console.Calls.ShouldBeEmpty();
         console.HasActivity.ShouldBeFalse();
     }

@@ -31,7 +31,7 @@ public sealed class ConnectionRegistryTests(StudioPlaintextServerFixture server)
             TestContext.Current.CancellationToken);
 
         result.Ok.ShouldBeTrue(result.Message);
-        result.ServiceCount.ShouldNotBeNull();
+        _ = result.ServiceCount.ShouldNotBeNull();
         result.ServiceCount!.Value.ShouldBeGreaterThanOrEqualTo(1); // testing.TestService at least
     }
 
@@ -68,7 +68,7 @@ public sealed class ConnectionRegistryTests(StudioPlaintextServerFixture server)
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() =>
+        _ = await Should.ThrowAsync<OperationCanceledException>(() =>
             registry.TestConnectionAsync(PlaintextReflection(server.Address), cts.Token));
     }
 }

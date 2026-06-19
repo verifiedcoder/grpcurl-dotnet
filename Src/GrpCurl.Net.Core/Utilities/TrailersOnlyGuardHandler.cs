@@ -50,7 +50,7 @@ internal sealed class TrailersOnlyGuardHandler(HttpMessageHandler innerHandler) 
 
         foreach (var header in originalContent.Headers)
         {
-            replayContent.Headers.TryAddWithoutValidation(header.Key, header.Value);
+            _ = replayContent.Headers.TryAddWithoutValidation(header.Key, header.Value);
         }
 
         response.Content = replayContent;
@@ -60,8 +60,8 @@ internal sealed class TrailersOnlyGuardHandler(HttpMessageHandler innerHandler) 
 
     private static void StripHeaderStatus(HttpResponseMessage response)
     {
-        response.Headers.Remove(GrpcStatusHeader);
-        response.Headers.Remove(GrpcMessageHeader);
+        _ = response.Headers.Remove(GrpcStatusHeader);
+        _ = response.Headers.Remove(GrpcMessageHeader);
     }
 
     /// <summary>

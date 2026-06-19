@@ -1,8 +1,8 @@
+using GrpCurl.Net.Studio.ViewModels.Services;
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.Services.Secrets;
 
@@ -12,7 +12,7 @@ namespace GrpCurl.Net.Studio.Services.Secrets;
 ///     without a key file, and works headlessly (no keyring service required).
 /// </summary>
 [SupportedOSPlatform("windows")]
-internal sealed class WindowsDpapiSecretStore : ISecretBackend
+internal sealed class WindowsDpapiSecretStore : ISecretBackend, IDisposable
 {
     private readonly string _dataPath;
     private readonly SemaphoreSlim _gate = new(1, 1);
@@ -30,7 +30,7 @@ internal sealed class WindowsDpapiSecretStore : ISecretBackend
         }
         finally
         {
-            _gate.Release();
+            _ = _gate.Release();
         }
     }
 
@@ -46,7 +46,7 @@ internal sealed class WindowsDpapiSecretStore : ISecretBackend
         }
         finally
         {
-            _gate.Release();
+            _ = _gate.Release();
         }
     }
 
@@ -65,7 +65,7 @@ internal sealed class WindowsDpapiSecretStore : ISecretBackend
         }
         finally
         {
-            _gate.Release();
+            _ = _gate.Release();
         }
     }
 
@@ -82,7 +82,7 @@ internal sealed class WindowsDpapiSecretStore : ISecretBackend
         }
         finally
         {
-            _gate.Release();
+            _ = _gate.Release();
         }
     }
 
@@ -93,7 +93,12 @@ internal sealed class WindowsDpapiSecretStore : ISecretBackend
 
     private void Save(Dictionary<string, string> store)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(_dataPath)!);
+        _ = Directory.CreateDirectory(Path.GetDirectoryName(_dataPath)!);
         File.WriteAllText(_dataPath, JsonSerializer.Serialize(store));
+    }
+
+    public void Dispose()
+    {
+        throw new NotImplementedException();
     }
 }

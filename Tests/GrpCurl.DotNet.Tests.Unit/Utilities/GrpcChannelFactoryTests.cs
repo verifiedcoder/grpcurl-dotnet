@@ -1,6 +1,6 @@
+using GrpCurl.Net.Utilities;
 using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
-using GrpCurl.Net.Utilities;
 
 namespace GrpCurl.Net.Tests.Unit.Utilities;
 
@@ -167,7 +167,7 @@ public sealed class GrpcChannelFactoryTests
         var metadata = GrpcChannelFactory.CreateMetadata(null);
 
         // Assert
-        metadata.ShouldHaveSingleItem();
+        _ = metadata.ShouldHaveSingleItem();
         metadata[0].Key.ShouldBe("user-agent");
         metadata[0].Value.ShouldBe(UserAgentProvider.Default);
         metadata[0].Value.ShouldStartWith("grpcn/");
@@ -182,7 +182,7 @@ public sealed class GrpcChannelFactoryTests
         var metadata = GrpcChannelFactory.CreateMetadata([]);
 
         // Assert
-        metadata.ShouldHaveSingleItem();
+        _ = metadata.ShouldHaveSingleItem();
         metadata[0].Key.ShouldBe("user-agent");
     }
 
@@ -229,7 +229,7 @@ public sealed class GrpcChannelFactoryTests
         var metadata = GrpcChannelFactory.CreateMetadata(null, "my-custom-agent/2.0");
 
         // Assert
-        metadata.ShouldHaveSingleItem();
+        _ = metadata.ShouldHaveSingleItem();
         metadata[0].Key.ShouldBe("user-agent");
         metadata[0].Value.ShouldBe("my-custom-agent/2.0");
     }
@@ -268,7 +268,7 @@ public sealed class GrpcChannelFactoryTests
         var metadata = GrpcChannelFactory.CreateMetadata(headers);
 
         // Assert
-        metadata.ShouldHaveSingleItem(); // Should only have the user-agent
+        _ = metadata.ShouldHaveSingleItem(); // Should only have the user-agent
     }
 
     [Fact]
@@ -388,7 +388,7 @@ public sealed class GrpcChannelFactoryTests
         using var channel = GrpcChannelFactory.Create("http://localhost:50051");
 
         // Assert
-        channel.ShouldNotBeNull();
+        _ = channel.ShouldNotBeNull();
         channel.Target.ShouldContain("localhost");
     }
 
@@ -401,7 +401,7 @@ public sealed class GrpcChannelFactoryTests
         using var channel = GrpcChannelFactory.Create("https://localhost:50051");
 
         // Assert
-        channel.ShouldNotBeNull();
+        _ = channel.ShouldNotBeNull();
         channel.Target.ShouldContain("localhost");
     }
 
@@ -414,7 +414,7 @@ public sealed class GrpcChannelFactoryTests
         using var channel = GrpcChannelFactory.Create("localhost:50051");
 
         // Assert
-        channel.ShouldNotBeNull();
+        _ = channel.ShouldNotBeNull();
         channel.Target.ShouldContain("localhost");
     }
 
@@ -432,7 +432,7 @@ public sealed class GrpcChannelFactoryTests
             });
 
         // Assert
-        channel.ShouldNotBeNull();
+        _ = channel.ShouldNotBeNull();
         channel.Target.ShouldContain("localhost");
     }
 
@@ -445,7 +445,7 @@ public sealed class GrpcChannelFactoryTests
         using var channel = GrpcChannelFactory.Create("https://localhost:50051");
 
         // Assert
-        channel.ShouldNotBeNull();
+        _ = channel.ShouldNotBeNull();
     }
 
     [Fact]
@@ -462,7 +462,7 @@ public sealed class GrpcChannelFactoryTests
             });
 
         // Assert
-        channel.ShouldNotBeNull();
+        _ = channel.ShouldNotBeNull();
         channel.Target.ShouldContain("localhost");
     }
 
@@ -481,7 +481,7 @@ public sealed class GrpcChannelFactoryTests
             });
 
         // Assert
-        channel.ShouldNotBeNull();
+        _ = channel.ShouldNotBeNull();
         channel.Target.ShouldContain("localhost");
     }
 
@@ -502,7 +502,7 @@ public sealed class GrpcChannelFactoryTests
             });
 
         // Assert
-        channel.ShouldNotBeNull();
+        _ = channel.ShouldNotBeNull();
         channel.Target.ShouldContain("localhost");
     }
 
@@ -523,7 +523,7 @@ public sealed class GrpcChannelFactoryTests
             });
 
         // Assert
-        channel.ShouldNotBeNull();
+        _ = channel.ShouldNotBeNull();
         channel.Target.ShouldContain("localhost");
     }
 
@@ -598,7 +598,7 @@ public sealed class GrpcChannelFactoryTests
             });
 
         // Assert
-        channel.ShouldNotBeNull();
+        _ = channel.ShouldNotBeNull();
         channel.Target.ShouldContain("localhost");
     }
 
@@ -616,7 +616,7 @@ public sealed class GrpcChannelFactoryTests
             });
 
         // Assert
-        channel.ShouldNotBeNull();
+        _ = channel.ShouldNotBeNull();
         channel.Target.ShouldContain("localhost");
     }
 
@@ -634,7 +634,7 @@ public sealed class GrpcChannelFactoryTests
             });
 
         // Assert
-        channel.ShouldNotBeNull();
+        _ = channel.ShouldNotBeNull();
         channel.Target.ShouldContain("localhost");
     }
 
@@ -653,7 +653,7 @@ public sealed class GrpcChannelFactoryTests
             });
 
         // Assert
-        channel.ShouldNotBeNull();
+        _ = channel.ShouldNotBeNull();
         channel.Target.ShouldContain("localhost");
     }
 
@@ -685,7 +685,7 @@ public sealed class GrpcChannelFactoryTests
 
         // Act
         // Assert
-        Should.Throw<Exception>(() =>
+        _ = Should.Throw<Exception>(() =>
             GrpcChannelFactory.Create(
                 "localhost:50051",
                 new GrpcChannelFactory.ChannelOptions
@@ -702,7 +702,7 @@ public sealed class GrpcChannelFactoryTests
 
         // Act
         // Assert
-        Should.Throw<Exception>(() =>
+        _ = Should.Throw<Exception>(() =>
             GrpcChannelFactory.Create(
                 "localhost:50051",
                 new GrpcChannelFactory.ChannelOptions
@@ -726,7 +726,7 @@ public sealed class GrpcChannelFactoryTests
 
         // Assert - GrpcChannel.Target strips the scheme, so verify channel was created
         // and the address was resolved (no exception from an invalid URI)
-        channel.ShouldNotBeNull();
+        _ = channel.ShouldNotBeNull();
         channel.Target.ShouldBe("myhost:8080");
     }
 
@@ -744,7 +744,7 @@ public sealed class GrpcChannelFactoryTests
 
         // Assert - GrpcChannel.Target strips the scheme, so verify channel was created
         // and the address was resolved (no exception from an invalid URI)
-        channel.ShouldNotBeNull();
+        _ = channel.ShouldNotBeNull();
         channel.Target.ShouldBe("myhost:8080");
     }
 
@@ -761,7 +761,7 @@ public sealed class GrpcChannelFactoryTests
             });
 
         // Assert
-        channel.ShouldNotBeNull();
+        _ = channel.ShouldNotBeNull();
         channel.Target.ShouldBe("myhost:8080");
     }
 
@@ -778,7 +778,7 @@ public sealed class GrpcChannelFactoryTests
             });
 
         // Assert
-        channel.ShouldNotBeNull();
+        _ = channel.ShouldNotBeNull();
         channel.Target.ShouldBe("myhost:8080");
     }
 
@@ -796,7 +796,7 @@ public sealed class GrpcChannelFactoryTests
             });
 
         // Assert
-        channel.ShouldNotBeNull();
+        _ = channel.ShouldNotBeNull();
         channel.Target.ShouldContain("localhost");
     }
 

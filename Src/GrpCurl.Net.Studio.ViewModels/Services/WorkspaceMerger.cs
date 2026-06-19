@@ -91,7 +91,7 @@ public static class WorkspaceMerger
             candidate = $"{name} (imported {n})";
         }
 
-        taken.Add(candidate);
+        _ = taken.Add(candidate);
         return candidate;
     }
 }

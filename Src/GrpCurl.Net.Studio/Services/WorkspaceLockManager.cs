@@ -1,7 +1,7 @@
+using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
-using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 
 namespace GrpCurl.Net.Studio.Services;
 
@@ -61,7 +61,7 @@ internal sealed class WorkspaceLockManager
     public bool StillOwned(string workspacePath) => Read(LockPathFor(workspacePath)) is { } info && IsMine(info);
 
     /// <summary>The current on-disk lock holder, or null when there is no lock.</summary>
-    public WorkspaceLockInfo? Holder(string workspacePath) => Read(LockPathFor(workspacePath));
+    public static WorkspaceLockInfo? Holder(string workspacePath) => Read(LockPathFor(workspacePath));
 
     /// <summary>Deletes the lock if we own it (clean release); a foreign lock is left untouched.</summary>
     public void Release(string workspacePath)
@@ -102,7 +102,7 @@ internal sealed class WorkspaceLockManager
 
     private static void Write(string lockPath, WorkspaceLockInfo info)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(lockPath))!);
+        _ = Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(lockPath))!);
         var tempPath = lockPath + ".tmp";
         File.WriteAllText(tempPath, JsonSerializer.Serialize(info, WorkspaceLockJsonContext.Default.WorkspaceLockInfo));
         File.Move(tempPath, lockPath, overwrite: true);

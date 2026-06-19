@@ -80,7 +80,7 @@ public sealed class ProtosetExporterTests : IDisposable
         var fileBytes = await File.ReadAllBytesAsync(outputPath, TestContext.Current.CancellationToken);
         var parsedFds = FileDescriptorSet.Parser.ParseFrom(fileBytes);
 
-        parsedFds.ShouldNotBeNull();
+        _ = parsedFds.ShouldNotBeNull();
         parsedFds.File.ShouldNotBeEmpty();
     }
 
@@ -104,7 +104,7 @@ public sealed class ProtosetExporterTests : IDisposable
         // Verify the output is a valid protobuf FileDescriptorSet
         var parsedFds = FileDescriptorSet.Parser.ParseFrom(fileBytes);
 
-        parsedFds.ShouldNotBeNull();
+        _ = parsedFds.ShouldNotBeNull();
         parsedFds.File.ShouldNotBeEmpty();
     }
 
@@ -124,7 +124,7 @@ public sealed class ProtosetExporterTests : IDisposable
         var fileBytes = await File.ReadAllBytesAsync(outputPath, TestContext.Current.CancellationToken);
         var parsedFds = FileDescriptorSet.Parser.ParseFrom(fileBytes);
 
-        parsedFds.ShouldNotBeNull();
+        _ = parsedFds.ShouldNotBeNull();
         parsedFds.File.ShouldNotBeEmpty();
     }
 
@@ -146,7 +146,7 @@ public sealed class ProtosetExporterTests : IDisposable
         var fileBytes = await File.ReadAllBytesAsync(outputPath, TestContext.Current.CancellationToken);
         var parsedFds = FileDescriptorSet.Parser.ParseFrom(fileBytes);
 
-        parsedFds.ShouldNotBeNull();
+        _ = parsedFds.ShouldNotBeNull();
         parsedFds.File.ShouldNotBeEmpty();
     }
 
@@ -167,7 +167,7 @@ public sealed class ProtosetExporterTests : IDisposable
         var fileBytes = await File.ReadAllBytesAsync(outputPath, TestContext.Current.CancellationToken);
         var parsedFds = FileDescriptorSet.Parser.ParseFrom(fileBytes);
 
-        parsedFds.ShouldNotBeNull();
+        _ = parsedFds.ShouldNotBeNull();
         parsedFds.File.ShouldBeEmpty();
     }
 
@@ -210,7 +210,7 @@ public sealed class ProtosetExporterTests : IDisposable
         var fileBytes = await File.ReadAllBytesAsync(outputPath, TestContext.Current.CancellationToken);
         var parsedFds = FileDescriptorSet.Parser.ParseFrom(fileBytes);
 
-        parsedFds.ShouldNotBeNull();
+        _ = parsedFds.ShouldNotBeNull();
         parsedFds.File.ShouldNotBeEmpty();
     }
 
@@ -263,7 +263,7 @@ public sealed class ProtosetExporterTests : IDisposable
         var parsedFds = FileDescriptorSet.Parser.ParseFrom(fileBytes);
 
         // Assert
-        parsedFds.ShouldNotBeNull();
+        _ = parsedFds.ShouldNotBeNull();
         parsedFds.File.ShouldNotBeEmpty();
     }
 

@@ -37,4 +37,11 @@ public interface IGraphQlService
     ///     stream after the envelopes already produced (AC-3). Each yielded string is one NDJSON envelope.
     /// </summary>
     IAsyncEnumerable<string> StreamAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken);
+
+    /// <summary>
+    ///     Derives the GraphQL schema for the connection by answering <c>__schema</c> locally from the
+    ///     descriptor set (GQL-075) — no business RPC. Reflects the mapping's <c>defaults.introspection</c>
+    ///     (GQL-076). A descriptor-load failure surfaces on <see cref="GraphQlSchemaResult.Error" />.
+    /// </summary>
+    Task<GraphQlSchemaResult> IntrospectAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken);
 }

@@ -246,6 +246,102 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
         }
     }
 
+    public async Task<GraphQlSchemaResult> IntrospectAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken)
+    {
+        var mappingConfig = await MappingConfigLoader.LoadAsync(request.MappingPath, cancellationToken).ConfigureAwait(false);
+        var connection = request.Connection;
+        var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
+        var options = ConnectionChannelMapper.ToChannelOptions(connection, null, profile, password);
+        var reflectionMetadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
+        var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
+
+        var schemaName = string.IsNullOrWhiteSpace(mappingConfig.Defaults.Introspection.SchemaName)
+            ? "Schema"
+            : mappingConfig.Defaults.Introspection.SchemaName!;
+
+        try
+        {
+            await using var session = await DescriptorSourceFactory.CreateAsync(
+                connection.Address, protosets, protos, imports,
+                channelOptions: options,
+                reflectionMetadata: reflectionMetadata,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            // GQL-075: __schema answered locally from the descriptor set — no business RPC.
+            var schema = new GraphQLSchemaBuilder(session.Source, mappingConfig).BuildSchema();
+            var types = MapSchemaTypes(schema);
+            var json = schema.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+
+            return new GraphQlSchemaResult(Ok: true, schemaName, types, json, Error: null);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return new GraphQlSchemaResult(Ok: false, schemaName, [], null,
+                new GraphQlProblem(ex.Message, GraphQlProblemKind.Configuration));
+        }
+    }
+
+    internal static IReadOnlyList<GraphQlSchemaType> MapSchemaTypes(JsonObject schema)
+    {
+        if (schema["types"] is not JsonArray types)
+        {
+            return [];
+        }
+
+        var result = new List<GraphQlSchemaType>();
+
+        foreach (var node in types)
+        {
+            if (node is not JsonObject type || type["name"]?.GetValue<string>() is not { } name || name.StartsWith("__", StringComparison.Ordinal))
+            {
+                continue; // skip the introspection meta-types (__Type, __Schema, …)
+            }
+
+            var kind = type["kind"]?.GetValue<string>() ?? "OBJECT";
+            var members = new List<GraphQlSchemaMember>();
+
+            // Object / interface / input fields carry a type; enum values and union members are bare names.
+            foreach (var key in (string[])["fields", "inputFields"])
+            {
+                if (type[key] is JsonArray fields)
+                {
+                    members.AddRange(fields.OfType<JsonObject>()
+                        .Select(f => new GraphQlSchemaMember(f["name"]?.GetValue<string>() ?? "?", IntrospectionTypeName(f["type"]))));
+                }
+            }
+
+            if (type["enumValues"] is JsonArray enumValues)
+            {
+                members.AddRange(enumValues.OfType<JsonObject>().Select(e => new GraphQlSchemaMember(e["name"]?.GetValue<string>() ?? "?", null)));
+            }
+
+            if (type["possibleTypes"] is JsonArray possibleTypes)
+            {
+                members.AddRange(possibleTypes.OfType<JsonObject>().Select(p => new GraphQlSchemaMember(p["name"]?.GetValue<string>() ?? "?", null)));
+            }
+
+            result.Add(new GraphQlSchemaType(name, kind, members));
+        }
+
+        return result;
+    }
+
+    /// <summary>Unwraps an introspection type ref (NON_NULL / LIST / ofType) into a display name like <c>[String!]</c>.</summary>
+    private static string IntrospectionTypeName(JsonNode? type)
+    {
+        if (type is not JsonObject obj)
+        {
+            return "?";
+        }
+
+        return obj["kind"]?.GetValue<string>() switch
+        {
+            "NON_NULL" => IntrospectionTypeName(obj["ofType"]) + "!",
+            "LIST" => "[" + IntrospectionTypeName(obj["ofType"]) + "]",
+            _ => obj["name"]?.GetValue<string>() ?? "?"
+        };
+    }
+
     /// <summary>Parse + select the operation + coerce variables (no network). Returns a problem on failure.</summary>
     private static (GraphQLOperation? Operation, IReadOnlyList<ResolvedSelection>? Selections, GraphQlProblem? Error) PrepareSelections(GraphQlExecutionRequest request)
     {

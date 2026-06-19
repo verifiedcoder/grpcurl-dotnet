@@ -175,6 +175,22 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
 
     public bool HasErrors => Errors.Count > 0;
 
+    /// <summary>The derived schema type tree (GQL-075); populated on demand by the Schema view, no RPC.</summary>
+    public ObservableCollection<GraphQlSchemaType> SchemaTypes { get; } = [];
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasSchema))]
+    public partial string? SchemaName { get; set; }
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(CopySchemaJsonCommand))]
+    public partial string? SchemaJson { get; set; }
+
+    public bool HasSchema => SchemaTypes.Count > 0;
+
+    /// <summary>GQL-076: the documented limitation that convention-derived fields don't appear in introspection.</summary>
+    public const string SchemaLimitationNote = "Convention-derived fields do not appear in introspection — only fields with an explicit mapping entry are listed.";
+
     /// <summary>The verbosity options for the pane selector.</summary>
     public IReadOnlyList<GraphQlVerbosity> Verbosities { get; } =
         [GraphQlVerbosity.Off, GraphQlVerbosity.Verbose, GraphQlVerbosity.VeryVerbose];
@@ -716,6 +732,54 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
         if (ResponseJson is not null)
         {
             await _clipboard.SetTextAsync(ResponseJson);
+        }
+    }
+
+    /// <summary>GQL-075: load the derived schema (local introspection, no RPC) into the Schema view.</summary>
+    [RelayCommand(IncludeCancelCommand = true)]
+    private async Task LoadSchema(CancellationToken cancellationToken)
+    {
+        var request = BuildRequest();
+        var result = await _graphql.IntrospectAsync(request, cancellationToken);
+
+        await _dispatcher.InvokeAsync(() =>
+        {
+            SchemaTypes.Clear();
+
+            if (!result.Ok)
+            {
+                if (result.Error is { } error)
+                {
+                    Problems.Add(error);
+                    OnPropertyChanged(nameof(HasProblems));
+                }
+
+                SchemaJson = null;
+                SchemaName = null;
+                OnPropertyChanged(nameof(HasSchema));
+                return;
+            }
+
+            foreach (var type in result.Types)
+            {
+                SchemaTypes.Add(type);
+            }
+
+            SchemaName = result.SchemaName;
+            SchemaJson = result.Json;
+            OnPropertyChanged(nameof(HasSchema));
+        });
+    }
+
+    public bool CanCopySchemaJson => !string.IsNullOrEmpty(SchemaJson);
+
+    /// <summary>GQL-078: copy the full introspection JSON.</summary>
+    [RelayCommand(CanExecute = nameof(CanCopySchemaJson))]
+    private async Task CopySchemaJson()
+    {
+        if (SchemaJson is not null)
+        {
+            await _clipboard.SetTextAsync(SchemaJson);
         }
     }
 

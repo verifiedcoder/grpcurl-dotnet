@@ -205,8 +205,10 @@
                               ToolTip.Tip="Show per-field resolved mapping (-v) and request JSON (-vv)" />
                 </StackPanel>
                 <Button Content="Copy response" Command="{Binding CopyResponseCommand}" Padding="6,0" Margin="0,0,4,0" />
-                <Button Content="Copy as CLI" Command="{Binding CopyAsCliCommand}" Padding="6,0"
+                <Button Content="Copy as CLI" Command="{Binding CopyAsCliCommand}" Padding="6,0" Margin="0,0,4,0"
                         ToolTip.Tip="Copy the equivalent gql2grpc command (secrets as ${VAR})" />
+                <Button Content="Schema" Command="{Binding LoadSchemaCommand}" Padding="6,0"
+                        ToolTip.Tip="Derive the GraphQL schema locally from the descriptors (no RPC)" />
             </WrapPanel>
 
             <!-- GQL-025: a cancelled run keeps whatever was assembled, with a clear banner. -->
@@ -263,6 +265,44 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+
+            <!-- GQL-075/076/078: derived schema viewer — local introspection (no RPC), type tree + copy JSON. -->
+            <Expander IsVisible="{Binding HasSchema}" IsExpanded="True">
+                <Expander.Header>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock VerticalAlignment="Center">
+                            <Run Text="Schema: " /><Run Text="{Binding SchemaName}" FontWeight="SemiBold" />
+                        </TextBlock>
+                        <Button Content="Copy JSON" Command="{Binding CopySchemaJsonCommand}" Padding="6,0"
+                                AutomationProperties.Name="Copy introspection JSON" />
+                    </StackPanel>
+                </Expander.Header>
+                <StackPanel Spacing="2">
+                    <TextBlock Text="{x:Static docs:GraphQlDocumentViewModel.SchemaLimitationNote}" FontSize="11" Opacity="0.6" TextWrapping="Wrap" />
+                    <ItemsControl ItemsSource="{Binding SchemaTypes}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="gql:GraphQlSchemaType">
+                                <Expander Padding="0" Margin="0,1">
+                                    <Expander.Header>
+                                        <TextBlock FontFamily="Cascadia Code,Consolas,monospace" FontSize="12">
+                                            <Run Text="{Binding Name}" FontWeight="SemiBold" /><Run Text=" : " /><Run Text="{Binding Kind}" Foreground="{DynamicResource Status.Neutral}" />
+                                        </TextBlock>
+                                    </Expander.Header>
+                                    <ItemsControl ItemsSource="{Binding Members}" Margin="16,0,0,0">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="gql:GraphQlSchemaMember">
+                                                <TextBlock FontFamily="Cascadia Code,Consolas,monospace" FontSize="12">
+                                                    <Run Text="{Binding Name}" /><Run Text="{Binding TypeName, StringFormat=' : {0}'}" Foreground="{DynamicResource Status.Neutral}" />
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Expander>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Expander>
 
             <!-- GQL-029: verbose pane — per-field resolved mapping (-v) + request JSON (-vv), captured from the engine. -->
             <Expander Header="Verbose" IsVisible="{Binding HasVerboseLog}" IsExpanded="True">

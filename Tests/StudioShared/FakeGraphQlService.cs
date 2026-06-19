@@ -76,4 +76,16 @@ public sealed class FakeGraphQlService : IGraphQlService
             await Task.Yield();
         }
     }
+
+    public GraphQlSchemaResult SchemaResult { get; set; } = new(Ok: true, "Schema", [], "{}", Error: null);
+
+    public Func<GraphQlExecutionRequest, CancellationToken, Task<GraphQlSchemaResult>>? OnIntrospect { get; set; }
+
+    public int IntrospectCount { get; private set; }
+
+    public Task<GraphQlSchemaResult> IntrospectAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken)
+    {
+        IntrospectCount++;
+        return OnIntrospect is not null ? OnIntrospect(request, cancellationToken) : Task.FromResult(SchemaResult);
+    }
 }

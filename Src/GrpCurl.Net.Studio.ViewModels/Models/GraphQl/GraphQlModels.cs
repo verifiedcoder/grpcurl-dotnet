@@ -156,6 +156,27 @@ public sealed record GraphQlExecutionRequest(
     bool Raw,
     GraphQlVerbosity Verbosity = GraphQlVerbosity.Off);
 
+/// <summary>One field / enum value / union member of a derived schema type (GQL-075).</summary>
+public sealed record GraphQlSchemaMember(string Name, string? TypeName);
+
+/// <summary>One type in the derived GraphQL schema (GQL-075): its name, kind, and members.</summary>
+public sealed record GraphQlSchemaType(string Name, string Kind, IReadOnlyList<GraphQlSchemaMember> Members)
+{
+    public bool HasMembers => Members.Count > 0;
+}
+
+/// <summary>
+///     The locally-derived GraphQL schema (GQL-075/076): the navigable type tree plus the raw introspection
+///     JSON (for "copy introspection JSON"). Produced without any RPC. <see cref="Error" /> is set when the
+///     descriptor set could not be loaded.
+/// </summary>
+public sealed record GraphQlSchemaResult(
+    bool Ok,
+    string SchemaName,
+    IReadOnlyList<GraphQlSchemaType> Types,
+    string? Json,
+    GraphQlProblem? Error);
+
 /// <summary>
 ///     A completed GraphQL execution captured for history (GQL-027 / FR-120). Carries the redaction-ready
 ///     request snapshot (document + headers, secrets redacted by the recorder) and the outcome. The

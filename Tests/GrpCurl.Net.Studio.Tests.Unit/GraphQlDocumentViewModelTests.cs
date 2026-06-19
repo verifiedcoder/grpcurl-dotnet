@@ -455,6 +455,38 @@ public sealed class GraphQlDocumentViewModelTests
         vm.State.ShouldBe(RunState.Failed);
     }
 
+    [Fact]
+    public async Task Load_schema_populates_the_type_tree_and_copy_works()
+    {
+        var vm = Create(out var graphql, out var clipboard);
+        graphql.SchemaResult = new(
+            Ok: true, "MyApi",
+            [new GraphQlSchemaType("User", "OBJECT", [new GraphQlSchemaMember("id", "String!")])],
+            "{ \"__schema\": {} }", Error: null);
+
+        await vm.LoadSchemaCommand.ExecuteAsync(null);
+
+        vm.HasSchema.ShouldBeTrue();
+        vm.SchemaName.ShouldBe("MyApi");
+        vm.SchemaTypes.ShouldContain(t => t.Name == "User");
+
+        await vm.CopySchemaJsonCommand.ExecuteAsync(null);
+        clipboard.Text.ShouldBe("{ \"__schema\": {} }");
+    }
+
+    [Fact]
+    public async Task A_schema_load_failure_surfaces_a_problem()
+    {
+        var vm = Create(out var graphql, out _);
+        graphql.SchemaResult = new(Ok: false, "Schema", [], null,
+            new GraphQlProblem("reflection failed", GraphQlProblemKind.Configuration));
+
+        await vm.LoadSchemaCommand.ExecuteAsync(null);
+
+        vm.HasSchema.ShouldBeFalse();
+        vm.Problems.ShouldContain(p => p.Message == "reflection failed");
+    }
+
     private static GraphQlParseResult OneSubscription(int rootFields = 1)
         => new([new GraphQlOperationInfo("S", GraphQlOperationKind.Subscription) { RootFieldCount = rootFields }], []);
 

@@ -29,4 +29,12 @@ public interface IGraphQlService
         GraphQlExecutionRequest request,
         IProgress<GraphQlFieldProgress>? progress,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    ///     Executes a subscription (server-streaming) operation, yielding one complete GraphQL envelope per
+    ///     streamed message (GQL-060/061) as it arrives. Setup failures (parse / coercion / unresolved
+    ///     mapping) and per-message errors are yielded as error-envelope lines. Cancellation stops the
+    ///     stream after the envelopes already produced (AC-3). Each yielded string is one NDJSON envelope.
+    /// </summary>
+    IAsyncEnumerable<string> StreamAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken);
 }

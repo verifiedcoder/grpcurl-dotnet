@@ -1,4 +1,5 @@
 using GrpCurl.Net.Studio.Services;
+using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.GraphQl;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
@@ -57,5 +58,31 @@ public sealed class GraphQlServiceParseTests
 
         result.Ok.ShouldBeFalse();
         result.Problems.ShouldContain(p => p.Kind == GraphQlProblemKind.Syntax);
+    }
+
+    [Fact]
+    public void Parse_counts_root_fields_for_the_subscription_pre_flight()
+    {
+        var result = Service().Parse("subscription Two { a b }");
+
+        result.Operations.ShouldHaveSingleItem().RootFieldCount.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task StreamAsync_yields_a_single_error_envelope_for_a_malformed_document()
+    {
+        var request = new GraphQlExecutionRequest(
+            new SavedConnection { Name = "c", Address = "h:1" },
+            Document: "subscription { ", OperationName: null, VariablesJson: null, DefaultService: null, MappingPath: null,
+            Headers: [], Deadline: null, EmitDefaults: false, AllowUnknownFields: true, StrictSelection: false,
+            Introspection: true, Raw: false);
+
+        var lines = new List<string>();
+        await foreach (var line in Service().StreamAsync(request, TestContext.Current.CancellationToken))
+        {
+            lines.Add(line);
+        }
+
+        lines.ShouldHaveSingleItem().ShouldContain("errors"); // a setup failure surfaces as one error envelope, no RPC
     }
 }

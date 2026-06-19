@@ -3,7 +3,9 @@ using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using AvaloniaEdit;
+using AvaloniaEdit.CodeCompletion;
 using AvaloniaEdit.Document;
+using AvaloniaEdit.Editing;
 using AvaloniaEdit.TextMate;
 using GrpCurl.Net.Studio.Theming;
 using GrpCurl.Net.Studio.ViewModels.Documents;
@@ -102,6 +104,14 @@ public sealed partial class GraphQlDocumentView : UserControl
     // selected lines already start with '#', uncomments instead.
     private void OnDocumentEditorKeyDown(object? sender, KeyEventArgs e)
     {
+        // GQL-015: Ctrl+Space opens descriptor-aware completion (root fields / arguments).
+        if (e.Key == Key.Space && e.KeyModifiers.HasFlag(KeyModifiers.Control))
+        {
+            e.Handled = true;
+            _ = ShowCompletionsAsync();
+            return;
+        }
+
         if (e.Key != Key.Oem2 || !e.KeyModifiers.HasFlag(KeyModifiers.Control) || _documentEditor?.Document is not { } document)
         {
             return;
@@ -265,6 +275,123 @@ public sealed partial class GraphQlDocumentView : UserControl
         {
             _responseEditor.Text = text ?? string.Empty;
         }
+    }
+
+    private CompletionWindow? _completionWindow;
+
+    // GQL-015: fetch descriptor-aware completions and show them in context (root fields vs. arguments).
+    private async Task ShowCompletionsAsync()
+    {
+        if (_viewModel is null || _documentEditor?.Document is not { } document)
+        {
+            return;
+        }
+
+        ViewModels.Models.GraphQl.GraphQlCompletions completions;
+        try
+        {
+            completions = await _viewModel.GetCompletionsAsync(CancellationToken.None);
+        }
+        catch (Exception)
+        {
+            return; // mid-edit parse / unreachable descriptors — no completion
+        }
+
+        var text = document.Text;
+        var offset = _documentEditor.CaretOffset;
+        var (inArguments, field) = AnalyzeContext(text, offset);
+
+        var items = inArguments && field is not null ? completions.ArgumentsFor(field) : completions.RootFields;
+        if (items.Count == 0)
+        {
+            return;
+        }
+
+        var window = new CompletionWindow(_documentEditor.TextArea);
+
+        // Replace the partial identifier under the caret.
+        var start = offset;
+        while (start > 0 && (char.IsLetterOrDigit(text[start - 1]) || text[start - 1] == '_'))
+        {
+            start--;
+        }
+
+        window.StartOffset = start;
+
+        foreach (var item in items)
+        {
+            window.CompletionList.CompletionData.Add(new GraphQlCompletionData(item));
+        }
+
+        window.Closed += (_, _) => _completionWindow = null;
+        _completionWindow = window;
+        window.Show();
+    }
+
+    /// <summary>
+    ///     Whether the caret sits inside a field's argument list (scanning back to an unmatched '(' before any
+    ///     '{'/'}'), and if so the enclosing field name — so completion offers arguments vs. root fields.
+    /// </summary>
+    private static (bool InArguments, string? Field) AnalyzeContext(string text, int offset)
+    {
+        var parenDepth = 0;
+
+        for (var i = Math.Min(offset, text.Length) - 1; i >= 0; i--)
+        {
+            var c = text[i];
+
+            if (c is '{' or '}')
+            {
+                return (false, null); // left the selection-set scope without entering arguments
+            }
+
+            if (c == ')')
+            {
+                parenDepth++;
+            }
+            else if (c == '(')
+            {
+                if (parenDepth > 0)
+                {
+                    parenDepth--;
+                    continue;
+                }
+
+                // Unmatched '(' — the field name precedes it.
+                var j = i - 1;
+                while (j >= 0 && char.IsWhiteSpace(text[j]))
+                {
+                    j--;
+                }
+
+                var end = j + 1;
+                while (j >= 0 && (char.IsLetterOrDigit(text[j]) || text[j] == '_'))
+                {
+                    j--;
+                }
+
+                var name = text[(j + 1)..end];
+                return (name.Length > 0, name.Length > 0 ? name : null);
+            }
+        }
+
+        return (false, null);
+    }
+
+    private sealed class GraphQlCompletionData(string text) : ICompletionData
+    {
+        public Avalonia.Media.IImage? Image => null;
+
+        public string Text => text;
+
+        public object Content => text;
+
+        public object Description => "GraphQL";
+
+        public double Priority => 0;
+
+        public void Complete(TextArea textArea, ISegment completionSegment, EventArgs insertionRequestEventArgs)
+            => textArea.Document.Replace(completionSegment, text);
     }
 
     private void RefreshMarkers()

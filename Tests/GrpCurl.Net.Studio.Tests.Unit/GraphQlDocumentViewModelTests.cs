@@ -33,6 +33,20 @@ public sealed class GraphQlDocumentViewModelTests
         => new([new GraphQlOperationInfo(name, GraphQlOperationKind.Query)], []);
 
     [Fact]
+    public async Task GetCompletionsAsync_forwards_the_facade_result()
+    {
+        var vm = Create(out var graphql, out _);
+        graphql.Completions = new GraphQlCompletions(
+            ["unaryCall"],
+            new Dictionary<string, IReadOnlyList<string>> { ["unaryCall"] = ["responseSize"] });
+
+        var completions = await vm.GetCompletionsAsync(TestContext.Current.CancellationToken);
+
+        completions.RootFields.ShouldBe(["unaryCall"]);
+        completions.ArgumentsFor("unaryCall").ShouldBe(["responseSize"]);
+    }
+
+    [Fact]
     public void A_single_operation_auto_selects_and_enables_execute()
     {
         var vm = Create(out _, out _);

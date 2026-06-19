@@ -29,6 +29,17 @@ public static partial class WorkspaceSecretScanner
     [GeneratedRegex(@"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")]
     private static partial Regex EnvVarPattern();
 
+    /// <summary>
+    ///     True when a header would leak a secret as plain text: its name is sensitive
+    ///     (per <see cref="SecretRedactor.ShouldRedact" />) and its value is a non-empty
+    ///     literal rather than a <c>${VAR}</c> reference. Shared with session persistence so
+    ///     <c>ui-state.json</c> applies the same rule the workspace save-guard enforces.
+    /// </summary>
+    public static bool IsSensitiveHeaderLiteral(string name, string? value)
+        => !string.IsNullOrEmpty(value)
+           && SecretRedactor.ShouldRedact(name)
+           && !EnvVarPattern().IsMatch(value);
+
     public static IReadOnlyList<SecretLeak> Scan(WorkspaceModel workspace, IReadOnlyCollection<string> secretValues)
     {
         var leaks = new List<SecretLeak>();
@@ -73,7 +84,7 @@ public static partial class WorkspaceSecretScanner
             }
 
             // A sensitive-named header must reference a variable (or secret), never carry a literal value.
-            if (SecretRedactor.ShouldRedact(header.Name) && !EnvVarPattern().IsMatch(header.Value))
+            if (IsSensitiveHeaderLiteral(header.Name, header.Value))
             {
                 leaks.Add(new SecretLeak(SecretLeakKind.SensitiveHeaderLiteral, $"{label} '{header.Name}'"));
             }

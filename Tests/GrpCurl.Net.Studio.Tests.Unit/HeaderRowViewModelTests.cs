@@ -29,6 +29,46 @@ public sealed class HeaderRowViewModelTests
     }
 
     [Fact]
+    public void A_bin_value_referencing_a_resolved_env_var_is_valid()
+    {
+        // Core expands ${VAR} then base64-decodes; the UI must validate the resolved value, not the
+        // literal, so a CLI-compatible `trace-bin: ${TRACE_BIN}` is not wrongly rejected.
+        var row = new HeaderRowViewModel
+        {
+            Name = "trace-bin",
+            Value = "${B5_TRACE_BIN}",
+            ActiveEnvironmentResolver = name => name == "B5_TRACE_BIN" ? "AAEC" : null // valid base64, 3 bytes
+        };
+
+        row.HasBinError.ShouldBeFalse();
+        row.BinReadout.ShouldBe("3 bytes");
+    }
+
+    [Fact]
+    public void A_bin_value_referencing_an_unset_var_is_not_flagged()
+    {
+        // The value can't be validated until the variable resolves; defer to send time rather than
+        // showing a spurious error on a literal that contains an unresolved placeholder.
+        var row = new HeaderRowViewModel { Name = "trace-bin", Value = "${B5_NO_SUCH_BIN}" };
+
+        row.HasBinError.ShouldBeFalse();
+        row.HasBinReadout.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void A_bin_value_resolving_to_invalid_base64_surfaces_an_error()
+    {
+        var row = new HeaderRowViewModel
+        {
+            Name = "trace-bin",
+            Value = "${B5_BAD_BIN}",
+            ActiveEnvironmentResolver = name => name == "B5_BAD_BIN" ? "not base64!!" : null
+        };
+
+        row.HasBinError.ShouldBeTrue();
+    }
+
+    [Fact]
     public void A_non_bin_header_is_never_a_bin_error()
     {
         var row = new HeaderRowViewModel { Name = "x-trace", Value = "anything goes" };

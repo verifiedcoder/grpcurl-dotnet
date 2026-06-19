@@ -448,6 +448,23 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+                        <!-- P3 fix: render the composer's advisory validation problems near the compose editor
+                             (previously only the unary Problems collection was shown). Send is never blocked. -->
+                        <Border IsVisible="{Binding HasProblems}" Padding="6,4"
+                                Background="{DynamicResource Surface.PaneHeader}"
+                                BorderBrush="{DynamicResource Divider}" BorderThickness="1" CornerRadius="3">
+                            <ItemsControl ItemsSource="{Binding Problems}" AutomationProperties.Name="Compose message problems">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="inv:ValidationProblem">
+                                        <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,1">
+                                            <TextBlock Text="⚠" FontSize="12" Foreground="{DynamicResource Status.Server}" />
+                                            <TextBlock Text="{Binding Display}" TextWrapping="Wrap" FontSize="12"
+                                                       Foreground="{DynamicResource Status.Server}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
                     </StackPanel>
                     </StackPanel>
                 </StackPanel>

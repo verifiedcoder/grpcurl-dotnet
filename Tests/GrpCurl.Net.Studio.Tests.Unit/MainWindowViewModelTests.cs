@@ -53,6 +53,22 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void Version_reflects_the_update_service_current_version()
+    {
+        // P3 fix: the status bar binds to this instead of a hard-coded "v1.0.0".
+        var vm = new MainWindowViewModel(
+            new ThemeService(new FakeSettingsStore()), EmptyConnectionsPane(), EmptyExplorer(),
+            new ConsoleViewModel(), new InspectorViewModel(), EmptyDocuments(),
+            updates: new FakeUpdateService { CurrentVersion = "1.2.3" });
+
+        vm.Version.ShouldBe("v1.2.3");
+    }
+
+    [Fact]
+    public void Version_is_empty_without_an_update_service()
+        => CreateViewModel().Version.ShouldBeEmpty();
+
+    [Fact]
     public void Construction_reflects_persisted_theme()
     {
         var settings = new FakeSettingsStore();

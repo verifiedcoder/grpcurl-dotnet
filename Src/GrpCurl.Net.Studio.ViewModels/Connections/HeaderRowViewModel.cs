@@ -50,6 +50,13 @@ public sealed partial class HeaderRowViewModel : ViewModelBase
     {
         OnPropertyChanged(nameof(ResolvedPreview));
         OnPropertyChanged(nameof(HasResolvedPreview));
+
+        // -bin validity is computed against the resolved value, so it must refresh with the
+        // active environment too (e.g. trace-bin: ${TRACE_BIN} becomes valid once TRACE_BIN is set).
+        OnPropertyChanged(nameof(BinError));
+        OnPropertyChanged(nameof(BinReadout));
+        OnPropertyChanged(nameof(HasBinError));
+        OnPropertyChanged(nameof(HasBinReadout));
     }
 
     public bool IsBin => Name.EndsWith("-bin", StringComparison.OrdinalIgnoreCase);
@@ -60,19 +67,50 @@ public sealed partial class HeaderRowViewModel : ViewModelBase
     /// <summary>True for sensitive header names (per Core's <see cref="SecretRedactor" />) — masked in the UI (FR-068).</summary>
     public bool IsSecret => SecretRedactor.ShouldRedact(Name);
 
-    /// <summary>FR-067: a <c>-bin</c> value must be valid base64; otherwise the call is blocked.</summary>
-    public string? BinError =>
-        IsBin && !string.IsNullOrEmpty(Value) && !TryDecodeBase64(Value, out _)
-            ? "Binary (-bin) value must be valid base64."
-            : null;
+    /// <summary>
+    ///     FR-067: a <c>-bin</c> value must be valid base64; otherwise the call is blocked. Core expands
+    ///     <c>${VAR}</c> first and then base64-decodes, so validation runs against the <em>resolved</em>
+    ///     value — a header like <c>trace-bin: ${TRACE_BIN}</c> is valid when <c>TRACE_BIN</c> holds valid
+    ///     base64, and a value that still references an unset variable can't be judged yet (deferred to
+    ///     send time) rather than wrongly rejected.
+    /// </summary>
+    public string? BinError
+    {
+        get
+        {
+            if (!IsBin || string.IsNullOrEmpty(Value))
+            {
+                return null;
+            }
+
+            var (resolved, fullyResolved) = ResolveForValidation();
+
+            if (!fullyResolved)
+            {
+                return null;
+            }
+
+            return TryDecodeBase64(resolved, out _) ? null : "Binary (-bin) value must be valid base64.";
+        }
+    }
 
     public bool HasBinError => BinError is not null;
 
-    /// <summary>FR-067: decoded byte-length readout for a valid <c>-bin</c> value.</summary>
-    public string? BinReadout =>
-        IsBin && BinError is null && !string.IsNullOrEmpty(Value) && TryDecodeBase64(Value, out var bytes)
-            ? $"{bytes} bytes"
-            : null;
+    /// <summary>FR-067: decoded byte-length readout for a valid <c>-bin</c> value (against the resolved value).</summary>
+    public string? BinReadout
+    {
+        get
+        {
+            if (!IsBin || HasBinError || string.IsNullOrEmpty(Value))
+            {
+                return null;
+            }
+
+            var (resolved, fullyResolved) = ResolveForValidation();
+
+            return fullyResolved && TryDecodeBase64(resolved, out var bytes) ? $"{bytes} bytes" : null;
+        }
+    }
 
     public bool HasBinReadout => BinReadout is not null;
 
@@ -107,6 +145,34 @@ public sealed partial class HeaderRowViewModel : ViewModelBase
     }
 
     public HeaderEntry ToEntry() => new() { Name = Name, Value = Value, IsBin = IsBin };
+
+    /// <summary>
+    ///     Expands <c>${VAR}</c> the way Core will (active environment first, then OS), reporting whether
+    ///     every referenced variable resolved. Used to validate <c>-bin</c> against the value actually sent,
+    ///     not the literal editor text. Unlike <see cref="ResolvedPreview" /> this does not redact — the
+    ///     result is consumed only by base64 validation, never displayed.
+    /// </summary>
+    private (string Resolved, bool FullyResolved) ResolveForValidation()
+    {
+        var fullyResolved = true;
+
+        var resolved = EnvVarPattern().Replace(Value, m =>
+        {
+            var name = m.Groups[1].Value;
+            var value = ActiveEnvironmentResolver?.Invoke(name) ?? Environment.GetEnvironmentVariable(name);
+
+            if (value is null)
+            {
+                fullyResolved = false;
+
+                return string.Empty;
+            }
+
+            return value;
+        });
+
+        return (resolved, fullyResolved);
+    }
 
     private static bool TryDecodeBase64(string value, out int byteCount)
     {

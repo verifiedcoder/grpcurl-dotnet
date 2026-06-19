@@ -286,7 +286,17 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     // FR-063: re-validate (debounced, off-thread) whenever the body or the unknown-fields toggle changes.
     partial void OnRequestJsonChanged(string value) => ScheduleValidation();
 
-    partial void OnAllowUnknownFieldsChanged(bool value) => ScheduleValidation();
+    partial void OnAllowUnknownFieldsChanged(bool value)
+    {
+        ScheduleValidation();
+
+        // P3 fix: flow the option into the client/bidi composer live so its validation matches the
+        // value the send will use (the composer no longer captures it once at creation).
+        if (Composer is { } composer)
+        {
+            composer.AllowUnknownFields = value;
+        }
+    }
 
     private void ScheduleValidation()
     {
@@ -827,7 +837,13 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         }
     }
 
-    /// <summary>FR-094: open a google.rpc.Help link after confirming with the user.</summary>
+    /// <summary>
+    ///     FR-094: open a <c>google.rpc.Help</c> link after confirming with the user. The URL is
+    ///     server-controlled, so only <c>http</c>/<c>https</c> may be launched — any other scheme (a
+    ///     local protocol handler, <c>file:</c>, etc.) is surfaced with its scheme and offered for copy
+    ///     instead of being handed to the OS launcher. The confirmation names the host/scheme so the
+    ///     user sees where a link actually points.
+    /// </summary>
     [RelayCommand]
     private async Task OpenHelpLink(string? url)
     {
@@ -836,7 +852,26 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
             return;
         }
 
-        if (await _dialogs.ConfirmAsync("Open link", $"Open {url} in your browser?"))
+        var launchable = Uri.TryCreate(url, UriKind.Absolute, out var parsed)
+                         && (parsed.Scheme == Uri.UriSchemeHttp || parsed.Scheme == Uri.UriSchemeHttps);
+
+        if (!launchable)
+        {
+            var scheme = parsed?.Scheme ?? "unknown";
+
+            if (await _dialogs.ConfirmAsync(
+                    "Unsupported link",
+                    $"This server-provided link uses the '{scheme}' scheme, which Studio will not open.\n\n{url}\n\nCopy it to the clipboard instead?"))
+            {
+                await _clipboard.SetTextAsync(url);
+            }
+
+            return;
+        }
+
+        if (await _dialogs.ConfirmAsync(
+                "Open link",
+                $"Open this {parsed!.Scheme} link to {parsed.Host} in your browser?\n\n{url}"))
         {
             await _launcher.LaunchUriAsync(url);
         }

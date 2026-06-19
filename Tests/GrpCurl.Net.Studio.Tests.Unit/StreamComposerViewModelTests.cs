@@ -111,6 +111,22 @@ public sealed class StreamComposerViewModelTests
         await vm.RunValidationAsync(TestContext.Current.CancellationToken);
 
         vm.Problems.ShouldHaveSingleItem();
+        vm.HasProblems.ShouldBeTrue();
         vm.SendCommand.CanExecute(null).ShouldBeTrue(); // advisory only
+    }
+
+    [Fact]
+    public async Task Validation_uses_the_current_allow_unknown_fields_value()
+    {
+        // P3 fix: the composer no longer captures allowUnknownFields at construction. Toggling it must
+        // change the value passed to validation (previously it stayed stuck at the construction value).
+        var vm = Create(out var validator, out _); // constructed with allowUnknownFields: true
+
+        await vm.RunValidationAsync(TestContext.Current.CancellationToken);
+        validator.LastAllowUnknownFields.ShouldBe(true);
+
+        vm.AllowUnknownFields = false;
+        await vm.RunValidationAsync(TestContext.Current.CancellationToken);
+        validator.LastAllowUnknownFields.ShouldBe(false);
     }
 }

@@ -28,6 +28,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private readonly IDialogService? _dialogs;
     private readonly IHistoryStore? _history;
     private readonly ISecretStore? _secrets;
+    private readonly IUpdateService? _updates;
 
     private SavedConnection? _insecureConnection;
 
@@ -93,13 +94,15 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IDialogService? dialogs = null,
         EnvironmentSwitcherViewModel? environment = null,
         IHistoryStore? history = null,
-        ISecretStore? secrets = null)
+        ISecretStore? secrets = null,
+        IUpdateService? updates = null)
     {
         _theme = theme;
         _profileStore = profileStore;
         _workspaceStore = workspaceStore;
         _history = history;
         _secrets = secrets;
+        _updates = updates;
         _filePicker = filePicker;
         _dialogs = dialogs;
         Connections = connections;
@@ -214,6 +217,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             LockedBannerText = string.Empty;
         }
     }
+
+    /// <summary>
+    ///     The running app version for the status bar (P3 fix), from the same runtime version service the
+    ///     settings/update UI uses — so a release bump no longer leaves the shell showing a stale literal.
+    ///     Empty when no update service is wired (e.g. headless tests).
+    /// </summary>
+    public string Version => _updates is { } updates ? $"v{updates.CurrentVersion}" : string.Empty;
 
     /// <summary>FR-156: surface that a launch-time check found a newer release (the shell shows a status-bar link).</summary>
     public void ShowUpdateAvailable(string latestVersion)

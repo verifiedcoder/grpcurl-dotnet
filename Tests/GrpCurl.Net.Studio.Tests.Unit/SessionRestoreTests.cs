@@ -7,6 +7,7 @@ using GrpCurl.Net.Studio.ViewModels.Models.Descriptors;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Models.Session;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Text.Json;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
 
@@ -25,6 +26,111 @@ public sealed class SessionRestoreTests
             descriptors, new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner(),
             new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator(), settings ?? new InMemorySettingsStore(),
             new FakeThemeService(), workspace: workspace, session: session, sessionDebounce: TimeSpan.Zero);
+    }
+
+    private static DocumentsViewModel CreateWithGraphQl(ISessionStore session, IWorkspaceStore workspace, FakeGraphQlService graphql)
+    {
+        var descriptors = new FakeDescriptorService
+        {
+            OnDescribe = (_, symbol, _) => Task.FromResult(
+                DescribeResult.Success(new MessageDescription(symbol, symbol, "f.proto", [], [], "{}")))
+        };
+
+        return new DocumentsViewModel(
+            descriptors, new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner(),
+            new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator(), new InMemorySettingsStore(),
+            new FakeThemeService(), workspace: workspace, session: session, graphql: graphql, sessionDebounce: TimeSpan.Zero);
+    }
+
+    private static FakeGraphQlService GraphQlWith(string operationName)
+        => new() { ParseResult = new([new ViewModels.Models.GraphQl.GraphQlOperationInfo(operationName, ViewModels.Models.GraphQl.GraphQlOperationKind.Query)], []) };
+
+    [Fact]
+    public void BuildSession_captures_a_graphql_tab()
+    {
+        var (workspace, connection) = Workspace();
+        var docs = CreateWithGraphQl(new FakeSessionStore(), workspace, GraphQlWith("Q"));
+
+        docs.OpenGraphQl(connection);
+        var tab = docs.Documents.OfType<GraphQlDocumentViewModel>().Single();
+        tab.Document = "query Q { x }";
+        tab.ReparseAndSelect("Q");
+        tab.VariablesJson = "{ \"v\": 1 }";
+        tab.DefaultService = "pkg.Service";
+        tab.StrictSelection = true;
+        tab.Raw = true;
+
+        var captured = docs.BuildSession().Tabs.Single(t => t.Kind == SessionTabKind.GraphQl);
+
+        captured.ConnectionId.ShouldBe("conn-1");
+        captured.GraphQlDocument.ShouldBe("query Q { x }");
+        captured.OperationName.ShouldBe("Q");
+        captured.VariablesJson.ShouldBe("{ \"v\": 1 }");
+        captured.DefaultService.ShouldBe("pkg.Service");
+        captured.StrictSelection.ShouldBeTrue();
+        captured.Raw.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task RestoreSession_reopens_a_graphql_tab_with_its_draft()
+    {
+        var (workspace, _) = Workspace();
+        var session = new FakeSessionStore
+        {
+            State = new SessionState
+            {
+                WorkspaceId = "ws-1",
+                Tabs =
+                [
+                    new SessionTab(
+                        SessionTabKind.GraphQl, "conn-1", string.Empty,
+                        Headers: [new SessionHeader("authorization", "${TOKEN}", false, false)],
+                        GraphQlDocument: "query Q { x }", OperationName: "Q",
+                        VariablesJson: "{ \"v\": 1 }", DefaultService: "pkg.Service",
+                        StrictSelection: true, Raw: true)
+                ]
+            }
+        };
+        var docs = CreateWithGraphQl(session, workspace, GraphQlWith("Q"));
+
+        await docs.RestoreSessionAsync(TestContext.Current.CancellationToken);
+
+        var tab = docs.Documents.OfType<GraphQlDocumentViewModel>().Single();
+        tab.Document.ShouldBe("query Q { x }");
+        _ = tab.SelectedOperation.ShouldNotBeNull();
+        tab.SelectedOperation!.Name.ShouldBe("Q");
+        tab.VariablesJson.ShouldBe("{ \"v\": 1 }");
+        tab.DefaultService.ShouldBe("pkg.Service");
+        tab.StrictSelection.ShouldBeTrue();
+        tab.Raw.ShouldBeTrue();
+        tab.Headers.ShouldHaveSingleItem().Name.ShouldBe("authorization");
+    }
+
+    [Fact]
+    public void GraphQl_session_tab_round_trips_through_the_json_context()
+    {
+        var state = new SessionState
+        {
+            WorkspaceId = "ws-1",
+            Tabs =
+            [
+                new SessionTab(
+                    SessionTabKind.GraphQl, "c", string.Empty,
+                    GraphQlDocument: "query Q { x }", OperationName: "Q", VariablesJson: "{}",
+                    DefaultService: "p.S", StrictSelection: true, Introspection: false, Raw: true)
+            ]
+        };
+
+        var json = JsonSerializer.Serialize(state, SessionStateJsonContext.Default.SessionState);
+        var back = JsonSerializer.Deserialize(json, SessionStateJsonContext.Default.SessionState).ShouldNotBeNull();
+
+        var tab = back.Tabs.ShouldHaveSingleItem();
+        tab.Kind.ShouldBe(SessionTabKind.GraphQl);
+        tab.GraphQlDocument.ShouldBe("query Q { x }");
+        tab.OperationName.ShouldBe("Q");
+        tab.StrictSelection.ShouldBeTrue();
+        tab.Introspection.ShouldBeFalse();
+        tab.Raw.ShouldBeTrue();
     }
 
     private static (FakeWorkspaceStore Workspace, SavedConnection Connection) Workspace()

@@ -37,6 +37,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     private readonly IHistoryRecorder? _recorder;
     private readonly ISavedRequestStore? _savedRequests;
     private readonly IEnvironmentService? _environment;
+    private readonly TlsProfile? _tlsProfile;
     private InvocationStatusModel? _streamTerminalStatus;
 
     // FR-145/FR-002: the saved request this tab is bound to (null = unsaved draft) and the baseline
@@ -152,7 +153,8 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         IInspector? inspector = null,
         IHistoryRecorder? recorder = null,
         ISavedRequestStore? savedRequests = null,
-        IEnvironmentService? environment = null)
+        IEnvironmentService? environment = null,
+        TlsProfile? tlsProfile = null)
     {
         Connection = connection;
         MethodSymbol = methodSymbol;
@@ -170,6 +172,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         _recorder = recorder;
         _savedRequests = savedRequests;
         _environment = environment;
+        _tlsProfile = tlsProfile;
         _revealGate = revealGate ?? AlwaysRevealGate.Instance;
         _writerFactory = writerFactory ?? (path => new StreamWriter(path));
 
@@ -778,8 +781,8 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     {
         // FR-165: a client/duplex tab reproduces its interactively-composed messages; everything else is unary.
         var command = HasComposer && Composer is { } composer
-            ? CliCommandBuilder.BuildStreamingCommand(BuildRequest(), StreamingCliMessages(composer), CliDialect)
-            : CliCommandBuilder.BuildCommand(BuildRequest(), CliDialect);
+            ? CliCommandBuilder.BuildStreamingCommand(BuildRequest(), StreamingCliMessages(composer), CliDialect, _tlsProfile)
+            : CliCommandBuilder.BuildCommand(BuildRequest(), CliDialect, _tlsProfile);
 
         await _clipboard.SetTextAsync(command);
     }

@@ -419,6 +419,25 @@ public sealed class GraphQlDocumentViewModelTests
     }
 
     [Fact]
+    public async Task The_verbose_log_is_populated_and_the_verbosity_flows_into_the_request()
+    {
+        var vm = Create(out var graphql, out _);
+        graphql.ParseResult = OneQuery();
+        graphql.ExecuteResult = new(Ok: true, EnvelopeJson: "{ \"data\": {} }", ConfigurationErrors: [])
+        {
+            VerboseLog = ["[x] → testing.TestService/UnaryCall"]
+        };
+        vm.ApplyParse(OneQuery());
+        vm.Verbosity = GraphQlVerbosity.VeryVerbose;
+
+        await vm.ExecuteCommand.ExecuteAsync(null);
+
+        graphql.LastRequest!.Verbosity.ShouldBe(GraphQlVerbosity.VeryVerbose);
+        vm.HasVerboseLog.ShouldBeTrue();
+        vm.VerboseLog.ShouldContain("[x] → testing.TestService/UnaryCall");
+    }
+
+    [Fact]
     public void Re_parsing_keeps_the_prior_selection_when_the_operation_still_exists()
     {
         var vm = Create(out _, out _);

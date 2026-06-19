@@ -134,6 +134,13 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
             IntrospectionEnabled = request.Introspection
         };
 
+        // GQL-029: when the verbose pane is on, capture the bridge's VerboseLogger lines (plain text, no
+        // stderr/markup) so the host renders the same per-field resolved mapping (and request JSON at -vv).
+        var captured = new System.Collections.Concurrent.ConcurrentQueue<string>();
+        var logger = request.Verbosity == GraphQlVerbosity.Off
+            ? new VerboseLogger(VerbosityLevel.Quiet)
+            : new VerboseLogger(ToVerbosity(request.Verbosity), captured.Enqueue);
+
         var executor = new OperationExecutor(
             mappingResolver,
             session.Source,
@@ -142,7 +149,7 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
             new SelectionProjector(request.StrictSelection),
             new IntrospectionExecutor(new GraphQLSchemaBuilder(session.Source, mappingConfig), new SelectionProjector(request.StrictSelection)),
             executorOptions,
-            new VerboseLogger(VerbosityLevel.Quiet));
+            logger);
 
         var bridgeProgress = progress is null ? null : new FieldProgressAdapter(progress);
 
@@ -151,7 +158,7 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
         var json = GraphQLResponseBuilder.Serialize(envelope);
         var ok = envelope["errors"] is not JsonArray errors || errors.Count == 0;
 
-        return new GraphQlExecutionResult(ok, json, []);
+        return new GraphQlExecutionResult(ok, json, []) { VerboseLog = [.. captured] };
     }
 
     private static GraphQlExecutionResult ConfigError(GraphQlProblemKind kind, string message)
@@ -200,6 +207,12 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
         GraphQLParser.AST.GraphQLListType list => "[" + PrintType(list.Type) + "]",
         GraphQLParser.AST.GraphQLNamedType named => named.Name.StringValue,
         _ => "?"
+    };
+
+    private static VerbosityLevel ToVerbosity(GraphQlVerbosity verbosity) => verbosity switch
+    {
+        GraphQlVerbosity.VeryVerbose => VerbosityLevel.VeryVerbose,
+        _ => VerbosityLevel.Verbose
     };
 
     private static GraphQlOperationKind ToKind(GraphQLOperationType type) => type switch

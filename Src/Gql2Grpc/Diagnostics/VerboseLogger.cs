@@ -3,21 +3,34 @@ using Spectre.Console;
 namespace Gql2Grpc.Diagnostics;
 
 /// <summary>
-///     Thin wrapper around <see cref="AnsiConsole" /> for verbose diagnostics on <c>stderr</c>.
-///     All output is bound to <see cref="Console.Error" />; stdout is reserved for the GraphQL response envelope.
+///     Thin wrapper around <see cref="AnsiConsole" /> for verbose diagnostics. By default all output is
+///     bound to <see cref="Console.Error" /> (stdout is reserved for the GraphQL response envelope). A host
+///     may instead supply a <see cref="Action{T}" /> sink to capture the plain message text — e.g. Studio's
+///     verbose pane (GQL-029) — without stderr or Spectre markup.
 /// </summary>
 public sealed class VerboseLogger
 {
-    private readonly IAnsiConsole _console;
+    private readonly IAnsiConsole? _console;
+    private readonly Action<string>? _sink;
 
     /// <summary>Creates a logger that emits at or below the given <paramref name="level" />.</summary>
-    public VerboseLogger(VerbosityLevel level)
+    /// <param name="level">The verbosity threshold.</param>
+    /// <param name="sink">
+    ///     Optional capture target for the plain message text. When supplied, lines go to it instead of
+    ///     stderr (no markup). It may be invoked from worker threads, so it must be thread-safe.
+    /// </param>
+    public VerboseLogger(VerbosityLevel level, Action<string>? sink = null)
     {
         Level = level;
-        _console = AnsiConsole.Create(new AnsiConsoleSettings
+        _sink = sink;
+
+        if (sink is null)
         {
-            Out = new AnsiConsoleOutput(Console.Error)
-        });
+            _console = AnsiConsole.Create(new AnsiConsoleSettings
+            {
+                Out = new AnsiConsoleOutput(Console.Error)
+            });
+        }
     }
 
     /// <summary>The verbosity threshold this logger is configured with.</summary>
@@ -31,21 +44,33 @@ public sealed class VerboseLogger
     public bool IsVeryVerbose 
         => Level >= VerbosityLevel.VeryVerbose;
 
-    /// <summary>Writes a dim-styled line to stderr when <see cref="IsVerbose" /> is set.</summary>
+    /// <summary>Emits a verbose line (dim on stderr, or the plain text to the sink) when <see cref="IsVerbose" /> is set.</summary>
     public void Verbose(string message)
     {
         if (IsVerbose)
         {
-            _console.MarkupLine($"[dim]{Markup.Escape(message)}[/]");
+            Emit(message, italic: false);
         }
     }
 
-    /// <summary>Writes a dim-italic line to stderr when <see cref="IsVeryVerbose" /> is set.</summary>
+    /// <summary>Emits a very-verbose line (dim-italic on stderr, or the plain text to the sink) when <see cref="IsVeryVerbose" /> is set.</summary>
     public void VeryVerbose(string message)
     {
         if (IsVeryVerbose)
         {
-            _console.MarkupLine($"[dim italic]{Markup.Escape(message)}[/]");
+            Emit(message, italic: true);
         }
+    }
+
+    private void Emit(string message, bool italic)
+    {
+        if (_sink is not null)
+        {
+            _sink(message);
+            return;
+        }
+
+        var style = italic ? "dim italic" : "dim";
+        _console!.MarkupLine($"[{style}]{Markup.Escape(message)}[/]");
     }
 }

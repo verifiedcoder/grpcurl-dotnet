@@ -10,6 +10,14 @@ public enum GraphQlOperationKind
     Subscription
 }
 
+/// <summary>Verbose-pane level (GQL-029): off, resolved-mapping (-v), or +request-JSON (-vv).</summary>
+public enum GraphQlVerbosity
+{
+    Off,
+    Verbose,
+    VeryVerbose
+}
+
 /// <summary>
 ///     How a problem should be presented (SPEC-015 §6): a usage/configuration problem (unresolvable
 ///     field, mapping-load/coercion/parse failure) is visually distinct from an upstream RPC error.
@@ -89,7 +97,8 @@ public sealed record GraphQlExecutionRequest(
     bool AllowUnknownFields,
     bool StrictSelection,
     bool Introspection,
-    bool Raw);
+    bool Raw,
+    GraphQlVerbosity Verbosity = GraphQlVerbosity.Off);
 
 /// <summary>
 ///     A completed GraphQL execution captured for history (GQL-027 / FR-120). Carries the redaction-ready
@@ -123,6 +132,9 @@ public sealed record GraphQlExecutionResult(
     string? EnvelopeJson,
     IReadOnlyList<GraphQlProblem> ConfigurationErrors)
 {
+    /// <summary>Captured verbose-pane lines (GQL-029): per-field resolved mapping, and request JSON at -vv.</summary>
+    public IReadOnlyList<string> VerboseLog { get; init; } = [];
+
     /// <summary>A configuration error short-circuited execution before any RPC (AC-5 / GQL-073).</summary>
     public bool IsConfigurationError => ConfigurationErrors.Count > 0;
 }

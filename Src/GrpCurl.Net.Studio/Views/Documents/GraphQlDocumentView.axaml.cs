@@ -1,8 +1,11 @@
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using AvaloniaEdit;
+using AvaloniaEdit.Document;
 using AvaloniaEdit.TextMate;
+using GrpCurl.Net.Studio.Theming;
 using GrpCurl.Net.Studio.ViewModels.Documents;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -35,6 +38,7 @@ public sealed partial class GraphQlDocumentView : UserControl
         _variablesEditor = this.FindControl<TextEditor>("VariablesEditor");
         _responseEditor = this.FindControl<TextEditor>("ResponseEditor");
 
+        InstallGraphQlGrammar(_documentEditor);
         InstallJsonGrammar(_variablesEditor);
         InstallJsonGrammar(_responseEditor);
 
@@ -42,6 +46,10 @@ public sealed partial class GraphQlDocumentView : UserControl
         {
             _documentEditor.TextChanged += OnDocumentEditorTextChanged;
             _documentEditor.TextArea.TextView.BackgroundRenderers.Add(_squiggles);
+            _documentEditor.Options.EnableHyperlinks = false;
+
+            // GQL-015: Ctrl+/ toggles a '#' line comment over the selection (or current line).
+            _documentEditor.AddHandler(KeyDownEvent, OnDocumentEditorKeyDown, Avalonia.Interactivity.RoutingStrategies.Tunnel);
         }
 
         if (_variablesEditor is not null)
@@ -65,6 +73,73 @@ public sealed partial class GraphQlDocumentView : UserControl
         var registry = new RegistryOptions(isDark ? ThemeName.DarkPlus : ThemeName.LightPlus);
         var installation = editor.InstallTextMate(registry);
         installation.SetGrammar(registry.GetScopeByLanguageId("json"));
+    }
+
+    // GQL-010: highlight the GraphQL document via the vendored grammar (the bundled package has none).
+    private static void InstallGraphQlGrammar(TextEditor? editor)
+    {
+        if (editor is null)
+        {
+            return;
+        }
+
+        var isDark = (editor.ActualThemeVariant ?? ThemeVariant.Default) == ThemeVariant.Dark;
+        var registry = new GraphQlRegistryOptions(isDark ? ThemeName.DarkPlus : ThemeName.LightPlus);
+        var installation = editor.InstallTextMate(registry);
+        installation.SetGrammar(GraphQlRegistryOptions.GraphQlScope);
+    }
+
+    // GQL-015: Ctrl+/ comment toggle. Comments every selected line that isn't yet commented; if all
+    // selected lines already start with '#', uncomments instead.
+    private void OnDocumentEditorKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Oem2 || !e.KeyModifiers.HasFlag(KeyModifiers.Control) || _documentEditor?.Document is not { } document)
+        {
+            return;
+        }
+
+        e.Handled = true;
+
+        var area = _documentEditor.TextArea;
+        var firstLine = document.GetLineByOffset(area.Selection.IsEmpty ? _documentEditor.CaretOffset : area.Selection.SurroundingSegment.Offset);
+        var lastLine = document.GetLineByOffset(area.Selection.IsEmpty ? _documentEditor.CaretOffset : area.Selection.SurroundingSegment.EndOffset);
+
+        var lines = new List<DocumentLine>();
+        for (var line = firstLine; line is not null && line.LineNumber <= lastLine.LineNumber; line = line.NextLine)
+        {
+            lines.Add(line);
+        }
+
+        var allCommented = lines.TrueForAll(l => document.GetText(l).TrimStart().StartsWith('#'));
+
+        document.BeginUpdate();
+        try
+        {
+            // Edit bottom-up so earlier offsets stay valid as we insert/remove characters.
+            for (var i = lines.Count - 1; i >= 0; i--)
+            {
+                var line = lines[i];
+                var text = document.GetText(line);
+
+                if (allCommented)
+                {
+                    var hash = text.IndexOf('#');
+                    if (hash >= 0)
+                    {
+                        var removeCount = hash + 1 < text.Length && text[hash + 1] == ' ' ? 2 : 1;
+                        document.Remove(line.Offset + hash, removeCount);
+                    }
+                }
+                else if (text.Trim().Length > 0)
+                {
+                    document.Insert(line.Offset, "# ");
+                }
+            }
+        }
+        finally
+        {
+            document.EndUpdate();
+        }
     }
 
     private void OnDataContextChanged(object? sender, EventArgs e)

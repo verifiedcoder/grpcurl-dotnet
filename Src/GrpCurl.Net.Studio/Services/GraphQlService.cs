@@ -41,7 +41,7 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
         {
             // The bridge parser throws ArgumentException (empty / no operations) and GraphQL-Parser throws
             // its syntax-error type; both are document-content problems to squiggle, never a Studio fault.
-            return new GraphQlParseResult([], [new GraphQlProblem(ex.Message, GraphQlProblemKind.Syntax)]);
+            return new GraphQlParseResult([], [ToSyntaxProblem(ex)]);
         }
     }
 
@@ -62,7 +62,7 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
         catch (Exception ex)
         {
             // Document syntax, "no operations", or ambiguous-operation selection — all pre-RPC config errors.
-            return ConfigError(GraphQlProblemKind.Syntax, ex.Message);
+            return new GraphQlExecutionResult(Ok: false, EnvelopeJson: null, [ToSyntaxProblem(ex)]);
         }
 
         // Subscriptions route to the streaming console in E4.3; reject here so the user gets a clear
@@ -156,6 +156,12 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
 
     private static GraphQlExecutionResult ConfigError(GraphQlProblemKind kind, string message)
         => new(Ok: false, EnvelopeJson: null, [new GraphQlProblem(message, kind)]);
+
+    /// <summary>Maps a parse failure to a syntax problem, carrying GraphQL-Parser's 1-based line/column when present.</summary>
+    private static GraphQlProblem ToSyntaxProblem(Exception ex)
+        => ex is GraphQLParser.Exceptions.GraphQLParserException pex
+            ? new GraphQlProblem(pex.Message, GraphQlProblemKind.Syntax, pex.Location.Line, pex.Location.Column)
+            : new GraphQlProblem(ex.Message, GraphQlProblemKind.Syntax);
 
     /// <summary>Maps the bridge's per-field progress onto the Studio model and forwards it to the VM sink.</summary>
     private sealed class FieldProgressAdapter(IProgress<GraphQlFieldProgress> sink) : IProgress<FieldExecutionProgress>

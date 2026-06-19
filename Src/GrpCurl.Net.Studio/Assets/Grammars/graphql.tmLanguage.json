@@ -1,0 +1,68 @@
+{
+  "name": "GraphQL",
+  "scopeName": "source.graphql",
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#blockString" },
+    { "include": "#string" },
+    { "include": "#number" },
+    { "include": "#variable" },
+    { "include": "#directive" },
+    { "include": "#operationKeyword" },
+    { "include": "#constant" },
+    { "include": "#fieldArgumentKeyword" },
+    { "include": "#typeName" },
+    { "include": "#punctuation" }
+  ],
+  "repository": {
+    "comment": {
+      "match": "#.*$",
+      "name": "comment.line.number-sign.graphql"
+    },
+    "blockString": {
+      "begin": "\"\"\"",
+      "end": "\"\"\"",
+      "name": "string.quoted.triple.graphql"
+    },
+    "string": {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.graphql",
+      "patterns": [
+        { "match": "\\\\.", "name": "constant.character.escape.graphql" }
+      ]
+    },
+    "number": {
+      "match": "-?\\b(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?\\b",
+      "name": "constant.numeric.graphql"
+    },
+    "variable": {
+      "match": "\\$[_A-Za-z][_0-9A-Za-z]*",
+      "name": "variable.parameter.graphql"
+    },
+    "directive": {
+      "match": "@[_A-Za-z][_0-9A-Za-z]*",
+      "name": "entity.name.function.directive.graphql"
+    },
+    "operationKeyword": {
+      "match": "\\b(query|mutation|subscription|fragment|on|schema|type|interface|union|enum|input|scalar|extend|directive|implements)\\b",
+      "name": "keyword.other.graphql"
+    },
+    "constant": {
+      "match": "\\b(true|false|null)\\b",
+      "name": "constant.language.graphql"
+    },
+    "fieldArgumentKeyword": {
+      "match": "(?<=[\\s,\\(\\{])([_A-Za-z][_0-9A-Za-z]*)(?=\\s*:)",
+      "name": "variable.other.graphql"
+    },
+    "typeName": {
+      "match": "\\b([A-Z][_0-9A-Za-z]*)\\b",
+      "name": "support.type.graphql"
+    },
+    "punctuation": {
+      "match": "[\\{\\}\\(\\)\\[\\]:=|&!\\.]",
+      "name": "punctuation.graphql"
+    }
+  }
+}

@@ -47,11 +47,20 @@ internal static class WellKnownTypeHandler
             dateTime = dateTime.ToUniversalTime();
         }
 
-        // Convert to protobuf Timestamp format (seconds and nanos since epoch)
-        var epoch = DateTime.UnixEpoch;
-        var duration = dateTime - epoch;
-        var seconds = (long)duration.TotalSeconds;
-        var nanos = (int)((duration.TotalSeconds - seconds) * 1_000_000_000);
+        // Convert to protobuf Timestamp format (seconds and nanos since epoch). Split on
+        // 100ns ticks and floor so that pre-epoch fractional instants land on the canonical
+        // form (nanos in [0, 999_999_999], seconds floored) rather than truncating toward
+        // zero — e.g. 1969-12-31T23:59:59.5Z is (seconds=-1, nanos=500_000_000), not (0, -500_000_000).
+        var ticks = (dateTime - DateTime.UnixEpoch).Ticks;
+        var seconds = Math.DivRem(ticks, TimeSpan.TicksPerSecond, out var remainderTicks);
+        var nanos = (int)(remainderTicks * 100);
+
+        if (nanos < 0)
+        {
+            nanos += 1_000_000_000;
+            seconds -= 1;
+        }
+
         var message = new SimpleDynamicMessage(messageType);
         var secondsField = messageType.FindFieldByNumber(1);
         var nanosField = messageType.FindFieldByNumber(2);
@@ -87,10 +96,20 @@ internal static class WellKnownTypeHandler
         // Remove the 's' suffix
         var numberStr = durationStr[..^1];
 
-        // Parse seconds and fractional nanoseconds separately to avoid precision loss
+        // Parse seconds and fractional nanoseconds separately to avoid precision loss.
+        // A duration carries a single sign for the whole value, so the fractional part
+        // inherits the sign of the string (the seconds field alone loses it for "-0.5s",
+        // where long.Parse("-0") == 0).
+        var negative = numberStr.StartsWith('-');
         var parts = numberStr.Split('.');
 
-        if (!long.TryParse(parts[0], out var seconds))
+        // Reject malformed values like "1.2.3" (more than one decimal point).
+        if (parts.Length > 2)
+        {
+            return null;
+        }
+
+        if (!long.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var seconds))
         {
             return null;
         }
@@ -99,17 +118,32 @@ internal static class WellKnownTypeHandler
 
         if (parts.Length > 1)
         {
-            // Pad fractional part to 9 digits (nanoseconds) and parse
-            var fractional = parts[1].PadRight(9, '0');
+            var fractional = parts[1];
+
+            // The fractional part must be a run of digits (no sign, no exponent).
+            if (fractional.Length == 0 || !fractional.All(char.IsAsciiDigit))
+            {
+                return null;
+            }
+
+            // Pad/truncate to 9 digits (nanoseconds) and parse.
+            fractional = fractional.PadRight(9, '0');
 
             if (fractional.Length > 9)
             {
-                fractional = fractional[..9]; // Take only first 9 digits
+                fractional = fractional[..9];
             }
 
-            if (!int.TryParse(fractional, out nanos))
+            if (!int.TryParse(fractional, NumberStyles.None, CultureInfo.InvariantCulture, out nanos))
             {
                 return null;
+            }
+
+            // Apply the overall sign to the fractional nanos so "-1.5s" is
+            // (seconds=-1, nanos=-500_000_000), not (-1, +500_000_000).
+            if (negative)
+            {
+                nanos = -nanos;
             }
         }
 
@@ -367,18 +401,27 @@ internal static class WellKnownTypeHandler
             ? (int)timestampField!
             : 0;
 
-        // Convert to DateTime
-        var epoch = DateTime.UnixEpoch;
-        var dateTime = epoch.AddSeconds(seconds).AddTicks(nanos / 100);
+        // Normalise to the canonical form (nanos in [0, 999_999_999], seconds floored) so a
+        // non-normalised message — e.g. (seconds=0, nanos=-500_000_000) — renders correctly
+        // instead of producing a negative fractional component.
+        seconds += Math.DivRem(nanos, 1_000_000_000, out nanos);
+
+        if (nanos < 0)
+        {
+            nanos += 1_000_000_000;
+            seconds -= 1;
+        }
 
         // Format as RFC 3339
-        sb.Append('"');
-        sb.Append(dateTime.ToString("yyyy-MM-ddTHH:mm:ss"));
+        var dateTime = DateTime.UnixEpoch.AddSeconds(seconds);
 
-        if (nanos % 1_000_000_000 != 0)
+        sb.Append('"');
+        sb.Append(dateTime.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture));
+
+        if (nanos != 0)
         {
             sb.Append('.');
-            sb.Append((nanos % 1_000_000_000).ToString("D9").TrimEnd('0'));
+            sb.Append(nanos.ToString("D9", CultureInfo.InvariantCulture).TrimEnd('0'));
         }
 
         sb.Append('Z');
@@ -399,14 +442,42 @@ internal static class WellKnownTypeHandler
             ? (int)durationField!
             : 0;
 
-        // Format as string like "1.000340012s"
+        // Normalise so |nanos| < 1e9 and the seconds/nanos signs agree (a duration carries a
+        // single sign). This both folds out-of-range nanos into seconds and repairs mixed-sign
+        // inputs like (seconds=1, nanos=-500_000_000) → 0.5s, or (seconds=-1, nanos=-500_000_000)
+        // → "-1.5s", instead of emitting a malformed "-1.-5s".
+        seconds += Math.DivRem(nanos, 1_000_000_000, out nanos);
+
+        switch (seconds)
+        {
+            case > 0 when nanos < 0:
+                seconds -= 1;
+                nanos += 1_000_000_000;
+
+                break;
+
+            case < 0 when nanos > 0:
+                seconds += 1;
+                nanos -= 1_000_000_000;
+
+                break;
+        }
+
+        // Format as string like "1.000340012s". A leading '-' is needed when the value is
+        // negative but the seconds component is zero (e.g. "-0.5s").
         sb.Append('"');
+
+        if (seconds == 0 && nanos < 0)
+        {
+            sb.Append('-');
+        }
+
         sb.Append(seconds);
 
         if (nanos != 0)
         {
             sb.Append('.');
-            sb.Append(nanos.ToString("D9").TrimEnd('0'));
+            sb.Append(Math.Abs(nanos).ToString("D9", CultureInfo.InvariantCulture).TrimEnd('0'));
         }
 
         sb.Append('s');

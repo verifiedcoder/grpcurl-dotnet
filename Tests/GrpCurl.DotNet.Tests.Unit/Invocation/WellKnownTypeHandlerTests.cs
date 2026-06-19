@@ -1402,4 +1402,133 @@ public sealed class WellKnownTypeHandlerTests
         => WellKnownTypeHandler.WriteListValueJson(sb, message, WriteValueJson);
 
     #endregion
+
+    #region Timestamp / Duration Sign Normalization Tests
+
+    [Theory]
+    // Pre-epoch fractional instants must floor: nanos in [0, 1e9), seconds floored.
+    [InlineData("1969-12-31T23:59:59.500Z", -1L, 500000000)]
+    [InlineData("1969-12-31T23:59:59Z", -1L, 0)]
+    [InlineData("1969-12-31T23:59:58.750Z", -2L, 750000000)]
+    public void ConvertTimestamp_PreEpochFractional_FloorsToCanonicalForm(string timestamp, long expectedSeconds, int expectedNanos)
+    {
+        // Arrange
+        var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Timestamp");
+        var element = JsonDocument.Parse($"\"{timestamp}\"").RootElement;
+
+        // Act
+        var result = WellKnownTypeHandler.ConvertTimestamp(element, descriptor);
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.Fields[descriptor.FindFieldByNumber(1)!].ShouldBe(expectedSeconds);
+        result.Fields[descriptor.FindFieldByNumber(2)!].ShouldBe(expectedNanos);
+    }
+
+    [Fact]
+    public void WriteTimestampJson_NegativeNanos_NormalizesBeforeFormatting()
+    {
+        // Arrange - a non-normalised (seconds=0, nanos=-500_000_000) is -0.5s before epoch
+        var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Timestamp");
+        var message = new SimpleDynamicMessage(descriptor);
+
+        message.Fields[descriptor.FindFieldByNumber(1)!] = 0L;
+        message.Fields[descriptor.FindFieldByNumber(2)!] = -500000000;
+
+        var sb = new StringBuilder();
+
+        // Act
+        WellKnownTypeHandler.WriteTimestampJson(sb, message);
+
+        // Assert - 1969-12-31T23:59:59.5Z, never a negative fractional component
+        var result = sb.ToString();
+        result.ShouldBe("\"1969-12-31T23:59:59.5Z\"");
+    }
+
+    [Theory]
+    [InlineData("-1.5s", -1L, -500000000)]
+    [InlineData("-0.5s", 0L, -500000000)]
+    [InlineData("-10s", -10L, 0)]
+    [InlineData("-0.000000001s", 0L, -1)]
+    public void ConvertDuration_Negative_AppliesSignToNanos(string duration, long expectedSeconds, int expectedNanos)
+    {
+        // Arrange
+        var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Duration");
+        var element = JsonDocument.Parse($"\"{duration}\"").RootElement;
+
+        // Act
+        var result = WellKnownTypeHandler.ConvertDuration(element, descriptor);
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.Fields[descriptor.FindFieldByNumber(1)!].ShouldBe(expectedSeconds);
+        result.Fields[descriptor.FindFieldByNumber(2)!].ShouldBe(expectedNanos);
+    }
+
+    [Theory]
+    [InlineData("1.2.3s")] // multiple decimal points
+    [InlineData("1.s")]    // empty fractional part
+    [InlineData("1.-5s")]  // signed fractional part
+    [InlineData("1.5e3s")] // exponent in fractional part
+    public void ConvertDuration_Malformed_ReturnsNull(string duration)
+    {
+        // Arrange
+        var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Duration");
+        var element = JsonDocument.Parse($"\"{duration}\"").RootElement;
+
+        // Act
+        var result = WellKnownTypeHandler.ConvertDuration(element, descriptor);
+
+        // Assert
+        result.ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData(-1L, -500000000, "\"-1.5s\"")]
+    [InlineData(0L, -500000000, "\"-0.5s\"")]
+    [InlineData(-10L, 0, "\"-10s\"")]
+    // Mixed-sign (non-canonical) inputs are normalized rather than emitting "-1.-5s".
+    [InlineData(1L, -500000000, "\"0.5s\"")]
+    [InlineData(-1L, 500000000, "\"-0.5s\"")]
+    public void WriteDurationJson_NegativeAndMixedSign_NormalizesCorrectly(long seconds, int nanos, string expected)
+    {
+        // Arrange
+        var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Duration");
+        var message = new SimpleDynamicMessage(descriptor);
+
+        message.Fields[descriptor.FindFieldByNumber(1)!] = seconds;
+        message.Fields[descriptor.FindFieldByNumber(2)!] = nanos;
+
+        var sb = new StringBuilder();
+
+        // Act
+        WellKnownTypeHandler.WriteDurationJson(sb, message);
+
+        // Assert
+        sb.ToString().ShouldBe(expected);
+    }
+
+    [Theory]
+    [InlineData("-1.5s")]
+    [InlineData("-0.5s")]
+    [InlineData("1.5s")]
+    [InlineData("0.123456789s")]
+    public void Duration_RoundTrip_PreservesValue(string duration)
+    {
+        // Arrange
+        var descriptor = TestDescriptorProvider.GetWellKnownTypeDescriptor("google.protobuf.Duration");
+        var element = JsonDocument.Parse($"\"{duration}\"").RootElement;
+
+        // Act - parse then re-serialize
+        var message = WellKnownTypeHandler.ConvertDuration(element, descriptor);
+        message.ShouldNotBeNull();
+
+        var sb = new StringBuilder();
+        WellKnownTypeHandler.WriteDurationJson(sb, message);
+
+        // Assert
+        sb.ToString().ShouldBe($"\"{duration}\"");
+    }
+
+    #endregion
 }

@@ -101,7 +101,7 @@ internal sealed class HistoryRecorder(
 
         var outcome = new HistoryOutcome(
             context.Status, context.Category, context.Ok ? 0 : 1,
-            context.DurationMs, MessagesSent: 1, MessagesReceived: context.Ok ? 1 : 0,
+            context.DurationMs, MessagesSent: 0, MessagesReceived: context.MessagesReceived,
             responseBody, ResponseTruncated: false, context.ErrorMessage);
 
         await store.AppendAsync(

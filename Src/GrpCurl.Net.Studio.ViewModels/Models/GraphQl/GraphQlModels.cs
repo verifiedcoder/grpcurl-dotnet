@@ -287,7 +287,11 @@ public sealed record GraphQlHistoryContext(
     string Category,
     string? ErrorMessage,
     long DurationMs,
-    string? ResponseEnvelope);
+    string? ResponseEnvelope)
+{
+    /// <summary>Messages received — 1 for a unary success, the envelope count for a subscription.</summary>
+    public int MessagesReceived { get; init; } = 1;
+}
 
 /// <summary>
 ///     Outcome of executing a GraphQL operation. <see cref="ConfigurationErrors" /> are pre-RPC

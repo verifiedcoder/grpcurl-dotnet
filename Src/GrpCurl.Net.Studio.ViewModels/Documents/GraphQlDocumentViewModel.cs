@@ -724,6 +724,9 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
                 StatusIsError = true;
             });
         }
+
+        // GQL-027: record the subscription to history (count + terminal status), best-effort.
+        await RecordStreamHistoryAsync(request, ok: State == RunState.Completed, stopwatch.ElapsedMilliseconds);
     }
 
     /// <summary>GQL-063: export the received subscription envelopes as newline-delimited JSON.</summary>
@@ -817,7 +820,48 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
             request.EmitDefaults,
             request.AllowUnknownFields,
             _environment?.Active?.Name,
-            ok, status, category, error, durationMs, envelope);
+            ok, status, category, error, durationMs, envelope)
+        {
+            MessagesReceived = ok ? 1 : 0
+        };
+
+        await SafeRecordAsync(context);
+    }
+
+    /// <summary>GQL-027: records a completed/cancelled subscription (its message count + terminal status).</summary>
+    private async Task RecordStreamHistoryAsync(GraphQlExecutionRequest request, bool ok, long durationMs)
+    {
+        var received = (int)StreamLog.TotalReceived;
+
+        var context = new GraphQlHistoryContext(
+            request.Connection,
+            SelectedOperation?.Name ?? "(anonymous)",
+            request.Document,
+            request.Headers,
+            request.Deadline,
+            request.EmitDefaults,
+            request.AllowUnknownFields,
+            _environment?.Active?.Name,
+            ok,
+            ok ? $"Completed — {received} messages" : $"Cancelled after {received} messages",
+            ok ? "success" : "cancelled",
+            ErrorMessage: null,
+            durationMs,
+            ResponseEnvelope: null)
+        {
+            MessagesReceived = received
+        };
+
+        await SafeRecordAsync(context);
+    }
+
+    /// <summary>Best-effort history append — a persistence hiccup never surfaces to the execute/stream flow.</summary>
+    private async Task SafeRecordAsync(GraphQlHistoryContext context)
+    {
+        if (_recorder is null)
+        {
+            return;
+        }
 
         try
         {

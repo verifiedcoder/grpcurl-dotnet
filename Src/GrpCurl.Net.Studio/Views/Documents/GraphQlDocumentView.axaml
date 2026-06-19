@@ -237,6 +237,33 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
+            <!-- GQL-070/073: structured errors[] — upstream gRPC failures visually distinct from config/usage errors. -->
+            <ItemsControl ItemsSource="{Binding Errors}" IsVisible="{Binding HasErrors}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="gql:GraphQlErrorInfo">
+                        <Border BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Status.Neutral}" Padding="0,3">
+                            <StackPanel Spacing="2">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Border CornerRadius="3" Padding="4,0" Background="{DynamicResource Status.Server}" IsVisible="{Binding IsUpstream}">
+                                        <TextBlock Text="upstream" FontSize="11" Foreground="White" />
+                                    </Border>
+                                    <Border CornerRadius="3" Padding="4,0" Background="{DynamicResource Status.Neutral}" IsVisible="{Binding !IsUpstream}">
+                                        <TextBlock Text="config" FontSize="11" />
+                                    </Border>
+                                    <TextBlock Text="{Binding Message}" TextWrapping="Wrap" FontSize="12" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <!-- GQL-070: the error path as a breadcrumb. -->
+                                <TextBlock FontSize="11" Opacity="0.7" IsVisible="{Binding HasPath}">
+                                    <Run Text="at " /><Run Text="{Binding PathText}" />
+                                </TextBlock>
+                                <TextBlock Text="{Binding ExtensionsText}" FontSize="11" Opacity="0.6"
+                                           IsVisible="{Binding ExtensionsText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
             <!-- GQL-029: verbose pane — per-field resolved mapping (-v) + request JSON (-vv), captured from the engine. -->
             <Expander Header="Verbose" IsVisible="{Binding HasVerboseLog}" IsExpanded="True">
                 <ItemsControl ItemsSource="{Binding VerboseLog}">

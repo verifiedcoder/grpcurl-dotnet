@@ -437,6 +437,24 @@ public sealed class GraphQlDocumentViewModelTests
         vm.VerboseLog.ShouldContain("[x] → testing.TestService/UnaryCall");
     }
 
+    [Fact]
+    public async Task Response_errors_are_surfaced_as_structured_entries()
+    {
+        var vm = Create(out var graphql, out _);
+        graphql.ParseResult = OneQuery();
+        graphql.ExecuteResult = new(Ok: false, EnvelopeJson: "{ \"data\": null }", ConfigurationErrors: [])
+        {
+            Errors = [new GraphQlErrorInfo("boom", ["dashboard"], "UPSTREAM_ERROR", "InvalidArgument", 3, GraphQlErrorClass.Upstream)]
+        };
+        vm.ApplyParse(OneQuery());
+
+        await vm.ExecuteCommand.ExecuteAsync(null);
+
+        vm.HasErrors.ShouldBeTrue();
+        vm.Errors.ShouldContain(e => e.IsUpstream && e.Message == "boom" && e.PathText == "dashboard");
+        vm.State.ShouldBe(RunState.Failed);
+    }
+
     private static GraphQlParseResult OneSubscription(int rootFields = 1)
         => new([new GraphQlOperationInfo("S", GraphQlOperationKind.Subscription) { RootFieldCount = rootFields }], []);
 

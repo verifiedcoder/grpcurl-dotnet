@@ -95,7 +95,6 @@ dotnet_diagnostic.CA2016.severity = warning   # forward CancellationToken to can
 dotnet_diagnostic.CA1806.severity = warning   # do not ignore method results / unused object creation
 # Cleanliness
 dotnet_diagnostic.IDE0058.severity = warning  # make discarded expression results explicit (_ =)
-dotnet_diagnostic.IDE0370.severity = warning  # remove unnecessary suppressions (redundant ! / pragmas)
 dotnet_diagnostic.IDE0005.severity = warning  # remove unnecessary using directives
 dotnet_diagnostic.IDE0051.severity = warning  # remove unused private members
 dotnet_diagnostic.IDE0059.severity = warning  # remove unnecessary value assignments (dead stores)
@@ -119,6 +118,11 @@ dotnet_diagnostic.MVVMTK0042.severity = warning # [ObservableProperty] on a part
 #   CA1068 (CT param order on internal APIs), CA5359 (the deliberate --insecure validation path),
 #   SYSLIB1054 (DllImport works as-is): rejected with cause.
 # IDE0007/IDE0008 (`var`): the codebase consistently prefers `var`.
+# IDE0370 ("unnecessary suppression"): its verdict on the `!` null-forgiving operator is nullable-flow-
+#   dependent and was inconsistent across build environments (clean locally, flagged in CI). The remaining
+#   `!` operators (e.g. JsonElement.GetString()!, FindFieldByNumber(n)!) are intentional and necessary, so
+#   the rule is rejected. (The genuinely-redundant suppressions were already removed during conformance.)
+dotnet_diagnostic.IDE0370.severity = none
 # SonarAnalyzer Sxxxx: adopted/suppressed per SONARANALYZER-SETUP.md on the analyzer-enablement work;
 #   the `none` default keeps them out of the message count here (S2325 make-static is covered by CA1822).
 

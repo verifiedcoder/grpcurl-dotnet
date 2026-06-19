@@ -1,3 +1,4 @@
+using GrpCurl.Net.Studio.ViewModels.Models.GraphQl;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 
 namespace GrpCurl.Net.Studio.ViewModels.Services;
@@ -16,4 +17,7 @@ public interface IHistoryRecorder
     Task RecordStreamAsync(
         StreamRequestModel request, InvocationStatusModel status, long durationMs,
         int messagesSent, int messagesReceived, CancellationToken cancellationToken = default);
+
+    /// <summary>Records a completed GraphQL execution (GQL-027); a <c>graphql</c>-kind history entry.</summary>
+    Task RecordGraphQlAsync(GraphQlHistoryContext context, CancellationToken cancellationToken = default);
 }

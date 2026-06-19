@@ -2,6 +2,7 @@ using GrpCurl.Net.Studio.Services;
 using GrpCurl.Net.Studio.Tests.Unit.Fakes;
 using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
+using GrpCurl.Net.Studio.ViewModels.Models.GraphQl;
 using GrpCurl.Net.Studio.ViewModels.Models.History;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 
@@ -57,6 +58,30 @@ public sealed class HistoryRecorderTests
         entry.Request.Headers.Single(h => h.Name == "authorization").Value.ShouldBe(HistoryEntry.RedactedMarker);
         entry.Request.Headers.Single(h => h.Name == "x-trace-id").Value.ShouldBe("${TRACE}");
         entry.Request.Headers.ShouldNotContain(h => h.Value.Contains("super-secret"));
+    }
+
+    [Fact]
+    public async Task Records_a_graphql_execution_as_a_graphql_entry_with_redacted_headers()
+    {
+        var recorder = Recorder(out var store, out _);
+        var context = new GraphQlHistoryContext(
+            new SavedConnection { Name = "staging", Address = "api.example.com:443", Transport = TransportMode.Tls },
+            OperationLabel: "GetUser",
+            Document: "query GetUser { user { id } }",
+            Headers: [new HeaderEntry { Name = "authorization", Value = "Bearer super-secret-token" }],
+            Deadline: "10s", EmitDefaults: false, AllowUnknownFields: true, EnvironmentName: "prod",
+            Ok: true, Status: "OK", Category: "success", ErrorMessage: null, DurationMs: 12, ResponseEnvelope: "{}");
+
+        await recorder.RecordGraphQlAsync(context, Ct);
+
+        var entry = store.Last.ShouldNotBeNull();
+        entry.Kind.ShouldBe(HistoryKind.Graphql);
+        entry.Method.ShouldBe("GetUser");
+        entry.Request.BodyFormat.ShouldBe("graphql");
+        entry.Request.Body.ShouldBe("query GetUser { user { id } }");
+        entry.Request.EnvironmentName.ShouldBe("prod");
+        entry.Request.Headers.ShouldHaveSingleItem().Value.ShouldBe(HistoryEntry.RedactedMarker);
+        entry.Outcome.Category.ShouldBe("success");
     }
 
     [Fact]

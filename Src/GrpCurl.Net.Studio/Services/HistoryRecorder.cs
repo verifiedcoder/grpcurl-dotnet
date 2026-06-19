@@ -1,4 +1,5 @@
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
+using GrpCurl.Net.Studio.ViewModels.Models.GraphQl;
 using GrpCurl.Net.Studio.ViewModels.Models.History;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Services;
@@ -75,6 +76,36 @@ internal sealed class HistoryRecorder(
 
         await store.AppendAsync(
             Build(HistoryKind.Grpc, request.Connection, request.MethodSymbol, requestSnapshot, outcome),
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task RecordGraphQlAsync(GraphQlHistoryContext context, CancellationToken cancellationToken = default)
+    {
+        var history = settings.Current.History;
+
+        if (!history.Enabled)
+        {
+            return;
+        }
+
+        var body = Cap(context.Document, history.ResponseCapBytes, out var bodyTruncated);
+        var responseBody = history.CaptureResponses && context.ResponseEnvelope is not null
+            ? Cap(context.ResponseEnvelope, history.ResponseCapBytes, out _)
+            : null;
+
+        // GraphQL documents are not protobuf bodies, so BodyFormat records the surface ("graphql").
+        var requestSnapshot = new HistoryRequest(
+            "graphql", body, bodyTruncated, RedactHeaders(context.Headers),
+            context.Deadline, context.EmitDefaults, context.AllowUnknownFields,
+            MaxSendBytes: null, MaxReceiveBytes: null, context.EnvironmentName);
+
+        var outcome = new HistoryOutcome(
+            context.Status, context.Category, context.Ok ? 0 : 1,
+            context.DurationMs, MessagesSent: 1, MessagesReceived: context.Ok ? 1 : 0,
+            responseBody, ResponseTruncated: false, context.ErrorMessage);
+
+        await store.AppendAsync(
+            Build(HistoryKind.Graphql, context.Connection, context.OperationLabel, requestSnapshot, outcome),
             cancellationToken).ConfigureAwait(false);
     }
 

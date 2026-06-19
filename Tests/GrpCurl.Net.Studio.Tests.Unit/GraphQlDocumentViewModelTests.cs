@@ -537,6 +537,36 @@ public sealed class GraphQlDocumentViewModelTests
         vm.StreamLog.Rows[^1].Json.ShouldContain("Cancelled after 2");
     }
 
+    [Fact]
+    public async Task A_completed_subscription_is_recorded_to_history_with_its_message_count()
+    {
+        var vm = CreateWithRecorder(out var graphql, out var recorder);
+        graphql.ParseResult = OneSubscription();
+        graphql.StreamEnvelopes = ["{\"a\":1}", "{\"a\":2}"];
+        vm.ApplyParse(OneSubscription());
+
+        await vm.ExecuteCommand.ExecuteAsync(null);
+
+        var record = recorder.LastGraphQl.ShouldNotBeNull();
+        record.Category.ShouldBe("success");
+        record.MessagesReceived.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task A_cancelled_subscription_is_recorded_as_cancelled_with_the_count_received()
+    {
+        var vm = CreateWithRecorder(out var graphql, out var recorder);
+        graphql.ParseResult = OneSubscription();
+        graphql.OnStream = (_, _) => YieldThenCancel(1);
+        vm.ApplyParse(OneSubscription());
+
+        await vm.ExecuteCommand.ExecuteAsync(null);
+
+        var record = recorder.LastGraphQl.ShouldNotBeNull();
+        record.Category.ShouldBe("cancelled");
+        record.MessagesReceived.ShouldBe(1);
+    }
+
     private static async IAsyncEnumerable<string> YieldThenCancel(int n)
     {
         for (var i = 0; i < n; i++)

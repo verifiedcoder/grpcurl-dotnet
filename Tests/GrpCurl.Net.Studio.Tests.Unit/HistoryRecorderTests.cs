@@ -85,6 +85,26 @@ public sealed class HistoryRecorderTests
     }
 
     [Fact]
+    public async Task Records_a_graphql_subscription_with_its_message_count()
+    {
+        var recorder = Recorder(out var store, out _);
+        var context = new GraphQlHistoryContext(
+            new SavedConnection { Name = "c", Address = "h:1" },
+            OperationLabel: "OnTick", Document: "subscription S { tick }", Headers: [],
+            Deadline: null, EmitDefaults: false, AllowUnknownFields: true, EnvironmentName: null,
+            Ok: true, Status: "Completed — 5 messages", Category: "success", ErrorMessage: null, DurationMs: 30, ResponseEnvelope: null)
+        {
+            MessagesReceived = 5
+        };
+
+        await recorder.RecordGraphQlAsync(context, Ct);
+
+        var entry = store.Last.ShouldNotBeNull();
+        entry.Kind.ShouldBe(HistoryKind.Graphql);
+        entry.Outcome.MessagesReceived.ShouldBe(5);
+    }
+
+    [Fact]
     public async Task Maps_a_successful_outcome()
     {
         var recorder = Recorder(out var store, out _);

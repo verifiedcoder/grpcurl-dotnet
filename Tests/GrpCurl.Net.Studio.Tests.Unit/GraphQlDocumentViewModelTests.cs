@@ -610,13 +610,44 @@ public sealed class GraphQlDocumentViewModelTests
     {
         var vm = Create(out var graphql, out _);
         graphql.TranslationResult = new(
-            [new GraphQlFieldTranslation("unaryCall", "testing.TestService/UnaryCall", "{ \"x\": 1 }", ["noSuchField"], Error: null)]);
+            [new GraphQlFieldTranslation("unaryCall", "testing.TestService/UnaryCall", "{ \"x\": 1 }", [new GraphQlDroppedArgument("noSuchField", null, null)], Error: null)]);
 
         await vm.LoadTranslationCommand.ExecuteAsync(null);
 
         vm.HasTranslation.ShouldBeTrue();
         vm.TranslationFields.ShouldContain(f => f.FieldName == "unaryCall" && f.HasRequestJson);
         vm.Problems.ShouldContain(p => p.Kind == GraphQlProblemKind.Configuration && p.Message.Contains("noSuchField"));
+    }
+
+    [Fact]
+    public async Task Promoting_dropped_arguments_blocks_execute_with_a_positioned_problem()
+    {
+        var vm = Create(out var graphql, out _);
+        graphql.ParseResult = OneQuery();
+        graphql.TranslationResult = new(
+            [new GraphQlFieldTranslation("f", "pkg.S/M", "{}", [new GraphQlDroppedArgument("bad", 1, 5)], Error: null)]);
+        vm.ApplyParse(OneQuery());
+        vm.PromoteDroppedArgumentsToError = true;
+
+        await vm.ExecuteCommand.ExecuteAsync(null);
+
+        graphql.ExecuteCount.ShouldBe(0); // blocked before any execution
+        vm.State.ShouldBe(RunState.Failed);
+        vm.Problems.ShouldContain(p => p.Message.Contains("bad") && p.Line == 1 && p.Column == 5);
+    }
+
+    [Fact]
+    public async Task Without_promotion_a_dropped_argument_does_not_block_execute()
+    {
+        var vm = Create(out var graphql, out _);
+        graphql.ParseResult = OneQuery();
+        graphql.TranslationResult = new(
+            [new GraphQlFieldTranslation("f", "pkg.S/M", "{}", [new GraphQlDroppedArgument("bad", 1, 5)], Error: null)]);
+        vm.ApplyParse(OneQuery());
+
+        await vm.ExecuteCommand.ExecuteAsync(null);
+
+        graphql.ExecuteCount.ShouldBe(1); // promotion off — executes
     }
 
     [Fact]

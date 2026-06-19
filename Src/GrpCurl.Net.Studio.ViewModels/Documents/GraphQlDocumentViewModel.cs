@@ -89,6 +89,10 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     [ObservableProperty]
     public partial GraphQlVerbosity Verbosity { get; set; } = GraphQlVerbosity.Off;
 
+    /// <summary>GQL-047: when on, an argument the translator would silently drop blocks Execute (a pre-flight error).</summary>
+    [ObservableProperty]
+    public partial bool PromoteDroppedArgumentsToError { get; set; }
+
     [ObservableProperty]
     public partial string Deadline { get; set; } = string.Empty;
 
@@ -608,6 +612,12 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
             return;
         }
 
+        // GQL-047: when promotion is on, a silently-dropped argument blocks Execute (pre-flight, with a squiggle).
+        if (PromoteDroppedArgumentsToError && await HasDroppedArgumentsAsync(cancellationToken))
+        {
+            return;
+        }
+
         await _dispatcher.InvokeAsync(() =>
         {
             State = RunState.InFlight;
@@ -741,6 +751,51 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
                 await writer.WriteLineAsync(row.Json);
             }
         }
+    }
+
+    /// <summary>
+    ///     GQL-047 pre-flight: when dropped-argument promotion is on, translates the document and, if any
+    ///     argument would be silently dropped, surfaces it (squiggle + Problems) and returns true to block Execute.
+    /// </summary>
+    private async Task<bool> HasDroppedArgumentsAsync(CancellationToken cancellationToken)
+    {
+        GraphQlTranslationResult translation;
+        try
+        {
+            translation = await _graphql.TranslateAsync(BuildRequest(), cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            return false;
+        }
+
+        var drops = translation.Fields
+            .SelectMany(f => f.DroppedArguments.Select(d => (Field: f.FieldName, Dropped: d)))
+            .ToList();
+
+        if (drops.Count == 0)
+        {
+            return false;
+        }
+
+        await _dispatcher.InvokeAsync(() =>
+        {
+            ClearExecutionProblems();
+
+            foreach (var (field, dropped) in drops)
+            {
+                Problems.Add(new GraphQlProblem(
+                    $"argument `{dropped.Name}` on `{field}` matches no request field — fix or remove it (dropped-arguments promoted to error).",
+                    GraphQlProblemKind.Configuration, dropped.Line, dropped.Column));
+            }
+
+            OnPropertyChanged(nameof(HasProblems));
+            StatusText = "Configuration error";
+            StatusIsError = true;
+            State = RunState.Failed;
+        });
+
+        return true;
     }
 
     /// <summary>FR-120: records the execution to history, best-effort — a history hiccup never breaks Execute.</summary>
@@ -926,8 +981,8 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
                 foreach (var dropped in field.DroppedArguments)
                 {
                     Problems.Add(new GraphQlProblem(
-                        $"argument `{dropped}` on `{field.FieldName}` matches no request field and would be silently dropped.",
-                        GraphQlProblemKind.Configuration));
+                        $"argument `{dropped.Name}` on `{field.FieldName}` matches no request field and would be silently dropped.",
+                        GraphQlProblemKind.Configuration, dropped.Line, dropped.Column));
                 }
             }
 

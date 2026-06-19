@@ -200,6 +200,9 @@ public sealed record GraphQlResolutionResult(
     bool DefaultServiceOverridden,
     string? OverriddenService);
 
+/// <summary>An argument the translator would silently drop (GQL-047), with its 1-based document position when known (for the squiggle).</summary>
+public sealed record GraphQlDroppedArgument(string Name, int? Line, int? Column);
+
 /// <summary>
 ///     How one request field was produced from an argument (GQL-051): the argument name, the rule kind
 ///     (rename / path / spread / literal / skip / alias / snake_case), and the resulting target (or value).
@@ -219,7 +222,7 @@ public sealed record GraphQlFieldTranslation(
     string FieldName,
     string? Target,
     string? RequestJson,
-    IReadOnlyList<string> DroppedArguments,
+    IReadOnlyList<GraphQlDroppedArgument> DroppedArguments,
     string? Error)
 {
     /// <summary>Per-argument rule annotations (GQL-051).</summary>
@@ -238,7 +241,7 @@ public sealed record GraphQlFieldTranslation(
 
     public bool HasError => Error is not null;
 
-    public string DroppedArgumentsText => string.Join(", ", DroppedArguments);
+    public string DroppedArgumentsText => string.Join(", ", DroppedArguments.Select(d => d.Name));
 }
 
 /// <summary>The pre-flight translation inspector result (GQL-050): one entry per root field.</summary>

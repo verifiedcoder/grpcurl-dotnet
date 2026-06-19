@@ -66,7 +66,8 @@ public sealed class GraphQlServiceTranslationTests
             "query Q { unaryCall(noSuchArg: 1) { payload { body } } }",
             "version: 1\noperations:\n  - graphqlField: unaryCall\n    service: testing.TestService\n    method: UnaryCall");
 
-        field.DroppedArguments.ShouldContain("noSuchArg");
+        // GQL-047: the dropped argument carries its document position so the editor can squiggle it.
+        field.DroppedArguments.ShouldContain(d => d.Name == "noSuchArg" && d.Line == 1 && d.Column > 0);
     }
 
     [Fact]

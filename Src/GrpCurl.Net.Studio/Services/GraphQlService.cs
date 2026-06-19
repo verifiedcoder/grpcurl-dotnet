@@ -511,14 +511,53 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
             reflectionMetadata: reflectionMetadata,
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
+        // GQL-047: index every argument's document position so a dropped argument can be squiggled.
+        var argumentLocations = BuildArgumentLocations(operation, request.Document);
+
         var fields = new List<GraphQlFieldTranslation>();
 
         foreach (var selection in rootSelections)
         {
-            fields.Add(await TranslateFieldAsync(selection, operation.OperationType, mappingResolver, mappingConfig, translator, session.Source, cancellationToken).ConfigureAwait(false));
+            fields.Add(await TranslateFieldAsync(selection, operation.OperationType, mappingResolver, mappingConfig, translator, session.Source, argumentLocations, cancellationToken).ConfigureAwait(false));
         }
 
         return new GraphQlTranslationResult(fields);
+    }
+
+    /// <summary>Maps each <c>(rootField, argument)</c> to its 1-based line/column in the document (GQL-047 squiggle).</summary>
+    private static IReadOnlyDictionary<(string Field, string Argument), (int Line, int Column)> BuildArgumentLocations(GraphQLOperation operation, string document)
+    {
+        var map = new Dictionary<(string, string), (int, int)>();
+
+        foreach (var field in operation.SelectionSet.Selections.OfType<GraphQLParser.AST.GraphQLField>())
+        {
+            foreach (var argument in field.Arguments?.Items ?? (IReadOnlyList<GraphQLParser.AST.GraphQLArgument>)[])
+            {
+                map[(field.Name.StringValue, argument.Name.StringValue)] = LineColumn(document, argument.Name.Location.Start);
+            }
+        }
+
+        return map;
+    }
+
+    private static (int Line, int Column) LineColumn(string text, int offset)
+    {
+        int line = 1, column = 1;
+
+        for (var i = 0; i < offset && i < text.Length; i++)
+        {
+            if (text[i] == '\n')
+            {
+                line++;
+                column = 1;
+            }
+            else
+            {
+                column++;
+            }
+        }
+
+        return (line, column);
     }
 
     private static async Task<GraphQlFieldTranslation> TranslateFieldAsync(
@@ -528,6 +567,7 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
         MappingConfig mappingConfig,
         JsonRequestTranslator translator,
         IDescriptorSource source,
+        IReadOnlyDictionary<(string Field, string Argument), (int Line, int Column)> argumentLocations,
         CancellationToken cancellationToken)
     {
         try
@@ -551,14 +591,21 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
             var requestJson = Prettify(translator.Translate(selection, entry, mappingConfig.Defaults, requestType: null));
 
             // The Finding-4 guard: re-translate WITH the descriptor; an unknown convention argument throws.
-            var dropped = new List<string>();
+            var dropped = new List<GraphQlDroppedArgument>();
             try
             {
                 _ = translator.Translate(selection, entry, mappingConfig.Defaults, method.InputType);
             }
             catch (Gql2Grpc.Translation.UnknownArgumentException unknown)
             {
-                dropped.Add(unknown.ArgumentName);
+                int? line = null, column = null;
+                if (argumentLocations.TryGetValue((selection.Name, unknown.ArgumentName), out var location))
+                {
+                    line = location.Line;
+                    column = location.Column;
+                }
+
+                dropped.Add(new GraphQlDroppedArgument(unknown.ArgumentName, line, column));
             }
 
             return new GraphQlFieldTranslation(selection.Name, $"{serviceName}/{entry.Method}", requestJson, dropped, null)

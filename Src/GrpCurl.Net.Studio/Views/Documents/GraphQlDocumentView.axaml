@@ -196,6 +196,8 @@
                 <CheckBox Content="allow-unknown-fields" IsChecked="{Binding AllowUnknownFields}" Margin="0,0,12,0" />
                 <CheckBox Content="strict-selection" IsChecked="{Binding StrictSelection}" Margin="0,0,12,0" />
                 <CheckBox Content="introspection" IsChecked="{Binding Introspection}" Margin="0,0,12,0" />
+                <CheckBox Content="strict args" IsChecked="{Binding PromoteDroppedArgumentsToError}" Margin="0,0,12,0"
+                          ToolTip.Tip="Block Execute when an argument would be silently dropped (GQL-047)" />
                 <CheckBox Content="raw" IsChecked="{Binding Raw}" Margin="0,0,12,0"
                           ToolTip.Tip="Show the unprojected gRPC JSON (no GraphQL projection) — parity with CLI --raw" />
                 <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,0,12,0" VerticalAlignment="Center">

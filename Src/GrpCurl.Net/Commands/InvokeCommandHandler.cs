@@ -444,8 +444,15 @@ internal static class InvokeCommandHandler
     {
         PositionalArgumentGuard.RejectOptionLikeValues("invoke", output, ("address", address), ("method", methodName));
 
-        // Validate options before proceeding
-        ValidateOptions(plaintext, insecure, serverName, maxMsgSz, verbose);
+        // Validate options before proceeding. ValidateOptions parses --max-msg-sz on the
+        // verbose warning path, so route any malformed-value ArgumentException through the
+        // usage contract (exit 2) here too.
+        ErrorRenderer.ConvertOption(() =>
+        {
+            ValidateOptions(plaintext, insecure, serverName, maxMsgSz, verbose);
+
+            return 0;
+        }, output);
 
         long effectiveMaxStdinBytes;
 
@@ -465,15 +472,16 @@ internal static class InvokeCommandHandler
             throw;
         }
 
-        var parsedRevocationMode = GrpcChannelFactory.ParseRevocationMode(revocationMode);
+        var parsedRevocationMode = ErrorRenderer.ConvertOption(
+            () => GrpcChannelFactory.ParseRevocationMode(revocationMode), output);
 
         var parsedKeepaliveTime = keepaliveTime is null
             ? (TimeSpan?)null
-            : GrpcChannelFactory.ParseDuration(keepaliveTime);
+            : ErrorRenderer.ConvertOption(() => GrpcChannelFactory.ParseDuration(keepaliveTime), output);
 
         var parsedKeepaliveTimeout = keepaliveTimeout is null
             ? (TimeSpan?)null
-            : GrpcChannelFactory.ParseDuration(keepaliveTimeout);
+            : ErrorRenderer.ConvertOption(() => GrpcChannelFactory.ParseDuration(keepaliveTimeout), output);
 
         var useTextFormat = !string.IsNullOrEmpty(requestFormat)
                             && string.Equals(requestFormat, "text", StringComparison.OrdinalIgnoreCase);
@@ -501,7 +509,9 @@ internal static class InvokeCommandHandler
         // wired in around line 476 (i.e. after schema and stdin), which let slow probes
         // outlive the budget. See CODE-REVIEW.md P1 "--max-time is not a total operation
         // deadline".
-        var maxTimeSpan = maxTime is not null ? GrpcChannelFactory.ParseDuration(maxTime) : (TimeSpan?)null;
+        var maxTimeSpan = maxTime is not null
+            ? ErrorRenderer.ConvertOption(() => GrpcChannelFactory.ParseDuration(maxTime), output)
+            : (TimeSpan?)null;
 
         using var ctrlCCts = new CancellationTokenSource();
 
@@ -542,7 +552,7 @@ internal static class InvokeCommandHandler
 
             if (maxMsgSz is not null)
             {
-                var parsedSize = GrpcChannelFactory.ParseSize(maxMsgSz);
+                var parsedSize = ErrorRenderer.ConvertOption(() => GrpcChannelFactory.ParseSize(maxMsgSz), output);
 
                 maxReceiveSize = parsedSize;
                 maxSendSize = parsedSize;
@@ -561,7 +571,9 @@ internal static class InvokeCommandHandler
                 ClientCertPath = cert,
                 ClientKeyPath = key,
                 ClientCertPassword = certPassword,
-                ConnectTimeout = connectTimeout is not null ? GrpcChannelFactory.ParseDuration(connectTimeout) : null,
+                ConnectTimeout = connectTimeout is not null
+                    ? ErrorRenderer.ConvertOption(() => GrpcChannelFactory.ParseDuration(connectTimeout), output)
+                    : null,
                 MaxReceiveMessageSize = maxReceiveSize,
                 MaxSendMessageSize = maxSendSize,
                 Authority = authority,

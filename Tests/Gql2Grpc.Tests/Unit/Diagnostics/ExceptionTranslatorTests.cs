@@ -64,6 +64,7 @@ public sealed class ExceptionTranslatorTests
     [InlineData(typeof(FileNotFoundException), "FILE_NOT_FOUND")]
     [InlineData(typeof(HttpRequestException), "CONNECTION_FAILED")]
     [InlineData(typeof(TimeoutException), "TIMEOUT")]
+    [InlineData(typeof(ArgumentException), "INVALID_ARGUMENT")]
     [InlineData(typeof(InvalidOperationException), "INTERNAL_ERROR")]
     public void NonRpc_exceptions_carry_category_code_in_extensions(Type exceptionType, string expectedCode)
     {
@@ -98,6 +99,7 @@ public sealed class ExceptionTranslatorTests
     [InlineData(typeof(FileNotFoundException), 3)]
     [InlineData(typeof(HttpRequestException), 4)]
     [InlineData(typeof(TimeoutException), 5)]
+    [InlineData(typeof(ArgumentException), 2)]
     [InlineData(typeof(InvalidOperationException), 1)]
     public void ExitCodeFor_maps_categories(Type exceptionType, int expectedExitCode)
     {

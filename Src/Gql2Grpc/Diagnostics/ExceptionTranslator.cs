@@ -40,6 +40,7 @@ internal static class ExceptionTranslator
             RpcException rpc                                    => GrpcExitCodeBase + (int)rpc.StatusCode,
             UnknownArgumentException                            => UsageExitCode,
             JsonException                                       => UsageExitCode,
+            ArgumentException                                   => UsageExitCode,
             ProtocNotFoundException                             => SchemaExitCode,
             FileNotFoundException or DirectoryNotFoundException => SchemaExitCode,
             HttpRequestException                                => NetworkExitCode,
@@ -59,6 +60,13 @@ internal static class ExceptionTranslator
                 $"Invalid JSON: {json.Message}",
                 path,
                 new Dictionary<string, object?> { ["code"] = "INVALID_JSON" }),
+            // Malformed connection-option values (e.g. --max-time, --connect-timeout,
+            // --max-msg-sz, --revocation-mode) surface as ArgumentException — a usage error,
+            // not an internal one.
+            ArgumentException arg => new GraphQLError(
+                arg.Message,
+                path,
+                new Dictionary<string, object?> { ["code"] = "INVALID_ARGUMENT" }),
             ProtocNotFoundException protoc => new GraphQLError(
                 protoc.Message,
                 path,

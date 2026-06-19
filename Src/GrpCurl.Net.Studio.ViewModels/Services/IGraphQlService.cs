@@ -44,4 +44,11 @@ public interface IGraphQlService
     ///     (GQL-076). A descriptor-load failure surfaces on <see cref="GraphQlSchemaResult.Error" />.
     /// </summary>
     Task<GraphQlSchemaResult> IntrospectAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken);
+
+    /// <summary>
+    ///     Resolves each root field of the document to its target (GQL-040..043) using the mapping +
+    ///     default-service — purely (no RPC). Drives the live resolution preview: explicit-vs-convention
+    ///     source, the resolved kind, the convention derivation, and unresolvable-field remedies.
+    /// </summary>
+    Task<GraphQlResolutionResult> ResolveAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken);
 }

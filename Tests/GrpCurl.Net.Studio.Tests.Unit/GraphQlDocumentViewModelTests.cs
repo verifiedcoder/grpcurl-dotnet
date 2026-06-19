@@ -583,6 +583,18 @@ public sealed class GraphQlDocumentViewModelTests
     }
 
     [Fact]
+    public async Task Validate_mapping_schema_populates_the_descriptor_problems()
+    {
+        var vm = Create(out var graphql, out _);
+        graphql.MappingSchemaProblems = [new GraphQlProblem("method 'X/Y' was not found (did you mean 'Z'?)", GraphQlProblemKind.Configuration)];
+
+        await vm.ValidateMappingSchemaCommand.ExecuteAsync(null);
+
+        vm.HasMappingSchemaProblems.ShouldBeTrue();
+        vm.MappingSchemaProblems.ShouldContain(p => p.Message.Contains("did you mean"));
+    }
+
+    [Fact]
     public void Apply_mapping_problems_surfaces_validation()
     {
         var vm = Create(out _, out _);

@@ -151,6 +151,12 @@
                 <CheckBox Content="introspection" IsChecked="{Binding Introspection}" Margin="0,0,12,0" />
                 <CheckBox Content="raw" IsChecked="{Binding Raw}" Margin="0,0,12,0"
                           ToolTip.Tip="Show the unprojected gRPC JSON (no GraphQL projection) — parity with CLI --raw" />
+                <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,0,12,0" VerticalAlignment="Center">
+                    <TextBlock Text="Verbose" VerticalAlignment="Center" FontSize="12" Opacity="0.7" />
+                    <ComboBox MinWidth="110" ItemsSource="{Binding Verbosities}" SelectedItem="{Binding Verbosity}"
+                              AutomationProperties.Name="Verbose level"
+                              ToolTip.Tip="Show per-field resolved mapping (-v) and request JSON (-vv)" />
+                </StackPanel>
                 <Button Content="Copy response" Command="{Binding CopyResponseCommand}" Padding="6,0" Margin="0,0,4,0" />
                 <Button Content="Copy as CLI" Command="{Binding CopyAsCliCommand}" Padding="6,0"
                         ToolTip.Tip="Copy the equivalent gql2grpc command (secrets as ${VAR})" />
@@ -183,6 +189,18 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+
+            <!-- GQL-029: verbose pane — per-field resolved mapping (-v) + request JSON (-vv), captured from the engine. -->
+            <Expander Header="Verbose" IsVisible="{Binding HasVerboseLog}" IsExpanded="True">
+                <ItemsControl ItemsSource="{Binding VerboseLog}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <TextBlock Text="{Binding}" FontFamily="Cascadia Code,Consolas,monospace" FontSize="11"
+                                       TextWrapping="Wrap" Opacity="0.8" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Expander>
 
             <Expander Header="Headers">
                 <StackPanel Spacing="2">

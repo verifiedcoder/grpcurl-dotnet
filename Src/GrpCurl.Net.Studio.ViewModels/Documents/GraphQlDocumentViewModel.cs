@@ -77,6 +77,10 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     [ObservableProperty]
     public partial bool Raw { get; set; }
 
+    /// <summary>GQL-029: verbose-pane level — off, resolved mapping (-v), or +request JSON (-vv).</summary>
+    [ObservableProperty]
+    public partial GraphQlVerbosity Verbosity { get; set; } = GraphQlVerbosity.Off;
+
     [ObservableProperty]
     public partial string Deadline { get; set; } = string.Empty;
 
@@ -153,6 +157,15 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
 
     public bool HasVariableRows => VariableRows.Count > 0;
     public bool HasVariableWarnings => VariableWarnings.Count > 0;
+
+    /// <summary>Captured verbose-pane lines from the last execution (GQL-029).</summary>
+    public ObservableCollection<string> VerboseLog { get; } = [];
+
+    public bool HasVerboseLog => VerboseLog.Count > 0;
+
+    /// <summary>The verbosity options for the pane selector.</summary>
+    public IReadOnlyList<GraphQlVerbosity> Verbosities { get; } =
+        [GraphQlVerbosity.Off, GraphQlVerbosity.Verbose, GraphQlVerbosity.VeryVerbose];
 
     /// <summary>Debounce before the document is re-parsed after an edit; tests shorten it.</summary>
     internal TimeSpan ParseDebounce { get; set; } = TimeSpan.FromMilliseconds(300);
@@ -415,6 +428,8 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
             StatusIsError = false;
             FieldProgress.Clear();
             OnPropertyChanged(nameof(HasFieldProgress));
+            VerboseLog.Clear();
+            OnPropertyChanged(nameof(HasVerboseLog));
             ClearExecutionProblems();
         });
 
@@ -492,6 +507,13 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
 
     private void Apply(GraphQlExecutionResult result)
     {
+        foreach (var line in result.VerboseLog)
+        {
+            VerboseLog.Add(line);
+        }
+
+        OnPropertyChanged(nameof(HasVerboseLog));
+
         if (result.IsConfigurationError)
         {
             foreach (var problem in result.ConfigurationErrors)
@@ -525,7 +547,8 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
         AllowUnknownFields,
         StrictSelection,
         Introspection,
-        Raw);
+        Raw,
+        Verbosity);
 
     /// <summary>Upserts a per-field progress row (GQL-024); always on the UI thread via <see cref="FieldProgressSink" />.</summary>
     private void ApplyFieldProgress(GraphQlFieldProgress progress)

@@ -39,6 +39,7 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     private CancellationTokenSource? _parseCts;
     private CancellationTokenSource? _resolveCts;
     private CancellationTokenSource? _mappingCts;
+    private string? _responseEnvelope;
     private bool _syncingVars;
 
     [ObservableProperty]
@@ -92,6 +93,10 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     /// <summary>GQL-047: when on, an argument the translator would silently drop blocks Execute (a pre-flight error).</summary>
     [ObservableProperty]
     public partial bool PromoteDroppedArgumentsToError { get; set; }
+
+    /// <summary>GQL-074: show the verbatim envelope (the CLI's stdout contract) vs. just the <c>data</c> payload.</summary>
+    [ObservableProperty]
+    public partial bool AsCliOutput { get; set; } = true;
 
     [ObservableProperty]
     public partial string Deadline { get; set; } = string.Empty;
@@ -360,6 +365,64 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
             // Superseded by a newer edit; drop silently.
         }
     }
+
+    /// <summary>
+    ///     GQL-049: scaffold a mapping entry into the inline buffer — an explicit entry for a
+    ///     convention-resolved field, or a best-guess stub for an unresolvable one.
+    /// </summary>
+    [RelayCommand]
+    private void ScaffoldMappingEntry(GraphQlFieldResolution? field)
+    {
+        if (field is null)
+        {
+            return;
+        }
+
+        MappingText = InsertEntry(MappingText, BuildEntryYaml(field));
+    }
+
+    private string BuildEntryYaml(GraphQlFieldResolution field)
+    {
+        var operationType = SelectedOperation?.Kind switch
+        {
+            GraphQlOperationKind.Mutation => "mutation",
+            GraphQlOperationKind.Subscription => "subscription",
+            _ => "query"
+        };
+
+        if (field is { IsConvention: true, Service: { } service, Method: { } method })
+        {
+            var kind = field.Kind == "serverStreaming" ? "\n    kind: serverStreaming" : string.Empty;
+            return $"  - graphqlField: {field.FieldName}\n    operationType: {operationType}\n    service: {service}\n    method: {method}{kind}";
+        }
+
+        // Unresolvable: a stub with a best-guess method (PascalCase) and a TODO for the service.
+        return $"  - graphqlField: {field.FieldName}\n    operationType: {operationType}\n    method: {ToPascalCase(field.FieldName)}\n    # service: <set the gRPC service>";
+    }
+
+    private static string InsertEntry(string mappingText, string entryYaml)
+    {
+        if (string.IsNullOrWhiteSpace(mappingText))
+        {
+            return $"version: 1\noperations:\n{entryYaml}\n";
+        }
+
+        var index = mappingText.IndexOf("operations:", StringComparison.Ordinal);
+
+        if (index < 0)
+        {
+            return $"{mappingText.TrimEnd()}\noperations:\n{entryYaml}\n";
+        }
+
+        // Insert the new entry as the first item right after the operations: line.
+        var lineEnd = mappingText.IndexOf('\n', index);
+        return lineEnd < 0
+            ? $"{mappingText}\n{entryYaml}"
+            : mappingText[..(lineEnd + 1)] + entryYaml + "\n" + mappingText[(lineEnd + 1)..];
+    }
+
+    private static string ToPascalCase(string name)
+        => string.IsNullOrEmpty(name) ? name : char.ToUpperInvariant(name[0]) + name[1..];
 
     /// <summary>Reconciles the resolution preview with a fresh resolve (test seam).</summary>
     internal void ApplyResolution(GraphQlResolutionResult result)
@@ -921,10 +984,36 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
             return;
         }
 
-        ResponseJson = result.EnvelopeJson;
+        _responseEnvelope = result.EnvelopeJson;
+        UpdateResponseDisplay();
         StatusText = result.Ok ? "OK" : "Completed with errors";
         StatusIsError = !result.Ok;
         State = result.Ok ? RunState.Completed : RunState.Failed;
+    }
+
+    // GQL-074: switch the response viewer between the verbatim envelope (the CLI's stdout contract) and
+    // just the projected `data` payload.
+    partial void OnAsCliOutputChanged(bool value) => UpdateResponseDisplay();
+
+    private void UpdateResponseDisplay()
+    {
+        ResponseJson = _responseEnvelope is null || AsCliOutput
+            ? _responseEnvelope
+            : ExtractData(_responseEnvelope);
+    }
+
+    /// <summary>Returns the envelope's <c>data</c> payload (pretty), or the whole envelope if it can't be read.</summary>
+    private static string ExtractData(string envelopeJson)
+    {
+        try
+        {
+            return (JsonNode.Parse(envelopeJson) as JsonObject)?["data"]?
+                .ToJsonString(new JsonSerializerOptions { WriteIndented = true }) ?? envelopeJson;
+        }
+        catch (JsonException)
+        {
+            return envelopeJson;
+        }
     }
 
     private GraphQlExecutionRequest BuildRequest() => new(

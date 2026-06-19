@@ -164,6 +164,26 @@ public sealed class InvocationDocumentViewModelTests
     }
 
     [Fact]
+    public void An_invalid_bin_header_blocks_stream_start()
+    {
+        // B2: streaming tabs expose the header editor and send those headers, so an invalid -bin must
+        // gate Start Stream the same way it gates a unary Invoke (CanStartStream used to ignore it).
+        var doc = CreateStreaming(StreamingShape.ClientStreaming, out _);
+        doc.AddHeaderCommand.Execute(null);
+        var row = doc.Headers[0];
+
+        row.Name = "trace-bin";
+        row.Value = "not base64!!";
+
+        doc.HasHeaderErrors.ShouldBeTrue();
+        doc.StartStreamCommand.CanExecute(null).ShouldBeFalse();
+
+        row.Value = "AAEC"; // fixed
+        doc.HasHeaderErrors.ShouldBeFalse();
+        doc.StartStreamCommand.CanExecute(null).ShouldBeTrue();
+    }
+
+    [Fact]
     public void Switching_body_format_with_content_warns_and_clears_when_confirmed()
     {
         var doc = Create(out _, out _, out _, out var dialogs, out _, out _, initialJson: "{ \"x\": 1 }");

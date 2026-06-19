@@ -208,4 +208,30 @@ public sealed class InvocationDocumentUiTests(HeadlessSessionFixture fixture) : 
             .ShouldBeTrue();
         window.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text).ShouldContain("echo 1");
     });
+
+    [Fact]
+    public Task A_streaming_tab_exposes_the_request_header_and_body_format_editors() => RunOnUiThread(() =>
+    {
+        // B2: streaming methods send request headers + a body format, so those editors must be visible on
+        // a streaming tab (they were hidden behind IsVisible="!IsStreaming"). The unary copies of these
+        // controls still exist in the tree but are collapsed, so assert effective visibility.
+        var vm = StreamingVm(GrpCurl.Net.Studio.ViewModels.Models.Descriptors.StreamingShape.ClientStreaming, new FakeInvocationRunner());
+        vm.IsStreaming.ShouldBeTrue();
+
+        var window = new Window { Content = new InvocationDocumentView { DataContext = vm }, Width = 800, Height = 600 };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        // The body-format selector sits outside the (collapsed-by-default) headers Expander, so it
+        // renders directly; the request-headers editor is the Expander itself.
+        window.GetVisualDescendants().OfType<ComboBox>()
+            .Where(c => Equals(c.GetValue(Avalonia.Automation.AutomationProperties.NameProperty), "Body format"))
+            .Any(c => c.IsEffectivelyVisible)
+            .ShouldBeTrue();
+
+        window.GetVisualDescendants().OfType<Avalonia.Controls.Expander>()
+            .Where(e => Equals(e.Header, "Request headers"))
+            .Any(e => e.IsEffectivelyVisible)
+            .ShouldBeTrue();
+    });
 }

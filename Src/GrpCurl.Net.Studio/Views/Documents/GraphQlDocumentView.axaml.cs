@@ -26,9 +26,11 @@ public sealed partial class GraphQlDocumentView : UserControl
     private readonly TextEditor? _documentEditor;
     private readonly TextEditor? _variablesEditor;
     private readonly TextEditor? _responseEditor;
+    private readonly TextEditor? _mappingEditor;
     private GraphQlDocumentViewModel? _viewModel;
     private bool _syncingDocument;
     private bool _syncingVariables;
+    private bool _syncingMapping;
 
     public GraphQlDocumentView()
     {
@@ -37,10 +39,12 @@ public sealed partial class GraphQlDocumentView : UserControl
         _documentEditor = this.FindControl<TextEditor>("DocumentEditor");
         _variablesEditor = this.FindControl<TextEditor>("VariablesEditor");
         _responseEditor = this.FindControl<TextEditor>("ResponseEditor");
+        _mappingEditor = this.FindControl<TextEditor>("MappingEditor");
 
         InstallGraphQlGrammar(_documentEditor);
-        InstallJsonGrammar(_variablesEditor);
-        InstallJsonGrammar(_responseEditor);
+        InstallGrammar(_variablesEditor, "json");
+        InstallGrammar(_responseEditor, "json");
+        InstallGrammar(_mappingEditor, "yaml");
 
         if (_documentEditor is not null)
         {
@@ -57,12 +61,17 @@ public sealed partial class GraphQlDocumentView : UserControl
             _variablesEditor.TextChanged += OnVariablesEditorTextChanged;
         }
 
+        if (_mappingEditor is not null)
+        {
+            _mappingEditor.TextChanged += OnMappingEditorTextChanged;
+        }
+
         DataContextChanged += OnDataContextChanged;
     }
 
     private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
 
-    private static void InstallJsonGrammar(TextEditor? editor)
+    private static void InstallGrammar(TextEditor? editor, string languageId)
     {
         if (editor is null)
         {
@@ -72,7 +81,7 @@ public sealed partial class GraphQlDocumentView : UserControl
         var isDark = (editor.ActualThemeVariant ?? ThemeVariant.Default) == ThemeVariant.Dark;
         var registry = new RegistryOptions(isDark ? ThemeName.DarkPlus : ThemeName.LightPlus);
         var installation = editor.InstallTextMate(registry);
-        installation.SetGrammar(registry.GetScopeByLanguageId("json"));
+        installation.SetGrammar(registry.GetScopeByLanguageId(languageId));
     }
 
     // GQL-010: highlight the GraphQL document via the vendored grammar (the bundled package has none).
@@ -158,6 +167,7 @@ public sealed partial class GraphQlDocumentView : UserControl
             _viewModel.Problems.CollectionChanged += OnProblemsChanged;
             SetDocumentText(_viewModel.Document);
             SetVariablesText(_viewModel.VariablesJson);
+            SetMappingText(_viewModel.MappingText);
             SetResponseText(_viewModel.ResponseJson);
             RefreshMarkers();
         }
@@ -180,6 +190,9 @@ public sealed partial class GraphQlDocumentView : UserControl
             case nameof(GraphQlDocumentViewModel.VariablesJson):
                 SetVariablesText(_viewModel.VariablesJson);
                 break;
+            case nameof(GraphQlDocumentViewModel.MappingText):
+                SetMappingText(_viewModel.MappingText);
+                break;
             case nameof(GraphQlDocumentViewModel.ResponseJson):
                 SetResponseText(_viewModel.ResponseJson);
                 break;
@@ -199,6 +212,14 @@ public sealed partial class GraphQlDocumentView : UserControl
         if (!_syncingVariables && _viewModel is not null && _variablesEditor is not null)
         {
             _viewModel.VariablesJson = _variablesEditor.Text;
+        }
+    }
+
+    private void OnMappingEditorTextChanged(object? sender, EventArgs e)
+    {
+        if (!_syncingMapping && _viewModel is not null && _mappingEditor is not null)
+        {
+            _viewModel.MappingText = _mappingEditor.Text;
         }
     }
 
@@ -224,6 +245,18 @@ public sealed partial class GraphQlDocumentView : UserControl
         _syncingVariables = true;
         _variablesEditor.Text = text;
         _syncingVariables = false;
+    }
+
+    private void SetMappingText(string text)
+    {
+        if (_mappingEditor is null || _mappingEditor.Text == text)
+        {
+            return;
+        }
+
+        _syncingMapping = true;
+        _mappingEditor.Text = text;
+        _syncingMapping = false;
     }
 
     private void SetResponseText(string? text)

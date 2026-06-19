@@ -53,6 +53,26 @@ public static class MappingConfigLoader
             : FromJson(rootObject);
     }
 
+    /// <summary>
+    ///     Parses an inline mapping document (YAML or JSON, auto-detected) into a
+    ///     <see cref="MappingConfig" />. Returns <see cref="MappingConfig.Empty" /> for null/blank text.
+    ///     For hosts that edit the mapping in-memory (e.g. Studio's inline mapping buffer) rather than
+    ///     from a file; the same load-time validation as <see cref="LoadAsync" /> applies.
+    /// </summary>
+    /// <param name="text">The mapping document text (YAML or JSON).</param>
+    /// <exception cref="InvalidDataException">Thrown when the text is not a top-level object/map or is invalid.</exception>
+    public static MappingConfig FromText(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return MappingConfig.Empty;
+        }
+
+        return TryParseAny(text) is not JsonObject rootObject
+            ? throw new InvalidDataException("Mapping must contain a top-level object/map.")
+            : FromJson(rootObject);
+    }
+
     /// <summary>Parses an already-deserialized JSON object into a <see cref="MappingConfig" />.</summary>
     /// <param name="root">JSON object containing the mapping configuration shape.</param>
     /// <exception cref="InvalidDataException">Thrown when required fields are missing or invalid.</exception>

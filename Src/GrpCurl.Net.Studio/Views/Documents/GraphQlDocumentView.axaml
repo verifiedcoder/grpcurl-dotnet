@@ -239,6 +239,26 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
+            <!-- GQL-044/045: inline mapping buffer (YAML/JSON) with live schema validation. -->
+            <Expander Header="Mapping (YAML)">
+                <StackPanel Spacing="4">
+                    <Border BorderBrush="{DynamicResource Status.Neutral}" BorderThickness="1" CornerRadius="3" MinHeight="120">
+                        <ae:TextEditor x:Name="MappingEditor" ShowLineNumbers="True"
+                                       FontFamily="{DynamicResource Editor.FontFamily}"
+                                       FontSize="{DynamicResource Editor.FontSize}"
+                                       AutomationProperties.Name="Mapping YAML" />
+                    </Border>
+                    <ItemsControl ItemsSource="{Binding MappingProblems}" IsVisible="{Binding HasMappingProblems}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="gql:GraphQlProblem">
+                                <TextBlock Text="{Binding Message}" FontSize="11" TextWrapping="Wrap"
+                                           Foreground="{DynamicResource Status.Server}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Expander>
+
             <!-- GQL-040..043: live resolution preview — per-root-field target, source, kind; unresolvable flagged. -->
             <Expander Header="Resolution" IsVisible="{Binding HasResolutions}" IsExpanded="True">
                 <StackPanel Spacing="2">

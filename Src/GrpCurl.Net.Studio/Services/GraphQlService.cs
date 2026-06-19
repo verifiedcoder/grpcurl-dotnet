@@ -63,7 +63,7 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
         }
 
         // ── Build the bridge graph and execute ─────────────────────────────────
-        var mappingConfig = await MappingConfigLoader.LoadAsync(request.MappingPath, cancellationToken).ConfigureAwait(false);
+        var mappingConfig = await LoadMappingAsync(request, cancellationToken).ConfigureAwait(false);
         var mappingResolver = new MappingResolver(mappingConfig, request.DefaultService);
 
         var connection = request.Connection;
@@ -149,7 +149,7 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
             yield break;
         }
 
-        var mappingConfig = await MappingConfigLoader.LoadAsync(request.MappingPath, cancellationToken).ConfigureAwait(false);
+        var mappingConfig = await LoadMappingAsync(request, cancellationToken).ConfigureAwait(false);
         var mappingResolver = new MappingResolver(mappingConfig, request.DefaultService);
 
         var connection = request.Connection;
@@ -248,7 +248,7 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
 
     public async Task<GraphQlSchemaResult> IntrospectAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken)
     {
-        var mappingConfig = await MappingConfigLoader.LoadAsync(request.MappingPath, cancellationToken).ConfigureAwait(false);
+        var mappingConfig = await LoadMappingAsync(request, cancellationToken).ConfigureAwait(false);
         var connection = request.Connection;
         var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
         var options = ConnectionChannelMapper.ToChannelOptions(connection, null, profile, password);
@@ -354,7 +354,7 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
             return new GraphQlResolutionResult([], DefaultServiceOverridden: false, OverriddenService: null);
         }
 
-        var mappingConfig = await MappingConfigLoader.LoadAsync(request.MappingPath, cancellationToken).ConfigureAwait(false);
+        var mappingConfig = await LoadMappingAsync(request, cancellationToken).ConfigureAwait(false);
         var resolver = new MappingResolver(mappingConfig, request.DefaultService);
         var operationType = operation.OperationType;
 
@@ -484,6 +484,26 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
         public override void WriteLine(string? value)
             => writer.WriteAsync(value ?? string.Empty, cancellationToken).AsTask().GetAwaiter().GetResult();
     }
+
+    public IReadOnlyList<GraphQlProblem> ValidateMapping(string mappingText)
+    {
+        try
+        {
+            _ = MappingConfigLoader.FromText(mappingText);
+            return [];
+        }
+        catch (Exception ex)
+        {
+            // YAML/JSON parse, missing keys, duplicate entries, unknown enums — all mapping-content problems.
+            return [new GraphQlProblem(ex.Message, GraphQlProblemKind.Configuration)];
+        }
+    }
+
+    // GQL-044: the inline mapping buffer takes precedence over the external file path.
+    private static Task<MappingConfig> LoadMappingAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken)
+        => string.IsNullOrWhiteSpace(request.MappingText)
+            ? MappingConfigLoader.LoadAsync(request.MappingPath, cancellationToken)
+            : Task.FromResult(MappingConfigLoader.FromText(request.MappingText));
 
     private static GraphQlExecutionResult ConfigError(GraphQlProblemKind kind, string message)
         => new(Ok: false, EnvelopeJson: null, [new GraphQlProblem(message, kind)]);

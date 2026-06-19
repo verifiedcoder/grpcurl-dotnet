@@ -1,0 +1,85 @@
+# Root EditorConfig for GrpCurl.Net (Track C — code-quality enforcement foundation).
+#
+# Strategy: EnforceCodeStyleInBuild=true runs the SDK's built-in IDE*/CA* analyzers at build under
+# TreatWarningsAsErrors. To land this without breaking the build, every analyzer diagnostic defaults to
+# `suggestion` (non-breaking). Track C then ELEVATES each adopted rule to `warning` in the PR that fixes
+# its violations (C1 = errors.csv findings, C2 = messages.csv modernizations, C3 = MVVM partial
+# properties), so enforcement ratchets up category-by-category and never regresses afterward. Rules we
+# deliberately reject are pinned to `none`/`silent` here with a one-line rationale.
+#
+# NOTE: SonarAnalyzer.CSharp (the Sxxxx rules) is intentionally NOT added yet — adding it must be done
+# and verified in an environment whose NuGet feed serves the full package (this one served a stub), so
+# the lock files and CI locked-mode restore stay valid. The Sxxxx severities below are pre-staged so
+# enabling the package later is a one-line change; until then they are inert no-ops. Many errors.csv
+# findings have built-in equivalents already covered here (e.g. S2325 make-static ≈ CA1822/IDE0250).
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{json,yml,yaml,csproj,props,targets,slnx}]
+indent_size = 2
+
+[*.{cs,axaml,xaml}]
+indent_size = 4
+
+[*.cs]
+# ── C# language style (matches the existing codebase to avoid churn) ──────────────────────────────
+csharp_style_namespace_declarations = file_scoped:suggestion
+csharp_prefer_braces = true:suggestion
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:suggestion
+csharp_style_expression_bodied_methods = when_on_single_line:suggestion
+csharp_style_expression_bodied_properties = true:suggestion
+csharp_style_expression_bodied_accessors = true:suggestion
+csharp_prefer_simple_using_statement = true:suggestion
+csharp_style_prefer_pattern_matching = true:suggestion
+csharp_style_prefer_switch_expression = true:suggestion
+csharp_style_prefer_primary_constructors = true:suggestion
+csharp_style_prefer_collection_expression = when_types_loosely_match:suggestion
+dotnet_style_namespace_match_folder = false
+dotnet_sort_system_directives_first = false
+
+# Naming: private fields are _camelCase (already pervasive); keep as a suggestion for now.
+dotnet_naming_rule.private_fields_underscore.severity = suggestion
+dotnet_naming_rule.private_fields_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_underscore.style = underscore_camel
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.underscore_camel.capitalization = camel_case
+dotnet_naming_style.underscore_camel.required_prefix = _
+
+# ── Analyzer severity governance ──────────────────────────────────────────────────────────────────
+# Default every analyzer diagnostic (IDE*, CA*, Sxxxx) to suggestion so the foundation builds clean.
+# Track C raises adopted rules to `warning` per category as their violations are fixed.
+dotnet_analyzer_diagnostic.severity = suggestion
+
+# ── Deliberately rejected rules (triaged out — kept off with rationale) ───────────────────────────
+# CA1859: "use concrete types for performance" — the codebase intentionally returns interfaces/
+# abstractions (IDescriptorSource, IReadOnlyList, etc.) for testability and decoupling.
+dotnet_diagnostic.CA1859.severity = none
+# IDE0007/IDE0008: `var` vs explicit type — the codebase consistently prefers `var`; the var_* prefs
+# above already encode that, so these would only add churn.
+dotnet_diagnostic.IDE0007.severity = none
+dotnet_diagnostic.IDE0008.severity = none
+# S1075: "URIs should not be hardcoded" — UpdateService intentionally embeds the project's own GitHub
+# releases URL (it is the product's home, not configuration). Pre-staged: inert until SonarAnalyzer lands.
+dotnet_diagnostic.S1075.severity = none
+
+[Tests/**/*.cs]
+# Test projects: don't gate on doc/style rules that target product code.
+dotnet_diagnostic.S2699.severity = suggestion  # "tests should include assertions" — many are render/smoke harnesses
+dotnet_diagnostic.CA1707.severity = none        # underscores in test method names are the convention here
+
+[Src/*/obj/**/*.cs]
+generated_code = true
+
+[**/*.{Designer,g,g.i}.cs]
+generated_code = true

@@ -21,7 +21,12 @@ public interface IGraphQlService
     ///     Executes one query/mutation operation against the request's connection and returns the GraphQL
     ///     envelope (GQL-021/022). Variables are coerced first; a coercion / parse / unresolved-mapping
     ///     failure surfaces as a configuration error with no RPC attempted (AC-5). Subscriptions are
-    ///     handled by a later epic (E4.3) and are rejected here.
+    ///     handled by a later epic (E4.3) and are rejected here. When <paramref name="progress" /> is
+    ///     supplied, each root field reports its parallel-scheduler transitions (GQL-024 / AC-6); the sink
+    ///     may be called from worker threads, so the caller marshals to the UI thread.
     /// </summary>
-    Task<GraphQlExecutionResult> ExecuteAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken);
+    Task<GraphQlExecutionResult> ExecuteAsync(
+        GraphQlExecutionRequest request,
+        IProgress<GraphQlFieldProgress>? progress,
+        CancellationToken cancellationToken);
 }

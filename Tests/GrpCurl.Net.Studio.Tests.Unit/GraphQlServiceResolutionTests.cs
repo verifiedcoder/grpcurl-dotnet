@@ -62,6 +62,16 @@ public sealed class GraphQlServiceResolutionTests
     }
 
     [Fact]
+    public async Task TranslateAsync_renders_a_coercion_or_parse_failure_in_place()
+    {
+        var result = await new GraphQlService().TranslateAsync(Request("query {", null), Ct);
+
+        var field = result.Fields.ShouldHaveSingleItem();
+        field.HasError.ShouldBeTrue();
+        field.HasRequestJson.ShouldBeFalse();
+    }
+
+    [Fact]
     public async Task An_inline_mapping_resolves_a_field_explicitly()
     {
         var request = Request("query Q { foo }", defaultService: null) with

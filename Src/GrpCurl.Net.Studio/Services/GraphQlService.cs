@@ -485,6 +485,102 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
             => writer.WriteAsync(value ?? string.Empty, cancellationToken).AsTask().GetAwaiter().GetResult();
     }
 
+    public async Task<GraphQlTranslationResult> TranslateAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken)
+    {
+        var (operation, rootSelections, prepError) = PrepareSelections(request);
+
+        if (prepError is not null || operation is null || rootSelections is null)
+        {
+            // Coercion / parse failures render in place of the JSON (GQL-050).
+            return new GraphQlTranslationResult([new GraphQlFieldTranslation("(document)", null, null, [], prepError!.Message)]);
+        }
+
+        var mappingConfig = await LoadMappingAsync(request, cancellationToken).ConfigureAwait(false);
+        var mappingResolver = new MappingResolver(mappingConfig, request.DefaultService);
+        var translator = new JsonRequestTranslator();
+
+        var connection = request.Connection;
+        var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
+        var options = ConnectionChannelMapper.ToChannelOptions(connection, null, profile, password);
+        var reflectionMetadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
+        var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
+
+        await using var session = await DescriptorSourceFactory.CreateAsync(
+            connection.Address, protosets, protos, imports,
+            channelOptions: options,
+            reflectionMetadata: reflectionMetadata,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        var fields = new List<GraphQlFieldTranslation>();
+
+        foreach (var selection in rootSelections)
+        {
+            fields.Add(await TranslateFieldAsync(selection, operation.OperationType, mappingResolver, mappingConfig, translator, session.Source, cancellationToken).ConfigureAwait(false));
+        }
+
+        return new GraphQlTranslationResult(fields);
+    }
+
+    private static async Task<GraphQlFieldTranslation> TranslateFieldAsync(
+        ResolvedSelection selection,
+        GraphQLOperationType operationType,
+        MappingResolver mappingResolver,
+        MappingConfig mappingConfig,
+        JsonRequestTranslator translator,
+        IDescriptorSource source,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var entry = mappingResolver.Resolve(selection.Name, operationType);
+            var serviceName = entry.Service!;
+
+            if (await source.FindSymbolAsync(serviceName, cancellationToken).ConfigureAwait(false) is not Google.Protobuf.Reflection.ServiceDescriptor service)
+            {
+                return new GraphQlFieldTranslation(selection.Name, $"{serviceName}/{entry.Method}", null, [], $"Service '{serviceName}' not found.");
+            }
+
+            var method = service.Methods.FirstOrDefault(m => string.Equals(m.Name, entry.Method, StringComparison.Ordinal));
+
+            if (method is null)
+            {
+                return new GraphQlFieldTranslation(selection.Name, $"{serviceName}/{entry.Method}", null, [], $"Method '{serviceName}/{entry.Method}' not found.");
+            }
+
+            // The would-be request JSON (no descriptor → silent drop), per GQL-047's "request JSON showing no field".
+            var requestJson = Prettify(translator.Translate(selection, entry, mappingConfig.Defaults, requestType: null));
+
+            // The Finding-4 guard: re-translate WITH the descriptor; an unknown convention argument throws.
+            var dropped = new List<string>();
+            try
+            {
+                _ = translator.Translate(selection, entry, mappingConfig.Defaults, method.InputType);
+            }
+            catch (Gql2Grpc.Translation.UnknownArgumentException unknown)
+            {
+                dropped.Add(unknown.ArgumentName);
+            }
+
+            return new GraphQlFieldTranslation(selection.Name, $"{serviceName}/{entry.Method}", requestJson, dropped, null);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return new GraphQlFieldTranslation(selection.Name, null, null, [], ex.Message);
+        }
+    }
+
+    private static string Prettify(string compactJson)
+    {
+        try
+        {
+            return JsonNode.Parse(compactJson)?.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }) ?? compactJson;
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return compactJson;
+        }
+    }
+
     public IReadOnlyList<GraphQlProblem> ValidateMapping(string mappingText)
     {
         try

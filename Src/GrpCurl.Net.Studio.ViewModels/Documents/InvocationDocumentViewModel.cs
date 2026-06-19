@@ -213,6 +213,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
 
         OnPropertyChanged(nameof(HasHeaderErrors));
         InvokeCommand.NotifyCanExecuteChanged();
+        StartStreamCommand.NotifyCanExecuteChanged();
         RefreshDirty(); // FR-002: adding/removing a header row diverges from the saved copy
     }
 
@@ -234,6 +235,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         {
             OnPropertyChanged(nameof(HasHeaderErrors));
             InvokeCommand.NotifyCanExecuteChanged();
+            StartStreamCommand.NotifyCanExecuteChanged();
         }
 
         if (e.PropertyName is nameof(HeaderRowViewModel.Name) or nameof(HeaderRowViewModel.Value))
@@ -281,7 +283,10 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     public bool HasHeaderErrors => Headers.Any(h => h.HasBinError);
 
     private bool CanInvoke => !IsStreaming && State != RunState.InFlight && !HasHeaderErrors;
-    private bool CanStartStream => IsStreaming && State != RunState.InFlight;
+
+    // B2: streaming now exposes the request-header editor too, so an invalid -bin header must block a
+    // stream start the same way it blocks a unary invoke (previously CanStartStream ignored header errors).
+    private bool CanStartStream => IsStreaming && State != RunState.InFlight && !HasHeaderErrors;
 
     // FR-063: re-validate (debounced, off-thread) whenever the body or the unknown-fields toggle changes.
     partial void OnRequestJsonChanged(string value) => ScheduleValidation();

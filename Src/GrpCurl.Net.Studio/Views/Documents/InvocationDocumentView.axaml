@@ -32,6 +32,36 @@
                         ToolTip.Tip="Reveal / hide value" AutomationProperties.Name="Reveal value" />
             </Grid>
         </DataTemplate>
+        <!-- Request-header editor row (FR-066/067/068/123): name/value + -bin validity + resolved preview.
+             Shared by the unary request panel and the streaming-console input (B2). -->
+        <DataTemplate x:Key="RequestHeaderRowTemplate" x:DataType="conn:HeaderRowViewModel">
+            <StackPanel Margin="0,2" Spacing="1">
+                <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="4">
+                    <TextBox Grid.Column="0" Text="{Binding Name}" Watermark="name"
+                             AutomationProperties.Name="Header name" />
+                    <TextBox Grid.Column="1" Text="{Binding Value}" Watermark="value"
+                             PasswordChar="{Binding IsSecret, Converter={StaticResource SecretMask}}"
+                             AutomationProperties.Name="Header value" />
+                    <Button Grid.Column="2" Content="✕" Padding="6,0"
+                            Command="{Binding #Root.((docs:InvocationDocumentViewModel)DataContext).RemoveHeaderCommand}"
+                            CommandParameter="{Binding}" AutomationProperties.Name="Remove header" />
+                </Grid>
+                <!-- FR-067 -bin validation + byte readout -->
+                <TextBlock Text="{Binding BinError}" FontSize="11" IsVisible="{Binding HasBinError}"
+                           Foreground="{DynamicResource Status.Server}" />
+                <TextBlock Text="{Binding BinReadout}" FontSize="11" IsVisible="{Binding HasBinReadout}"
+                           Foreground="{DynamicResource Status.Neutral}" />
+                <!-- FR-066 resolved-value preview (env-vars expanded, secrets redacted) -->
+                <TextBlock FontSize="11" IsVisible="{Binding HasResolvedPreview}"
+                           Foreground="{DynamicResource Status.Neutral}" TextTrimming="CharacterEllipsis">
+                    <Run Text="→ " /><Run Text="{Binding ResolvedPreview}" />
+                </TextBlock>
+                <!-- FR-123: a replayed secret header needs its value re-entered. -->
+                <TextBlock Text="Value required (the secret wasn't stored in history)."
+                           FontSize="11" IsVisible="{Binding ShowRequiresValue}"
+                           Foreground="{DynamicResource Status.Server}" />
+            </StackPanel>
+        </DataTemplate>
     </UserControl.Resources>
 
     <!-- Rich google.rpc.Status detail panels (implicit templates, resolved by data type). -->
@@ -205,38 +235,7 @@
         <Grid Grid.Row="2" RowDefinitions="Auto,*,Auto" IsVisible="{Binding !IsStreaming}">
             <Expander Grid.Row="0" Header="Request headers" Margin="8,6,8,0">
                 <StackPanel Spacing="4" Margin="0,4">
-                    <ItemsControl ItemsSource="{Binding Headers}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="conn:HeaderRowViewModel">
-                                <StackPanel Margin="0,2" Spacing="1">
-                                    <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="4">
-                                        <TextBox Grid.Column="0" Text="{Binding Name}" Watermark="name"
-                                                 AutomationProperties.Name="Header name" />
-                                        <TextBox Grid.Column="1" Text="{Binding Value}" Watermark="value"
-                                                 PasswordChar="{Binding IsSecret, Converter={StaticResource SecretMask}}"
-                                                 AutomationProperties.Name="Header value" />
-                                        <Button Grid.Column="2" Content="✕" Padding="6,0"
-                                                Command="{Binding #Root.((docs:InvocationDocumentViewModel)DataContext).RemoveHeaderCommand}"
-                                                CommandParameter="{Binding}" AutomationProperties.Name="Remove header" />
-                                    </Grid>
-                                    <!-- FR-067 -bin validation + byte readout -->
-                                    <TextBlock Text="{Binding BinError}" FontSize="11" IsVisible="{Binding HasBinError}"
-                                               Foreground="{DynamicResource Status.Server}" />
-                                    <TextBlock Text="{Binding BinReadout}" FontSize="11" IsVisible="{Binding HasBinReadout}"
-                                               Foreground="{DynamicResource Status.Neutral}" />
-                                    <!-- FR-066 resolved-value preview (env-vars expanded, secrets redacted) -->
-                                    <TextBlock FontSize="11" IsVisible="{Binding HasResolvedPreview}"
-                                               Foreground="{DynamicResource Status.Neutral}" TextTrimming="CharacterEllipsis">
-                                        <Run Text="→ " /><Run Text="{Binding ResolvedPreview}" />
-                                    </TextBlock>
-                                    <!-- FR-123: a replayed secret header needs its value re-entered. -->
-                                    <TextBlock Text="Value required (the secret wasn't stored in history)."
-                                               FontSize="11" IsVisible="{Binding ShowRequiresValue}"
-                                               Foreground="{DynamicResource Status.Server}" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                    <ItemsControl ItemsSource="{Binding Headers}" ItemTemplate="{StaticResource RequestHeaderRowTemplate}" />
                     <Button Content="Add header" HorizontalAlignment="Left" Command="{Binding AddHeaderCommand}"
                             AutomationProperties.Name="Add header" />
                 </StackPanel>
@@ -418,6 +417,21 @@
             <!-- Input: server-streaming = single request editor; client/duplex = composer -->
             <Border Grid.Row="0" Padding="8,6" BorderBrush="{DynamicResource Divider}" BorderThickness="0,0,0,1">
                 <StackPanel>
+                    <!-- B2: streaming RPCs send request headers + a body format too (many need auth/tenant/trace
+                         metadata), so expose the same editors the unary panel has. -->
+                    <Expander Header="Request headers" Margin="0,0,0,6">
+                        <StackPanel Spacing="4" Margin="0,4">
+                            <ItemsControl ItemsSource="{Binding Headers}" ItemTemplate="{StaticResource RequestHeaderRowTemplate}" />
+                            <Button Content="Add header" HorizontalAlignment="Left" Command="{Binding AddHeaderCommand}"
+                                    AutomationProperties.Name="Add header" />
+                        </StackPanel>
+                    </Expander>
+                    <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,0,0,6">
+                        <TextBlock Text="Body format" VerticalAlignment="Center" FontSize="12" />
+                        <ComboBox ItemsSource="{Binding BodyFormats}" SelectedItem="{Binding BodyFormat}" MinWidth="110"
+                                  AutomationProperties.Name="Body format" />
+                    </StackPanel>
+
                     <StackPanel Spacing="4" IsVisible="{Binding !HasComposer}">
                         <TextBlock Text="Request" FontWeight="SemiBold" />
                         <TextBox Text="{Binding RequestJson}" AcceptsReturn="True" MinHeight="70" MaxHeight="180"

@@ -32,7 +32,11 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
             var parsed = GraphQLDocumentParser.Parse(document);
 
             var operations = parsed.Operations
-                .Select(op => new GraphQlOperationInfo(op.Name, ToKind(op.OperationType)) { Variables = ToVariables(op) })
+                .Select(op => new GraphQlOperationInfo(op.Name, ToKind(op.OperationType))
+                {
+                    Variables = ToVariables(op),
+                    RootFieldCount = RootFieldCount(op)
+                })
                 .ToList();
 
             return new GraphQlParseResult(operations, []);
@@ -50,44 +54,12 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
         IProgress<GraphQlFieldProgress>? progress,
         CancellationToken cancellationToken)
     {
-        // ── Parse + select the operation (no network) ──────────────────────────
-        GraphQLDocument document;
-        GraphQLOperation operation;
+        // ── Parse + select + coerce (no network; AC-5) ─────────────────────────
+        var (operation, rootSelections, prepError) = PrepareSelections(request);
 
-        try
+        if (prepError is not null || operation is null || rootSelections is null)
         {
-            document = GraphQLDocumentParser.Parse(request.Document);
-            operation = document.SelectOperation(request.OperationName);
-        }
-        catch (Exception ex)
-        {
-            // Document syntax, "no operations", or ambiguous-operation selection — all pre-RPC config errors.
-            return new GraphQlExecutionResult(Ok: false, EnvelopeJson: null, [ToSyntaxProblem(ex)]);
-        }
-
-        // Subscriptions route to the streaming console in E4.3; reject here so the user gets a clear
-        // message rather than the bridge's "exactly one root field" stream error.
-        if (operation.OperationType == GraphQLOperationType.Subscription)
-        {
-            return ConfigError(GraphQlProblemKind.Configuration, "Subscriptions are not yet supported in Studio (coming in the subscriptions update).");
-        }
-
-        // ── Coerce variables (pre-RPC; AC-5) ───────────────────────────────────
-        IReadOnlyList<ResolvedSelection> rootSelections;
-
-        try
-        {
-            JsonNode? variablesFile = string.IsNullOrWhiteSpace(request.VariablesJson)
-                ? null
-                : VariableCoercer.ParseVariablesFile(request.VariablesJson);
-
-            var variables = VariableCoercer.Coerce(operation.VariableDefinitions, cliVariables: null, variablesFile);
-            var resolver = new SelectionResolver(document.Fragments, variables);
-            rootSelections = resolver.Resolve(operation.SelectionSet);
-        }
-        catch (ArgumentException ex)
-        {
-            return ConfigError(GraphQlProblemKind.Variables, ex.Message);
+            return new GraphQlExecutionResult(Ok: false, EnvelopeJson: null, [prepError!]);
         }
 
         // ── Build the bridge graph and execute ─────────────────────────────────
@@ -161,6 +133,159 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
         return new GraphQlExecutionResult(ok, json, []) { VerboseLog = [.. captured] };
     }
 
+    public async IAsyncEnumerable<string> StreamAsync(
+        GraphQlExecutionRequest request,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        var (operation, rootSelections, prepError) = PrepareSelections(request);
+
+        if (prepError is not null || operation is null || rootSelections is null)
+        {
+            yield return ErrorEnvelope(prepError!.Message);
+            yield break;
+        }
+
+        var mappingConfig = await MappingConfigLoader.LoadAsync(request.MappingPath, cancellationToken).ConfigureAwait(false);
+        var mappingResolver = new MappingResolver(mappingConfig, request.DefaultService);
+
+        var connection = request.Connection;
+        var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
+        var options = ConnectionChannelMapper.ToChannelOptions(connection, null, profile, password);
+        var reflectionMetadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
+        var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
+
+        await using var session = await DescriptorSourceFactory.CreateAsync(
+            connection.Address, protosets, protos, imports,
+            channelOptions: options,
+            reflectionMetadata: reflectionMetadata,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        if (session.Channel is not { } channel)
+        {
+            yield return ErrorEnvelope("This connection has no target gRPC address; GraphQL execution requires a live server.");
+            yield break;
+        }
+
+        Metadata rpcMetadata;
+        string? metadataError = null;
+        try
+        {
+            rpcMetadata = GrpcChannelFactory.CreateMetadata(
+                await ExpandHeadersAsync(request.Headers, cancellationToken).ConfigureAwait(false),
+                NullIfBlank(connection.UserAgent));
+        }
+        catch (InvalidOperationException ex)
+        {
+            rpcMetadata = new Metadata();
+            metadataError = ex.Message;
+        }
+
+        if (metadataError is not null)
+        {
+            yield return ErrorEnvelope(metadataError);
+            yield break;
+        }
+
+        var executor = new OperationExecutor(
+            mappingResolver,
+            session.Source,
+            new GrpcTransport(channel),
+            new JsonRequestTranslator(),
+            new SelectionProjector(request.StrictSelection),
+            new IntrospectionExecutor(new GraphQLSchemaBuilder(session.Source, mappingConfig), new SelectionProjector(request.StrictSelection)),
+            new ExecutorOptions
+            {
+                RpcMetadata = rpcMetadata,
+                Deadline = ParseDeadline(request.Deadline),
+                EmitDefaults = request.EmitDefaults,
+                AllowUnknownFields = request.AllowUnknownFields,
+                RawOutput = request.Raw,
+                IntrospectionEnabled = request.Introspection
+            },
+            new VerboseLogger(VerbosityLevel.Quiet));
+
+        // Each streamed envelope is a synchronous WriteLine on the bridge's writer; a bounded channel turns
+        // those lines into an async sequence and applies backpressure into the gRPC read loop (SPEC-030 §6).
+        var envelopes = System.Threading.Channels.Channel.CreateBounded<string>(
+            new System.Threading.Channels.BoundedChannelOptions(1000)
+            {
+                FullMode = System.Threading.Channels.BoundedChannelFullMode.Wait,
+                SingleReader = true,
+                SingleWriter = true
+            });
+
+        var writer = new ChannelTextWriter(envelopes.Writer, cancellationToken);
+        var responseWriter = new StreamingResponseWriter(writer);
+
+        var run = Task.Run(async () =>
+        {
+            try
+            {
+                await executor.StreamAsync(operation.OperationType, rootSelections, responseWriter, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _ = envelopes.Writer.TryComplete();
+            }
+        }, cancellationToken);
+
+        try
+        {
+            await foreach (var line in envelopes.Reader.ReadAllAsync(cancellationToken).ConfigureAwait(false))
+            {
+                yield return line;
+            }
+        }
+        finally
+        {
+            await run.ConfigureAwait(false); // observe completion / propagate cancellation
+        }
+    }
+
+    /// <summary>Parse + select the operation + coerce variables (no network). Returns a problem on failure.</summary>
+    private static (GraphQLOperation? Operation, IReadOnlyList<ResolvedSelection>? Selections, GraphQlProblem? Error) PrepareSelections(GraphQlExecutionRequest request)
+    {
+        GraphQLDocument document;
+        GraphQLOperation operation;
+
+        try
+        {
+            document = GraphQLDocumentParser.Parse(request.Document);
+            operation = document.SelectOperation(request.OperationName);
+        }
+        catch (Exception ex)
+        {
+            return (null, null, ToSyntaxProblem(ex));
+        }
+
+        try
+        {
+            JsonNode? variablesFile = string.IsNullOrWhiteSpace(request.VariablesJson)
+                ? null
+                : VariableCoercer.ParseVariablesFile(request.VariablesJson);
+
+            var variables = VariableCoercer.Coerce(operation.VariableDefinitions, cliVariables: null, variablesFile);
+            var selections = new SelectionResolver(document.Fragments, variables).Resolve(operation.SelectionSet);
+            return (operation, selections, null);
+        }
+        catch (ArgumentException ex)
+        {
+            return (null, null, new GraphQlProblem(ex.Message, GraphQlProblemKind.Variables));
+        }
+    }
+
+    private static string ErrorEnvelope(string message)
+        => GraphQLResponseBuilder.BuildSingleError(new GraphQLError(message, [])).ToJsonString();
+
+    /// <summary>A <see cref="TextWriter" /> that forwards each whole line to a channel, blocking when full (backpressure).</summary>
+    private sealed class ChannelTextWriter(System.Threading.Channels.ChannelWriter<string> writer, CancellationToken cancellationToken) : TextWriter
+    {
+        public override System.Text.Encoding Encoding => System.Text.Encoding.UTF8;
+
+        public override void WriteLine(string? value)
+            => writer.WriteAsync(value ?? string.Empty, cancellationToken).AsTask().GetAwaiter().GetResult();
+    }
+
     private static GraphQlExecutionResult ConfigError(GraphQlProblemKind kind, string message)
         => new(Ok: false, EnvelopeJson: null, [new GraphQlProblem(message, kind)]);
 
@@ -185,6 +310,9 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
             _ => GraphQlFieldState.Queued
         };
     }
+
+    private static int RootFieldCount(GraphQLOperation op)
+        => op.SelectionSet.Selections.Count(s => s is GraphQLParser.AST.GraphQLField);
 
     private static IReadOnlyList<GraphQlVariableInfo> ToVariables(GraphQLOperation op)
     {

@@ -32,6 +32,7 @@ public sealed class ViewLocatorTests(HeadlessSessionFixture fixture) : HeadlessT
         typeof(StreamComposerViewModel), // sub-view-models rendered inline inside the invocation tab
         typeof(StreamLogViewModel),
         typeof(StreamRowViewModel),
+        typeof(GraphQlStreamLogViewModel), // GraphQL subscription console rendered inline inside the GraphQL tab (E4.3)
         typeof(MetadataRowViewModel),
         typeof(ConsoleCallRowViewModel), // console call rows render via an inline DataTemplate (FR-114)
         typeof(WorkspaceSessionViewModel), // status/command host bound inline into the shell, no view of its own (E3.1)

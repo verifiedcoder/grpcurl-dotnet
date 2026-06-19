@@ -437,6 +437,88 @@ public sealed class GraphQlDocumentViewModelTests
         vm.VerboseLog.ShouldContain("[x] → testing.TestService/UnaryCall");
     }
 
+    private static GraphQlParseResult OneSubscription(int rootFields = 1)
+        => new([new GraphQlOperationInfo("S", GraphQlOperationKind.Subscription) { RootFieldCount = rootFields }], []);
+
+    [Fact]
+    public async Task A_subscription_streams_envelopes_into_the_console()
+    {
+        var vm = Create(out var graphql, out _);
+        graphql.ParseResult = OneSubscription();
+        graphql.StreamEnvelopes = ["{ \"data\": { \"a\": 1 } }", "{ \"data\": { \"a\": 2 } }"];
+        vm.ApplyParse(OneSubscription());
+
+        vm.IsSubscription.ShouldBeTrue();
+        await vm.ExecuteCommand.ExecuteAsync(null);
+
+        graphql.StreamCount.ShouldBe(1);
+        vm.StreamLog.TotalReceived.ShouldBe(2);
+        vm.StreamLog.Rows.Count.ShouldBe(2);
+        vm.State.ShouldBe(RunState.Completed);
+    }
+
+    [Fact]
+    public async Task A_multi_root_subscription_is_blocked_before_streaming()
+    {
+        var vm = Create(out var graphql, out _);
+        graphql.ParseResult = OneSubscription(rootFields: 2);
+        vm.ApplyParse(OneSubscription(rootFields: 2));
+
+        await vm.ExecuteCommand.ExecuteAsync(null);
+
+        graphql.StreamCount.ShouldBe(0); // never reached the engine (GQL-064 pre-flight)
+        vm.State.ShouldBe(RunState.Failed);
+        vm.Problems.ShouldContain(p => p.Kind == GraphQlProblemKind.Configuration && p.Message.Contains("one root field"));
+    }
+
+    [Fact]
+    public async Task Cancelling_a_subscription_preserves_received_envelopes()
+    {
+        var vm = Create(out var graphql, out _);
+        graphql.ParseResult = OneSubscription();
+        graphql.OnStream = (_, _) => YieldThenCancel(2);
+        vm.ApplyParse(OneSubscription());
+
+        await vm.ExecuteCommand.ExecuteAsync(null);
+
+        vm.StreamLog.TotalReceived.ShouldBe(2); // AC-3: nothing lost
+        vm.State.ShouldBe(RunState.Cancelled);
+        vm.StreamLog.Rows[^1].IsStatus.ShouldBeTrue();
+        vm.StreamLog.Rows[^1].Json.ShouldContain("Cancelled after 2");
+    }
+
+    private static async IAsyncEnumerable<string> YieldThenCancel(int n)
+    {
+        for (var i = 0; i < n; i++)
+        {
+            yield return $"{{ \"tick\": {i} }}";
+            await Task.Yield();
+        }
+
+        throw new OperationCanceledException();
+    }
+
+    [Fact]
+    public async Task Export_stream_writes_message_envelopes_as_ndjson()
+    {
+        StringWriter? captured = null;
+        var picker = new FakeFilePickerService { SaveResult = "/s.ndjson" };
+        var graphql = new FakeGraphQlService { ParseResult = OneSubscription(), StreamEnvelopes = ["{\"a\":1}", "{\"a\":2}"] };
+        var vm = new GraphQlDocumentViewModel(
+            Conn(), graphql, new ImmediateUiDispatcher(), new FakeClipboardService(),
+            filePicker: picker, writerFactory: _ => captured = new StringWriter())
+        {
+            ParseDebounce = TimeSpan.Zero
+        };
+        vm.ApplyParse(OneSubscription());
+        await vm.ExecuteCommand.ExecuteAsync(null);
+
+        await vm.ExportStreamCommand.ExecuteAsync(null);
+
+        _ = captured.ShouldNotBeNull();
+        captured!.GetStringBuilder().ToString().ShouldBe("{\"a\":1}" + Environment.NewLine + "{\"a\":2}" + Environment.NewLine);
+    }
+
     [Fact]
     public void Re_parsing_keeps_the_prior_selection_when_the_operation_still_exists()
     {

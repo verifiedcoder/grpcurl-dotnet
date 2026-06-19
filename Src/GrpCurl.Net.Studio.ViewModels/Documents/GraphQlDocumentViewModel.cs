@@ -54,6 +54,7 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ExecuteCommand))]
+    [NotifyPropertyChangedFor(nameof(IsSubscription))]
     public partial GraphQlOperationInfo? SelectedOperation { get; set; }
 
     [ObservableProperty]
@@ -157,6 +158,12 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
 
     public bool HasVariableRows => VariableRows.Count > 0;
     public bool HasVariableWarnings => VariableWarnings.Count > 0;
+
+    /// <summary>The subscription streaming console (GQL-060..065); used when the selected operation is a subscription.</summary>
+    public GraphQlStreamLogViewModel StreamLog { get; } = new();
+
+    /// <summary>True when the selected operation is a subscription (Execute streams into <see cref="StreamLog" />).</summary>
+    public bool IsSubscription => SelectedOperation?.Kind == GraphQlOperationKind.Subscription;
 
     /// <summary>Captured verbose-pane lines from the last execution (GQL-029).</summary>
     public ObservableCollection<string> VerboseLog { get; } = [];
@@ -420,6 +427,13 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     [RelayCommand(CanExecute = nameof(CanExecute), IncludeCancelCommand = true)]
     private async Task Execute(CancellationToken cancellationToken)
     {
+        // GQL-060: a subscription streams into the console instead of producing a single envelope.
+        if (IsSubscription)
+        {
+            await StreamInternalAsync(cancellationToken);
+            return;
+        }
+
         await _dispatcher.InvokeAsync(() =>
         {
             State = RunState.InFlight;
@@ -454,6 +468,103 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
 
         stopwatch.Stop();
         await RecordHistoryAsync(request, result, stopwatch.ElapsedMilliseconds);
+    }
+
+    /// <summary>GQL-060..064: streams a subscription into the console, preserving received envelopes on cancel (AC-3).</summary>
+    private async Task StreamInternalAsync(CancellationToken cancellationToken)
+    {
+        // GQL-064: a subscription is never parallelised — multiple root fields can't be streamed. Flag it
+        // before execution rather than letting the bridge reject it mid-stream.
+        if (SelectedOperation is { RootFieldCount: > 1 })
+        {
+            await _dispatcher.InvokeAsync(() =>
+            {
+                Problems.Add(new GraphQlProblem(
+                    "A subscription must have exactly one root field — multiple fields cannot be streamed.",
+                    GraphQlProblemKind.Configuration));
+                OnPropertyChanged(nameof(HasProblems));
+                StatusText = "Configuration error";
+                StatusIsError = true;
+                State = RunState.Failed;
+            });
+            return;
+        }
+
+        await _dispatcher.InvokeAsync(() =>
+        {
+            State = RunState.InFlight;
+            ResponseJson = null;
+            StatusText = null;
+            StatusIsError = false;
+            StreamLog.Reset();
+            ClearExecutionProblems();
+        });
+
+        var request = BuildRequest();
+        var stopwatch = Stopwatch.StartNew();
+        var index = 0L;
+
+        try
+        {
+            await StreamDispatchPump.RunAsync(
+                _graphql.StreamAsync(request, cancellationToken),
+                batch => _dispatcher.InvokeAsync(() =>
+                {
+                    foreach (var line in batch)
+                    {
+                        StreamLog.Append(new GraphQlStreamRow(index++, stopwatch.ElapsedMilliseconds, line));
+                    }
+                }),
+                cancellationToken);
+
+            await _dispatcher.InvokeAsync(() =>
+            {
+                if (State == RunState.InFlight)
+                {
+                    State = RunState.Completed;
+                }
+
+                StatusText = $"Completed — {StreamLog.TotalReceived} messages";
+            });
+        }
+        catch (OperationCanceledException)
+        {
+            await _dispatcher.InvokeAsync(() =>
+            {
+                // AC-3: received envelopes stay in the console; a final status row records the cancellation.
+                StreamLog.AppendStatus($"Cancelled after {StreamLog.TotalReceived} messages");
+                State = RunState.Cancelled;
+                StatusText = $"Cancelled after {StreamLog.TotalReceived} messages";
+                StatusIsError = true;
+            });
+        }
+    }
+
+    /// <summary>GQL-063: export the received subscription envelopes as newline-delimited JSON.</summary>
+    [RelayCommand]
+    private async Task ExportStream()
+    {
+        if (_filePicker is null)
+        {
+            return;
+        }
+
+        var path = await _filePicker.SaveFileAsync("Export subscription stream", "stream.ndjson", [".ndjson", ".json"]);
+
+        if (path is null)
+        {
+            return;
+        }
+
+        await using var writer = _writerFactory(path);
+
+        foreach (var row in StreamLog.Rows)
+        {
+            if (!row.IsStatus)
+            {
+                await writer.WriteLineAsync(row.Json);
+            }
+        }
     }
 
     /// <summary>FR-120: records the execution to history, best-effort — a history hiccup never breaks Execute.</summary>

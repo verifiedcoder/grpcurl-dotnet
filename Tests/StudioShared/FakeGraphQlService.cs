@@ -47,4 +47,33 @@ public sealed class FakeGraphQlService : IGraphQlService
         cancellationToken.ThrowIfCancellationRequested();
         return Task.FromResult(ExecuteResult);
     }
+
+    /// <summary>Scripted subscription envelopes; a custom handler overrides them.</summary>
+    public IReadOnlyList<string> StreamEnvelopes { get; set; } = [];
+
+    public Func<GraphQlExecutionRequest, CancellationToken, IAsyncEnumerable<string>>? OnStream { get; set; }
+
+    public GraphQlExecutionRequest? LastStreamRequest { get; private set; }
+
+    public int StreamCount { get; private set; }
+
+    public IAsyncEnumerable<string> StreamAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken)
+    {
+        LastStreamRequest = request;
+        StreamCount++;
+
+        return OnStream is not null ? OnStream(request, cancellationToken) : Emit(StreamEnvelopes, cancellationToken);
+    }
+
+    private static async IAsyncEnumerable<string> Emit(
+        IReadOnlyList<string> lines,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        foreach (var line in lines)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return line;
+            await Task.Yield();
+        }
+    }
 }

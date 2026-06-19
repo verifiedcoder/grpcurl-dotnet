@@ -51,6 +51,9 @@ public sealed record GraphQlOperationInfo(string? Name, GraphQlOperationKind Kin
 
     /// <summary>The operation's declared variables (drives the quick-vars grid + unbound/undeclared warnings).</summary>
     public IReadOnlyList<GraphQlVariableInfo> Variables { get; init; } = [];
+
+    /// <summary>Top-level root-field count — used for the subscription "never parallelised" pre-flight (GQL-064).</summary>
+    public int RootFieldCount { get; init; }
 }
 
 /// <summary>A problem surfaced in the Problems strip / editor squiggle. Line/column are 1-based when known.</summary>

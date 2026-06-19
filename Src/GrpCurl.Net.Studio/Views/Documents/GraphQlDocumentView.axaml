@@ -134,12 +134,59 @@
 
             <GridSplitter Grid.Column="1" Background="Transparent" />
 
-            <Border Grid.Column="2" BorderBrush="{DynamicResource Status.Neutral}" BorderThickness="1" CornerRadius="3">
-                <ae:TextEditor x:Name="ResponseEditor" IsReadOnly="True"
-                               FontFamily="{DynamicResource Editor.FontFamily}"
-                               FontSize="{DynamicResource Editor.FontSize}"
-                               AutomationProperties.Name="Response envelope" />
-            </Border>
+            <Grid Grid.Column="2">
+                <!-- Query/mutation: the single response envelope. -->
+                <Border IsVisible="{Binding !IsSubscription}"
+                        BorderBrush="{DynamicResource Status.Neutral}" BorderThickness="1" CornerRadius="3">
+                    <ae:TextEditor x:Name="ResponseEditor" IsReadOnly="True"
+                                   FontFamily="{DynamicResource Editor.FontFamily}"
+                                   FontSize="{DynamicResource Editor.FontSize}"
+                                   AutomationProperties.Name="Response envelope" />
+                </Border>
+
+                <!-- Subscription: the streaming console (GQL-060..065). -->
+                <Grid IsVisible="{Binding IsSubscription}" RowDefinitions="Auto,*,Auto">
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="0,0,0,4">
+                        <TextBlock Text="Subscription" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        <Button Content="Export NDJSON" Command="{Binding ExportStreamCommand}" Padding="6,0"
+                                AutomationProperties.Name="Export subscription stream" />
+                    </StackPanel>
+
+                    <Border Grid.Row="1" BorderBrush="{DynamicResource Status.Neutral}" BorderThickness="1" CornerRadius="3">
+                        <ListBox ItemsSource="{Binding StreamLog.Rows}" AutomationProperties.Name="Subscription envelopes">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="docs:GraphQlStreamRow">
+                                    <StackPanel Margin="0,1">
+                                        <Grid ColumnDefinitions="Auto,Auto,Auto,*" ColumnSpacing="6">
+                                            <ToggleButton Grid.Column="0" Content="⋯" Padding="4,0" Background="Transparent" BorderThickness="0"
+                                                          IsChecked="{Binding IsExpanded}" IsVisible="{Binding !IsStatus}"
+                                                          AutomationProperties.Name="Expand envelope" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Glyph}" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="2" Text="{Binding Index}" Opacity="0.5"
+                                                       IsVisible="{Binding !IsStatus}" FontSize="11" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="3" Text="{Binding Preview}" FontFamily="Cascadia Code,Consolas,monospace"
+                                                       FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"
+                                                       IsVisible="{Binding !IsExpanded}" />
+                                        </Grid>
+                                        <TextBox Text="{Binding Json}" IsReadOnly="True" IsVisible="{Binding IsExpanded}"
+                                                 FontFamily="Cascadia Code,Consolas,monospace" FontSize="12"
+                                                 TextWrapping="Wrap" Background="Transparent" BorderThickness="0" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Border>
+
+                    <!-- GQL-065 stats line + truncation notice (no silent caps). -->
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="12" Margin="2,4,0,0">
+                        <TextBlock FontSize="11" Opacity="0.7">
+                            <Run Text="{Binding StreamLog.TotalReceived}" /><Run Text=" msgs · " /><Run Text="{Binding StreamLog.ElapsedText}" /><Run Text=" · " /><Run Text="{Binding StreamLog.RateText}" />
+                        </TextBlock>
+                        <TextBlock Text="{Binding StreamLog.TruncationNotice}" FontSize="11"
+                                   Foreground="{DynamicResource Status.Neutral}" IsVisible="{Binding StreamLog.IsTruncated}" />
+                    </StackPanel>
+                </Grid>
+            </Grid>
         </Grid>
 
         <!-- ── Footer: output options · headers · Problems strip ── -->

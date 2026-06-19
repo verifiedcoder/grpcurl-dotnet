@@ -59,10 +59,20 @@ COMMON=(
 )
 
 # archive <src-dir> <artifact-basename> — packs the CONTENTS of <src-dir> at the archive root.
+# zip on win-*, tar.gz elsewhere. Windows runners' Git Bash usually lacks `zip`, so fall back to
+# PowerShell Compress-Archive (always present) using cwd-relative paths to dodge MSYS path mangling.
 archive() {
   local src="$1" base="$2"
   if [ "$FMT" = "zip" ]; then
-    (cd "$src" && zip -qr -X "$ROOT/$DIST/$base.zip" .)
+    if command -v zip >/dev/null 2>&1; then
+      (cd "$src" && zip -qr -X "$ROOT/$DIST/$base.zip" .)
+    elif command -v pwsh >/dev/null 2>&1; then
+      (cd "$src" && pwsh -NoProfile -Command "Compress-Archive -Path * -DestinationPath '__archive.zip' -Force")
+      mv "$src/__archive.zip" "$DIST/$base.zip"
+    else
+      echo "archive: neither zip nor pwsh available for a win-* RID" >&2
+      exit 1
+    fi
     echo "  -> $DIST/$base.zip"
   else
     tar -czf "$DIST/$base.tar.gz" -C "$src" .

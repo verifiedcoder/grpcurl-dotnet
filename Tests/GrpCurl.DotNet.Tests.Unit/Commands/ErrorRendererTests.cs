@@ -223,7 +223,7 @@ public sealed class ErrorRendererTests
     [Fact]
     public void AppendProxyHintIfRelevant_NoProxySet_LeavesEnvelopeUnchanged()
     {
-        WithProxyEnvironment(Array.Empty<(string, string?)>(), () =>
+        WithProxyEnvironment([], () =>
         {
             var envelope = new ErrorEnvelope
             {

@@ -250,10 +250,15 @@ public sealed record GraphQlTranslationResult(IReadOnlyList<GraphQlFieldTranslat
 /// <summary>One field / enum value / union member of a derived schema type (GQL-075).</summary>
 public sealed record GraphQlSchemaMember(string Name, string? TypeName);
 
-/// <summary>One type in the derived GraphQL schema (GQL-075): its name, kind, and members.</summary>
+/// <summary>One type in the derived GraphQL schema (GQL-075): its name, kind, members, and the underlying proto symbol (GQL-079).</summary>
 public sealed record GraphQlSchemaType(string Name, string Kind, IReadOnlyList<GraphQlSchemaMember> Members)
 {
     public bool HasMembers => Members.Count > 0;
+
+    /// <summary>The fully-qualified proto symbol this type derives from (GQL-079 click-through), when known.</summary>
+    public string? Symbol { get; init; }
+
+    public bool HasSymbol => !string.IsNullOrEmpty(Symbol);
 }
 
 /// <summary>
@@ -266,7 +271,11 @@ public sealed record GraphQlSchemaResult(
     string SchemaName,
     IReadOnlyList<GraphQlSchemaType> Types,
     string? Json,
-    GraphQlProblem? Error);
+    GraphQlProblem? Error)
+{
+    /// <summary>The derived SDL (GQL-078), generated from the introspection result.</summary>
+    public string? Sdl { get; init; }
+}
 
 /// <summary>
 ///     A completed GraphQL execution captured for history (GQL-027 / FR-120). Carries the redaction-ready

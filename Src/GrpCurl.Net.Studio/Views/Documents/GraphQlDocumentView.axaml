@@ -402,6 +402,8 @@
                         </TextBlock>
                         <Button Content="Copy JSON" Command="{Binding CopySchemaJsonCommand}" Padding="6,0"
                                 AutomationProperties.Name="Copy introspection JSON" />
+                        <Button Content="Copy SDL" Command="{Binding CopySchemaSdlCommand}" Padding="6,0"
+                                AutomationProperties.Name="Copy derived SDL" />
                     </StackPanel>
                 </Expander.Header>
                 <StackPanel Spacing="2">
@@ -411,9 +413,15 @@
                             <DataTemplate x:DataType="gql:GraphQlSchemaType">
                                 <Expander Padding="0" Margin="0,1">
                                     <Expander.Header>
-                                        <TextBlock FontFamily="Cascadia Code,Consolas,monospace" FontSize="12">
-                                            <Run Text="{Binding Name}" FontWeight="SemiBold" /><Run Text=" : " /><Run Text="{Binding Kind}" Foreground="{DynamicResource Status.Neutral}" />
-                                        </TextBlock>
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock FontFamily="Cascadia Code,Consolas,monospace" FontSize="12" VerticalAlignment="Center">
+                                                <Run Text="{Binding Name}" FontWeight="SemiBold" /><Run Text=" : " /><Run Text="{Binding Kind}" Foreground="{DynamicResource Status.Neutral}" />
+                                            </TextBlock>
+                                            <!-- GQL-079: open the underlying proto message in a Describe tab. -->
+                                            <Button Content="Describe" Padding="6,0" FontSize="11" IsVisible="{Binding HasSymbol}"
+                                                    Command="{Binding #Root.((docs:GraphQlDocumentViewModel)DataContext).OpenSchemaTypeCommand}"
+                                                    CommandParameter="{Binding}" AutomationProperties.Name="Describe proto type" />
+                                        </StackPanel>
                                     </Expander.Header>
                                     <ItemsControl ItemsSource="{Binding Members}" Margin="16,0,0,0">
                                         <ItemsControl.ItemTemplate>

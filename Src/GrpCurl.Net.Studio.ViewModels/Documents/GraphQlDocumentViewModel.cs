@@ -230,6 +230,10 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     [NotifyCanExecuteChangedFor(nameof(CopySchemaJsonCommand))]
     public partial string? SchemaJson { get; set; }
 
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(CopySchemaSdlCommand))]
+    public partial string? SchemaSdl { get; set; }
+
     public bool HasSchema => SchemaTypes.Count > 0;
 
     /// <summary>GQL-076: the documented limitation that convention-derived fields don't appear in introspection.</summary>
@@ -1165,6 +1169,7 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
 
                 SchemaJson = null;
                 SchemaName = null;
+                SchemaSdl = null;
                 OnPropertyChanged(nameof(HasSchema));
                 return;
             }
@@ -1176,6 +1181,7 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
 
             SchemaName = result.SchemaName;
             SchemaJson = result.Json;
+            SchemaSdl = result.Sdl;
             OnPropertyChanged(nameof(HasSchema));
         });
     }
@@ -1189,6 +1195,28 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
         if (SchemaJson is not null)
         {
             await _clipboard.SetTextAsync(SchemaJson);
+        }
+    }
+
+    public bool CanCopySchemaSdl => !string.IsNullOrEmpty(SchemaSdl);
+
+    /// <summary>GQL-078: copy the derived SDL.</summary>
+    [RelayCommand(CanExecute = nameof(CanCopySchemaSdl))]
+    private async Task CopySchemaSdl()
+    {
+        if (SchemaSdl is not null)
+        {
+            await _clipboard.SetTextAsync(SchemaSdl);
+        }
+    }
+
+    /// <summary>GQL-079: open the underlying proto message of a schema type in a Describe tab.</summary>
+    [RelayCommand]
+    private void OpenSchemaType(GraphQlSchemaType? type)
+    {
+        if (_documentHost is not null && type is { Symbol: { } symbol })
+        {
+            _documentHost.OpenDescribe(Connection, symbol);
         }
     }
 

@@ -1,4 +1,5 @@
 using GrpCurl.Net.Studio.Services;
+using GrpCurl.Net.Studio.ViewModels.Models.GraphQl;
 using System.Text.Json.Nodes;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
@@ -39,4 +40,34 @@ public sealed class GraphQlServiceSchemaTests
     [Fact]
     public void MapSchemaTypes_is_empty_when_there_are_no_types()
         => GraphQlService.MapSchemaTypes(JsonNode.Parse("""{ "queryType": { "name": "Query" } }""")!.AsObject()).ShouldBeEmpty();
+
+    [Fact]
+    public void MapSchemaTypes_captures_the_proto_symbol_from_the_description()
+    {
+        var schema = JsonNode.Parse(
+            """{ "types": [ { "name": "SimpleRequest", "kind": "OBJECT", "description": "testing.SimpleRequest", "fields": [] }, { "name": "Other", "kind": "OBJECT", "description": "a doc comment with spaces", "fields": [] } ] }""")!.AsObject();
+
+        var types = GraphQlService.MapSchemaTypes(schema);
+
+        types.Single(t => t.Name == "SimpleRequest").Symbol.ShouldBe("testing.SimpleRequest");
+        types.Single(t => t.Name == "Other").Symbol.ShouldBeNull(); // a prose description is not a symbol
+    }
+
+    [Fact]
+    public void BuildSdl_renders_objects_enums_and_unions()
+    {
+        var sdl = GraphQlService.BuildSdl(
+        [
+            new GraphQlSchemaType("User", "OBJECT", [new GraphQlSchemaMember("id", "String!"), new GraphQlSchemaMember("tags", "[String]")]),
+            new GraphQlSchemaType("Color", "ENUM", [new GraphQlSchemaMember("RED", null)]),
+            new GraphQlSchemaType("Shape", "UNION", [new GraphQlSchemaMember("Circle", null), new GraphQlSchemaMember("Square", null)])
+        ]);
+
+        sdl.ShouldContain("# Derived SDL");
+        sdl.ShouldContain("type User {");
+        sdl.ShouldContain("id: String!");
+        sdl.ShouldContain("enum Color {");
+        sdl.ShouldContain("RED");
+        sdl.ShouldContain("union Shape = Circle | Square");
+    }
 }

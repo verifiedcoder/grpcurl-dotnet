@@ -247,6 +247,21 @@ public sealed record GraphQlFieldTranslation(
 /// <summary>The pre-flight translation inspector result (GQL-050): one entry per root field.</summary>
 public sealed record GraphQlTranslationResult(IReadOnlyList<GraphQlFieldTranslation> Fields);
 
+/// <summary>
+///     Descriptor-aware editor completions (GQL-015): the available root field names, and per root field
+///     the argument names (its resolved request message's fields, camelCased). Computed with no RPC.
+/// </summary>
+public sealed record GraphQlCompletions(
+    IReadOnlyList<string> RootFields,
+    IReadOnlyDictionary<string, IReadOnlyList<string>> ArgumentsByField)
+{
+    public static GraphQlCompletions Empty { get; } = new([], new Dictionary<string, IReadOnlyList<string>>());
+
+    /// <summary>The argument names for <paramref name="field" />, or an empty list when unknown.</summary>
+    public IReadOnlyList<string> ArgumentsFor(string field)
+        => ArgumentsByField.TryGetValue(field, out var args) ? args : [];
+}
+
 /// <summary>One field / enum value / union member of a derived schema type (GQL-075).</summary>
 public sealed record GraphQlSchemaMember(string Name, string? TypeName);
 

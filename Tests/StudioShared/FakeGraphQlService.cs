@@ -123,6 +123,11 @@ public sealed class FakeGraphQlService : IGraphQlService
         return Task.FromResult(MappingSchemaProblems);
     }
 
+    public GraphQlCompletions Completions { get; set; } = GraphQlCompletions.Empty;
+
+    public Task<GraphQlCompletions> GetCompletionsAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken)
+        => Task.FromResult(Completions);
+
     public GraphQlTranslationResult TranslationResult { get; set; } = new([]);
 
     public Func<GraphQlExecutionRequest, CancellationToken, Task<GraphQlTranslationResult>>? OnTranslate { get; set; }

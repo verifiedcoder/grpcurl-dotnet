@@ -912,6 +912,107 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
         return d[a.Length, b.Length];
     }
 
+    public async Task<GraphQlCompletions> GetCompletionsAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken)
+    {
+        var operationType = GraphQLOperationType.Query;
+        try
+        {
+            operationType = GraphQLDocumentParser.Parse(request.Document).SelectOperation(request.OperationName).OperationType;
+        }
+        catch (Exception)
+        {
+            // Mid-edit the document may not parse; default to Query for completion purposes.
+        }
+
+        var mappingConfig = await LoadMappingAsync(request, cancellationToken).ConfigureAwait(false);
+        var resolver = new MappingResolver(mappingConfig, request.DefaultService);
+
+        var connection = request.Connection;
+        var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
+        var options = ConnectionChannelMapper.ToChannelOptions(connection, null, profile, password);
+        var reflectionMetadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
+        var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
+
+        await using var session = await DescriptorSourceFactory.CreateAsync(
+            connection.Address, protosets, protos, imports,
+            channelOptions: options,
+            reflectionMetadata: reflectionMetadata,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        var rootFields = new List<string>();
+
+        // Explicit mapping entries for this operation type.
+        foreach (var entry in mappingConfig.Operations.Where(e => e.OperationType == operationType))
+        {
+            if (!rootFields.Contains(entry.GraphqlField))
+            {
+                rootFields.Add(entry.GraphqlField);
+            }
+        }
+
+        // Convention: every method on the default service, named camelCase.
+        var defaultService = request.DefaultService ?? mappingConfig.Defaults.Service;
+        if (defaultService is not null
+            && await session.Source.FindSymbolAsync(defaultService, cancellationToken).ConfigureAwait(false) is Google.Protobuf.Reflection.ServiceDescriptor service)
+        {
+            foreach (var method in service.Methods)
+            {
+                var field = ToCamelCase(method.Name);
+                if (!rootFields.Contains(field))
+                {
+                    rootFields.Add(field);
+                }
+            }
+        }
+
+        // Per root field, the argument names = its request message's fields (camelCased).
+        var argumentsByField = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
+
+        foreach (var field in rootFields)
+        {
+            try
+            {
+                var entry = resolver.Resolve(field, operationType);
+
+                if (entry.Service is { } svcName
+                    && await session.Source.FindSymbolAsync(svcName, cancellationToken).ConfigureAwait(false) is Google.Protobuf.Reflection.ServiceDescriptor svc
+                    && svc.Methods.FirstOrDefault(m => string.Equals(m.Name, entry.Method, StringComparison.Ordinal)) is { } method)
+                {
+                    argumentsByField[field] = method.InputType.Fields.InDeclarationOrder().Select(f => ToCamelCase(f.Name)).ToList();
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                // Unresolvable field — no argument completions for it.
+            }
+        }
+
+        return new GraphQlCompletions(rootFields, argumentsByField);
+    }
+
+    /// <summary>camelCases a proto method (PascalCase) or field (snake_case) name for GraphQL.</summary>
+    internal static string ToCamelCase(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+        {
+            return name;
+        }
+
+        if (name.Contains('_', StringComparison.Ordinal))
+        {
+            var parts = name.Split('_', StringSplitOptions.RemoveEmptyEntries);
+            var sb = new System.Text.StringBuilder(parts[0].ToLowerInvariant());
+            for (var i = 1; i < parts.Length; i++)
+            {
+                _ = sb.Append(char.ToUpperInvariant(parts[i][0])).Append(parts[i][1..]);
+            }
+
+            return sb.ToString();
+        }
+
+        return char.ToLowerInvariant(name[0]) + name[1..];
+    }
+
     public IReadOnlyList<GraphQlProblem> ValidateMapping(string mappingText)
     {
         try

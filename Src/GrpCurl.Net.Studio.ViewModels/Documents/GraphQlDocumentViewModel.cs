@@ -654,6 +654,10 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
         ExecuteCommand.NotifyCanExecuteChanged();
     }
 
+    /// <summary>GQL-015: descriptor-aware completions for the document editor (root fields + per-field arguments).</summary>
+    public Task<GraphQlCompletions> GetCompletionsAsync(CancellationToken cancellationToken)
+        => _graphql.GetCompletionsAsync(BuildRequest(), cancellationToken);
+
     /// <summary>
     ///     Session-restore seam (FR-146): parse the current document synchronously and re-select the named
     ///     operation if it still exists, so a restored tab shows its picker + gating immediately rather than

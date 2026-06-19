@@ -73,4 +73,11 @@ public interface IGraphQlService
     ///     real response field — with "did you mean" hints. Advisory: never blocks execution on its own.
     /// </summary>
     Task<IReadOnlyList<GraphQlProblem>> ValidateMappingSchemaAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken);
+
+    /// <summary>
+    ///     Descriptor-aware editor completions (GQL-015): the root field names available for the document's
+    ///     operation (explicit mapping entries + convention methods on the default service) and, per field,
+    ///     its argument names (the resolved request message's fields, camelCased). No RPC.
+    /// </summary>
+    Task<GraphQlCompletions> GetCompletionsAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken);
 }

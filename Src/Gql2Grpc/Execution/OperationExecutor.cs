@@ -23,7 +23,8 @@ internal sealed class OperationExecutor(
     public async Task<JsonObject> ExecuteUnaryAsync(
         GraphQLOperationType operationType,
         IReadOnlyList<ResolvedSelection> rootSelections,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        IProgress<FieldExecutionProgress>? progress = null)
     {
         if (rootSelections.Count == 0)
         {
@@ -33,7 +34,9 @@ internal sealed class OperationExecutor(
         var results = await ParallelFieldScheduler.RunAsync(
             rootSelections,
             RunOne,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken,
+            progress,
+            static selection => selection.ResponseKey).ConfigureAwait(false);
 
         return GraphQLResponseBuilder.Build(results, []);
 

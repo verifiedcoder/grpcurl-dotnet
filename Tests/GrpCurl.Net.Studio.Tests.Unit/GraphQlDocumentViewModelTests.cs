@@ -594,6 +594,47 @@ public sealed class GraphQlDocumentViewModelTests
     }
 
     [Fact]
+    public async Task Load_translation_populates_the_inspector_and_flags_dropped_arguments()
+    {
+        var vm = Create(out var graphql, out _);
+        graphql.TranslationResult = new(
+            [new GraphQlFieldTranslation("unaryCall", "testing.TestService/UnaryCall", "{ \"x\": 1 }", ["noSuchField"], Error: null)]);
+
+        await vm.LoadTranslationCommand.ExecuteAsync(null);
+
+        vm.HasTranslation.ShouldBeTrue();
+        vm.TranslationFields.ShouldContain(f => f.FieldName == "unaryCall" && f.HasRequestJson);
+        vm.Problems.ShouldContain(p => p.Kind == GraphQlProblemKind.Configuration && p.Message.Contains("noSuchField"));
+    }
+
+    [Fact]
+    public async Task Copy_request_json_copies_the_field_json()
+    {
+        var vm = Create(out _, out var clipboard);
+
+        await vm.CopyRequestJsonCommand.ExecuteAsync(new GraphQlFieldTranslation("f", "pkg.S/M", "{ \"x\": 1 }", [], Error: null));
+
+        clipboard.Text.ShouldBe("{ \"x\": 1 }");
+    }
+
+    [Fact]
+    public void Open_as_invocation_routes_to_the_host_with_the_method_and_json()
+    {
+        var host = new FakeDocumentHost();
+        var vm = new GraphQlDocumentViewModel(
+            Conn(), new FakeGraphQlService(), new ImmediateUiDispatcher(), new FakeClipboardService(), documentHost: host)
+        {
+            ParseDebounce = TimeSpan.Zero
+        };
+
+        vm.OpenAsInvocationCommand.Execute(new GraphQlFieldTranslation("f", "testing.TestService/UnaryCall", "{ \"x\": 1 }", [], Error: null));
+
+        var invocation = host.LastInvocation.ShouldNotBeNull();
+        invocation.Symbol.ShouldBe("testing.TestService/UnaryCall");
+        invocation.InitialJson.ShouldBe("{ \"x\": 1 }");
+    }
+
+    [Fact]
     public void Apply_resolution_populates_the_preview_and_override_note()
     {
         var vm = Create(out _, out _);

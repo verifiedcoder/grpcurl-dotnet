@@ -207,8 +207,10 @@
                 <Button Content="Copy response" Command="{Binding CopyResponseCommand}" Padding="6,0" Margin="0,0,4,0" />
                 <Button Content="Copy as CLI" Command="{Binding CopyAsCliCommand}" Padding="6,0" Margin="0,0,4,0"
                         ToolTip.Tip="Copy the equivalent gql2grpc command (secrets as ${VAR})" />
-                <Button Content="Schema" Command="{Binding LoadSchemaCommand}" Padding="6,0"
+                <Button Content="Schema" Command="{Binding LoadSchemaCommand}" Padding="6,0" Margin="0,0,4,0"
                         ToolTip.Tip="Derive the GraphQL schema locally from the descriptors (no RPC)" />
+                <Button Content="Inspect" Command="{Binding LoadTranslationCommand}" Padding="6,0"
+                        ToolTip.Tip="Show the exact gRPC request JSON each field would send (no RPC)" />
             </WrapPanel>
 
             <!-- GQL-025: a cancelled run keeps whatever was assembled, with a clear banner. -->
@@ -257,6 +259,41 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </StackPanel>
+            </Expander>
+
+            <!-- GQL-050/051/052: translation inspector — exact pre-flight request JSON + dropped-argument guard. -->
+            <Expander Header="Translation" IsVisible="{Binding HasTranslation}" IsExpanded="True">
+                <ItemsControl ItemsSource="{Binding TranslationFields}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="gql:GraphQlFieldTranslation">
+                            <Border BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Status.Neutral}" Padding="0,4">
+                                <StackPanel Spacing="2">
+                                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
+                                        <TextBlock Grid.Column="0" FontFamily="Cascadia Code,Consolas,monospace" FontSize="12" VerticalAlignment="Center">
+                                            <Run Text="{Binding FieldName}" FontWeight="SemiBold" /><Run Text=" → " /><Run Text="{Binding Target}" />
+                                        </TextBlock>
+                                        <Button Grid.Column="1" Content="Copy" Padding="6,0" IsVisible="{Binding HasRequestJson}"
+                                                Command="{Binding #Root.((docs:GraphQlDocumentViewModel)DataContext).CopyRequestJsonCommand}"
+                                                CommandParameter="{Binding}" AutomationProperties.Name="Copy request JSON" />
+                                        <Button Grid.Column="2" Content="Open as invocation" Padding="6,0" IsVisible="{Binding HasRequestJson}"
+                                                Command="{Binding #Root.((docs:GraphQlDocumentViewModel)DataContext).OpenAsInvocationCommand}"
+                                                CommandParameter="{Binding}" AutomationProperties.Name="Open as invocation tab" />
+                                    </Grid>
+                                    <!-- GQL-047: dropped arguments flagged prominently. -->
+                                    <TextBlock FontSize="11" IsVisible="{Binding HasDroppedArguments}" TextWrapping="Wrap"
+                                               Foreground="{DynamicResource Status.Server}">
+                                        <Run Text="dropped: " /><Run Text="{Binding DroppedArgumentsText}" />
+                                    </TextBlock>
+                                    <TextBox Text="{Binding RequestJson}" IsReadOnly="True" IsVisible="{Binding HasRequestJson}"
+                                             FontFamily="Cascadia Code,Consolas,monospace" FontSize="12" TextWrapping="NoWrap"
+                                             Background="Transparent" BorderThickness="0" />
+                                    <TextBlock Text="{Binding Error}" FontSize="11" TextWrapping="Wrap"
+                                               Foreground="{DynamicResource Status.Server}" IsVisible="{Binding HasError}" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </Expander>
 
             <!-- GQL-040..043: live resolution preview — per-root-field target, source, kind; unresolvable flagged. -->

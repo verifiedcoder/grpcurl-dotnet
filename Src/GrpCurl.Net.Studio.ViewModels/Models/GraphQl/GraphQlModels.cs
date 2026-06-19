@@ -200,6 +200,30 @@ public sealed record GraphQlResolutionResult(
     bool DefaultServiceOverridden,
     string? OverriddenService);
 
+/// <summary>
+///     The pre-flight translation of one root field (GQL-050/051): the exact gRPC request JSON that would
+///     be sent (no RPC), its resolved target, and any arguments the translator would silently drop because
+///     they match no request field (the Finding-4 guard, GQL-047).
+/// </summary>
+public sealed record GraphQlFieldTranslation(
+    string FieldName,
+    string? Target,
+    string? RequestJson,
+    IReadOnlyList<string> DroppedArguments,
+    string? Error)
+{
+    public bool HasRequestJson => RequestJson is not null;
+
+    public bool HasDroppedArguments => DroppedArguments.Count > 0;
+
+    public bool HasError => Error is not null;
+
+    public string DroppedArgumentsText => string.Join(", ", DroppedArguments);
+}
+
+/// <summary>The pre-flight translation inspector result (GQL-050): one entry per root field.</summary>
+public sealed record GraphQlTranslationResult(IReadOnlyList<GraphQlFieldTranslation> Fields);
+
 /// <summary>One field / enum value / union member of a derived schema type (GQL-075).</summary>
 public sealed record GraphQlSchemaMember(string Name, string? TypeName);
 

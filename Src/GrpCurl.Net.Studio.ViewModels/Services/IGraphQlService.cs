@@ -58,4 +58,11 @@ public interface IGraphQlService
     ///     editor; an empty list means the mapping loads cleanly.
     /// </summary>
     IReadOnlyList<GraphQlProblem> ValidateMapping(string mappingText);
+
+    /// <summary>
+    ///     Produces the exact pre-flight gRPC request JSON for each root field (GQL-050) — variables coerced,
+    ///     mapping rules applied — with no RPC, and reports any argument the translator would silently drop
+    ///     because it matches no request field (the Finding-4 guard, GQL-047). Needs the descriptor set.
+    /// </summary>
+    Task<GraphQlTranslationResult> TranslateAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken);
 }

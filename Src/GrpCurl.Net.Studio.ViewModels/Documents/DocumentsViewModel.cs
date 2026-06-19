@@ -251,7 +251,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         }
 
         var document = new GraphQlDocumentViewModel(
-            connection, _graphql, _dispatcher, _clipboard, _recorder, _environment, _filePicker, ResolveTlsProfile(connection))
+            connection, _graphql, _dispatcher, _clipboard, _recorder, _environment, _filePicker, ResolveTlsProfile(connection), this)
         {
             CliDialect = _settings.Current.General.CliShellDialect
         };
@@ -267,7 +267,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         }
 
         var document = new GraphQlDocumentViewModel(
-            connection, _graphql, _dispatcher, _clipboard, _recorder, _environment, _filePicker, ResolveTlsProfile(connection))
+            connection, _graphql, _dispatcher, _clipboard, _recorder, _environment, _filePicker, ResolveTlsProfile(connection), this)
         {
             CliDialect = _settings.Current.General.CliShellDialect,
             Document = tab.GraphQlDocument ?? string.Empty,

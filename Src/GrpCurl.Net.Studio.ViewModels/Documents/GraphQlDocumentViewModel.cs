@@ -31,6 +31,7 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     private readonly IClipboardService _clipboard;
     private readonly IHistoryRecorder? _recorder;
     private readonly IEnvironmentService? _environment;
+    private readonly IDocumentHost? _documentHost;
     private readonly IFilePickerService? _filePicker;
     private readonly TlsProfile? _tlsProfile;
     private readonly Func<string, TextWriter> _writerFactory;
@@ -106,6 +107,7 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
         IEnvironmentService? environment = null,
         IFilePickerService? filePicker = null,
         TlsProfile? tlsProfile = null,
+        IDocumentHost? documentHost = null,
         Func<string, TextWriter>? writerFactory = null,
         Func<string, long, CancellationToken, Task<string>>? fileReader = null)
     {
@@ -116,6 +118,7 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
         _recorder = recorder;
         _environment = environment;
         _filePicker = filePicker;
+        _documentHost = documentHost;
         _tlsProfile = tlsProfile;
         _writerFactory = writerFactory ?? (path => new StreamWriter(path));
         _fileReader = fileReader ?? ReadCappedAsync;
@@ -174,6 +177,11 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     public ObservableCollection<GraphQlProblem> MappingProblems { get; } = [];
 
     public bool HasMappingProblems => MappingProblems.Count > 0;
+
+    /// <summary>Pre-flight translation inspector rows (GQL-050/051); loaded on demand, no RPC.</summary>
+    public ObservableCollection<GraphQlFieldTranslation> TranslationFields { get; } = [];
+
+    public bool HasTranslation => TranslationFields.Count > 0;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasDefaultServiceOverride))]
@@ -873,6 +881,54 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
         if (ResponseJson is not null)
         {
             await _clipboard.SetTextAsync(ResponseJson);
+        }
+    }
+
+    /// <summary>GQL-050: load the pre-flight translation inspector (request JSON per field, no RPC).</summary>
+    [RelayCommand(IncludeCancelCommand = true)]
+    private async Task LoadTranslation(CancellationToken cancellationToken)
+    {
+        var result = await _graphql.TranslateAsync(BuildRequest(), cancellationToken);
+
+        await _dispatcher.InvokeAsync(() =>
+        {
+            TranslationFields.Clear();
+
+            // GQL-047 (AC-2): an argument the translator would silently drop is flagged before execution.
+            foreach (var field in result.Fields)
+            {
+                TranslationFields.Add(field);
+
+                foreach (var dropped in field.DroppedArguments)
+                {
+                    Problems.Add(new GraphQlProblem(
+                        $"argument `{dropped}` on `{field.FieldName}` matches no request field and would be silently dropped.",
+                        GraphQlProblemKind.Configuration));
+                }
+            }
+
+            OnPropertyChanged(nameof(HasTranslation));
+            OnPropertyChanged(nameof(HasProblems));
+        });
+    }
+
+    /// <summary>GQL-052: copy a field's pre-flight request JSON.</summary>
+    [RelayCommand]
+    private async Task CopyRequestJson(GraphQlFieldTranslation? field)
+    {
+        if (field?.RequestJson is { } json)
+        {
+            await _clipboard.SetTextAsync(json);
+        }
+    }
+
+    /// <summary>GQL-052: open a standard invocation tab pre-filled with the resolved method + translated JSON.</summary>
+    [RelayCommand]
+    private void OpenAsInvocation(GraphQlFieldTranslation? field)
+    {
+        if (_documentHost is not null && field is { Target: { } target, RequestJson: { } json })
+        {
+            _documentHost.OpenInvocation(Connection, target, json);
         }
     }
 

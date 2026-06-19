@@ -112,4 +112,16 @@ public sealed class FakeGraphQlService : IGraphQlService
         LastValidatedMapping = mappingText;
         return OnValidateMapping?.Invoke(mappingText) ?? MappingProblems;
     }
+
+    public GraphQlTranslationResult TranslationResult { get; set; } = new([]);
+
+    public Func<GraphQlExecutionRequest, CancellationToken, Task<GraphQlTranslationResult>>? OnTranslate { get; set; }
+
+    public int TranslateCount { get; private set; }
+
+    public Task<GraphQlTranslationResult> TranslateAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken)
+    {
+        TranslateCount++;
+        return OnTranslate is not null ? OnTranslate(request, cancellationToken) : Task.FromResult(TranslationResult);
+    }
 }

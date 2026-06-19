@@ -25,7 +25,7 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     private CancellationTokenSource? _parseCts;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsInFlight), nameof(IsCompleted), nameof(HasResponse))]
+    [NotifyPropertyChangedFor(nameof(IsInFlight), nameof(IsCompleted), nameof(HasResponse), nameof(IsCancelled))]
     [NotifyCanExecuteChangedFor(nameof(ExecuteCommand))]
     public partial RunState State { get; set; } = RunState.Idle;
 
@@ -58,6 +58,10 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
 
     [ObservableProperty]
     public partial bool Introspection { get; set; } = true;
+
+    /// <summary>GQL-023: emit the unprojected gRPC JSON (bypass selection projection); parity with CLI <c>--raw</c>.</summary>
+    [ObservableProperty]
+    public partial bool Raw { get; set; }
 
     [ObservableProperty]
     public partial string Deadline { get; set; } = string.Empty;
@@ -96,13 +100,18 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     /// <summary>Syntax problems (GQL-011) and pre-RPC configuration/variable errors (AC-5); blocks Execute when any are syntax.</summary>
     public ObservableCollection<GraphQlProblem> Problems { get; } = [];
 
+    /// <summary>Per-root-field execution progress rows (GQL-024 / AC-6); populated live during Execute.</summary>
+    public ObservableCollection<GraphQlFieldProgressRow> FieldProgress { get; } = [];
+
     /// <summary>Debounce before the document is re-parsed after an edit; tests shorten it.</summary>
     internal TimeSpan ParseDebounce { get; set; } = TimeSpan.FromMilliseconds(300);
 
     public bool IsInFlight => State == RunState.InFlight;
     public bool IsCompleted => State is RunState.Completed or RunState.Failed or RunState.Cancelled;
+    public bool IsCancelled => State == RunState.Cancelled;
     public bool HasResponse => ResponseJson is not null;
     public bool HasProblems => Problems.Count > 0;
+    public bool HasFieldProgress => FieldProgress.Count > 0;
 
     /// <summary>GQL-067 parity: any header with an invalid <c>-bin</c> value blocks execution.</summary>
     public bool HasHeaderErrors => Headers.Any(h => h.HasBinError);
@@ -186,6 +195,8 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
             ResponseJson = null;
             StatusText = null;
             StatusIsError = false;
+            FieldProgress.Clear();
+            OnPropertyChanged(nameof(HasFieldProgress));
             ClearExecutionProblems();
         });
 
@@ -193,7 +204,7 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
 
         try
         {
-            var result = await _graphql.ExecuteAsync(request, cancellationToken);
+            var result = await _graphql.ExecuteAsync(request, new FieldProgressSink(this), cancellationToken);
             await _dispatcher.InvokeAsync(() => Apply(result));
         }
         catch (OperationCanceledException)
@@ -242,7 +253,28 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
         AllowUnknownFields,
         StrictSelection,
         Introspection,
-        Raw: false);
+        Raw);
+
+    /// <summary>Upserts a per-field progress row (GQL-024); always on the UI thread via <see cref="FieldProgressSink" />.</summary>
+    private void ApplyFieldProgress(GraphQlFieldProgress progress)
+    {
+        var row = FieldProgress.FirstOrDefault(r => r.Index == progress.Index);
+
+        if (row is null)
+        {
+            row = new GraphQlFieldProgressRow(progress.Index, progress.ResponseKey);
+            FieldProgress.Add(row);
+            OnPropertyChanged(nameof(HasFieldProgress));
+        }
+
+        row.Apply(progress);
+    }
+
+    /// <summary>Marshals bridge progress callbacks (which may arrive on worker threads) onto the UI thread.</summary>
+    private sealed class FieldProgressSink(GraphQlDocumentViewModel owner) : IProgress<GraphQlFieldProgress>
+    {
+        public void Report(GraphQlFieldProgress value) => owner._dispatcher.Post(() => owner.ApplyFieldProgress(value));
+    }
 
     /// <summary>Removes transient execute-time problems (config/variable), leaving live syntax problems.</summary>
     private void ClearExecutionProblems()

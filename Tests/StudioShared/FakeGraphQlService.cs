@@ -15,22 +15,33 @@ public sealed class FakeGraphQlService : IGraphQlService
 
     public GraphQlExecutionResult ExecuteResult { get; set; } = new(Ok: true, EnvelopeJson: "{\n  \"data\": {}\n}", ConfigurationErrors: []);
 
-    public Func<GraphQlExecutionRequest, CancellationToken, Task<GraphQlExecutionResult>>? OnExecute { get; set; }
+    public Func<GraphQlExecutionRequest, IProgress<GraphQlFieldProgress>?, CancellationToken, Task<GraphQlExecutionResult>>? OnExecute { get; set; }
 
     public GraphQlExecutionRequest? LastRequest { get; private set; }
+
+    /// <summary>Per-field progress notifications to emit before returning (lets VM progress wiring be tested).</summary>
+    public IReadOnlyList<GraphQlFieldProgress> ProgressEvents { get; set; } = [];
 
     public int ExecuteCount { get; private set; }
 
     public GraphQlParseResult Parse(string document) => OnParse?.Invoke(document) ?? ParseResult;
 
-    public Task<GraphQlExecutionResult> ExecuteAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken)
+    public Task<GraphQlExecutionResult> ExecuteAsync(
+        GraphQlExecutionRequest request,
+        IProgress<GraphQlFieldProgress>? progress,
+        CancellationToken cancellationToken)
     {
         LastRequest = request;
         ExecuteCount++;
 
+        foreach (var ev in ProgressEvents)
+        {
+            progress?.Report(ev);
+        }
+
         if (OnExecute is not null)
         {
-            return OnExecute(request, cancellationToken);
+            return OnExecute(request, progress, cancellationToken);
         }
 
         cancellationToken.ThrowIfCancellationRequested();

@@ -45,7 +45,10 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
         }
     }
 
-    public async Task<GraphQlExecutionResult> ExecuteAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken)
+    public async Task<GraphQlExecutionResult> ExecuteAsync(
+        GraphQlExecutionRequest request,
+        IProgress<GraphQlFieldProgress>? progress,
+        CancellationToken cancellationToken)
     {
         // ── Parse + select the operation (no network) ──────────────────────────
         GraphQLDocument document;
@@ -141,7 +144,9 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
             executorOptions,
             new VerboseLogger(VerbosityLevel.Quiet));
 
-        var envelope = await executor.ExecuteUnaryAsync(operation.OperationType, rootSelections, cancellationToken).ConfigureAwait(false);
+        var bridgeProgress = progress is null ? null : new FieldProgressAdapter(progress);
+
+        var envelope = await executor.ExecuteUnaryAsync(operation.OperationType, rootSelections, cancellationToken, bridgeProgress).ConfigureAwait(false);
 
         var json = GraphQLResponseBuilder.Serialize(envelope);
         var ok = envelope["errors"] is not JsonArray errors || errors.Count == 0;
@@ -151,6 +156,22 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
 
     private static GraphQlExecutionResult ConfigError(GraphQlProblemKind kind, string message)
         => new(Ok: false, EnvelopeJson: null, [new GraphQlProblem(message, kind)]);
+
+    /// <summary>Maps the bridge's per-field progress onto the Studio model and forwards it to the VM sink.</summary>
+    private sealed class FieldProgressAdapter(IProgress<GraphQlFieldProgress> sink) : IProgress<FieldExecutionProgress>
+    {
+        public void Report(FieldExecutionProgress value)
+            => sink.Report(new GraphQlFieldProgress(value.FieldIndex, value.ResponseKey, ToState(value.State), value.Elapsed?.TotalMilliseconds));
+
+        private static GraphQlFieldState ToState(FieldExecutionState state) => state switch
+        {
+            FieldExecutionState.Queued => GraphQlFieldState.Queued,
+            FieldExecutionState.InFlight => GraphQlFieldState.InFlight,
+            FieldExecutionState.Done => GraphQlFieldState.Done,
+            FieldExecutionState.Failed => GraphQlFieldState.Failed,
+            _ => GraphQlFieldState.Queued
+        };
+    }
 
     private static GraphQlOperationKind ToKind(GraphQLOperationType type) => type switch
     {

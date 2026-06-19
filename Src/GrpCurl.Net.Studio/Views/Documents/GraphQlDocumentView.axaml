@@ -109,8 +109,38 @@
                 <CheckBox Content="allow-unknown-fields" IsChecked="{Binding AllowUnknownFields}" Margin="0,0,12,0" />
                 <CheckBox Content="strict-selection" IsChecked="{Binding StrictSelection}" Margin="0,0,12,0" />
                 <CheckBox Content="introspection" IsChecked="{Binding Introspection}" Margin="0,0,12,0" />
+                <CheckBox Content="raw" IsChecked="{Binding Raw}" Margin="0,0,12,0"
+                          ToolTip.Tip="Show the unprojected gRPC JSON (no GraphQL projection) — parity with CLI --raw" />
                 <Button Content="Copy response" Command="{Binding CopyResponseCommand}" Padding="6,0" />
             </WrapPanel>
+
+            <!-- GQL-025: a cancelled run keeps whatever was assembled, with a clear banner. -->
+            <Border IsVisible="{Binding IsCancelled}" Background="{DynamicResource Status.Neutral}"
+                    CornerRadius="3" Padding="6,2">
+                <TextBlock Text="Cancelled." FontSize="12" />
+            </Border>
+
+            <!-- GQL-024 / AC-6: per-root-field parallel progress (queued → in-flight → done/failed + elapsed). -->
+            <ItemsControl ItemsSource="{Binding FieldProgress}" IsVisible="{Binding HasFieldProgress}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="docs:GraphQlFieldProgressRow">
+                        <Border BorderBrush="{DynamicResource Status.Neutral}" BorderThickness="1" CornerRadius="3"
+                                Padding="6,1" Margin="0,0,4,4">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="{Binding Glyph}" />
+                                <TextBlock Text="{Binding ResponseKey}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding ElapsedText}" Opacity="0.6"
+                                           IsVisible="{Binding ElapsedText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
 
             <Expander Header="Headers">
                 <StackPanel Spacing="2">

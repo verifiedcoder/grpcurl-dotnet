@@ -113,7 +113,7 @@ public sealed class GraphQlDocumentViewModelTests
     {
         var vm = Create(out var graphql, out _);
         graphql.ParseResult = OneQuery();
-        graphql.OnExecute = (_, _) => throw new OperationCanceledException();
+        graphql.OnExecute = (_, _, _) => throw new OperationCanceledException();
 
         vm.Document = "query Q { x }";
         vm.ApplyParse(graphql.ParseResult);
@@ -121,6 +121,7 @@ public sealed class GraphQlDocumentViewModelTests
         await vm.ExecuteCommand.ExecuteAsync(null);
 
         vm.State.ShouldBe(RunState.Cancelled);
+        vm.IsCancelled.ShouldBeTrue();
     }
 
     [Fact]
@@ -135,6 +136,63 @@ public sealed class GraphQlDocumentViewModelTests
         await vm.CopyResponseCommand.ExecuteAsync(null);
 
         clipboard.Text.ShouldBe("{ \"data\": {} }");
+    }
+
+    [Fact]
+    public async Task The_raw_toggle_flows_into_the_request()
+    {
+        var vm = Create(out var graphql, out _);
+        graphql.ParseResult = OneQuery();
+        vm.ApplyParse(graphql.ParseResult);
+        vm.Raw = true;
+
+        await vm.ExecuteCommand.ExecuteAsync(null);
+
+        graphql.LastRequest!.Raw.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Per_field_progress_rows_track_each_root_field_in_document_order()
+    {
+        var vm = Create(out var graphql, out _);
+        graphql.ParseResult = OneQuery();
+        graphql.ProgressEvents =
+        [
+            new GraphQlFieldProgress(0, "a", GraphQlFieldState.Queued),
+            new GraphQlFieldProgress(1, "b", GraphQlFieldState.Queued),
+            new GraphQlFieldProgress(0, "a", GraphQlFieldState.InFlight),
+            new GraphQlFieldProgress(0, "a", GraphQlFieldState.Done, 5),
+            new GraphQlFieldProgress(1, "b", GraphQlFieldState.InFlight),
+            new GraphQlFieldProgress(1, "b", GraphQlFieldState.Failed, 7)
+        ];
+        vm.ApplyParse(graphql.ParseResult);
+
+        await vm.ExecuteCommand.ExecuteAsync(null);
+
+        vm.HasFieldProgress.ShouldBeTrue();
+        vm.FieldProgress.Count.ShouldBe(2);
+
+        vm.FieldProgress[0].ResponseKey.ShouldBe("a");
+        vm.FieldProgress[0].State.ShouldBe(GraphQlFieldState.Done);
+        vm.FieldProgress[0].ElapsedText.ShouldBe("5 ms");
+
+        vm.FieldProgress[1].State.ShouldBe(GraphQlFieldState.Failed);
+        vm.FieldProgress[1].ElapsedText.ShouldBe("7 ms");
+    }
+
+    [Fact]
+    public async Task A_second_run_resets_the_progress_rows()
+    {
+        var vm = Create(out var graphql, out _);
+        graphql.ParseResult = OneQuery();
+        graphql.ProgressEvents = [new GraphQlFieldProgress(0, "a", GraphQlFieldState.Done, 1)];
+        vm.ApplyParse(graphql.ParseResult);
+
+        await vm.ExecuteCommand.ExecuteAsync(null);
+        vm.FieldProgress.Count.ShouldBe(1);
+
+        await vm.ExecuteCommand.ExecuteAsync(null);
+        vm.FieldProgress.Count.ShouldBe(1); // cleared then repopulated, not appended
     }
 
     [Fact]

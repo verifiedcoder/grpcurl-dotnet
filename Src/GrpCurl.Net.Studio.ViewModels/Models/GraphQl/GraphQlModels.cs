@@ -39,6 +39,21 @@ public sealed record GraphQlOperationInfo(string? Name, GraphQlOperationKind Kin
 /// <summary>A problem surfaced in the Problems strip / editor squiggle. Line/column are 1-based when known.</summary>
 public sealed record GraphQlProblem(string Message, GraphQlProblemKind Kind, int? Line = null, int? Column = null);
 
+/// <summary>Lifecycle state of one root field while a multi-field document executes (GQL-024).</summary>
+public enum GraphQlFieldState
+{
+    Queued,
+    InFlight,
+    Done,
+    Failed
+}
+
+/// <summary>
+///     A per-root-field progress notification raised as the document executes through the bounded-4
+///     parallel scheduler (GQL-024 / AC-6). <see cref="ElapsedMs" /> is populated on the terminal states.
+/// </summary>
+public sealed record GraphQlFieldProgress(int Index, string ResponseKey, GraphQlFieldState State, double? ElapsedMs = null);
+
 /// <summary>Outcome of parsing a document (no network): the operations found and any syntax problems.</summary>
 public sealed record GraphQlParseResult(
     IReadOnlyList<GraphQlOperationInfo> Operations,

@@ -83,6 +83,27 @@ public sealed record GraphQlExecutionRequest(
     bool Raw);
 
 /// <summary>
+///     A completed GraphQL execution captured for history (GQL-027 / FR-120). Carries the redaction-ready
+///     request snapshot (document + headers, secrets redacted by the recorder) and the outcome. The
+///     response envelope is stored only when opt-in capture is enabled.
+/// </summary>
+public sealed record GraphQlHistoryContext(
+    SavedConnection Connection,
+    string OperationLabel,
+    string Document,
+    IReadOnlyList<HeaderEntry> Headers,
+    string? Deadline,
+    bool EmitDefaults,
+    bool AllowUnknownFields,
+    string? EnvironmentName,
+    bool Ok,
+    string Status,
+    string Category,
+    string? ErrorMessage,
+    long DurationMs,
+    string? ResponseEnvelope);
+
+/// <summary>
 ///     Outcome of executing a GraphQL operation. <see cref="ConfigurationErrors" /> are pre-RPC
 ///     usage/configuration failures (parse, variable coercion, unresolved mapping) and, when present,
 ///     mean no RPC was attempted and <see cref="EnvelopeJson" /> is null. Otherwise

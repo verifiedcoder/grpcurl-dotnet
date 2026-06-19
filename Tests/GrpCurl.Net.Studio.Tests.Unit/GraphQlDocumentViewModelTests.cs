@@ -19,6 +19,16 @@ public sealed class GraphQlDocumentViewModelTests
         };
     }
 
+    private static GraphQlDocumentViewModel CreateWithRecorder(out FakeGraphQlService graphql, out FakeHistoryRecorder recorder)
+    {
+        graphql = new FakeGraphQlService { ParseResult = OneQuery() };
+        recorder = new FakeHistoryRecorder();
+        return new GraphQlDocumentViewModel(Conn(), graphql, new ImmediateUiDispatcher(), new FakeClipboardService(), recorder)
+        {
+            ParseDebounce = TimeSpan.Zero
+        };
+    }
+
     private static GraphQlParseResult OneQuery(string name = "Q")
         => new([new GraphQlOperationInfo(name, GraphQlOperationKind.Query)], []);
 
@@ -193,6 +203,57 @@ public sealed class GraphQlDocumentViewModelTests
 
         await vm.ExecuteCommand.ExecuteAsync(null);
         vm.FieldProgress.Count.ShouldBe(1); // cleared then repopulated, not appended
+    }
+
+    [Fact]
+    public async Task A_successful_execution_is_recorded_to_history()
+    {
+        var vm = CreateWithRecorder(out var graphql, out var recorder);
+        graphql.ExecuteResult = new(Ok: true, EnvelopeJson: "{ \"data\": {} }", ConfigurationErrors: []);
+        vm.Document = "query Q { x }";
+        vm.ApplyParse(graphql.ParseResult);
+
+        await vm.ExecuteCommand.ExecuteAsync(null);
+
+        var record = recorder.LastGraphQl.ShouldNotBeNull();
+        record.Ok.ShouldBeTrue();
+        record.Category.ShouldBe("success");
+        record.OperationLabel.ShouldBe("Q");
+        record.Document.ShouldBe("query Q { x }");
+        record.ResponseEnvelope.ShouldBe("{ \"data\": {} }");
+    }
+
+    [Fact]
+    public async Task A_configuration_error_is_recorded_as_a_configuration_outcome()
+    {
+        var vm = CreateWithRecorder(out var graphql, out var recorder);
+        graphql.ExecuteResult = new(Ok: false, EnvelopeJson: null,
+            [new GraphQlProblem("variable $big is invalid", GraphQlProblemKind.Variables)]);
+        vm.Document = "query Q($big: Int) { x }";
+        vm.ApplyParse(graphql.ParseResult);
+
+        await vm.ExecuteCommand.ExecuteAsync(null);
+
+        var record = recorder.LastGraphQl.ShouldNotBeNull();
+        record.Ok.ShouldBeFalse();
+        record.Category.ShouldBe("configuration");
+        record.ErrorMessage.ShouldBe("variable $big is invalid");
+        record.ResponseEnvelope.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task A_cancelled_execution_is_recorded_as_cancelled()
+    {
+        var vm = CreateWithRecorder(out var graphql, out var recorder);
+        graphql.OnExecute = (_, _, _) => throw new OperationCanceledException();
+        vm.Document = "query Q { x }";
+        vm.ApplyParse(graphql.ParseResult);
+
+        await vm.ExecuteCommand.ExecuteAsync(null);
+
+        var record = recorder.LastGraphQl.ShouldNotBeNull();
+        record.Category.ShouldBe("cancelled");
+        record.Ok.ShouldBeFalse();
     }
 
     [Fact]

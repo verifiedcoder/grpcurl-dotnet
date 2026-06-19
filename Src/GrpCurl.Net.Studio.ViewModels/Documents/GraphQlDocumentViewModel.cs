@@ -6,6 +6,7 @@ using GrpCurl.Net.Studio.ViewModels.Models.GraphQl;
 using GrpCurl.Net.Studio.ViewModels.Services;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 
 namespace GrpCurl.Net.Studio.ViewModels.Documents;
 
@@ -22,6 +23,8 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     private readonly IGraphQlService _graphql;
     private readonly IUiDispatcher _dispatcher;
     private readonly IClipboardService _clipboard;
+    private readonly IHistoryRecorder? _recorder;
+    private readonly IEnvironmentService? _environment;
     private CancellationTokenSource? _parseCts;
 
     [ObservableProperty]
@@ -76,12 +79,16 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
         SavedConnection connection,
         IGraphQlService graphql,
         IUiDispatcher dispatcher,
-        IClipboardService clipboard)
+        IClipboardService clipboard,
+        IHistoryRecorder? recorder = null,
+        IEnvironmentService? environment = null)
     {
         Connection = connection;
         _graphql = graphql;
         _dispatcher = dispatcher;
         _clipboard = clipboard;
+        _recorder = recorder;
+        _environment = environment;
         Title = "GraphQL";
 
         Headers.CollectionChanged += OnHeadersChanged;
@@ -216,10 +223,12 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
         });
 
         var request = BuildRequest();
+        var stopwatch = Stopwatch.StartNew();
+        GraphQlExecutionResult? result = null;
 
         try
         {
-            var result = await _graphql.ExecuteAsync(request, new FieldProgressSink(this), cancellationToken);
+            result = await _graphql.ExecuteAsync(request, new FieldProgressSink(this), cancellationToken);
             await _dispatcher.InvokeAsync(() => Apply(result));
         }
         catch (OperationCanceledException)
@@ -231,6 +240,58 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
                 StatusIsError = true;
             });
         }
+
+        stopwatch.Stop();
+        await RecordHistoryAsync(request, result, stopwatch.ElapsedMilliseconds);
+    }
+
+    /// <summary>FR-120: records the execution to history, best-effort — a history hiccup never breaks Execute.</summary>
+    private async Task RecordHistoryAsync(GraphQlExecutionRequest request, GraphQlExecutionResult? result, long durationMs)
+    {
+        if (_recorder is null)
+        {
+            return;
+        }
+
+        var (ok, status, category, error, envelope) = Describe(result);
+
+        var context = new GraphQlHistoryContext(
+            request.Connection,
+            SelectedOperation?.Name ?? "(anonymous)",
+            request.Document,
+            request.Headers,
+            request.Deadline,
+            request.EmitDefaults,
+            request.AllowUnknownFields,
+            _environment?.Active?.Name,
+            ok, status, category, error, durationMs, envelope);
+
+        try
+        {
+            await _recorder.RecordGraphQlAsync(context);
+        }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException)
+        {
+            // History is a convenience; never surface a persistence hiccup to the execute flow.
+        }
+    }
+
+    /// <summary>Classifies the execution outcome for history (status text, category, error, captured envelope).</summary>
+    private static (bool Ok, string Status, string Category, string? Error, string? Envelope) Describe(GraphQlExecutionResult? result)
+    {
+        if (result is null)
+        {
+            return (false, "Cancelled", "cancelled", null, null);
+        }
+
+        if (result.IsConfigurationError)
+        {
+            return (false, "Configuration error", "configuration", result.ConfigurationErrors[0].Message, null);
+        }
+
+        return result.Ok
+            ? (true, "OK", "success", null, result.EnvelopeJson)
+            : (false, "Completed with errors", "graphql-errors", null, result.EnvelopeJson);
     }
 
     private void Apply(GraphQlExecutionResult result)

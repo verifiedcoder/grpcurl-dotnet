@@ -1,0 +1,125 @@
+name: Release
+
+# Zero-budget GitHub-Releases packaging (P5). Builds self-contained, unsigned
+# artifacts for Studio + both CLIs across 6 RIDs and stages them with a checksum
+# manifest. This revision is DRY-RUN ONLY — it never creates a GitHub Release;
+# the `gh release create` step lands in a follow-up. A pushed `v*` tag therefore
+# just produces stage artifacts for inspection.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version X.Y.Z to stamp for a manual dry run (default 0.0.0-dryrun)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+jobs:
+  # Full CI gate — a release must pass everything CI does.
+  gate:
+    uses: ./.github/workflows/ci.yml
+    secrets: inherit
+
+  version:
+    name: resolve version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - id: v
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            ver="${GITHUB_REF#refs/tags/v}"        # refs/tags/v1.2.3 -> 1.2.3
+          elif [ -n "${{ inputs.version }}" ]; then
+            ver="${{ inputs.version }}"
+          else
+            ver="0.0.0-dryrun"
+          fi
+          echo "version=$ver" >> "$GITHUB_OUTPUT"
+          echo "Resolved version: $ver"
+
+  package:
+    name: package (${{ matrix.rid }})
+    needs: [gate, version]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { rid: win-x64,     os: windows-latest, verify: false }
+          - { rid: win-arm64,   os: windows-latest, verify: false }
+          - { rid: osx-x64,     os: macos-latest,   verify: false }
+          - { rid: osx-arm64,   os: macos-latest,   verify: true  }
+          - { rid: linux-x64,   os: ubuntu-22.04,   verify: true  }
+          - { rid: linux-arm64, os: ubuntu-22.04,   verify: false }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup .NET (from global.json)
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Publish + archive (${{ matrix.rid }})
+        shell: bash
+        run: |
+          GIT_SHA="$(git rev-parse --short HEAD)" \
+            bash Scripts/package/publish.sh "${{ matrix.rid }}" "${{ needs.version.outputs.version }}" artifacts/release
+
+      # Only on a host whose arch matches the RID can the published binary actually run.
+      - name: Verify version (host-arch)
+        if: ${{ matrix.verify }}
+        shell: bash
+        run: |
+          ver="${{ needs.version.outputs.version }}"
+          tmp="$(mktemp -d)"
+          tar -xzf "artifacts/release/dist/grpcn-${{ matrix.rid }}-${ver}.tar.gz" -C "$tmp"
+          bash Scripts/package/verify-version.sh "$ver" "$tmp/grpcn"
+
+      - name: Upload stage artifacts (${{ matrix.rid }})
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.rid }}
+          path: artifacts/release/dist/*
+          if-no-files-found: error
+
+  stage-release:
+    name: stage release (checksums)
+    needs: [version, package]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all RID artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: incoming
+          pattern: dist-*
+          merge-multiple: true
+
+      - name: Assemble + SHA256SUMS
+        shell: bash
+        run: |
+          mkdir -p release
+          cp incoming/* release/
+          ( cd release && sha256sum * > SHA256SUMS )
+          echo "### Staged artifacts for ${{ needs.version.outputs.version }}"
+          ls -l release
+          echo
+          cat release/SHA256SUMS
+
+      - name: Upload assembled release (dry run — no GitHub Release created)
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ needs.version.outputs.version }}
+          path: release/*
+          if-no-files-found: error

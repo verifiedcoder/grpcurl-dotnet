@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+  # Lets release.yml reuse the full gate (build-test + coverage + validation + conformance)
+  # as a single source of truth — a release can never ship un-tested bits.
+  workflow_call:
 
 permissions:
   contents: read

@@ -12,6 +12,7 @@ using GrpCurl.Net.Studio.ViewModels.Models.GraphQl;
 using GrpCurl.Net.Studio.ViewModels.Services;
 using GrpCurl.Net.Utilities;
 using System.Text.Json.Nodes;
+using static System.FormattableString;
 
 namespace GrpCurl.Net.Studio.Services;
 
@@ -272,7 +273,7 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
             var types = MapSchemaTypes(schema);
             var json = schema.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
 
-            return new GraphQlSchemaResult(Ok: true, schemaName, types, json, Error: null);
+            return new GraphQlSchemaResult(Ok: true, schemaName, types, json, Error: null) { Sdl = BuildSdl(types) };
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -320,10 +321,61 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
                 members.AddRange(possibleTypes.OfType<JsonObject>().Select(p => new GraphQlSchemaMember(p["name"]?.GetValue<string>() ?? "?", null)));
             }
 
-            result.Add(new GraphQlSchemaType(name, kind, members));
+            // The synthesiser stores the underlying proto FQN in the type's description (GQL-079 click-through).
+            var description = type["description"]?.GetValue<string>();
+            var symbol = description is not null && !description.Contains(' ', StringComparison.Ordinal) ? description : null;
+
+            result.Add(new GraphQlSchemaType(name, kind, members) { Symbol = symbol });
         }
 
         return result;
+    }
+
+    /// <summary>GQL-078: render the derived type tree as SDL (labelled derived).</summary>
+    internal static string BuildSdl(IReadOnlyList<GraphQlSchemaType> types)
+    {
+        var sb = new System.Text.StringBuilder();
+        _ = sb.AppendLine("# Derived SDL — generated from the descriptors via introspection.");
+        _ = sb.AppendLine();
+
+        foreach (var type in types)
+        {
+            switch (type.Kind)
+            {
+                case "OBJECT" or "INTERFACE" or "INPUT_OBJECT":
+                    var keyword = type.Kind switch { "INPUT_OBJECT" => "input", "INTERFACE" => "interface", _ => "type" };
+                    _ = sb.AppendLine(Invariant($"{keyword} {type.Name} {{"));
+                    foreach (var member in type.Members)
+                    {
+                        _ = sb.AppendLine(Invariant($"  {member.Name}: {member.TypeName ?? "String"}"));
+                    }
+
+                    _ = sb.AppendLine("}");
+                    break;
+
+                case "ENUM":
+                    _ = sb.AppendLine(Invariant($"enum {type.Name} {{"));
+                    foreach (var member in type.Members)
+                    {
+                        _ = sb.AppendLine(Invariant($"  {member.Name}"));
+                    }
+
+                    _ = sb.AppendLine("}");
+                    break;
+
+                case "UNION":
+                    _ = sb.AppendLine(Invariant($"union {type.Name} = {string.Join(" | ", type.Members.Select(m => m.Name))}"));
+                    break;
+
+                case "SCALAR":
+                    _ = sb.AppendLine(Invariant($"scalar {type.Name}"));
+                    break;
+            }
+
+            _ = sb.AppendLine();
+        }
+
+        return sb.ToString().TrimEnd() + "\n";
     }
 
     /// <summary>Unwraps an introspection type ref (NON_NULL / LIST / ofType) into a display name like <c>[String!]</c>.</summary>

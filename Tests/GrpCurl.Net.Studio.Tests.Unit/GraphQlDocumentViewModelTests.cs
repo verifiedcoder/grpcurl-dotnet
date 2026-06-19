@@ -475,6 +475,34 @@ public sealed class GraphQlDocumentViewModelTests
     }
 
     [Fact]
+    public async Task Load_schema_exposes_the_derived_sdl_and_copy_works()
+    {
+        var vm = Create(out var graphql, out var clipboard);
+        graphql.SchemaResult = new(Ok: true, "S", [new GraphQlSchemaType("User", "OBJECT", [])], "{}", Error: null) { Sdl = "type User" };
+
+        await vm.LoadSchemaCommand.ExecuteAsync(null);
+        vm.SchemaSdl.ShouldBe("type User");
+
+        await vm.CopySchemaSdlCommand.ExecuteAsync(null);
+        clipboard.Text.ShouldBe("type User");
+    }
+
+    [Fact]
+    public void Open_schema_type_routes_to_a_describe_tab_for_the_proto_symbol()
+    {
+        var host = new FakeDocumentHost();
+        var vm = new GraphQlDocumentViewModel(
+            Conn(), new FakeGraphQlService(), new ImmediateUiDispatcher(), new FakeClipboardService(), documentHost: host)
+        {
+            ParseDebounce = TimeSpan.Zero
+        };
+
+        vm.OpenSchemaTypeCommand.Execute(new GraphQlSchemaType("SimpleRequest", "OBJECT", []) { Symbol = "testing.SimpleRequest" });
+
+        host.Last.ShouldNotBeNull().Symbol.ShouldBe("testing.SimpleRequest");
+    }
+
+    [Fact]
     public async Task A_schema_load_failure_surfaces_a_problem()
     {
         var vm = Create(out var graphql, out _);

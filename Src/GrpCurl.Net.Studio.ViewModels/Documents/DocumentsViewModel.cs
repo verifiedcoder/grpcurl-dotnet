@@ -250,7 +250,11 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
             return; // GraphQL service not wired (bare unit construction)
         }
 
-        var document = new GraphQlDocumentViewModel(connection, _graphql, _dispatcher, _clipboard, _recorder, _environment, _filePicker);
+        var document = new GraphQlDocumentViewModel(
+            connection, _graphql, _dispatcher, _clipboard, _recorder, _environment, _filePicker, ResolveTlsProfile(connection))
+        {
+            CliDialect = _settings.Current.General.CliShellDialect
+        };
         Finish(document);
     }
 
@@ -262,8 +266,10 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
             return;
         }
 
-        var document = new GraphQlDocumentViewModel(connection, _graphql, _dispatcher, _clipboard, _recorder, _environment, _filePicker)
+        var document = new GraphQlDocumentViewModel(
+            connection, _graphql, _dispatcher, _clipboard, _recorder, _environment, _filePicker, ResolveTlsProfile(connection))
         {
+            CliDialect = _settings.Current.General.CliShellDialect,
             Document = tab.GraphQlDocument ?? string.Empty,
             VariablesJson = tab.VariablesJson ?? string.Empty,
             DefaultService = tab.DefaultService ?? string.Empty,

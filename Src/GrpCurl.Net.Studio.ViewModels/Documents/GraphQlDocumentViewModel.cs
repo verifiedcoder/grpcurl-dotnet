@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.Studio.ViewModels.Connections;
+using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.GraphQl;
 using GrpCurl.Net.Studio.ViewModels.Services;
@@ -31,6 +32,7 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     private readonly IHistoryRecorder? _recorder;
     private readonly IEnvironmentService? _environment;
     private readonly IFilePickerService? _filePicker;
+    private readonly TlsProfile? _tlsProfile;
     private readonly Func<string, TextWriter> _writerFactory;
     private readonly Func<string, long, CancellationToken, Task<string>> _fileReader;
     private CancellationTokenSource? _parseCts;
@@ -92,6 +94,7 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
         IHistoryRecorder? recorder = null,
         IEnvironmentService? environment = null,
         IFilePickerService? filePicker = null,
+        TlsProfile? tlsProfile = null,
         Func<string, TextWriter>? writerFactory = null,
         Func<string, long, CancellationToken, Task<string>>? fileReader = null)
     {
@@ -102,6 +105,7 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
         _recorder = recorder;
         _environment = environment;
         _filePicker = filePicker;
+        _tlsProfile = tlsProfile;
         _writerFactory = writerFactory ?? (path => new StreamWriter(path));
         _fileReader = fileReader ?? ReadCappedAsync;
         Title = "GraphQL";
@@ -125,6 +129,9 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     public SavedConnection Connection { get; }
 
     public override SavedConnection? TabConnection => Connection;
+
+    /// <summary>FR-163: the shell dialect used by "Copy as CLI" (seeded from settings when the tab opens).</summary>
+    public ShellDialect CliDialect { get; set; } = ShellDialect.Bash;
 
     /// <summary>The operations found in the current document (drives the picker, GQL-012).</summary>
     public ObservableCollection<GraphQlOperationInfo> Operations { get; } = [];
@@ -562,6 +569,14 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
         {
             await _clipboard.SetTextAsync(ResponseJson);
         }
+    }
+
+    /// <summary>GQL-028: copy the equivalent <c>gql2grpc</c> command (secrets as <c>${VAR}</c> placeholders).</summary>
+    [RelayCommand]
+    private async Task CopyAsCli()
+    {
+        var command = CliCommandBuilder.BuildGraphQlCommand(BuildRequest(), CliDialect, _tlsProfile);
+        await _clipboard.SetTextAsync(command);
     }
 
     /// <summary>Whether file open/save/import is available (the picker is wired).</summary>

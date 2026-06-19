@@ -708,6 +708,55 @@ public sealed class GraphQlDocumentViewModelTests
     }
 
     [Fact]
+    public async Task The_as_cli_toggle_switches_between_the_envelope_and_the_data_payload()
+    {
+        var vm = Create(out var graphql, out _);
+        graphql.ParseResult = OneQuery();
+        graphql.ExecuteResult = new(Ok: true, EnvelopeJson: "{\n  \"data\": { \"x\": 1 }\n}", ConfigurationErrors: []);
+        vm.ApplyParse(OneQuery());
+
+        await vm.ExecuteCommand.ExecuteAsync(null);
+
+        vm.AsCliOutput.ShouldBeTrue();
+        vm.ResponseJson!.ShouldContain("\"data\""); // verbatim envelope (CLI stdout)
+
+        vm.AsCliOutput = false;
+
+        vm.ResponseJson!.ShouldNotContain("\"data\""); // just the data payload
+        vm.ResponseJson!.ShouldContain("\"x\"");
+    }
+
+    [Fact]
+    public void Scaffold_creates_an_explicit_entry_for_a_convention_field()
+    {
+        var vm = Create(out _, out _);
+        vm.ApplyParse(OneQuery()); // selects the query operation
+
+        vm.ScaffoldMappingEntryCommand.Execute(new GraphQlFieldResolution(
+            "unaryCall", Resolved: true, "testing.TestService", "UnaryCall", "unary",
+            GraphQlResolutionSource.Convention, "…", Error: null));
+
+        vm.MappingText.ShouldContain("graphqlField: unaryCall");
+        vm.MappingText.ShouldContain("operationType: query");
+        vm.MappingText.ShouldContain("service: testing.TestService");
+        vm.MappingText.ShouldContain("method: UnaryCall");
+    }
+
+    [Fact]
+    public void Scaffold_creates_a_stub_with_a_best_guess_method_for_an_unresolved_field()
+    {
+        var vm = Create(out _, out _);
+        vm.ApplyParse(OneQuery());
+
+        vm.ScaffoldMappingEntryCommand.Execute(new GraphQlFieldResolution(
+            "fooBar", Resolved: false, null, null, null, GraphQlResolutionSource.Unresolved, null, "no mapping"));
+
+        vm.MappingText.ShouldContain("graphqlField: fooBar");
+        vm.MappingText.ShouldContain("method: FooBar"); // PascalCase best guess
+        vm.MappingText.ShouldContain("# service:");
+    }
+
+    [Fact]
     public void Apply_resolution_populates_the_preview_and_override_note()
     {
         var vm = Create(out _, out _);

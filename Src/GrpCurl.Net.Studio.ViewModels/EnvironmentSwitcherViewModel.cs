@@ -27,7 +27,7 @@ public sealed partial class EnvironmentSwitcherViewModel : ViewModelBase
     private bool _suppress;
 
     [ObservableProperty]
-    private EnvironmentOption? _selectedOption;
+    public partial EnvironmentOption? SelectedOption { get; set; }
 
     public EnvironmentSwitcherViewModel(
         IEnvironmentService environments, IEnvironmentStore store, IDialogService dialogs, ISecretStore secrets)

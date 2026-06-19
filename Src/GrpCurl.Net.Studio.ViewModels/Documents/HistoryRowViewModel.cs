@@ -8,7 +8,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 public sealed partial class HistoryRowViewModel : ViewModelBase
 {
     [ObservableProperty]
-    private bool _isSelected;
+    public partial bool IsSelected { get; set; }
 
     public HistoryRowViewModel(HistoryEntry entry, bool replayable)
     {

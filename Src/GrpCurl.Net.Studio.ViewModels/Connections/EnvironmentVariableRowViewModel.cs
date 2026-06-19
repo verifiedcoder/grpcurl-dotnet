@@ -13,18 +13,18 @@ namespace GrpCurl.Net.Studio.ViewModels.Connections;
 public sealed partial class EnvironmentVariableRowViewModel : ViewModelBase
 {
     [ObservableProperty]
-    private string _name = string.Empty;
+    public partial string Name { get; set; } = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ValueWatermark))]
-    private bool _isSecret;
+    public partial bool IsSecret { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ValueWatermark))]
-    private string _value = string.Empty;
+    public partial string Value { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private bool _isRevealed;
+    public partial bool IsRevealed { get; set; }
 
     /// <summary>Creates a blank plain row (the "Add variable" affordance).</summary>
     public EnvironmentVariableRowViewModel()
@@ -34,8 +34,8 @@ public sealed partial class EnvironmentVariableRowViewModel : ViewModelBase
     /// <summary>Loads an existing variable; a secret's value stays in the store, so the field starts blank.</summary>
     public EnvironmentVariableRowViewModel(EnvironmentVariable variable)
     {
-        _name = variable.Name;
-        _isSecret = variable.IsSecret;
+        Name = variable.Name;
+        IsSecret = variable.IsSecret;
         OriginalSecretRef = variable.Value.SecretRef;
         HadStoredSecret = variable.IsSecret;
 
@@ -43,7 +43,7 @@ public sealed partial class EnvironmentVariableRowViewModel : ViewModelBase
         // retrievable on this machine), so the field is left empty with an "unchanged" watermark.
         if (!variable.IsSecret)
         {
-            _value = variable.Value.Literal ?? string.Empty;
+            Value = variable.Value.Literal ?? string.Empty;
         }
     }
 

@@ -28,33 +28,33 @@ public sealed partial class TlsProfileEditorViewModel : DialogViewModel<TlsProfi
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(NameError))]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private string _name = string.Empty;
+    public partial string Name { get; set; } = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsCustomCa))]
     [NotifyPropertyChangedFor(nameof(IsSkipVerification))]
     [NotifyPropertyChangedFor(nameof(CaCertError))]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private TlsValidationMode _selectedValidationMode = TlsValidationMode.SystemRoots;
+    public partial TlsValidationMode SelectedValidationMode { get; set; } = TlsValidationMode.SystemRoots;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CaCertError))]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private string _caCertPath = string.Empty;
+    public partial string CaCertPath { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private string _selectedRevocationMode = "online";
+    public partial string SelectedRevocationMode { get; set; } = "online";
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ClientCertError))]
     [NotifyPropertyChangedFor(nameof(IsPkcs12))]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private string _clientCertPath = string.Empty;
+    public partial string ClientCertPath { get; set; } = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ClientCertError))]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private string _clientKeyPath = string.Empty;
+    public partial string ClientKeyPath { get; set; } = string.Empty;
 
     /// <summary>"PEM", "PKCS12", or null when no client certificate is selected / unreadable.</summary>
     [ObservableProperty]
@@ -62,25 +62,25 @@ public sealed partial class TlsProfileEditorViewModel : DialogViewModel<TlsProfi
     [NotifyPropertyChangedFor(nameof(ClientCertError))]
     [NotifyPropertyChangedFor(nameof(DetectedFormatDisplay))]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private string? _detectedClientCertFormat;
+    public partial string? DetectedClientCertFormat { get; set; }
 
     [ObservableProperty]
-    private string _clientCertPassword = string.Empty;
+    public partial string ClientCertPassword { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private bool _isPasswordRevealed;
+    public partial bool IsPasswordRevealed { get; set; }
 
     [ObservableProperty]
-    private bool _exportableClientKey;
+    public partial bool ExportableClientKey { get; set; }
 
     /// <summary>FR-037: parsed facts for the selected CA / client certificate (null when not inspectable).</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasCaCertFacts))]
-    private CertificateFacts? _caCertFacts;
+    public partial CertificateFacts? CaCertFacts { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasClientCertFacts))]
-    private CertificateFacts? _clientCertFacts;
+    public partial CertificateFacts? ClientCertFacts { get; set; }
 
     public TlsProfileEditorViewModel(
         IFilePickerService filePicker,
@@ -96,23 +96,26 @@ public sealed partial class TlsProfileEditorViewModel : DialogViewModel<TlsProfi
         var p = existing ?? new TlsProfile();
         _id = p.Id;
         _existingPasswordSecretRef = p.ClientCertPasswordSecretRef;
-        _name = p.Name;
+        Name = p.Name;
 
-        _selectedValidationMode = p.InsecureSkipVerify
-            ? TlsValidationMode.SkipVerification
-            : !string.IsNullOrWhiteSpace(p.CaCertPath) ? TlsValidationMode.CustomCa : TlsValidationMode.SystemRoots;
-
+        // Set _insecureConfirmed first: assigning SelectedValidationMode now goes through the partial
+        // property setter (C3 migration), so OnSelectedValidationModeChanged fires during construction —
+        // it must already see the profile as confirmed, or it would spuriously prompt to disable TLS.
         // Editing an already-insecure profile shouldn't re-prompt on first render.
         _insecureConfirmed = p.InsecureSkipVerify;
 
-        _caCertPath = p.CaCertPath ?? string.Empty;
-        _selectedRevocationMode = string.IsNullOrWhiteSpace(p.RevocationMode) ? "online" : p.RevocationMode;
-        _clientCertPath = p.ClientCertPath ?? string.Empty;
-        _clientKeyPath = p.ClientKeyPath ?? string.Empty;
-        _exportableClientKey = p.ExportableClientKey;
-        _detectedClientCertFormat = DetectFormat(_clientCertPath);
-        _caCertFacts = CertificateInspector.TryRead(_caCertPath);
-        _clientCertFacts = CertificateInspector.TryRead(_clientCertPath);
+        SelectedValidationMode = p.InsecureSkipVerify
+            ? TlsValidationMode.SkipVerification
+            : !string.IsNullOrWhiteSpace(p.CaCertPath) ? TlsValidationMode.CustomCa : TlsValidationMode.SystemRoots;
+
+        CaCertPath = p.CaCertPath ?? string.Empty;
+        SelectedRevocationMode = string.IsNullOrWhiteSpace(p.RevocationMode) ? "online" : p.RevocationMode;
+        ClientCertPath = p.ClientCertPath ?? string.Empty;
+        ClientKeyPath = p.ClientKeyPath ?? string.Empty;
+        ExportableClientKey = p.ExportableClientKey;
+        DetectedClientCertFormat = DetectFormat(ClientCertPath);
+        CaCertFacts = CertificateInspector.TryRead(CaCertPath);
+        ClientCertFacts = CertificateInspector.TryRead(ClientCertPath);
     }
 
     public bool IsEdit { get; }

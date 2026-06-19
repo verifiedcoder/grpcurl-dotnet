@@ -18,7 +18,7 @@ public sealed partial class MetadataRowViewModel : ViewModelBase
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(DisplayValue))]
-    private bool _isRevealed;
+    public partial bool IsRevealed { get; set; }
 
     public MetadataRowViewModel(MetadataItem item, IRevealGate gate)
     {

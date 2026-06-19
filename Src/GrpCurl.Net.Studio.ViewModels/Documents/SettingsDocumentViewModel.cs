@@ -31,117 +31,117 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
     private bool _applying;
 
     [ObservableProperty]
-    private AppTheme _theme;
+    public partial AppTheme Theme { get; set; }
 
     [ObservableProperty]
-    private StartupBehavior _startup;
+    public partial StartupBehavior Startup { get; set; }
 
     [ObservableProperty]
-    private ShellDialect _cliShellDialect;
+    public partial ShellDialect CliShellDialect { get; set; }
 
     [ObservableProperty]
-    private string _editorFontFamily = string.Empty;
+    public partial string EditorFontFamily { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private double _editorFontSize;
+    public partial double EditorFontSize { get; set; }
 
     [ObservableProperty]
-    private int _editorIndentWidth;
+    public partial int EditorIndentWidth { get; set; }
 
     [ObservableProperty]
-    private bool _editorFormatOnPaste;
+    public partial bool EditorFormatOnPaste { get; set; }
 
     [ObservableProperty]
-    private string _networkConnectTimeout = string.Empty;
+    public partial string NetworkConnectTimeout { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private string _networkKeepaliveTime = string.Empty;
+    public partial string NetworkKeepaliveTime { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private string _networkKeepaliveTimeout = string.Empty;
+    public partial string NetworkKeepaliveTimeout { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private string _networkMaxMessageSize = string.Empty;
+    public partial string NetworkMaxMessageSize { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private string _networkDefaultDeadline = string.Empty;
+    public partial string NetworkDefaultDeadline { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private string _protocPath = string.Empty;
+    public partial string ProtocPath { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private string? _protocStatus;
+    public partial string? ProtocStatus { get; set; }
 
     // ── History (FR-158) ─────────────────────────────────────────────────────
 
     [ObservableProperty]
-    private bool _historyCaptureEnabled;
+    public partial bool HistoryCaptureEnabled { get; set; }
 
     [ObservableProperty]
-    private bool _historyCaptureResponses;
+    public partial bool HistoryCaptureResponses { get; set; }
 
     [ObservableProperty]
-    private int _historyMaxEntries;
+    public partial int HistoryMaxEntries { get; set; }
 
     [ObservableProperty]
-    private int _historyMaxSizeMiB;
+    public partial int HistoryMaxSizeMiB { get; set; }
 
     [ObservableProperty]
-    private int _historyResponseCapKiB;
+    public partial int HistoryResponseCapKiB { get; set; }
 
     // ── Descriptor limits (FR-157) ───────────────────────────────────────────
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(DescriptorMaxProtosetMiBChanged))]
-    private int _descriptorMaxProtosetMiB;
+    public partial int DescriptorMaxProtosetMiB { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(DescriptorMaxReflectionMiBChanged))]
-    private int _descriptorMaxReflectionMiB;
+    public partial int DescriptorMaxReflectionMiB { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(DescriptorMaxFileDescriptorsChanged))]
-    private int _descriptorMaxFileDescriptors;
+    public partial int DescriptorMaxFileDescriptors { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(DescriptorMaxDependencyDepthChanged))]
-    private int _descriptorMaxDependencyDepth;
+    public partial int DescriptorMaxDependencyDepth { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(DescriptorMaxSymbolsChanged))]
-    private int _descriptorMaxSymbols;
+    public partial int DescriptorMaxSymbols { get; set; }
 
     // ── Updates (FR-156) ─────────────────────────────────────────────────────
 
     [ObservableProperty]
-    private UpdateChannel _updateChannel;
+    public partial UpdateChannel UpdateChannel { get; set; }
 
     [ObservableProperty]
-    private bool _updateCheckOnLaunch;
+    public partial bool UpdateCheckOnLaunch { get; set; }
 
     [ObservableProperty]
-    private string? _updateStatus;
+    public partial string? UpdateStatus { get; set; }
 
     /// <summary>FR-156: set when the last check found a newer release; drives the "Open release" affordance.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(OpenLatestReleaseCommand))]
-    private bool _updateAvailable;
+    public partial bool UpdateAvailable { get; set; }
 
     [ObservableProperty]
-    private string? _latestVersion;
+    public partial string? LatestVersion { get; set; }
 
     private string? _latestReleaseUrl;
 
     // ── Diagnostics (FR-155) ─────────────────────────────────────────────────
 
     [ObservableProperty]
-    private DiagnosticsLevel _diagnosticsLevelFilter = DiagnosticsLevel.Information;
+    public partial DiagnosticsLevel DiagnosticsLevelFilter { get; set; } = DiagnosticsLevel.Information;
 
     [ObservableProperty]
-    private string _diagnosticsSearch = string.Empty;
+    public partial string DiagnosticsSearch { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private string? _diagnosticsStatus;
+    public partial string? DiagnosticsStatus { get; set; }
 
     public SettingsDocumentViewModel(
         ISettingsStore settings,

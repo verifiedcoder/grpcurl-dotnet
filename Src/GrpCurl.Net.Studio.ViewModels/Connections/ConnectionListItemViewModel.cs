@@ -12,10 +12,10 @@ public sealed partial class ConnectionListItemViewModel : ViewModelBase
     private readonly Func<ConnectionListItemViewModel, Task>? _importRequest;
 
     [ObservableProperty]
-    private ConnectionStatus _status = ConnectionStatus.Unknown;
+    public partial ConnectionStatus Status { get; set; } = ConnectionStatus.Unknown;
 
     [ObservableProperty]
-    private string? _statusDetail;
+    public partial string? StatusDetail { get; set; }
 
     public ConnectionListItemViewModel(
         SavedConnection connection, Func<ConnectionListItemViewModel, Task>? importRequest = null)

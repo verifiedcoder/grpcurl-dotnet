@@ -27,7 +27,7 @@ public sealed partial class DeleteConnectionDialogViewModel : DialogViewModel<bo
     public string HistoryOptionText { get; }
 
     [ObservableProperty]
-    private bool _purgeHistory;
+    public partial bool PurgeHistory { get; set; }
 
     [RelayCommand]
     private void Delete() => Close(PurgeHistory);

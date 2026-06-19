@@ -57,81 +57,81 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsInFlight), nameof(IsCompleted), nameof(HasResponse))]
     [NotifyCanExecuteChangedFor(nameof(InvokeCommand), nameof(StartStreamCommand))]
-    private RunState _state = RunState.Idle;
+    public partial RunState State { get; set; } = RunState.Idle;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsStreaming), nameof(HasComposer), nameof(ShowMergedToggle))]
     [NotifyCanExecuteChangedFor(nameof(InvokeCommand), nameof(StartStreamCommand))]
-    private StreamingShape _shape = StreamingShape.Unary;
+    public partial StreamingShape Shape { get; set; } = StreamingShape.Unary;
 
     [ObservableProperty]
-    private StreamComposerViewModel? _composer;
+    public partial StreamComposerViewModel? Composer { get; set; }
 
     /// <summary>Request/response wire sizes for the Timing tab (FR-110).</summary>
     [ObservableProperty]
-    private string? _timingBytesText;
+    public partial string? TimingBytesText { get; set; }
 
     /// <summary>FR-062: the request-body grammar/parser — JSON (default) or protobuf text format.</summary>
     [ObservableProperty]
-    private RequestBodyFormat _bodyFormat = RequestBodyFormat.Json;
+    public partial RequestBodyFormat BodyFormat { get; set; } = RequestBodyFormat.Json;
 
     /// <summary>FR-073: live elapsed time while a call is in flight.</summary>
     [ObservableProperty]
-    private string? _elapsedText;
+    public partial string? ElapsedText { get; set; }
 
     /// <summary>FR-073: live deadline countdown when a deadline is set.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasDeadlineRemaining))]
-    private string? _deadlineRemainingText;
+    public partial string? DeadlineRemainingText { get; set; }
 
     /// <summary>The verbose call transcript for the Raw tab (FR-111); header values are redacted (FR-112).</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasRawTranscript))]
     [NotifyCanExecuteChangedFor(nameof(CopyRawTranscriptCommand))]
-    private string? _rawTranscript;
+    public partial string? RawTranscript { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasError), nameof(HasErrorSuggestions), nameof(HasErrorDetails))]
     [NotifyCanExecuteChangedFor(nameof(RetryCommand), nameof(CopyErrorJsonCommand))]
-    private ErrorModel? _error;
+    public partial ErrorModel? Error { get; set; }
 
     [ObservableProperty]
-    private StatusSeverity _severity = StatusSeverity.Ok;
+    public partial StatusSeverity Severity { get; set; } = StatusSeverity.Ok;
 
     [ObservableProperty]
-    private bool _isCapturing;
+    public partial bool IsCapturing { get; set; }
 
     [ObservableProperty]
-    private string? _capturePath;
+    public partial string? CapturePath { get; set; }
 
     [ObservableProperty]
-    private long _captureBytes;
+    public partial long CaptureBytes { get; set; }
 
     [ObservableProperty]
-    private string _requestJson = string.Empty;
+    public partial string RequestJson { get; set; } = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasResponse))]
     [NotifyCanExecuteChangedFor(nameof(CopyResponseCommand))]
-    private string? _responseJson;
+    public partial string? ResponseJson { get; set; }
 
     [ObservableProperty]
-    private string _deadline = string.Empty;
+    public partial string Deadline { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private bool _emitDefaults;
+    public partial bool EmitDefaults { get; set; }
 
     [ObservableProperty]
-    private bool _allowUnknownFields = true;
+    public partial bool AllowUnknownFields { get; set; } = true;
 
     [ObservableProperty]
-    private string _maxMessageSize = string.Empty;
+    public partial string MaxMessageSize { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private string? _statusText;
+    public partial string? StatusText { get; set; }
 
     [ObservableProperty]
-    private bool _statusIsError;
+    public partial bool StatusIsError { get; set; }
 
     public InvocationDocumentViewModel(
         SavedConnection connection,

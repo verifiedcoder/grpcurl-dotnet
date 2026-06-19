@@ -47,7 +47,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     private bool _suppressPersist;
 
     [ObservableProperty]
-    private DocumentViewModel? _selectedDocument;
+    public partial DocumentViewModel? SelectedDocument { get; set; }
 
     public DocumentsViewModel(
         IDescriptorService descriptors,

@@ -18,20 +18,20 @@ public sealed partial class StreamLogViewModel : ViewModelBase
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsTruncated), nameof(TruncationNotice))]
-    private long _totalRows;
+    public partial long TotalRows { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(RateText))]
-    private long _totalReceived;
+    public partial long TotalReceived { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(RateText))]
-    private long _totalSent;
+    public partial long TotalSent { get; set; }
 
     /// <summary>FR-089: wall-clock since the stream began, from the latest event's elapsed timestamp.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ElapsedText), nameof(RateText))]
-    private long _elapsedMs;
+    public partial long ElapsedMs { get; set; }
 
     public StreamLogViewModel(int ringCapacity, Func<IMessage, string> formatter, StreamRowServices? rowServices = null)
     {

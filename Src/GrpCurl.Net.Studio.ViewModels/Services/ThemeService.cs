@@ -13,12 +13,12 @@ public sealed partial class ThemeService : ObservableObject, IThemeService
     private readonly ISettingsStore _settings;
 
     [ObservableProperty]
-    private AppTheme _current;
+    public partial AppTheme Current { get; set; }
 
     public ThemeService(ISettingsStore settings)
     {
         _settings = settings;
-        _current = Parse(settings.Current.Appearance.Theme);
+        Current = Parse(settings.Current.Appearance.Theme);
     }
 
     public async Task SetAsync(AppTheme theme, CancellationToken cancellationToken = default)

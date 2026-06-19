@@ -37,50 +37,50 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsNoConnection), nameof(IsLoading), nameof(IsLoaded), nameof(IsEmpty), nameof(HasError))]
     [NotifyCanExecuteChangedFor(nameof(ExportProtosetCommand), nameof(ExportProtosCommand))]
-    private ExplorerState _state = ExplorerState.NoConnection;
+    public partial ExplorerState State { get; set; } = ExplorerState.NoConnection;
 
     [ObservableProperty]
-    private string _filterText = string.Empty;
+    public partial string FilterText { get; set; } = string.Empty;
 
     /// <summary>FR-029: false = descriptor (file) order; true = A→Z by name.</summary>
     [ObservableProperty]
-    private bool _sortAlphabetically;
+    public partial bool SortAlphabetically { get; set; }
 
     [ObservableProperty]
-    private string? _errorMessage;
+    public partial string? ErrorMessage { get; set; }
 
     [ObservableProperty]
-    private string? _errorHint;
+    public partial string? ErrorHint { get; set; }
 
     [ObservableProperty]
-    private bool _reflectionUnavailable;
+    public partial bool ReflectionUnavailable { get; set; }
 
     [ObservableProperty]
-    private MethodNodeViewModel? _selectedMethod;
+    public partial MethodNodeViewModel? SelectedMethod { get; set; }
 
     /// <summary>
     ///     The tree's current selection (bound to the Services <c>TreeView.SelectedItem</c>). A method
     ///     leaf publishes its signature to the inspector (FR-020); branch nodes leave it unchanged.
     /// </summary>
     [ObservableProperty]
-    private object? _selectedNode;
+    public partial object? SelectedNode { get; set; }
 
     /// <summary>The active descriptor source kind, e.g. "Server reflection" / "Protoset" / "Proto (protoc)" (FR-040/048).</summary>
     [ObservableProperty]
-    private string? _sourceKind;
+    public partial string? SourceKind { get; set; }
 
     /// <summary>One-line load metadata: file/symbol counts + load duration (FR-048).</summary>
     [ObservableProperty]
-    private string? _sourceSummary;
+    public partial string? SourceSummary { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(LastRefreshedText))]
-    private DateTimeOffset? _lastRefreshed;
+    public partial DateTimeOffset? LastRefreshed { get; set; }
 
     /// <summary>FR-043: the protoc binary in use (resolved path + version), shown when the source is Proto.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasProtocDetail))]
-    private string? _protocDetail;
+    public partial string? ProtocDetail { get; set; }
 
     public ServiceExplorerViewModel(
         IDescriptorService descriptors,

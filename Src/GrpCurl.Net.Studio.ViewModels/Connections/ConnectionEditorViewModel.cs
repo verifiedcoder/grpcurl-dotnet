@@ -31,7 +31,7 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(NameError))]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private string _name = string.Empty;
+    public partial string Name { get; set; } = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(AddressError))]
@@ -39,51 +39,51 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
     [NotifyPropertyChangedFor(nameof(IsUnixSocket))]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     [NotifyCanExecuteChangedFor(nameof(TestConnectionCommand))]
-    private string _address = string.Empty;
+    public partial string Address { get; set; } = string.Empty;
 
     /// <summary>True = plaintext; false = TLS (default).</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsTlsProfileEnabled))]
-    private bool _isPlaintext;
+    public partial bool IsPlaintext { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ConnectTimeoutError))]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private string _connectTimeout = string.Empty;
+    public partial string ConnectTimeout { get; set; } = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(KeepaliveTimeError))]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private string _keepaliveTime = string.Empty;
+    public partial string KeepaliveTime { get; set; } = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(KeepaliveTimeoutError))]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private string _keepaliveTimeout = string.Empty;
+    public partial string KeepaliveTimeout { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private string _authority = string.Empty;
+    public partial string Authority { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private string _serverName = string.Empty;
+    public partial string ServerName { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private string _userAgent = string.Empty;
+    public partial string UserAgent { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private string _notes = string.Empty;
+    public partial string Notes { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private TestConnectionResult? _lastTestResult;
+    public partial TestConnectionResult? LastTestResult { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsTesting))]
-    private bool _isTestRunning;
+    public partial bool IsTestRunning { get; set; }
 
     /// <summary>The picked TLS profile (or the system-default sentinel); only meaningful under TLS.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(EditProfileCommand))]
-    private TlsProfileOption? _selectedTlsProfile;
+    public partial TlsProfileOption? SelectedTlsProfile { get; set; }
 
     /// <summary>Reflection (default) / Protoset / Proto — the descriptor source (FR-040).</summary>
     [ObservableProperty]
@@ -91,41 +91,41 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
     [NotifyPropertyChangedFor(nameof(IsProtosetMode))]
     [NotifyPropertyChangedFor(nameof(IsProtoMode))]
     [NotifyPropertyChangedFor(nameof(EffectiveSourceText))]
-    private DescriptorMode _selectedDescriptorMode;
+    public partial DescriptorMode SelectedDescriptorMode { get; set; }
 
     /// <summary>Set when Proto mode is selected but protoc can't be found (FR-044 remediation).</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowProtocRemediation))]
-    private bool _protocMissing;
+    public partial bool ProtocMissing { get; set; }
 
     [ObservableProperty]
-    private string? _protocStatus;
+    public partial string? ProtocStatus { get; set; }
 
     // FR-049: per-connection descriptor-limit overrides (blank = use Core's default).
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(LimitsError))]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private string _maxProtosetFileBytesOverride = string.Empty;
+    public partial string MaxProtosetFileBytesOverride { get; set; } = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(LimitsError))]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private string _maxReflectionDescriptorBytesOverride = string.Empty;
+    public partial string MaxReflectionDescriptorBytesOverride { get; set; } = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(LimitsError))]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private string _maxFileDescriptorsOverride = string.Empty;
+    public partial string MaxFileDescriptorsOverride { get; set; } = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(LimitsError))]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private string _maxDependencyDepthOverride = string.Empty;
+    public partial string MaxDependencyDepthOverride { get; set; } = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(LimitsError))]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private string _maxSymbolsOverride = string.Empty;
+    public partial string MaxSymbolsOverride { get; set; } = string.Empty;
 
     public ConnectionEditorViewModel(
         IConnectionRegistry registry,
@@ -149,23 +149,23 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
 
         var c = existing ?? new SavedConnection();
         _id = c.Id;
-        _name = c.Name;
-        _address = c.Address;
-        _isPlaintext = c.Transport == TransportMode.Plaintext;
+        Name = c.Name;
+        Address = c.Address;
+        IsPlaintext = c.Transport == TransportMode.Plaintext;
 
         _descriptorSource = c.DescriptorSource.Clone();
-        _selectedDescriptorMode = _descriptorSource.Mode;
+        SelectedDescriptorMode = _descriptorSource.Mode;
         ProtosetRows = new ObservableCollection<DescriptorPathRow>(_descriptorSource.ProtosetPaths.Select(DescriptorPathRow.ForProtoset));
         ProtoFileRows = new ObservableCollection<DescriptorPathRow>(_descriptorSource.ProtoFiles.Select(DescriptorPathRow.ForProtoFile));
         ImportPathRows = new ObservableCollection<DescriptorPathRow>(_descriptorSource.ImportPaths.Select(DescriptorPathRow.ForImportPath));
 
-        _maxProtosetFileBytesOverride = OverrideText(_descriptorSource.MaxProtosetFileBytes);
-        _maxReflectionDescriptorBytesOverride = OverrideText(_descriptorSource.MaxReflectionDescriptorBytes);
-        _maxFileDescriptorsOverride = OverrideText(_descriptorSource.MaxFileDescriptors);
-        _maxDependencyDepthOverride = OverrideText(_descriptorSource.MaxDependencyDepth);
-        _maxSymbolsOverride = OverrideText(_descriptorSource.MaxSymbols);
+        MaxProtosetFileBytesOverride = OverrideText(_descriptorSource.MaxProtosetFileBytes);
+        MaxReflectionDescriptorBytesOverride = OverrideText(_descriptorSource.MaxReflectionDescriptorBytes);
+        MaxFileDescriptorsOverride = OverrideText(_descriptorSource.MaxFileDescriptors);
+        MaxDependencyDepthOverride = OverrideText(_descriptorSource.MaxDependencyDepth);
+        MaxSymbolsOverride = OverrideText(_descriptorSource.MaxSymbols);
 
-        if (_selectedDescriptorMode == DescriptorMode.Proto)
+        if (SelectedDescriptorMode == DescriptorMode.Proto)
         {
             _ = DetectProtocAsync();
         }
@@ -175,13 +175,13 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
 
         // FR-153: a brand-new connection seeds its network fields from the app defaults; editing an
         // existing one keeps that connection's own values.
-        _connectTimeout = c.ConnectTimeout ?? (existing is null ? networkDefaults?.ConnectTimeout : null) ?? string.Empty;
-        _keepaliveTime = c.Keepalive.Time ?? (existing is null ? networkDefaults?.KeepaliveTime : null) ?? string.Empty;
-        _keepaliveTimeout = c.Keepalive.Timeout ?? (existing is null ? networkDefaults?.KeepaliveTimeout : null) ?? string.Empty;
-        _authority = c.Authority ?? string.Empty;
-        _serverName = c.ServerName ?? string.Empty;
-        _userAgent = c.UserAgent ?? string.Empty;
-        _notes = c.Notes ?? string.Empty;
+        ConnectTimeout = c.ConnectTimeout ?? (existing is null ? networkDefaults?.ConnectTimeout : null) ?? string.Empty;
+        KeepaliveTime = c.Keepalive.Time ?? (existing is null ? networkDefaults?.KeepaliveTime : null) ?? string.Empty;
+        KeepaliveTimeout = c.Keepalive.Timeout ?? (existing is null ? networkDefaults?.KeepaliveTimeout : null) ?? string.Empty;
+        Authority = c.Authority ?? string.Empty;
+        ServerName = c.ServerName ?? string.Empty;
+        UserAgent = c.UserAgent ?? string.Empty;
+        Notes = c.Notes ?? string.Empty;
 
         ReflectionHeaders = new ObservableCollection<HeaderRowViewModel>(
             c.ReflectionHeaders.Select(h => new HeaderRowViewModel(h)));

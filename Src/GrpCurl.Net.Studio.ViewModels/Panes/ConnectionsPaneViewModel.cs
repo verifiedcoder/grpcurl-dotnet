@@ -35,7 +35,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(EditConnectionCommand))]
     [NotifyCanExecuteChangedFor(nameof(DuplicateConnectionCommand))]
     [NotifyCanExecuteChangedFor(nameof(DeleteConnectionCommand))]
-    private ConnectionListItemViewModel? _selectedConnection;
+    public partial ConnectionListItemViewModel? SelectedConnection { get; set; }
 
     public ConnectionsPaneViewModel(
         IWorkspaceStore workspaceStore,

@@ -297,6 +297,18 @@
                                                Foreground="{DynamicResource Status.Server}">
                                         <Run Text="dropped: " /><Run Text="{Binding DroppedArgumentsText}" />
                                     </TextBlock>
+                                    <!-- GQL-051: per-argument rule annotations. -->
+                                    <ItemsControl ItemsSource="{Binding Annotations}" IsVisible="{Binding HasAnnotations}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="gql:GraphQlArgumentRule">
+                                                <TextBlock Text="{Binding Display}" FontSize="11" Opacity="0.6" FontFamily="Cascadia Code,Consolas,monospace" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <!-- GQL-051: synthesised FieldMask. -->
+                                    <TextBlock FontSize="11" Opacity="0.6" IsVisible="{Binding HasFieldMask}">
+                                        <Run Text="fieldMask: " /><Run Text="{Binding FieldMask}" FontFamily="Cascadia Code,Consolas,monospace" />
+                                    </TextBlock>
                                     <TextBox Text="{Binding RequestJson}" IsReadOnly="True" IsVisible="{Binding HasRequestJson}"
                                              FontFamily="Cascadia Code,Consolas,monospace" FontSize="12" TextWrapping="NoWrap"
                                              Background="Transparent" BorderThickness="0" />

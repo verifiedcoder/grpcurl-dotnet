@@ -17,10 +17,10 @@ public sealed partial class CommandPaletteViewModel : DialogViewModel<PaletteIte
     private readonly IReadOnlyList<PaletteItem> _all;
 
     [ObservableProperty]
-    private string _query = string.Empty;
+    public partial string Query { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private PaletteItem? _selectedItem;
+    public partial PaletteItem? SelectedItem { get; set; }
 
     public CommandPaletteViewModel(IReadOnlyList<PaletteItem> items)
     {

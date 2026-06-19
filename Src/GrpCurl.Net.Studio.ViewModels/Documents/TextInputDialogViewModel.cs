@@ -11,13 +11,13 @@ public sealed partial class TextInputDialogViewModel : DialogViewModel<string?>
 {
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AcceptCommand))]
-    private string _value;
+    public partial string Value { get; set; }
 
     public TextInputDialogViewModel(string title, string prompt, string? initialValue = null)
     {
         Title = title;
         Prompt = prompt;
-        _value = initialValue ?? string.Empty;
+        Value = initialValue ?? string.Empty;
     }
 
     public string Title { get; }

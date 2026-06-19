@@ -35,48 +35,48 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <summary>SEC-014: full-width, non-dismissable banner while an open tab uses a skip-verify profile.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ReviewInsecureConnectionCommand))]
-    private bool _isInsecureBannerVisible;
+    public partial bool IsInsecureBannerVisible { get; set; }
 
     [ObservableProperty]
-    private string _insecureBannerText = string.Empty;
+    public partial string InsecureBannerText { get; set; } = string.Empty;
 
     /// <summary>FR-148: shown while the active workspace file is read-only on disk (autosave disabled).</summary>
     [ObservableProperty]
-    private bool _isReadOnlyBannerVisible;
+    public partial bool IsReadOnlyBannerVisible { get; set; }
 
     /// <summary>SPEC-040 §8: shown while another live Studio instance holds the workspace lock.</summary>
     [ObservableProperty]
-    private bool _isLockedBannerVisible;
+    public partial bool IsLockedBannerVisible { get; set; }
 
     [ObservableProperty]
-    private string _lockedBannerText = string.Empty;
+    public partial string LockedBannerText { get; set; } = string.Empty;
 
     /// <summary>FR-156: set when a launch-time update check found a newer release; shown in the status bar.</summary>
     [ObservableProperty]
-    private bool _isUpdateAvailable;
+    public partial bool IsUpdateAvailable { get; set; }
 
     [ObservableProperty]
-    private string _updateAvailableText = string.Empty;
+    public partial string UpdateAvailableText { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private bool _isSidebarOpen = true;
+    public partial bool IsSidebarOpen { get; set; } = true;
 
     [ObservableProperty]
-    private bool _isInspectorOpen = true;
+    public partial bool IsInspectorOpen { get; set; } = true;
 
     [ObservableProperty]
-    private bool _isConsoleOpen = true;
+    public partial bool IsConsoleOpen { get; set; } = true;
 
     [ObservableProperty]
-    private bool _isFocusMode;
+    public partial bool IsFocusMode { get; set; }
 
     [ObservableProperty]
-    private AppTheme _selectedTheme = AppTheme.System;
+    public partial AppTheme SelectedTheme { get; set; } = AppTheme.System;
 
     /// <summary>Drives the welcome empty-state: shown until the first connection exists (SPEC-020 §7).</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowDocuments), nameof(ShowWelcome))]
-    private bool _hasAnyConnection;
+    public partial bool HasAnyConnection { get; set; }
 
     private (bool Sidebar, bool Inspector, bool Console)? _preFocusState;
 
@@ -113,7 +113,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         Session = session;
         Environment = environment;
 
-        _selectedTheme = theme.Current;
+        SelectedTheme = theme.Current;
         theme.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(IThemeService.Current))
@@ -123,7 +123,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         };
 
         // The welcome empty-state shows until the first connection exists (SPEC-020 §7).
-        _hasAnyConnection = connections.HasConnections;
+        HasAnyConnection = connections.HasConnections;
         connections.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(ConnectionsPaneViewModel.HasConnections))

@@ -7,7 +7,7 @@ namespace GrpCurl.Net.Studio.TestSupport;
 public sealed partial class FakeThemeService : ObservableObject, IThemeService
 {
     [ObservableProperty]
-    private AppTheme _current = AppTheme.System;
+    public partial AppTheme Current { get; set; } = AppTheme.System;
 
     public int SetCount { get; private set; }
 

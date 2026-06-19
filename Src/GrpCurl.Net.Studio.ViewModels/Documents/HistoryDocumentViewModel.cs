@@ -32,22 +32,22 @@ public sealed partial class HistoryDocumentViewModel : DocumentViewModel
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsEmpty))]
-    private bool _captureEnabled = true;
+    public partial bool CaptureEnabled { get; set; } = true;
 
     [ObservableProperty]
-    private string _searchText = string.Empty;
+    public partial string SearchText { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private string _connectionFilter = All;
+    public partial string ConnectionFilter { get; set; } = All;
 
     [ObservableProperty]
-    private string _categoryFilter = All;
+    public partial string CategoryFilter { get; set; } = All;
 
     [ObservableProperty]
-    private string _kindFilter = All;
+    public partial string KindFilter { get; set; } = All;
 
     [ObservableProperty]
-    private bool _pinnedOnly;
+    public partial bool PinnedOnly { get; set; }
 
     public HistoryDocumentViewModel(
         IHistoryStore history,

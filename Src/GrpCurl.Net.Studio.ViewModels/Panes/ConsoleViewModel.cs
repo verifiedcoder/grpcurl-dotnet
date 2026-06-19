@@ -14,11 +14,11 @@ public sealed partial class ConsoleViewModel : ViewModelBase
     private readonly IInspector? _inspector;
 
     [ObservableProperty]
-    private ConsoleCallRowViewModel? _selectedCall;
+    public partial ConsoleCallRowViewModel? SelectedCall { get; set; }
 
     /// <summary>FR-003: set when activity arrives while the console is collapsed; cleared when it's shown.</summary>
     [ObservableProperty]
-    private bool _hasUnread;
+    public partial bool HasUnread { get; set; }
 
     private bool _isActive = true;
 

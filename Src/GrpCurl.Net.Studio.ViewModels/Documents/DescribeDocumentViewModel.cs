@@ -26,19 +26,19 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLoading), nameof(IsLoaded), nameof(HasError))]
     [NotifyCanExecuteChangedFor(nameof(CopyProtoCommand))]
-    private DescribeState _state = DescribeState.Loading;
+    public partial DescribeState State { get; set; } = DescribeState.Loading;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsMethod))]
-    private SymbolDescription? _symbol;
+    public partial SymbolDescription? Symbol { get; set; }
 
     [ObservableProperty]
-    private string? _errorMessage;
+    public partial string? ErrorMessage { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasTemplate))]
     [NotifyCanExecuteChangedFor(nameof(CopyTemplateJsonCommand))]
-    private string? _templateJson;
+    public partial string? TemplateJson { get; set; }
 
     public DescribeDocumentViewModel(
         SavedConnection connection,

@@ -31,7 +31,7 @@ public sealed partial class StreamComposerViewModel : ViewModelBase
     private CancellationTokenSource? _validationCts;
 
     [ObservableProperty]
-    private string _messageJson = "{}";
+    public partial string MessageJson { get; set; } = "{}";
 
     /// <summary>
     ///     P3 fix: mirrors the parent tab's "allow unknown fields" option <em>live</em>. The composer used
@@ -40,20 +40,20 @@ public sealed partial class StreamComposerViewModel : ViewModelBase
     ///     re-runs under the current option.
     /// </summary>
     [ObservableProperty]
-    private bool _allowUnknownFields;
+    public partial bool AllowUnknownFields { get; set; }
 
     [ObservableProperty]
-    private bool _clearAfterSend = true;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanSend))]
-    [NotifyCanExecuteChangedFor(nameof(SendCommand), nameof(CompleteSendingCommand), nameof(LoadBatchCommand))]
-    private bool _isActive;
+    public partial bool ClearAfterSend { get; set; } = true;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanSend))]
     [NotifyCanExecuteChangedFor(nameof(SendCommand), nameof(CompleteSendingCommand), nameof(LoadBatchCommand))]
-    private bool _sendingComplete;
+    public partial bool IsActive { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanSend))]
+    [NotifyCanExecuteChangedFor(nameof(SendCommand), nameof(CompleteSendingCommand), nameof(LoadBatchCommand))]
+    public partial bool SendingComplete { get; set; }
 
     public StreamComposerViewModel(
         SavedConnection connection,
@@ -66,7 +66,7 @@ public sealed partial class StreamComposerViewModel : ViewModelBase
     {
         _connection = connection;
         _methodSymbol = methodSymbol;
-        _allowUnknownFields = allowUnknownFields; // set the backing field directly: no validation before Begin()
+        AllowUnknownFields = allowUnknownFields; // set the backing field directly: no validation before Begin()
         _validator = validator;
         _dispatcher = dispatcher;
         _filePicker = filePicker;

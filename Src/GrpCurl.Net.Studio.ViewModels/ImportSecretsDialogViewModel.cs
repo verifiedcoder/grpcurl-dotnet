@@ -19,10 +19,10 @@ public sealed partial class ImportSecretRowViewModel : ViewModelBase
     public string KeyRef { get; }
 
     [ObservableProperty]
-    private string _value = string.Empty;
+    public partial string Value { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private bool _isRevealed;
+    public partial bool IsRevealed { get; set; }
 }
 
 /// <summary>

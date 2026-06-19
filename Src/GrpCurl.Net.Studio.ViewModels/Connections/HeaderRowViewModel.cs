@@ -16,18 +16,18 @@ public sealed partial class HeaderRowViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(IsSecret))]
     [NotifyPropertyChangedFor(nameof(BinError), nameof(BinReadout), nameof(HasBinError), nameof(HasBinReadout))]
     [NotifyPropertyChangedFor(nameof(ResolvedPreview), nameof(HasResolvedPreview))]
-    private string _name = string.Empty;
+    public partial string Name { get; set; } = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(BinError), nameof(BinReadout), nameof(HasBinError), nameof(HasBinReadout))]
     [NotifyPropertyChangedFor(nameof(ResolvedPreview), nameof(HasResolvedPreview))]
     [NotifyPropertyChangedFor(nameof(ShowRequiresValue))]
-    private string _value = string.Empty;
+    public partial string Value { get; set; } = string.Empty;
 
     /// <summary>FR-123: set when restored from a redacted history value — the value must be re-entered.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowRequiresValue))]
-    private bool _requiresValue;
+    public partial bool RequiresValue { get; set; }
 
     public HeaderRowViewModel()
     {
@@ -35,8 +35,8 @@ public sealed partial class HeaderRowViewModel : ViewModelBase
 
     public HeaderRowViewModel(HeaderEntry entry)
     {
-        _name = entry.Name;
-        _value = entry.Value;
+        Name = entry.Name;
+        Value = entry.Value;
     }
 
     /// <summary>

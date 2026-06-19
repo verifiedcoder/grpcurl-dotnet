@@ -24,7 +24,7 @@ public sealed partial class EnvironmentEditorViewModel : DialogViewModel<Workspa
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(NameError))]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private string _name = string.Empty;
+    public partial string Name { get; set; } = string.Empty;
 
     public EnvironmentEditorViewModel(ISecretStore secrets, WorkspaceEnvironment? existing = null)
     {
@@ -33,7 +33,7 @@ public sealed partial class EnvironmentEditorViewModel : DialogViewModel<Workspa
 
         var env = existing ?? new WorkspaceEnvironment { Id = Guid.NewGuid().ToString("N") };
         _id = env.Id;
-        _name = env.Name;
+        Name = env.Name;
         _originalSecretRefs = env.Variables
             .Select(v => v.Value.SecretRef)
             .Where(r => !string.IsNullOrWhiteSpace(r))

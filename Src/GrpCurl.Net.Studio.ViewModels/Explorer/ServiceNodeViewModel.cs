@@ -8,7 +8,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Explorer;
 public sealed partial class ServiceNodeViewModel : ViewModelBase
 {
     [ObservableProperty]
-    private bool _isExpanded;
+    public partial bool IsExpanded { get; set; }
 
     public ServiceNodeViewModel(string fullName, IReadOnlyList<MethodNodeViewModel> methods, ICommand copyFullNameCommand, ICommand describeCommand, ICommand copyProtoCommand, bool deprecated = false)
     {

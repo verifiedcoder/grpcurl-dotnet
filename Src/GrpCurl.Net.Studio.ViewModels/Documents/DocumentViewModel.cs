@@ -13,7 +13,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 public abstract partial class DocumentViewModel : ViewModelBase
 {
     [ObservableProperty]
-    private string _title = string.Empty;
+    public partial string Title { get; set; } = string.Empty;
 
     /// <summary>The tab-header text; a derived tab may append a dirty marker (e.g. saved-request divergence, FR-002).</summary>
     public virtual string DisplayTitle => Title;

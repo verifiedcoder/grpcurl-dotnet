@@ -13,7 +13,7 @@ public sealed partial class InspectorViewModel : ViewModelBase, IInspector
 {
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsEmpty))]
-    private InspectorContent _content = EmptyInspectorContent.Instance;
+    public partial InspectorContent Content { get; set; } = EmptyInspectorContent.Instance;
 
     public string Header => "Inspector";
 

@@ -83,6 +83,10 @@ dotnet_diagnostic.IDE0301.severity = warning # use collection expression for Arr
 # stay at suggestion — remaining occurrences are test-code style nits. IDE0305 (collection expression
 # for fluent .ToList()/.ToArray()) has ~114 occurrences best swept with tooling; deferred.
 
+# C3: every [ObservableProperty] field migrated to a C# 13 partial property — enforce the form so a new
+# [ObservableProperty]-on-field regression is flagged at build (CommunityToolkit MVVM analyzer).
+dotnet_diagnostic.MVVMTK0042.severity = warning # use [ObservableProperty] on a partial property, not a field
+
 [Tests/**/*.cs]
 # Test projects: don't gate on doc/style rules that target product code.
 dotnet_diagnostic.S2699.severity = suggestion  # "tests should include assertions" — many are render/smoke harnesses

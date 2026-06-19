@@ -9,7 +9,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Explorer;
 public sealed partial class TypePackageNodeViewModel : ViewModelBase
 {
     [ObservableProperty]
-    private bool _isExpanded;
+    public partial bool IsExpanded { get; set; }
 
     public TypePackageNodeViewModel(string package, IReadOnlyList<TypeLeafNodeViewModel> types)
     {

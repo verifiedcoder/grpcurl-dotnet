@@ -28,10 +28,10 @@ public sealed partial class StreamRowViewModel : ViewModelBase
     private readonly StreamRowServices? _services;
 
     [ObservableProperty]
-    private bool _isExpanded;
+    public partial bool IsExpanded { get; set; }
 
     [ObservableProperty]
-    private string? _fullJson;
+    public partial string? FullJson { get; set; }
 
     public StreamRowViewModel(StreamEventModel ev, long deltaMs, Func<IMessage, string> formatter, StreamRowServices? services = null)
     {

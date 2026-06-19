@@ -239,6 +239,42 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
+            <!-- GQL-040..043: live resolution preview — per-root-field target, source, kind; unresolvable flagged. -->
+            <Expander Header="Resolution" IsVisible="{Binding HasResolutions}" IsExpanded="True">
+                <StackPanel Spacing="2">
+                    <TextBlock FontSize="11" Opacity="0.7" IsVisible="{Binding HasDefaultServiceOverride}">
+                        <Run Text="Tab default-service overrides the mapping's defaults.service → " /><Run Text="{Binding DefaultServiceOverride}" FontWeight="SemiBold" />
+                    </TextBlock>
+                    <ItemsControl ItemsSource="{Binding Resolutions}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="gql:GraphQlFieldResolution">
+                                <Border BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Status.Neutral}" Padding="0,3">
+                                    <StackPanel Spacing="1">
+                                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
+                                            <TextBlock Grid.Column="0" FontFamily="Cascadia Code,Consolas,monospace" FontSize="12" VerticalAlignment="Center">
+                                                <Run Text="{Binding FieldName}" FontWeight="SemiBold" /><Run Text=" → " /><Run Text="{Binding Target}" />
+                                            </TextBlock>
+                                            <Border Grid.Column="1" CornerRadius="3" Padding="4,0" Background="{DynamicResource Status.Neutral}"
+                                                    IsVisible="{Binding Resolved}">
+                                                <TextBlock Text="{Binding Kind}" FontSize="11" />
+                                            </Border>
+                                            <TextBlock Grid.Column="2" FontSize="11" VerticalAlignment="Center" Opacity="0.7"
+                                                       Text="explicit" IsVisible="{Binding IsExplicit}" />
+                                        </Grid>
+                                        <!-- GQL-040: convention derivation. -->
+                                        <TextBlock Text="{Binding Derivation}" FontSize="11" Opacity="0.6"
+                                                   IsVisible="{Binding HasDerivation}" />
+                                        <!-- GQL-042: unresolvable field remedy (config error, before execution). -->
+                                        <TextBlock Text="{Binding Error}" FontSize="11" TextWrapping="Wrap"
+                                                   Foreground="{DynamicResource Status.Server}" IsVisible="{Binding IsUnresolved}" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Expander>
+
             <!-- GQL-070/073: structured errors[] — upstream gRPC failures visually distinct from config/usage errors. -->
             <ItemsControl ItemsSource="{Binding Errors}" IsVisible="{Binding HasErrors}">
                 <ItemsControl.ItemTemplate>

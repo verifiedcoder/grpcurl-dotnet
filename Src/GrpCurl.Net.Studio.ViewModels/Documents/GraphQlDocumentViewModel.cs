@@ -36,6 +36,7 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     private readonly Func<string, TextWriter> _writerFactory;
     private readonly Func<string, long, CancellationToken, Task<string>> _fileReader;
     private CancellationTokenSource? _parseCts;
+    private CancellationTokenSource? _resolveCts;
     private bool _syncingVars;
 
     [ObservableProperty]
@@ -159,6 +160,17 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     public bool HasVariableRows => VariableRows.Count > 0;
     public bool HasVariableWarnings => VariableWarnings.Count > 0;
 
+    /// <summary>Live per-root-field resolution preview (GQL-040..043); re-resolved on edits with no RPC.</summary>
+    public ObservableCollection<GraphQlFieldResolution> Resolutions { get; } = [];
+
+    public bool HasResolutions => Resolutions.Count > 0;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasDefaultServiceOverride))]
+    public partial string? DefaultServiceOverride { get; set; }
+
+    public bool HasDefaultServiceOverride => DefaultServiceOverride is not null;
+
     /// <summary>The subscription streaming console (GQL-060..065); used when the selected operation is a subscription.</summary>
     public GraphQlStreamLogViewModel StreamLog { get; } = new();
 
@@ -216,7 +228,71 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     partial void OnDocumentChanged(string value) => ScheduleParse();
 
     // GQL-018: the selected operation determines the quick-vars rows; rebuild them when it changes.
-    partial void OnSelectedOperationChanged(GraphQlOperationInfo? value) => RebuildVariableRows();
+    // GQL-043: it also re-resolves the resolution preview (live, no RPC).
+    partial void OnSelectedOperationChanged(GraphQlOperationInfo? value)
+    {
+        RebuildVariableRows();
+        ScheduleResolve();
+    }
+
+    // GQL-043: the default-service participates in resolution, so a change re-resolves the preview.
+    partial void OnDefaultServiceChanged(string value) => ScheduleResolve();
+
+    private void ScheduleResolve()
+    {
+        _resolveCts?.Cancel();
+        _resolveCts?.Dispose();
+
+        if (SelectedOperation is null)
+        {
+            Resolutions.Clear();
+            DefaultServiceOverride = null;
+            OnPropertyChanged(nameof(HasResolutions));
+            return;
+        }
+
+        var cts = new CancellationTokenSource();
+        _resolveCts = cts;
+        _ = DebouncedResolveAsync(cts.Token);
+    }
+
+    private async Task DebouncedResolveAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (ParseDebounce > TimeSpan.Zero)
+            {
+                await Task.Delay(ParseDebounce, cancellationToken).ConfigureAwait(false);
+            }
+
+            var result = await _graphql.ResolveAsync(BuildRequest(), cancellationToken).ConfigureAwait(false);
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            await _dispatcher.InvokeAsync(() => ApplyResolution(result)).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // Superseded by a newer edit; drop silently.
+        }
+    }
+
+    /// <summary>Reconciles the resolution preview with a fresh resolve (test seam).</summary>
+    internal void ApplyResolution(GraphQlResolutionResult result)
+    {
+        Resolutions.Clear();
+
+        foreach (var field in result.Fields)
+        {
+            Resolutions.Add(field);
+        }
+
+        DefaultServiceOverride = result.DefaultServiceOverridden ? result.OverriddenService : null;
+        OnPropertyChanged(nameof(HasResolutions));
+    }
 
     // GQL-018: a JSON edit (typing or import) re-pulls grid values + recomputes warnings, unless the grid drove it.
     partial void OnVariablesJsonChanged(string value)

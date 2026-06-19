@@ -342,6 +342,54 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
         };
     }
 
+    public async Task<GraphQlResolutionResult> ResolveAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken)
+    {
+        GraphQLOperation operation;
+        try
+        {
+            operation = GraphQLDocumentParser.Parse(request.Document).SelectOperation(request.OperationName);
+        }
+        catch (Exception)
+        {
+            return new GraphQlResolutionResult([], DefaultServiceOverridden: false, OverriddenService: null);
+        }
+
+        var mappingConfig = await MappingConfigLoader.LoadAsync(request.MappingPath, cancellationToken).ConfigureAwait(false);
+        var resolver = new MappingResolver(mappingConfig, request.DefaultService);
+        var operationType = operation.OperationType;
+
+        var fields = new List<GraphQlFieldResolution>();
+
+        foreach (var field in operation.SelectionSet.Selections.OfType<GraphQLParser.AST.GraphQLField>())
+        {
+            var name = field.Name.StringValue;
+            var hasExplicitEntry = mappingConfig.Operations.Any(e => e.GraphqlField == name && e.OperationType == operationType);
+
+            try
+            {
+                var entry = resolver.Resolve(name, operationType);
+                var kind = entry.Kind == MethodKind.ServerStreaming ? "serverStreaming" : "unary";
+                var source = hasExplicitEntry ? GraphQlResolutionSource.ExplicitEntry : GraphQlResolutionSource.Convention;
+                var derivation = source == GraphQlResolutionSource.Convention
+                    ? $"{name} → {entry.Method} on {entry.Service}"
+                    : null;
+
+                fields.Add(new GraphQlFieldResolution(name, Resolved: true, entry.Service, entry.Method, kind, source, derivation, Error: null));
+            }
+            catch (InvalidOperationException ex)
+            {
+                fields.Add(new GraphQlFieldResolution(name, Resolved: false, null, null, null, GraphQlResolutionSource.Unresolved, null, ex.Message));
+            }
+        }
+
+        // GQL-041: the tab's default-service overrides the mapping's defaults.service when both are set.
+        var overridden = !string.IsNullOrWhiteSpace(request.DefaultService)
+                         && !string.IsNullOrWhiteSpace(mappingConfig.Defaults.Service)
+                         && request.DefaultService != mappingConfig.Defaults.Service;
+
+        return new GraphQlResolutionResult(fields, overridden, overridden ? request.DefaultService : null);
+    }
+
     /// <summary>Parse + select the operation + coerce variables (no network). Returns a problem on failure.</summary>
     private static (GraphQLOperation? Operation, IReadOnlyList<ResolvedSelection>? Selections, GraphQlProblem? Error) PrepareSelections(GraphQlExecutionRequest request)
     {

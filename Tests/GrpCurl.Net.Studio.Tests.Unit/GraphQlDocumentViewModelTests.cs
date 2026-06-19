@@ -570,6 +570,24 @@ public sealed class GraphQlDocumentViewModelTests
     }
 
     [Fact]
+    public void Apply_resolution_populates_the_preview_and_override_note()
+    {
+        var vm = Create(out _, out _);
+
+        vm.ApplyResolution(new GraphQlResolutionResult(
+            [
+                new GraphQlFieldResolution("unaryCall", Resolved: true, "testing.TestService", "UnaryCall", "unary",
+                    GraphQlResolutionSource.Convention, "unaryCall → UnaryCall on testing.TestService", Error: null)
+            ],
+            DefaultServiceOverridden: true, OverriddenService: "tab.Service"));
+
+        vm.HasResolutions.ShouldBeTrue();
+        vm.Resolutions.ShouldContain(f => f.FieldName == "unaryCall" && f.IsConvention);
+        vm.HasDefaultServiceOverride.ShouldBeTrue();
+        vm.DefaultServiceOverride.ShouldBe("tab.Service");
+    }
+
+    [Fact]
     public void Re_parsing_keeps_the_prior_selection_when_the_operation_still_exists()
     {
         var vm = Create(out _, out _);

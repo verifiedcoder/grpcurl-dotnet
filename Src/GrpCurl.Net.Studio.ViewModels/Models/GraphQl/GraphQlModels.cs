@@ -156,6 +156,49 @@ public sealed record GraphQlExecutionRequest(
     bool Raw,
     GraphQlVerbosity Verbosity = GraphQlVerbosity.Off);
 
+/// <summary>How a root field's target was resolved (GQL-040/041): an explicit mapping entry, convention fallback, or not at all.</summary>
+public enum GraphQlResolutionSource
+{
+    ExplicitEntry,
+    Convention,
+    Unresolved
+}
+
+/// <summary>
+///     The resolved target of one root field (GQL-040): its <c>service/Method</c>, kind (unary /
+///     serverStreaming), and whether it came from an explicit entry or convention. Unresolvable fields
+///     carry the bridge's remedy message (GQL-042) — computed with no RPC.
+/// </summary>
+public sealed record GraphQlFieldResolution(
+    string FieldName,
+    bool Resolved,
+    string? Service,
+    string? Method,
+    string? Kind,
+    GraphQlResolutionSource Source,
+    string? Derivation,
+    string? Error)
+{
+    public string Target => Resolved ? $"{Service}/{Method}" : "(unresolved)";
+
+    public bool IsExplicit => Source == GraphQlResolutionSource.ExplicitEntry;
+
+    public bool IsConvention => Source == GraphQlResolutionSource.Convention;
+
+    public bool IsUnresolved => Source == GraphQlResolutionSource.Unresolved;
+
+    public bool HasDerivation => !string.IsNullOrEmpty(Derivation);
+}
+
+/// <summary>
+///     The live resolution preview for the current document (GQL-040..043): one entry per root field, plus
+///     whether the tab's default-service overrode the mapping's <c>defaults.service</c> (GQL-041).
+/// </summary>
+public sealed record GraphQlResolutionResult(
+    IReadOnlyList<GraphQlFieldResolution> Fields,
+    bool DefaultServiceOverridden,
+    string? OverriddenService);
+
 /// <summary>One field / enum value / union member of a derived schema type (GQL-075).</summary>
 public sealed record GraphQlSchemaMember(string Name, string? TypeName);
 

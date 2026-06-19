@@ -88,4 +88,16 @@ public sealed class FakeGraphQlService : IGraphQlService
         IntrospectCount++;
         return OnIntrospect is not null ? OnIntrospect(request, cancellationToken) : Task.FromResult(SchemaResult);
     }
+
+    public GraphQlResolutionResult ResolutionResult { get; set; } = new([], DefaultServiceOverridden: false, OverriddenService: null);
+
+    public Func<GraphQlExecutionRequest, CancellationToken, Task<GraphQlResolutionResult>>? OnResolve { get; set; }
+
+    public int ResolveCount { get; private set; }
+
+    public Task<GraphQlResolutionResult> ResolveAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken)
+    {
+        ResolveCount++;
+        return OnResolve is not null ? OnResolve(request, cancellationToken) : Task.FromResult(ResolutionResult);
+    }
 }

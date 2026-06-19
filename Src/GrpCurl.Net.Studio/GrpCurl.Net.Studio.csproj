@@ -46,4 +46,10 @@
         <InternalsVisibleTo Include="GrpCurl.Net.Studio.Tests.UI" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- P4 (GQL-010): TextMateSharp.Grammars has no GraphQL grammar, so the document editor's
+             source.graphql scope is served from this vendored grammar via GraphQlRegistryOptions. -->
+        <EmbeddedResource Include="Assets\Grammars\graphql.tmLanguage.json" />
+    </ItemGroup>
+
 </Project>

@@ -403,6 +403,22 @@ public sealed class GraphQlDocumentViewModelTests
     }
 
     [Fact]
+    public async Task Copy_as_cli_copies_a_gql2grpc_command_for_the_tab()
+    {
+        var vm = Create(out var graphql, out var clipboard);
+        graphql.ParseResult = OneQuery();
+        vm.Document = "query Q { x }";
+        vm.ApplyParse(OneQuery());
+
+        await vm.CopyAsCliCommand.ExecuteAsync(null);
+
+        _ = clipboard.Text.ShouldNotBeNull();
+        clipboard.Text!.ShouldStartWith("gql2grpc ");
+        clipboard.Text.ShouldContain("query Q { x }");
+        clipboard.Text.ShouldContain("--operation Q");
+    }
+
+    [Fact]
     public void Re_parsing_keeps_the_prior_selection_when_the_operation_still_exists()
     {
         var vm = Create(out _, out _);

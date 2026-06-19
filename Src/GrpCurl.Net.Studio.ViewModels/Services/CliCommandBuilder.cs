@@ -1,8 +1,10 @@
 using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
+using GrpCurl.Net.Studio.ViewModels.Models.GraphQl;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Utilities;
 using System.Text;
+using System.Text.Json.Nodes;
 
 namespace GrpCurl.Net.Studio.ViewModels.Services;
 
@@ -125,7 +127,7 @@ public static class CliCommandBuilder
     /// <summary>A single shell-pasteable <c>grpcn invoke …</c> command line for the given dialect (FR-163).</summary>
     public static string BuildCommand(
         InvocationRequestModel request, ShellDialect dialect = ShellDialect.Bash, TlsProfile? tlsProfile = null)
-        => Render(BuildArgsCore(request, tlsProfile, request.RequestJson), dialect);
+        => Render("grpcn", BuildArgsCore(request, tlsProfile, request.RequestJson), dialect);
 
     /// <summary>
     ///     FR-165: a streaming tab's equivalent command. Client/bidi messages are emitted as a single
@@ -138,11 +140,11 @@ public static class CliCommandBuilder
         IReadOnlyList<string> messages,
         ShellDialect dialect = ShellDialect.Bash,
         TlsProfile? tlsProfile = null)
-        => Render(BuildArgsCore(request, tlsProfile, BuildStreamingPayload(messages)), dialect);
+        => Render("grpcn", BuildArgsCore(request, tlsProfile, BuildStreamingPayload(messages)), dialect);
 
-    private static string Render(IReadOnlyList<string> args, ShellDialect dialect)
+    private static string Render(string executable, IReadOnlyList<string> args, ShellDialect dialect)
     {
-        var sb = new StringBuilder("grpcn");
+        var sb = new StringBuilder(executable);
 
         foreach (var arg in args)
         {
@@ -159,6 +161,134 @@ public static class CliCommandBuilder
         var items = messages.Select(m => m.Trim()).Where(m => m.Length > 0);
 
         return "[" + string.Join(",", items) + "]";
+    }
+
+    // ── gql2grpc (GraphQL tab) — GQL-028 ─────────────────────────────────────
+
+    /// <summary>
+    ///     The argument list for a <c>gql2grpc</c> command equivalent to the GraphQL tab's state (GQL-028):
+    ///     transport/TLS from the connection, headers (secrets as <c>${VAR}</c>), <c>--default-service</c>/
+    ///     <c>--mapping</c>/<c>--operation</c>, scalar <c>--var</c> pairs, output toggles, the address, and the
+    ///     document inline. Round-trips through the real <c>gql2grpc</c> parser (verified in tests).
+    /// </summary>
+    public static IReadOnlyList<string> BuildGraphQlArgs(GraphQlExecutionRequest request, TlsProfile? tlsProfile = null)
+    {
+        var connection = request.Connection;
+        var args = new List<string>();
+
+        if (connection.Transport == TransportMode.Plaintext)
+        {
+            args.Add("--plaintext");
+        }
+
+        AddValue(args, "--connect-timeout", connection.ConnectTimeout);
+        AddValue(args, "--keepalive-time", connection.Keepalive.Time);
+        AddValue(args, "--keepalive-timeout", connection.Keepalive.Timeout);
+        AddValue(args, "--authority", connection.Authority);
+
+        if (connection.Transport == TransportMode.Tls)
+        {
+            AddValue(args, "--servername", connection.ServerName);
+            AddTlsFlags(args, tlsProfile);
+        }
+
+        AddValue(args, "--user-agent", connection.UserAgent);
+
+        foreach (var header in connection.ReflectionHeaders)
+        {
+            AddHeader(args, "--reflect-header", header.Name, header.Value);
+        }
+
+        foreach (var header in request.Headers)
+        {
+            AddHeader(args, "--rpc-header", header.Name, header.Value);
+        }
+
+        AddValue(args, "--max-time", request.Deadline);
+        AddValue(args, "--mapping", request.MappingPath);
+        AddValue(args, "--default-service", request.DefaultService);
+        AddValue(args, "--operation", request.OperationName);
+
+        if (request.VariablesJson is not null)
+        {
+            AddScalarVariables(args, request.VariablesJson);
+        }
+
+        if (request.EmitDefaults)
+        {
+            args.Add("--emit-defaults");
+        }
+
+        if (request.StrictSelection)
+        {
+            args.Add("--strict-selection");
+        }
+
+        if (request.Raw)
+        {
+            args.Add("--raw");
+        }
+
+        // These CLI flags default to true; emit an explicit override only when the tab turned them off.
+        if (!request.AllowUnknownFields)
+        {
+            args.Add("--allow-unknown-fields");
+            args.Add("false");
+        }
+
+        if (!request.Introspection)
+        {
+            args.Add("--introspection");
+            args.Add("false");
+        }
+
+        args.Add(connection.Address);
+
+        if (!string.IsNullOrWhiteSpace(request.Document))
+        {
+            args.Add(request.Document);
+        }
+
+        return args;
+    }
+
+    /// <summary>A single shell-pasteable <c>gql2grpc …</c> command line for the GraphQL tab (GQL-028).</summary>
+    public static string BuildGraphQlCommand(
+        GraphQlExecutionRequest request, ShellDialect dialect = ShellDialect.Bash, TlsProfile? tlsProfile = null)
+        => Render("gql2grpc", BuildGraphQlArgs(request, tlsProfile), dialect);
+
+    // Emit each top-level scalar variable as `--var name=value`. Object/array variables can't be expressed
+    // via --var (the CLI requires --variables-file for those), so they are skipped here.
+    private static void AddScalarVariables(List<string> args, string variablesJson)
+    {
+        if (string.IsNullOrWhiteSpace(variablesJson))
+        {
+            return;
+        }
+
+        JsonObject? obj;
+        try
+        {
+            obj = JsonNode.Parse(variablesJson) as JsonObject;
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return;
+        }
+
+        if (obj is null)
+        {
+            return;
+        }
+
+        foreach (var pair in obj)
+        {
+            if (pair.Value is JsonValue value)
+            {
+                args.Add("--var");
+                args.Add($"{pair.Key}={value}");
+            }
+        }
     }
 
     private static void AddValue(List<string> args, string flag, string? value)

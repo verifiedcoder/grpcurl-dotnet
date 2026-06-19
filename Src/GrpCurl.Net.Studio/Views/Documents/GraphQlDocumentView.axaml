@@ -151,7 +151,9 @@
                 <CheckBox Content="introspection" IsChecked="{Binding Introspection}" Margin="0,0,12,0" />
                 <CheckBox Content="raw" IsChecked="{Binding Raw}" Margin="0,0,12,0"
                           ToolTip.Tip="Show the unprojected gRPC JSON (no GraphQL projection) — parity with CLI --raw" />
-                <Button Content="Copy response" Command="{Binding CopyResponseCommand}" Padding="6,0" />
+                <Button Content="Copy response" Command="{Binding CopyResponseCommand}" Padding="6,0" Margin="0,0,4,0" />
+                <Button Content="Copy as CLI" Command="{Binding CopyAsCliCommand}" Padding="6,0"
+                        ToolTip.Tip="Copy the equivalent gql2grpc command (secrets as ${VAR})" />
             </WrapPanel>
 
             <!-- GQL-025: a cancelled run keeps whatever was assembled, with a clear banner. -->

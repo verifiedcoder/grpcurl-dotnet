@@ -186,6 +186,21 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
         ExecuteCommand.NotifyCanExecuteChanged();
     }
 
+    /// <summary>
+    ///     Session-restore seam (FR-146): parse the current document synchronously and re-select the named
+    ///     operation if it still exists, so a restored tab shows its picker + gating immediately rather than
+    ///     waiting on the idle debounce.
+    /// </summary>
+    public void ReparseAndSelect(string? operationName)
+    {
+        ApplyParse(_graphql.Parse(Document));
+
+        if (operationName is not null && Operations.FirstOrDefault(o => o.Name == operationName) is { } match)
+        {
+            SelectedOperation = match;
+        }
+    }
+
     [RelayCommand(CanExecute = nameof(CanExecute), IncludeCancelCommand = true)]
     private async Task Execute(CancellationToken cancellationToken)
     {

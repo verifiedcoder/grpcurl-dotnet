@@ -254,6 +254,39 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         Finish(document);
     }
 
+    /// <summary>FR-146: restores a GraphQL tab from its session draft (document, variables, options, headers).</summary>
+    private void OpenGraphQlDraft(SavedConnection connection, SessionTab tab)
+    {
+        if (_graphql is null)
+        {
+            return;
+        }
+
+        var document = new GraphQlDocumentViewModel(connection, _graphql, _dispatcher, _clipboard)
+        {
+            Document = tab.GraphQlDocument ?? string.Empty,
+            VariablesJson = tab.VariablesJson ?? string.Empty,
+            DefaultService = tab.DefaultService ?? string.Empty,
+            EmitDefaults = tab.EmitDefaults,
+            AllowUnknownFields = tab.AllowUnknownFields,
+            StrictSelection = tab.StrictSelection,
+            Introspection = tab.Introspection,
+            Raw = tab.Raw
+        };
+
+        foreach (var header in tab.Headers ?? [])
+        {
+            document.Headers.Add(new HeaderRowViewModel(
+                new HeaderEntry { Name = header.Name, Value = header.Value, IsBin = header.IsBin })
+            {
+                RequiresValue = header.RequiresValue
+            });
+        }
+
+        document.ReparseAndSelect(tab.OperationName);
+        Finish(document);
+    }
+
     public void OpenSettings()
     {
         var existing = Documents.OfType<SettingsDocumentViewModel>().FirstOrDefault();
@@ -356,6 +389,21 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
                 case DescribeDocumentViewModel describe:
                     state.Tabs.Add(new SessionTab(SessionTabKind.Describe, describe.Connection.Id, describe.CurrentSymbol));
                     break;
+
+                case GraphQlDocumentViewModel graphql:
+                    state.Tabs.Add(new SessionTab(
+                        SessionTabKind.GraphQl, graphql.Connection.Id, Symbol: string.Empty,
+                        Headers: graphql.Headers.Select(ToSessionHeader).ToList(),
+                        EmitDefaults: graphql.EmitDefaults,
+                        AllowUnknownFields: graphql.AllowUnknownFields,
+                        GraphQlDocument: graphql.Document,
+                        OperationName: graphql.SelectedOperation?.Name,
+                        VariablesJson: NullIfEmpty(graphql.VariablesJson),
+                        DefaultService: NullIfEmpty(graphql.DefaultService),
+                        StrictSelection: graphql.StrictSelection,
+                        Introspection: graphql.Introspection,
+                        Raw: graphql.Raw));
+                    break;
             }
         }
 
@@ -415,13 +463,17 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
                     continue;
                 }
 
-                if (tab.Kind == SessionTabKind.Describe)
+                switch (tab.Kind)
                 {
-                    OpenDescribe(connection, tab.Symbol, newTab: true);
-                }
-                else
-                {
-                    OpenInvocation(connection, tab.Symbol, ToPrefill(tab));
+                    case SessionTabKind.Describe:
+                        OpenDescribe(connection, tab.Symbol, newTab: true);
+                        break;
+                    case SessionTabKind.GraphQl:
+                        OpenGraphQlDraft(connection, tab);
+                        break;
+                    default:
+                        OpenInvocation(connection, tab.Symbol, ToPrefill(tab));
+                        break;
                 }
             }
 

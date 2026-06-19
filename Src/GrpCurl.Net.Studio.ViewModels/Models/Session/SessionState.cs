@@ -6,7 +6,8 @@ namespace GrpCurl.Net.Studio.ViewModels.Models.Session;
 public enum SessionTabKind
 {
     Invocation,
-    Describe
+    Describe,
+    GraphQl
 }
 
 /// <summary>One restored metadata header on an invocation draft.</summary>
@@ -28,7 +29,16 @@ public sealed record SessionTab(
     string? Deadline = null,
     bool EmitDefaults = false,
     bool AllowUnknownFields = true,
-    string? MaxMessageSize = null);
+    string? MaxMessageSize = null,
+    // GraphQL-tab draft (Kind == GraphQl): the document + selected operation + variables + mapping
+    // inputs + output toggles, so a GraphQL tab reopens exactly as left (Symbol is unused for it).
+    string? GraphQlDocument = null,
+    string? OperationName = null,
+    string? VariablesJson = null,
+    string? DefaultService = null,
+    bool StrictSelection = false,
+    bool Introspection = true,
+    bool Raw = false);
 
 /// <summary>
 ///     The per-machine UI session (SPEC-040 §2; <c>ui-state.json</c>, never the workspace file per FR-141):

@@ -100,4 +100,16 @@ public sealed class FakeGraphQlService : IGraphQlService
         ResolveCount++;
         return OnResolve is not null ? OnResolve(request, cancellationToken) : Task.FromResult(ResolutionResult);
     }
+
+    public IReadOnlyList<GraphQlProblem> MappingProblems { get; set; } = [];
+
+    public Func<string, IReadOnlyList<GraphQlProblem>>? OnValidateMapping { get; set; }
+
+    public string? LastValidatedMapping { get; private set; }
+
+    public IReadOnlyList<GraphQlProblem> ValidateMapping(string mappingText)
+    {
+        LastValidatedMapping = mappingText;
+        return OnValidateMapping?.Invoke(mappingText) ?? MappingProblems;
+    }
 }

@@ -154,7 +154,8 @@ public sealed record GraphQlExecutionRequest(
     bool StrictSelection,
     bool Introspection,
     bool Raw,
-    GraphQlVerbosity Verbosity = GraphQlVerbosity.Off);
+    GraphQlVerbosity Verbosity = GraphQlVerbosity.Off,
+    string? MappingText = null);
 
 /// <summary>How a root field's target was resolved (GQL-040/041): an explicit mapping entry, convention fallback, or not at all.</summary>
 public enum GraphQlResolutionSource

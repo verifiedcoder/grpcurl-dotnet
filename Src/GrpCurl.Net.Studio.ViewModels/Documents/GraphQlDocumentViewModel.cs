@@ -37,6 +37,7 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     private readonly Func<string, long, CancellationToken, Task<string>> _fileReader;
     private CancellationTokenSource? _parseCts;
     private CancellationTokenSource? _resolveCts;
+    private CancellationTokenSource? _mappingCts;
     private bool _syncingVars;
 
     [ObservableProperty]
@@ -52,6 +53,10 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
 
     [ObservableProperty]
     public partial string DefaultService { get; set; } = string.Empty;
+
+    /// <summary>GQL-044: the inline mapping buffer (YAML/JSON); takes precedence over a mapping file.</summary>
+    [ObservableProperty]
+    public partial string MappingText { get; set; } = string.Empty;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ExecuteCommand))]
@@ -165,6 +170,11 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
 
     public bool HasResolutions => Resolutions.Count > 0;
 
+    /// <summary>Mapping schema-validation problems for the inline buffer (GQL-045).</summary>
+    public ObservableCollection<GraphQlProblem> MappingProblems { get; } = [];
+
+    public bool HasMappingProblems => MappingProblems.Count > 0;
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasDefaultServiceOverride))]
     public partial string? DefaultServiceOverride { get; set; }
@@ -237,6 +247,60 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
 
     // GQL-043: the default-service participates in resolution, so a change re-resolves the preview.
     partial void OnDefaultServiceChanged(string value) => ScheduleResolve();
+
+    // GQL-043/045: a mapping edit re-validates the buffer and re-resolves the preview.
+    partial void OnMappingTextChanged(string value)
+    {
+        ScheduleMappingValidation();
+        ScheduleResolve();
+    }
+
+    private void ScheduleMappingValidation()
+    {
+        _mappingCts?.Cancel();
+        _mappingCts?.Dispose();
+
+        var cts = new CancellationTokenSource();
+        _mappingCts = cts;
+        _ = DebouncedValidateMappingAsync(cts.Token);
+    }
+
+    private async Task DebouncedValidateMappingAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (ParseDebounce > TimeSpan.Zero)
+            {
+                await Task.Delay(ParseDebounce, cancellationToken).ConfigureAwait(false);
+            }
+
+            var problems = _graphql.ValidateMapping(MappingText);
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            await _dispatcher.InvokeAsync(() => ApplyMappingProblems(problems)).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // Superseded by a newer edit; drop silently.
+        }
+    }
+
+    /// <summary>Reconciles the mapping Problems with a fresh validation (test seam).</summary>
+    internal void ApplyMappingProblems(IReadOnlyList<GraphQlProblem> problems)
+    {
+        MappingProblems.Clear();
+
+        foreach (var problem in problems)
+        {
+            MappingProblems.Add(problem);
+        }
+
+        OnPropertyChanged(nameof(HasMappingProblems));
+    }
 
     private void ScheduleResolve()
     {
@@ -765,7 +829,8 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
         StrictSelection,
         Introspection,
         Raw,
-        Verbosity);
+        Verbosity,
+        NullIfBlank(MappingText));
 
     /// <summary>Upserts a per-field progress row (GQL-024); always on the UI thread via <see cref="FieldProgressSink" />.</summary>
     private void ApplyFieldProgress(GraphQlFieldProgress progress)

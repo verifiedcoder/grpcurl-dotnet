@@ -570,6 +570,30 @@ public sealed class GraphQlDocumentViewModelTests
     }
 
     [Fact]
+    public async Task The_inline_mapping_flows_into_the_request()
+    {
+        var vm = Create(out var graphql, out _);
+        graphql.ParseResult = OneQuery();
+        vm.ApplyParse(OneQuery());
+        vm.MappingText = "version: 1";
+
+        await vm.ExecuteCommand.ExecuteAsync(null);
+
+        graphql.LastRequest!.MappingText.ShouldBe("version: 1");
+    }
+
+    [Fact]
+    public void Apply_mapping_problems_surfaces_validation()
+    {
+        var vm = Create(out _, out _);
+
+        vm.ApplyMappingProblems([new GraphQlProblem("duplicate operation entry", GraphQlProblemKind.Configuration)]);
+
+        vm.HasMappingProblems.ShouldBeTrue();
+        vm.MappingProblems.ShouldContain(p => p.Message == "duplicate operation entry");
+    }
+
+    [Fact]
     public void Apply_resolution_populates_the_preview_and_override_note()
     {
         var vm = Create(out _, out _);

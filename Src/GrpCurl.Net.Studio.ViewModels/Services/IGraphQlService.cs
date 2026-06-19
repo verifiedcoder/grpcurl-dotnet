@@ -51,4 +51,11 @@ public interface IGraphQlService
     ///     source, the resolved kind, the convention derivation, and unresolvable-field remedies.
     /// </summary>
     Task<GraphQlResolutionResult> ResolveAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken);
+
+    /// <summary>
+    ///     Validates an inline mapping document against the loader's schema (GQL-045) — version, defaults,
+    ///     and operation-entry shape — with no network. Returns the problems to surface in the mapping
+    ///     editor; an empty list means the mapping loads cleanly.
+    /// </summary>
+    IReadOnlyList<GraphQlProblem> ValidateMapping(string mappingText);
 }

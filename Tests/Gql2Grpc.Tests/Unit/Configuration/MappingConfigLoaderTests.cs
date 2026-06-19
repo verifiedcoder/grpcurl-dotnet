@@ -7,6 +7,23 @@ namespace Gql2Grpc.Tests.Unit.Configuration;
 public sealed class MappingConfigLoaderTests
 {
     [Fact]
+    public void FromText_parses_inline_yaml()
+    {
+        var config = MappingConfigLoader.FromText("version: 1\noperations:\n  - graphqlField: foo\n    method: GetFoo");
+
+        config.Version.ShouldBe(1);
+        config.Operations.ShouldHaveSingleItem().GraphqlField.ShouldBe("foo");
+    }
+
+    [Fact]
+    public void FromText_is_empty_for_blank_text()
+        => MappingConfigLoader.FromText("   ").Operations.ShouldBeEmpty();
+
+    [Fact]
+    public void FromText_throws_for_an_invalid_mapping()
+        => Should.Throw<Exception>(() => MappingConfigLoader.FromText("operations:\n  - graphqlField: foo"));
+
+    [Fact]
     public async Task Parses_yaml_into_mapping_config()
     {
         // Arrange

@@ -1,6 +1,6 @@
+using GrpCurl.Net.Studio.ViewModels.Services;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.Services.Secrets;
 
@@ -60,7 +60,7 @@ internal sealed class LinuxLibsecretSecretStore : ISecretBackend
     {
         WithSchema(schema =>
         {
-            secret_password_clear_sync(ref schema, IntPtr.Zero, out var error, AttributeName, keyRef, IntPtr.Zero);
+            _ = secret_password_clear_sync(ref schema, IntPtr.Zero, out var error, AttributeName, keyRef, IntPtr.Zero);
             if (error != IntPtr.Zero)
             {
                 ThrowIfFailed(condition: false, error, "clear");

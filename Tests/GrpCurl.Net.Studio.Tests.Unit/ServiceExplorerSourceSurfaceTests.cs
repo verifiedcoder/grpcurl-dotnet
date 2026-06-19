@@ -54,8 +54,8 @@ public sealed class ServiceExplorerSourceSurfaceTests
         vm.SourceSummary!.ShouldContain("3 file");
         vm.SourceSummary!.ShouldContain("12 symbol");
         vm.SourceSummary!.ShouldContain("42 ms");
-        vm.LastRefreshed.ShouldNotBeNull();
-        vm.LastRefreshedText.ShouldNotBeNull();
+        _ = vm.LastRefreshed.ShouldNotBeNull();
+        _ = vm.LastRefreshedText.ShouldNotBeNull();
     }
 
     [Fact]

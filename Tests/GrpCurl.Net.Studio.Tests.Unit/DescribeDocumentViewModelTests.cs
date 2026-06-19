@@ -40,7 +40,7 @@ public sealed class DescribeDocumentViewModelTests
         doc.IsLoaded.ShouldBeTrue();
         doc.CurrentSymbol.ShouldBe("pkg.Alpha");
         doc.Title.ShouldBe("Alpha");
-        doc.Symbol.ShouldBeOfType<MessageDescription>();
+        _ = doc.Symbol.ShouldBeOfType<MessageDescription>();
         doc.HasTemplate.ShouldBeTrue();
     }
 
@@ -134,7 +134,7 @@ public sealed class DescribeDocumentViewModelTests
         doc.IsMethod.ShouldBeTrue();
         doc.GenerateRequestCommand.Execute(null);
 
-        host.LastInvocation.ShouldNotBeNull();
+        _ = host.LastInvocation.ShouldNotBeNull();
         host.LastInvocation!.Value.Symbol.ShouldBe("p.Svc/Go");
     }
 

@@ -88,7 +88,7 @@ public sealed class ReflectionSource(
             {
                 CacheFileDescriptor(fileDescriptor);
 
-                _symbolCache.TryGetValue(fullyQualifiedName, out var descriptor);
+                _ = _symbolCache.TryGetValue(fullyQualifiedName, out var descriptor);
 
                 return descriptor;
             }
@@ -175,7 +175,7 @@ public sealed class ReflectionSource(
         {
             try
             {
-                await LoadSymbolAsync(serviceResponseName, cancellationToken);
+                _ = await LoadSymbolAsync(serviceResponseName, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -269,7 +269,7 @@ public sealed class ReflectionSource(
 
         foreach (var fileProto in unresolved.Values.Where(fileProto => !_fileDescriptors.ContainsKey(fileProto.Name)))
         {
-            ResolveFileDescriptor(fileProto.Name, unresolved, resolved, []);
+            _ = ResolveFileDescriptor(fileProto.Name, unresolved, resolved, []);
         }
 
         // Cache newly resolved descriptors
@@ -339,7 +339,7 @@ public sealed class ReflectionSource(
             return wellKnownDescriptor;
         }
 
-        visitedInCurrentPath.Add(fileName);
+        _ = visitedInCurrentPath.Add(fileName);
 
         try
         {
@@ -391,12 +391,12 @@ public sealed class ReflectionSource(
                 // Then add this dependency
                 byteStrings.Add(dep.SerializedData);
 
-                included.Add(dep.Name);
+                _ = included.Add(dep.Name);
             }
         }
         finally
         {
-            visitedInCurrentPath.Remove(fileName);
+            _ = visitedInCurrentPath.Remove(fileName);
         }
     }
 

@@ -1,6 +1,6 @@
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Collections.ObjectModel;
 
 namespace GrpCurl.Net.Studio.ViewModels.Panes;
 
@@ -24,7 +24,7 @@ public sealed partial class ConsoleViewModel : ViewModelBase
 
     public ConsoleViewModel(IInspector? inspector = null) => _inspector = inspector;
 
-    public string Header => "Console";
+    public static string Header => "Console";
 
     /// <summary>Plain log lines (descriptor warnings, FR-046).</summary>
     public ObservableCollection<string> Messages { get; } = [];

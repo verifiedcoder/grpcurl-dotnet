@@ -1,7 +1,7 @@
-using System.Text.RegularExpressions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Utilities;
+using System.Text.RegularExpressions;
 
 namespace GrpCurl.Net.Studio.ViewModels.Connections;
 

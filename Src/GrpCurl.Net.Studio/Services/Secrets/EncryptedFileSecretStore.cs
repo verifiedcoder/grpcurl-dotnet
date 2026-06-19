@@ -1,8 +1,8 @@
+using GrpCurl.Net.Studio.ViewModels.Services;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.Services.Secrets;
 
@@ -14,7 +14,7 @@ namespace GrpCurl.Net.Studio.Services.Secrets;
 ///     binds the ciphertext to this machine + user, but the derivation inputs sit on the same disk, so it is
 ///     weaker than a native keychain — the honest limitation in <see cref="Info" /> says so (SEC-024).
 /// </summary>
-internal sealed class EncryptedFileSecretStore : ISecretBackend
+internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
 {
     /// <summary>SEC-024: the verbatim honest-limitation text surfaced in Settings → Security.</summary>
     internal const string FallbackLimitation =
@@ -55,7 +55,7 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend
         }
         finally
         {
-            _gate.Release();
+            _ = _gate.Release();
         }
     }
 
@@ -77,7 +77,7 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend
         }
         finally
         {
-            _gate.Release();
+            _ = _gate.Release();
         }
     }
 
@@ -94,7 +94,7 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend
         }
         finally
         {
-            _gate.Release();
+            _ = _gate.Release();
         }
     }
 
@@ -107,7 +107,7 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend
         }
         finally
         {
-            _gate.Release();
+            _ = _gate.Release();
         }
     }
 
@@ -118,7 +118,7 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend
 
     private void Save(Dictionary<string, string> store)
     {
-        Directory.CreateDirectory(_directory);
+        _ = Directory.CreateDirectory(_directory);
         File.WriteAllText(_dataPath, JsonSerializer.Serialize(store));
         Harden(_dataPath);
     }
@@ -139,7 +139,7 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend
             return Convert.FromBase64String(File.ReadAllText(_saltPath));
         }
 
-        Directory.CreateDirectory(_directory);
+        _ = Directory.CreateDirectory(_directory);
         var salt = RandomNumberGenerator.GetBytes(32);
         File.WriteAllText(_saltPath, Convert.ToBase64String(salt));
         Harden(_saltPath);
@@ -166,7 +166,7 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend
             return Encoding.UTF8.GetBytes(File.ReadAllText(_machineIdPath).Trim());
         }
 
-        Directory.CreateDirectory(_directory);
+        _ = Directory.CreateDirectory(_directory);
         var generated = Guid.NewGuid().ToString("N");
         File.WriteAllText(_machineIdPath, generated);
         Harden(_machineIdPath);
@@ -248,4 +248,9 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend
 
     [DllImport("libc")]
     private static extern uint getuid();
+
+    public void Dispose()
+    {
+        throw new NotImplementedException();
+    }
 }

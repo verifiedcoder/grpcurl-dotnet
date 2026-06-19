@@ -25,12 +25,12 @@ internal static class Program
         // Load persisted settings and the workspace before the shell view model is built, so
         // the saved theme and connections are present on first paint (the view models read
         // ISettingsStore.Current / IWorkspaceStore.Current in their constructors).
-        host.Services.GetRequiredService<ISettingsStore>().LoadAsync().GetAwaiter().GetResult();
-        host.Services.GetRequiredService<IWorkspaceStore>().LoadAsync().GetAwaiter().GetResult();
+        _ = host.Services.GetRequiredService<ISettingsStore>().LoadAsync().GetAwaiter().GetResult();
+        _ = host.Services.GetRequiredService<IWorkspaceStore>().LoadAsync().GetAwaiter().GetResult();
 
         try
         {
-            BuildAvaloniaApp(host.Services)
+            _ = BuildAvaloniaApp(host.Services)
                 .StartWithClassicDesktopLifetime(args);
         }
         finally

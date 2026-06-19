@@ -50,7 +50,7 @@ public sealed class ConsoleCallRowViewModel : ViewModelBase
     };
 
     /// <summary>Start time (FR-004), blank when not recorded (older invocation rows).</summary>
-    public string TimeText => Activity.At == default ? string.Empty : Activity.At.ToLocalTime().ToString("HH:mm:ss");
+    public string TimeText => Activity.At == default ? string.Empty : Activity.At.ToLocalTime().ToString("HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
 
     /// <summary>Compact one-line summary: <c>pkg.Svc/Go · OK · 12 ms</c> (FR-114 inline total).</summary>
     public string Display => $"{Activity.Method} · {Activity.StatusName} · {Activity.TotalText}";

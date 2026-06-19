@@ -92,7 +92,7 @@ public sealed class TlsProfileEditorViewModelTests : IDisposable
         vm.Name = "p";
         vm.SelectedValidationMode = TlsValidationMode.CustomCa;
 
-        vm.CaCertError.ShouldNotBeNull();
+        _ = vm.CaCertError.ShouldNotBeNull();
         vm.SaveCommand.CanExecute(null).ShouldBeFalse();
 
         vm.CaCertPath = "/path/to/ca.pem";
@@ -109,7 +109,7 @@ public sealed class TlsProfileEditorViewModelTests : IDisposable
         vm.ClientCertPath = pem;
         vm.DetectedClientCertFormat = "PEM"; // as BrowseClientCert would set
 
-        vm.ClientCertError.ShouldNotBeNull();
+        _ = vm.ClientCertError.ShouldNotBeNull();
         vm.SaveCommand.CanExecute(null).ShouldBeFalse();
 
         vm.ClientKeyPath = "/path/to/key.pem";
@@ -123,7 +123,7 @@ public sealed class TlsProfileEditorViewModelTests : IDisposable
         vm.Name = "p";
         vm.ClientKeyPath = "/path/to/key.pem";
 
-        vm.ClientCertError.ShouldNotBeNull();
+        _ = vm.ClientCertError.ShouldNotBeNull();
     }
 
     [Fact]
@@ -167,8 +167,8 @@ public sealed class TlsProfileEditorViewModelTests : IDisposable
         vm.CloseRequested += p => saved = p;
         await vm.SaveCommand.ExecuteAsync(null);
 
-        saved.ShouldNotBeNull();
-        saved!.ClientCertPasswordSecretRef.ShouldNotBeNull();
+        _ = saved.ShouldNotBeNull();
+        _ = saved!.ClientCertPasswordSecretRef.ShouldNotBeNull();
         (await secrets.GetAsync(saved.ClientCertPasswordSecretRef!, TestContext.Current.CancellationToken)).ShouldBe("p@ss");
         saved.ClientCertPath.ShouldBe(pfx);
         saved.ClientKeyPath.ShouldBeNull(); // PKCS12 carries its own key

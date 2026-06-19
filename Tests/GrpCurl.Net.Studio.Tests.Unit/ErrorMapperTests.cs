@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Google.Rpc;
@@ -7,6 +6,7 @@ using GrpCurl.Net.Invocation;
 using GrpCurl.Net.Studio.Services;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Text.Json;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
 

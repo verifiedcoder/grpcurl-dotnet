@@ -1,13 +1,13 @@
-using System.Diagnostics;
 using Google.Protobuf.Reflection;
 using Grpc.Core;
 using GrpCurl.Net.DescriptorSources;
 using GrpCurl.Net.Invocation;
 using GrpCurl.Net.Output;
-using GrpCurl.Net.Utilities;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Descriptors;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using GrpCurl.Net.Utilities;
+using System.Diagnostics;
 
 namespace GrpCurl.Net.Studio.Services;
 
@@ -171,7 +171,7 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null,
             await using var session = await OpenSessionAsync(connection, cancellationToken).ConfigureAwait(false);
 
             // Warm the source so a reflection set populates its FileDescriptorSet before we read it.
-            await session.Source.ListServicesAsync(cancellationToken).ConfigureAwait(false);
+            _ = await session.Source.ListServicesAsync(cancellationToken).ConfigureAwait(false);
 
             if (!overwrite)
             {

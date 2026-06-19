@@ -71,10 +71,10 @@ public sealed class CommandConstantsTests
 
         // Act
         // Assert
-        CommandConstants.CommandFailed.ShouldNotBeNull();
-        CommandConstants.Suggestions.ShouldNotBeNull();
-        CommandConstants.RequestSerialisation.ShouldNotBeNull();
-        CommandConstants.NetworkRoundTrip.ShouldNotBeNull();
-        CommandConstants.ResponseDeserialization.ShouldNotBeNull();
+        _ = CommandConstants.CommandFailed.ShouldNotBeNull();
+        _ = CommandConstants.Suggestions.ShouldNotBeNull();
+        _ = CommandConstants.RequestSerialisation.ShouldNotBeNull();
+        _ = CommandConstants.NetworkRoundTrip.ShouldNotBeNull();
+        _ = CommandConstants.ResponseDeserialization.ShouldNotBeNull();
     }
 }

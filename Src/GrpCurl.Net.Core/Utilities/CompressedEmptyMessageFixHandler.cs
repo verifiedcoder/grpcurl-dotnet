@@ -35,7 +35,7 @@ internal sealed class CompressedEmptyMessageFixHandler(HttpMessageHandler innerH
 
             foreach (var header in inner.Headers)
             {
-                Headers.TryAddWithoutValidation(header.Key, header.Value);
+                _ = Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
         }
 

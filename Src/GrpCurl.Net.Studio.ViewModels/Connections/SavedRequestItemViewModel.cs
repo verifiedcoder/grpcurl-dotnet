@@ -1,4 +1,3 @@
-using System.IO;
 using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;

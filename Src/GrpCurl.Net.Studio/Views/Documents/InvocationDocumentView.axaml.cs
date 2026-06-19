@@ -1,15 +1,14 @@
-using System.Collections.Specialized;
-using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using AvaloniaEdit;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Folding;
-using AvaloniaEdit.Rendering;
 using AvaloniaEdit.Search;
 using AvaloniaEdit.TextMate;
 using GrpCurl.Net.Studio.ViewModels.Documents;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using TextMateSharp.Grammars;
 
 namespace GrpCurl.Net.Studio.Views.Documents;
@@ -45,7 +44,7 @@ public sealed partial class InvocationDocumentView : UserControl
         // FR-074: search (Ctrl+F) + collapse/expand folding on the response viewer.
         if (_responseEditor is not null)
         {
-            SearchPanel.Install(_responseEditor);
+            _ = SearchPanel.Install(_responseEditor);
             _responseFolding = FoldingManager.Install(_responseEditor.TextArea);
         }
 

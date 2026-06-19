@@ -2,7 +2,6 @@ using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
-using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
 
@@ -36,7 +35,7 @@ public sealed class StreamComposerViewModelTests
         vm.CanSend.ShouldBeFalse();
         vm.SendCommand.CanExecute(null).ShouldBeFalse();
 
-        vm.Begin();
+        _ = vm.Begin();
 
         vm.CanSend.ShouldBeTrue();
         vm.SendCommand.CanExecute(null).ShouldBeTrue();
@@ -64,7 +63,7 @@ public sealed class StreamComposerViewModelTests
     public void Clear_after_send_blanks_the_editor_when_enabled()
     {
         var vm = Create(out _, out _);
-        vm.Begin();
+        _ = vm.Begin();
         vm.ClearAfterSend = true;
         vm.MessageJson = "{ \"x\": 1 }";
 
@@ -105,12 +104,12 @@ public sealed class StreamComposerViewModelTests
     public async Task Validation_surfaces_problems_without_blocking_send()
     {
         var vm = Create(out var validator, out _);
-        vm.Begin();
+        _ = vm.Begin();
         validator.Problems = [new ValidationProblem("bad", 1, 1)];
 
         await vm.RunValidationAsync(TestContext.Current.CancellationToken);
 
-        vm.Problems.ShouldHaveSingleItem();
+        _ = vm.Problems.ShouldHaveSingleItem();
         vm.HasProblems.ShouldBeTrue();
         vm.SendCommand.CanExecute(null).ShouldBeTrue(); // advisory only
     }

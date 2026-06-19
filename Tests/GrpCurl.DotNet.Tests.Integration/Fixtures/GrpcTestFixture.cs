@@ -27,14 +27,14 @@ public sealed class GrpcTestFixture : IAsyncLifetime
         var builder = WebApplication.CreateBuilder();
 
         // Add gRPC services
-        builder.Services.AddGrpc();
-        builder.Services.AddGrpcReflection();
+        _ = builder.Services.AddGrpc();
+        _ = builder.Services.AddGrpcReflection();
 
         // Configure logging to suppress noise
-        builder.Logging.SetMinimumLevel(LogLevel.Warning);
+        _ = builder.Logging.SetMinimumLevel(LogLevel.Warning);
 
         // Configure Kestrel to use HTTP/2 without TLS for testing
-        builder.WebHost.ConfigureKestrel(options =>
+        _ = builder.WebHost.ConfigureKestrel(options =>
         {
             options.ListenLocalhost(Port, listenOptions =>
             {
@@ -45,8 +45,8 @@ public sealed class GrpcTestFixture : IAsyncLifetime
         _app = builder.Build();
 
         // Map gRPC services
-        _app.MapGrpcService<TestServiceImpl>();
-        _app.MapGrpcReflectionService();
+        _ = _app.MapGrpcService<TestServiceImpl>();
+        _ = _app.MapGrpcReflectionService();
 
         // Start the server
         await _app.StartAsync();

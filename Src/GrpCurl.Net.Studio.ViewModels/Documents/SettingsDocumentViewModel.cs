@@ -1,3 +1,4 @@
+using static System.FormattableString;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.Studio.ViewModels.Models;
@@ -368,7 +369,7 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
             default: // CheckFailed — offline or unreachable; let the user check manually.
                 UpdateAvailable = false;
                 UpdateStatus = "Couldn't check for updates (offline or GitHub unreachable). Opening the releases page…";
-                await _launcher.LaunchUriAsync(_updates.ReleasesUrl(UpdateChannel));
+                _ = await _launcher.LaunchUriAsync(_updates.ReleasesUrl(UpdateChannel));
                 break;
         }
     }
@@ -381,7 +382,7 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
     {
         if (_launcher is not null)
         {
-            await _launcher.LaunchUriAsync(_latestReleaseUrl ?? _updates?.ReleasesUrl(UpdateChannel) ?? string.Empty);
+            _ = await _launcher.LaunchUriAsync(_latestReleaseUrl ?? _updates?.ReleasesUrl(UpdateChannel) ?? string.Empty);
         }
     }
 
@@ -432,7 +433,7 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
             return;
         }
 
-        await _launcher.LaunchUriAsync(new Uri(_diagnostics.LogFolderPath).AbsoluteUri);
+        _ = await _launcher.LaunchUriAsync(new Uri(_diagnostics.LogFolderPath).AbsoluteUri);
     }
 
     /// <summary>
@@ -448,14 +449,14 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
         }
 
         var bundle = new System.Text.StringBuilder();
-        bundle.AppendLine("GrpCurl.Net Studio diagnostics");
-        bundle.AppendLine($"Version: {_updates?.CurrentVersion ?? "unknown"}");
-        bundle.AppendLine($"OS: {System.Runtime.InteropServices.RuntimeInformation.OSDescription}");
-        bundle.AppendLine();
+        _ = bundle.AppendLine("GrpCurl.Net Studio diagnostics");
+        _ = bundle.AppendLine(Invariant($"Version: {_updates?.CurrentVersion ?? "unknown"}"));
+        _ = bundle.AppendLine(Invariant($"OS: {System.Runtime.InteropServices.RuntimeInformation.OSDescription}"));
+        _ = bundle.AppendLine();
 
         foreach (var entry in _allDiagnostics)
         {
-            bundle.AppendLine($"{entry.At:u} [{entry.Level}] {entry.Category}: {entry.Message}");
+            _ = bundle.AppendLine(Invariant($"{entry.At:u} [{entry.Level}] {entry.Category}: {entry.Message}"));
         }
 
         await _clipboard.SetTextAsync(bundle.ToString());

@@ -24,7 +24,7 @@ public sealed class HeaderRowViewModelTests
         var row = new HeaderRowViewModel { Name = "trace-bin", Value = "not base64!!" };
 
         row.HasBinError.ShouldBeTrue();
-        row.BinError.ShouldNotBeNull();
+        _ = row.BinError.ShouldNotBeNull();
         row.HasBinReadout.ShouldBeFalse();
     }
 

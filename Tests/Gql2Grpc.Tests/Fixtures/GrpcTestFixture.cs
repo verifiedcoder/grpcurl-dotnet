@@ -24,11 +24,11 @@ public sealed class GrpcTestFixture : IAsyncLifetime
 
         var builder = WebApplication.CreateBuilder();
 
-        builder.Services.AddGrpc();
-        builder.Services.AddGrpcReflection();
-        builder.Logging.SetMinimumLevel(LogLevel.Warning);
+        _ = builder.Services.AddGrpc();
+        _ = builder.Services.AddGrpcReflection();
+        _ = builder.Logging.SetMinimumLevel(LogLevel.Warning);
 
-        builder.WebHost.ConfigureKestrel(options =>
+        _ = builder.WebHost.ConfigureKestrel(options =>
         {
             options.ListenLocalhost(Port, listenOptions =>
             {
@@ -37,8 +37,8 @@ public sealed class GrpcTestFixture : IAsyncLifetime
         });
 
         _app = builder.Build();
-        _app.MapGrpcService<TestServiceImpl>();
-        _app.MapGrpcReflectionService();
+        _ = _app.MapGrpcService<TestServiceImpl>();
+        _ = _app.MapGrpcReflectionService();
 
         await _app.StartAsync();
     }

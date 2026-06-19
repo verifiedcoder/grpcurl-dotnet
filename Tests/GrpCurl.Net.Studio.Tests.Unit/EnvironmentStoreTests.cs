@@ -10,7 +10,7 @@ namespace GrpCurl.Net.Studio.Tests.Unit;
 /// </summary>
 public sealed class EnvironmentStoreTests
 {
-    private CancellationToken Ct => TestContext.Current.CancellationToken;
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     [Fact]
     public async Task Saving_an_environment_preserves_connections_and_profiles()
@@ -24,8 +24,8 @@ public sealed class EnvironmentStoreTests
 
         await store.SaveAsync(new WorkspaceEnvironment { Id = "e1", Name = "staging" }, Ct);
 
-        workspace.Current.Connections.ShouldHaveSingleItem();
-        workspace.Current.TlsProfiles.ShouldHaveSingleItem();
+        _ = workspace.Current.Connections.ShouldHaveSingleItem();
+        _ = workspace.Current.TlsProfiles.ShouldHaveSingleItem();
         store.Environments.ShouldContain(e => e.Name == "staging");
     }
 
@@ -83,6 +83,6 @@ public sealed class EnvironmentStoreTests
 
         await store.DeleteAsync("missing", Ct);
 
-        store.Environments.ShouldHaveSingleItem();
+        _ = store.Environments.ShouldHaveSingleItem();
     }
 }

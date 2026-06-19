@@ -107,7 +107,7 @@ public sealed class InvokeMTlsTests(MTlsGrpcTestFixture fixture)
 
             // Either a GrpcCommandException (rendered error envelope) or a raw
             // network exception is acceptable — the mTLS handshake must fail.
-            await act.ShouldThrowAsync<Exception>();
+            _ = await act.ShouldThrowAsync<Exception>();
         }
         finally
         {

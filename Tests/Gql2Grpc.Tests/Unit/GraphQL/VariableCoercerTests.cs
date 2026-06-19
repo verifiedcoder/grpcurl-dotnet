@@ -1,5 +1,5 @@
-using System.Text.Json.Nodes;
 using Gql2Grpc.GraphQL;
+using System.Text.Json.Nodes;
 
 namespace Gql2Grpc.Tests.Unit.GraphQL;
 
@@ -46,7 +46,7 @@ public sealed class VariableCoercerTests
         var op = doc.SelectOperation(null);
 
         // Assert
-        Should.Throw<ArgumentException>(() => VariableCoercer.Coerce(op.VariableDefinitions, null, null));
+        _ = Should.Throw<ArgumentException>(() => VariableCoercer.Coerce(op.VariableDefinitions, null, null));
     }
 
     [Fact]

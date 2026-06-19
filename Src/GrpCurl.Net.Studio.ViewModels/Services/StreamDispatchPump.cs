@@ -14,7 +14,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Services;
 ///     Cancellation surfaces after every already-queued event has been applied (cancel-preserves-received,
 ///     FR-084).
 /// </summary>
-public sealed class StreamDispatchPump
+public static class StreamDispatchPump
 {
     /// <summary>
     ///     Default UI-queue capacity. Matches <c>InvocationService</c>'s source channel so the two stages
@@ -22,7 +22,7 @@ public sealed class StreamDispatchPump
     /// </summary>
     public const int DefaultCapacity = 1000;
 
-    public async Task RunAsync<T>(
+    public static async Task RunAsync<T>(
         IAsyncEnumerable<T> source,
         Func<IReadOnlyList<T>, Task> apply,
         CancellationToken cancellationToken,
@@ -45,7 +45,7 @@ public sealed class StreamDispatchPump
             }
             finally
             {
-                queue.Writer.TryComplete();
+                _ = queue.Writer.TryComplete();
             }
         }, cancellationToken);
 

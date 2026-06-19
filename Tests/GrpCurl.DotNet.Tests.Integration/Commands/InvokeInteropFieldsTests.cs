@@ -1,6 +1,6 @@
-using System.Text.Json;
 using GrpCurl.Net.Commands;
 using GrpCurl.Net.Tests.Integration.Fixtures;
+using System.Text.Json;
 
 namespace GrpCurl.Net.Tests.Integration.Commands;
 
@@ -61,7 +61,7 @@ public sealed class InvokeInteropFieldsTests(GrpcTestFixture fixture)
         var body = payload.GetProperty("body").GetString();
 
         // Assert
-        body.ShouldNotBeNull();
+        _ = body.ShouldNotBeNull();
         Convert.FromBase64String(body).Length.ShouldBe(512);
     }
 

@@ -1,8 +1,8 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.Tests.UI.Headless;
+using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Descriptors;
@@ -49,7 +49,7 @@ public sealed class DescribeDocumentUiTests(HeadlessSessionFixture fixture) : He
 
         // The request template renders in the read-only editor box.
         var template = window.GetVisualDescendants().OfType<TextBox>().Single();
-        template.Text.ShouldNotBeNull();
+        _ = template.Text.ShouldNotBeNull();
         template.Text!.ShouldContain("beta");
     });
 
@@ -63,7 +63,7 @@ public sealed class DescribeDocumentUiTests(HeadlessSessionFixture fixture) : He
         Dispatcher.UIThread.RunJobs();
 
         var link = window.GetVisualDescendants().OfType<Button>().First(b => b.Classes.Contains("link"));
-        link.Command.ShouldNotBeNull();
+        _ = link.Command.ShouldNotBeNull();
         link.Command!.Execute(link.CommandParameter);
         Dispatcher.UIThread.RunJobs();
 

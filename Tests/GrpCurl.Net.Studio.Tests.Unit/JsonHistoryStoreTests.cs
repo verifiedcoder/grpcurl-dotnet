@@ -30,7 +30,7 @@ public sealed class JsonHistoryStoreTests : IDisposable
         new HistoryOutcome("OK", "success", 0, 184, 1, 1, ResponseBody: null, ResponseTruncated: false, ErrorMessage: null),
         pinned);
 
-    private CancellationToken Ct => TestContext.Current.CancellationToken;
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     [Fact]
     public async Task Append_then_read_round_trips_entries_in_file_order()

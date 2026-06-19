@@ -64,7 +64,7 @@ public sealed class ConnectionEditorViewModelTests
     {
         var vm = new ConnectionEditorViewModel(new FakeConnectionRegistry()) { Name = "x", Address = "bad" };
 
-        vm.AddressError.ShouldNotBeNull();
+        _ = vm.AddressError.ShouldNotBeNull();
         vm.SaveCommand.CanExecute(null).ShouldBeFalse();
         vm.TestConnectionCommand.CanExecute(null).ShouldBeFalse();
     }
@@ -103,7 +103,7 @@ public sealed class ConnectionEditorViewModelTests
 
         await vm.TestConnectionCommand.ExecuteAsync(null);
 
-        vm.LastTestResult.ShouldNotBeNull();
+        _ = vm.LastTestResult.ShouldNotBeNull();
         vm.LastTestResult!.Ok.ShouldBeTrue();
         vm.LastTestResult.ServiceCount.ShouldBe(3);
         registry.LastTested!.Address.ShouldBe("localhost:9090");
@@ -148,7 +148,7 @@ public sealed class ConnectionEditorViewModelTests
 
         vm.SaveCommand.Execute(null);
 
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
         result!.Name.ShouldBe("prod"); // trimmed
         result.Address.ShouldBe("localhost:9090");
     }

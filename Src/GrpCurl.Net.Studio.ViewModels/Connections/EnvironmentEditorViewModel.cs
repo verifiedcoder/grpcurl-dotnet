@@ -1,10 +1,10 @@
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 
 namespace GrpCurl.Net.Studio.ViewModels.Connections;
 
@@ -82,7 +82,7 @@ public sealed partial class EnvironmentEditorViewModel : DialogViewModel<Workspa
     {
         if (row is not null)
         {
-            Variables.Remove(row);
+            _ = Variables.Remove(row);
         }
     }
 
@@ -107,7 +107,7 @@ public sealed partial class EnvironmentEditorViewModel : DialogViewModel<Workspa
             {
                 var keyRef = await ResolveSecretRefAsync(row).ConfigureAwait(false);
                 value = StringOrSecret.Secret(keyRef);
-                usedRefs.Add(keyRef);
+                _ = usedRefs.Add(keyRef);
             }
             else
             {

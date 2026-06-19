@@ -16,7 +16,7 @@ public sealed class WellKnownTypeRegistryTests
         var descriptors = WellKnownTypeRegistry.Descriptors;
 
         // Assert
-        descriptors.ShouldNotBeNull();
+        _ = descriptors.ShouldNotBeNull();
     }
 
     [Fact]
@@ -78,8 +78,8 @@ public sealed class WellKnownTypeRegistryTests
         var descriptor = descriptors[protoFileName];
 
         // Assert
-        descriptor.ShouldNotBeNull();
-        descriptor.ShouldBeAssignableTo<FileDescriptor>();
+        _ = descriptor.ShouldNotBeNull();
+        _ = descriptor.ShouldBeAssignableTo<FileDescriptor>();
         descriptor.Name.ShouldBe(protoFileName);
     }
 
@@ -106,7 +106,7 @@ public sealed class WellKnownTypeRegistryTests
         // Assert
         result.ShouldBeTrue();
 
-        descriptor.ShouldNotBeNull();
+        _ = descriptor.ShouldNotBeNull();
     }
 
     [Theory]
@@ -118,10 +118,10 @@ public sealed class WellKnownTypeRegistryTests
         // Arrange
 
         // Act
-        WellKnownTypeRegistry.TryGetDescriptor(protoFileName, out var descriptor);
+        _ = WellKnownTypeRegistry.TryGetDescriptor(protoFileName, out var descriptor);
 
         // Assert
-        descriptor.ShouldNotBeNull();
+        _ = descriptor.ShouldNotBeNull();
         descriptor.Name.ShouldBe(protoFileName);
     }
 
@@ -184,10 +184,10 @@ public sealed class WellKnownTypeRegistryTests
     {
         // Arrange
         // Act
-        WellKnownTypeRegistry.TryGetDescriptor("google/protobuf/timestamp.proto", out var descriptor);
+        _ = WellKnownTypeRegistry.TryGetDescriptor("google/protobuf/timestamp.proto", out var descriptor);
 
         // Assert
-        descriptor.ShouldNotBeNull();
+        _ = descriptor.ShouldNotBeNull();
         descriptor.MessageTypes.ShouldNotBeEmpty();
         descriptor.MessageTypes.ShouldContain(m => m.Name == "Timestamp");
     }
@@ -197,10 +197,10 @@ public sealed class WellKnownTypeRegistryTests
     {
         // Arrange
         // Act
-        WellKnownTypeRegistry.TryGetDescriptor("google/protobuf/duration.proto", out var descriptor);
+        _ = WellKnownTypeRegistry.TryGetDescriptor("google/protobuf/duration.proto", out var descriptor);
 
         // Assert
-        descriptor.ShouldNotBeNull();
+        _ = descriptor.ShouldNotBeNull();
         descriptor.MessageTypes.ShouldNotBeEmpty();
         descriptor.MessageTypes.ShouldContain(m => m.Name == "Duration");
     }
@@ -210,10 +210,10 @@ public sealed class WellKnownTypeRegistryTests
     {
         // Arrange
         // Act
-        WellKnownTypeRegistry.TryGetDescriptor("google/protobuf/empty.proto", out var descriptor);
+        _ = WellKnownTypeRegistry.TryGetDescriptor("google/protobuf/empty.proto", out var descriptor);
 
         // Assert
-        descriptor.ShouldNotBeNull();
+        _ = descriptor.ShouldNotBeNull();
         descriptor.MessageTypes.ShouldNotBeEmpty();
         descriptor.MessageTypes.ShouldContain(m => m.Name == "Empty");
     }
@@ -223,10 +223,10 @@ public sealed class WellKnownTypeRegistryTests
     {
         // Arrange
         // Act
-        WellKnownTypeRegistry.TryGetDescriptor("google/protobuf/wrappers.proto", out var descriptor);
+        _ = WellKnownTypeRegistry.TryGetDescriptor("google/protobuf/wrappers.proto", out var descriptor);
 
         // Assert
-        descriptor.ShouldNotBeNull();
+        _ = descriptor.ShouldNotBeNull();
         descriptor.MessageTypes.ShouldNotBeEmpty();
         descriptor.MessageTypes.ShouldContain(m => m.Name == "Int32Value");
         descriptor.MessageTypes.ShouldContain(m => m.Name == "StringValue");
@@ -244,10 +244,10 @@ public sealed class WellKnownTypeRegistryTests
     {
         // Arrange
         // Act
-        WellKnownTypeRegistry.TryGetDescriptor("google/protobuf/any.proto", out var descriptor);
+        _ = WellKnownTypeRegistry.TryGetDescriptor("google/protobuf/any.proto", out var descriptor);
 
         // Assert
-        descriptor.ShouldNotBeNull();
+        _ = descriptor.ShouldNotBeNull();
         descriptor.MessageTypes.ShouldNotBeEmpty();
         descriptor.MessageTypes.ShouldContain(m => m.Name == "Any");
     }
@@ -257,10 +257,10 @@ public sealed class WellKnownTypeRegistryTests
     {
         // Arrange
         // Act
-        WellKnownTypeRegistry.TryGetDescriptor("google/protobuf/struct.proto", out var descriptor);
+        _ = WellKnownTypeRegistry.TryGetDescriptor("google/protobuf/struct.proto", out var descriptor);
 
         // Assert
-        descriptor.ShouldNotBeNull();
+        _ = descriptor.ShouldNotBeNull();
         descriptor.MessageTypes.ShouldNotBeEmpty();
         descriptor.MessageTypes.ShouldContain(m => m.Name == "Struct");
         descriptor.MessageTypes.ShouldContain(m => m.Name == "Value");
@@ -272,10 +272,10 @@ public sealed class WellKnownTypeRegistryTests
     {
         // Arrange
         // Act
-        WellKnownTypeRegistry.TryGetDescriptor("google/protobuf/field_mask.proto", out var descriptor);
+        _ = WellKnownTypeRegistry.TryGetDescriptor("google/protobuf/field_mask.proto", out var descriptor);
 
         // Assert
-        descriptor.ShouldNotBeNull();
+        _ = descriptor.ShouldNotBeNull();
         descriptor.MessageTypes.ShouldNotBeEmpty();
         descriptor.MessageTypes.ShouldContain(m => m.Name == "FieldMask");
     }
@@ -317,7 +317,7 @@ public sealed class WellKnownTypeRegistryTests
         foreach (var (result, descriptor) in results)
         {
             result.ShouldBeTrue();
-            descriptor.ShouldNotBeNull();
+            _ = descriptor.ShouldNotBeNull();
             descriptor.Name.ShouldBe("google/protobuf/timestamp.proto");
         }
     }

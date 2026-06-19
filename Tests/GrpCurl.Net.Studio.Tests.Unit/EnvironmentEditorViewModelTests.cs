@@ -11,14 +11,14 @@ namespace GrpCurl.Net.Studio.Tests.Unit;
 /// </summary>
 public sealed class EnvironmentEditorViewModelTests
 {
-    private CancellationToken Ct => TestContext.Current.CancellationToken;
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     [Fact]
     public void A_blank_name_blocks_save()
     {
         var vm = new EnvironmentEditorViewModel(new FakeSecretStore());
 
-        vm.NameError.ShouldNotBeNull();
+        _ = vm.NameError.ShouldNotBeNull();
         vm.SaveCommand.CanExecute(null).ShouldBeFalse();
     }
 
@@ -31,7 +31,7 @@ public sealed class EnvironmentEditorViewModelTests
         vm.Variables[0].Name = "HOST";
         vm.Variables[1].Name = "HOST";
 
-        vm.VariableError.ShouldNotBeNull();
+        _ = vm.VariableError.ShouldNotBeNull();
         vm.SaveCommand.CanExecute(null).ShouldBeFalse();
 
         vm.Variables[1].Name = "PORT";

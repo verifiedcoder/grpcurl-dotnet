@@ -54,14 +54,14 @@ public sealed class JsonSettingsStoreTests : IDisposable
     public async Task Load_unknown_keys_round_trip_through_overflow()
     {
         var ct = TestContext.Current.CancellationToken;
-        Directory.CreateDirectory(_dir);
+        _ = Directory.CreateDirectory(_dir);
         await File.WriteAllTextAsync(SettingsPath,
             """{"schemaVersion":1,"appearance":{"theme":"light","uiScale":1.0},"futureKey":{"a":1}}""", ct);
 
         var store = new JsonSettingsStore(SettingsPath);
         var settings = await store.LoadAsync(ct);
 
-        settings.Overflow.ShouldNotBeNull();
+        _ = settings.Overflow.ShouldNotBeNull();
         settings.Overflow!.ShouldContainKey("futureKey");
 
         // Re-save and confirm the unknown key survives.

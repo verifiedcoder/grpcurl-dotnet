@@ -94,7 +94,7 @@ public sealed class GrpcCommandExceptionTests
         var exception = new GrpcCommandException("Test");
 
         // Assert
-        exception.ShouldBeAssignableTo<Exception>();
+        _ = exception.ShouldBeAssignableTo<Exception>();
     }
 
     [Fact]
@@ -114,7 +114,7 @@ public sealed class GrpcCommandExceptionTests
         }
 
         // Assert
-        caught.ShouldNotBeNull();
+        _ = caught.ShouldNotBeNull();
 
         var grpcException = caught.ShouldBeOfType<GrpcCommandException>();
 

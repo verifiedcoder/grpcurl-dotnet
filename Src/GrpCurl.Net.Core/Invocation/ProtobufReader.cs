@@ -31,7 +31,7 @@ internal static class ProtobufReader
             if (field.IsMap)
             {
                 // Maps are encoded as repeated messages with key/value fields
-                message.MapFields.TryAdd(field, []);
+                _ = message.MapFields.TryAdd(field, []);
 
                 // Read the map entry message
                 if (ReadSingleFieldValue(input, field) is not SimpleDynamicMessage entryMessage)

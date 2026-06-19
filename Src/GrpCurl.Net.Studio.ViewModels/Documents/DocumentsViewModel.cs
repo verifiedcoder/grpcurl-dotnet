@@ -1,5 +1,3 @@
-using System.Collections.ObjectModel;
-using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GrpCurl.Net.Studio.ViewModels.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models;
@@ -8,6 +6,8 @@ using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Models.Session;
 using GrpCurl.Net.Studio.ViewModels.Panes;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Collections.ObjectModel;
+using System.Globalization;
 
 namespace GrpCurl.Net.Studio.ViewModels.Documents;
 
@@ -302,7 +302,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         document.CloseRequested -= OnDocumentCloseRequested;
 
         var index = Documents.IndexOf(document);
-        Documents.Remove(document);
+        _ = Documents.Remove(document);
 
         if (SelectedDocument == document)
         {

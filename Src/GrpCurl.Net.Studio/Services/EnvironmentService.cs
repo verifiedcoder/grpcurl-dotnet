@@ -1,7 +1,7 @@
-using System.Text;
-using System.Text.RegularExpressions;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace GrpCurl.Net.Studio.Services;
 
@@ -61,19 +61,19 @@ internal sealed partial class EnvironmentService(IWorkspaceStore workspace, ISec
 
         foreach (Match match in matches)
         {
-            builder.Append(value, last, match.Index - last);
+            _ = builder.Append(value, last, match.Index - last);
 
             var name = match.Groups[1].Value;
             var resolved = await ResolveAsync(name, cancellationToken).ConfigureAwait(false);
 
-            builder.Append(resolved ?? throw new InvalidOperationException(
+            _ = builder.Append(resolved ?? throw new InvalidOperationException(
                 $"Variable '{name}' is not set in the active environment "
                 + $"'{Active?.Name ?? "(none)"}' or the OS environment."));
 
             last = match.Index + match.Length;
         }
 
-        builder.Append(value, last, value.Length - last);
+        _ = builder.Append(value, last, value.Length - last);
         return builder.ToString();
     }
 

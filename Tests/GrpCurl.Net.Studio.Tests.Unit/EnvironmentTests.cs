@@ -7,7 +7,7 @@ namespace GrpCurl.Net.Studio.Tests.Unit;
 /// <summary>E3.2 PR-A: environment/variable persistence (stringOrSecret) and ${VAR} resolution.</summary>
 public sealed class EnvironmentTests
 {
-    private CancellationToken Ct => TestContext.Current.CancellationToken;
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     private static WorkspaceModel WithEnvironment() => new()
     {
@@ -68,7 +68,7 @@ public sealed class EnvironmentTests
         var service = Service(out _, out _);
 
         (await service.ResolveAsync("HOST", Ct)).ShouldBeNull();      // not in OS, no active env
-        (await service.ResolveAsync("PATH", Ct)).ShouldNotBeNull();   // OS fallback
+        _ = (await service.ResolveAsync("PATH", Ct)).ShouldNotBeNull();   // OS fallback
     }
 
     [Fact]

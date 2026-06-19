@@ -1,6 +1,6 @@
-using System.Text.Json;
 using GrpCurl.Net.Studio.Services;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
+using System.Text.Json;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
 
@@ -24,7 +24,7 @@ public sealed class DescriptorSourceConfigTests
         var copy = config.Clone();
         copy.ProtoFiles.Add("b.proto");
 
-        config.ProtoFiles.ShouldHaveSingleItem(); // original untouched
+        _ = config.ProtoFiles.ShouldHaveSingleItem(); // original untouched
         copy.Mode.ShouldBe(DescriptorMode.Proto);
         copy.ImportPaths.ShouldBe(["/inc"]);
     }
@@ -43,7 +43,7 @@ public sealed class DescriptorSourceConfigTests
         clone.DescriptorSource.ProtosetPaths.ShouldBe(["x.protoset"]);
 
         clone.DescriptorSource.ProtosetPaths.Add("y.protoset");
-        connection.DescriptorSource.ProtosetPaths.ShouldHaveSingleItem(); // independent
+        _ = connection.DescriptorSource.ProtosetPaths.ShouldHaveSingleItem(); // independent
     }
 
     [Fact]
@@ -132,7 +132,7 @@ public sealed class DescriptorSourceConfigTests
         var restored = JsonSerializer.Deserialize(legacy, WorkspaceJsonContext.Default.WorkspaceModel)!;
         var source = restored.Connections.Single().DescriptorSource;
 
-        source.ShouldNotBeNull();
+        _ = source.ShouldNotBeNull();
         source.Mode.ShouldBe(DescriptorMode.Reflection);
         source.ProtosetPaths.ShouldBeEmpty();
     }

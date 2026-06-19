@@ -25,9 +25,9 @@ public sealed class ConnectionEditorFlowTests(StudioPlaintextServerFixture serve
 
         await editor.TestConnectionCommand.ExecuteAsync(null);
 
-        editor.LastTestResult.ShouldNotBeNull();
+        _ = editor.LastTestResult.ShouldNotBeNull();
         editor.LastTestResult!.Ok.ShouldBeTrue(editor.LastTestResult.Message);
-        editor.LastTestResult.ServiceCount.ShouldNotBeNull();
+        _ = editor.LastTestResult.ServiceCount.ShouldNotBeNull();
         editor.LastTestResult.ServiceCount!.Value.ShouldBeGreaterThanOrEqualTo(1);
 
         // The built connection is valid and ready to save.
@@ -47,7 +47,7 @@ public sealed class ConnectionEditorFlowTests(StudioPlaintextServerFixture serve
 
         await editor.TestConnectionCommand.ExecuteAsync(null);
 
-        editor.LastTestResult.ShouldNotBeNull();
+        _ = editor.LastTestResult.ShouldNotBeNull();
         editor.LastTestResult!.Ok.ShouldBeFalse();
     }
 }

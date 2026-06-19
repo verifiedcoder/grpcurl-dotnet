@@ -20,7 +20,7 @@ public sealed class PositionalArgumentGuardTests
                 PositionalArgumentGuard.RejectOptionLikeValues("list", OutputFormat.Text, ("address", "--bogus-flag")));
 
             ex.ExitCode.ShouldBe(2);
-            ex.Envelope.ShouldNotBeNull();
+            _ = ex.Envelope.ShouldNotBeNull();
             ex.Envelope.Category.ShouldBe(ErrorCategory.Usage);
             ex.Envelope.Message.ShouldContain("--bogus-flag");
             ex.Envelope.Message.ShouldContain("address");
@@ -58,7 +58,7 @@ public sealed class PositionalArgumentGuardTests
                     ("address", "localhost:9090"),
                     ("symbol", "--oops")));
 
-            ex.Envelope.ShouldNotBeNull();
+            _ = ex.Envelope.ShouldNotBeNull();
             ex.Envelope.Message.ShouldContain("symbol");
         }
         finally

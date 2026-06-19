@@ -1,7 +1,7 @@
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Collections.ObjectModel;
 
 namespace GrpCurl.Net.Studio.ViewModels;
 

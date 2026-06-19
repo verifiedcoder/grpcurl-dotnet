@@ -13,7 +13,7 @@ public sealed class SavedRequestSnippetTests : IDisposable
 {
     private readonly string _dir = Path.Combine(Path.GetTempPath(), "grpcn-snippet-" + Guid.NewGuid().ToString("N"));
 
-    private CancellationToken Ct => TestContext.Current.CancellationToken;
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     public SavedRequestSnippetTests() => Directory.CreateDirectory(_dir);
 
@@ -86,7 +86,7 @@ public sealed class SavedRequestSnippetTests : IDisposable
         var path = Path.Combine(_dir, "broken.json");
         await File.WriteAllTextAsync(path, "{ not json", Ct);
 
-        await Should.ThrowAsync<SavedRequestSnippetException>(() => io.ImportAsync(path, Ct));
+        _ = await Should.ThrowAsync<SavedRequestSnippetException>(() => io.ImportAsync(path, Ct));
     }
 
     // ── sidebar export (SavedRequestItemViewModel) ───────────────────────────
@@ -102,7 +102,7 @@ public sealed class SavedRequestSnippetTests : IDisposable
 
         await item.ExportCommand.ExecuteAsync(null);
 
-        snippetIO.LastExport.ShouldNotBeNull();
+        _ = snippetIO.LastExport.ShouldNotBeNull();
         snippetIO.LastExport!.Value.Path.ShouldBe("/out/hello.grpcnreq.json");
         snippetIO.LastExport.Value.Request.Name.ShouldBe("say hello");
         picker.LastSaveSuggestedName.ShouldBe("say hello.grpcnreq.json");

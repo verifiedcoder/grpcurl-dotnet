@@ -125,7 +125,7 @@ public sealed class SelectionResolver(
         }
         finally
         {
-            fragmentCycleGuard.Remove(fragmentName);
+            _ = fragmentCycleGuard.Remove(fragmentName);
         }
     }
 

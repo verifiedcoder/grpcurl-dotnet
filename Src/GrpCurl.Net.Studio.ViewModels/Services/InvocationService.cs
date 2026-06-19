@@ -1,11 +1,11 @@
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Threading.Channels;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using Grpc.Core;
 using Grpc.Net.Client;
 using GrpCurl.Net.Invocation;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Threading.Channels;
 
 namespace GrpCurl.Net.Studio.ViewModels.Services;
 
@@ -69,8 +69,7 @@ public sealed class InvocationService : IInvocationService
         // parked on a full-channel WriteAsync (ADR-013 backpressure / ADR-014 per-tab CTS).
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-        var producer = Task.Run(
-            () => ProduceAsync(invoker, method, requests, headers, deadline, events.Writer, clock, linked.Token));
+        var producer = Task.Run(() => ProduceAsync(invoker, method, requests, headers, deadline, events.Writer, clock, linked.Token), cancellationToken);
 
         try
         {
@@ -109,14 +108,14 @@ public sealed class InvocationService : IInvocationService
         try
         {
             await DispatchAsync(invoker, method, requests, headers, deadline, writer, clock, cancellationToken).ConfigureAwait(false);
-            writer.TryComplete();
+            _ = writer.TryComplete();
         }
         catch (Exception ex)
         {
             // Cancellation (and any unexpected fault) faults the channel so the consumer observes it
             // — mirroring unary, where cancellation propagates and the VM records it. Already-emitted
             // received events were drained before this point (cancel-preserves-received, FR-084).
-            writer.TryComplete(ex);
+            _ = writer.TryComplete(ex);
         }
     }
 

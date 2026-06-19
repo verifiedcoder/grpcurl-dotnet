@@ -1,10 +1,10 @@
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.Studio.ViewModels.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 
 namespace GrpCurl.Net.Studio.ViewModels.Panes;
 
@@ -176,7 +176,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         return candidate;
     }
 
-    public string Header => "Connections";
+    public static string Header => "Connections";
 
     /// <summary>
     ///     E3.1: rebuilds the connection list from the active workspace after it changes (open / new /
@@ -294,7 +294,7 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
             purgeHistory = false;
         }
 
-        Connections.Remove(item);
+        _ = Connections.Remove(item);
         await PersistAsync();
 
         if (purgeHistory && _history is not null)

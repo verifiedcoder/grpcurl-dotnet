@@ -1,3 +1,4 @@
+using static System.FormattableString;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using System.Globalization;
@@ -36,51 +37,51 @@ internal static class DynamicTextFormat
 
                 foreach (var (k, v) in map)
                 {
-                    sb.Append(pad).Append(field.Name).AppendLine(" {");
-                    sb.Append(pad).Append("  ").Append(keyField.Name).Append(": ");
+                    _ = sb.Append(pad).Append(field.Name).AppendLine(" {");
+                    _ = sb.Append(pad).Append("  ").Append(keyField.Name).Append(": ");
                     PrintScalar(sb, k, keyField);
-                    sb.AppendLine();
-                    sb.Append(pad).Append("  ").Append(valueField.Name).Append(": ");
+                    _ = sb.AppendLine();
+                    _ = sb.Append(pad).Append("  ").Append(valueField.Name).Append(": ");
                     PrintFieldValue(v, valueField, sb, indent + 1);
-                    sb.AppendLine();
-                    sb.Append(pad).AppendLine("}");
+                    _ = sb.AppendLine();
+                    _ = sb.Append(pad).AppendLine("}");
                 }
             }
             else if (field.IsRepeated && message.RepeatedFields.TryGetValue(field, out var list))
             {
                 foreach (var value in list)
                 {
-                    sb.Append(pad).Append(field.Name);
+                    _ = sb.Append(pad).Append(field.Name);
 
                     if (field.FieldType == FieldType.Message)
                     {
-                        sb.AppendLine(" {");
+                        _ = sb.AppendLine(" {");
                         Print((SimpleDynamicMessage)value!, sb, indent + 1);
-                        sb.Append(pad).AppendLine("}");
+                        _ = sb.Append(pad).AppendLine("}");
                     }
                     else
                     {
-                        sb.Append(": ");
+                        _ = sb.Append(": ");
                         PrintScalar(sb, value, field);
-                        sb.AppendLine();
+                        _ = sb.AppendLine();
                     }
                 }
             }
             else if (message.Fields.TryGetValue(field, out var value))
             {
-                sb.Append(pad).Append(field.Name);
+                _ = sb.Append(pad).Append(field.Name);
 
                 if (field.FieldType == FieldType.Message)
                 {
-                    sb.AppendLine(" {");
+                    _ = sb.AppendLine(" {");
                     Print((SimpleDynamicMessage)value!, sb, indent + 1);
-                    sb.Append(pad).AppendLine("}");
+                    _ = sb.Append(pad).AppendLine("}");
                 }
                 else
                 {
-                    sb.Append(": ");
+                    _ = sb.Append(": ");
                     PrintScalar(sb, value, field);
-                    sb.AppendLine();
+                    _ = sb.AppendLine();
                 }
             }
         }
@@ -90,9 +91,9 @@ internal static class DynamicTextFormat
     {
         if (field.FieldType == FieldType.Message)
         {
-            sb.AppendLine("{");
+            _ = sb.AppendLine("{");
             Print((SimpleDynamicMessage)value!, sb, indent + 1);
-            sb.Append(new string(' ', indent * 2)).Append('}');
+            _ = sb.Append(new string(' ', indent * 2)).Append('}');
         }
         else
         {
@@ -106,46 +107,46 @@ internal static class DynamicTextFormat
         {
             case FieldType.String:
 
-                sb.Append('"').Append(EscapeString((string)(value ?? ""))).Append('"');
+                _ = sb.Append('"').Append(EscapeString((string)(value ?? ""))).Append('"');
 
                 break;
 
             case FieldType.Bytes:
 
                 var bytes = value as ByteString ?? ByteString.Empty;
-                sb.Append('"').Append(EscapeBytes(bytes)).Append('"');
+                _ = sb.Append('"').Append(EscapeBytes(bytes)).Append('"');
 
                 break;
 
             case FieldType.Bool:
 
-                sb.Append((bool)(value ?? false) ? "true" : "false");
+                _ = sb.Append((bool)(value ?? false) ? "true" : "false");
 
                 break;
 
             case FieldType.Enum:
 
-                var enumNumber = Convert.ToInt32(value ?? 0);
+                var enumNumber = Convert.ToInt32(value ?? 0, CultureInfo.InvariantCulture);
                 var enumValue = field.EnumType?.FindValueByNumber(enumNumber);
-                sb.Append(enumValue?.Name ?? enumNumber.ToString(CultureInfo.InvariantCulture));
+                _ = sb.Append(enumValue?.Name ?? enumNumber.ToString(CultureInfo.InvariantCulture));
 
                 break;
 
             case FieldType.Float:
 
-                sb.Append(((float)(value ?? 0f)).ToString("R", CultureInfo.InvariantCulture));
+                _ = sb.Append(((float)(value ?? 0f)).ToString("R", CultureInfo.InvariantCulture));
 
                 break;
 
             case FieldType.Double:
 
-                sb.Append(((double)(value ?? 0d)).ToString("R", CultureInfo.InvariantCulture));
+                _ = sb.Append(((double)(value ?? 0d)).ToString("R", CultureInfo.InvariantCulture));
 
                 break;
 
             default:
 
-                sb.Append(Convert.ToString(value ?? 0, CultureInfo.InvariantCulture));
+                _ = sb.Append(Convert.ToString(value ?? 0, CultureInfo.InvariantCulture));
 
                 break;
         }
@@ -159,25 +160,25 @@ internal static class DynamicTextFormat
         {
             switch (c)
             {
-                case '\\': sb.Append("\\\\"); break;
+                case '\\': _ = sb.Append("\\\\"); break;
 
-                case '"': sb.Append("\\\""); break;
+                case '"': _ = sb.Append("\\\""); break;
 
-                case '\n': sb.Append("\\n"); break;
+                case '\n': _ = sb.Append("\\n"); break;
 
-                case '\r': sb.Append("\\r"); break;
+                case '\r': _ = sb.Append("\\r"); break;
 
-                case '\t': sb.Append("\\t"); break;
+                case '\t': _ = sb.Append("\\t"); break;
 
                 default:
 
                     if (c < 0x20 || c == 0x7f)
                     {
-                        sb.Append($"\\x{(int)c:x2}");
+                        _ = sb.Append(Invariant($"\\x{(int)c:x2}"));
                     }
                     else
                     {
-                        sb.Append(c);
+                        _ = sb.Append(c);
                     }
 
                     break;
@@ -195,11 +196,11 @@ internal static class DynamicTextFormat
         {
             if (b is >= 0x20 and < 0x7f && b != '\\' && b != '"')
             {
-                sb.Append((char)b);
+                _ = sb.Append((char)b);
             }
             else
             {
-                sb.Append($"\\x{b:x2}");
+                _ = sb.Append(Invariant($"\\x{b:x2}"));
             }
         }
 
@@ -229,7 +230,7 @@ internal static class DynamicTextFormat
                 return;
             }
 
-            lexer.Read();
+            _ = lexer.Read();
 
             var field = message.Descriptor.Fields.InDeclarationOrder()
                                .FirstOrDefault(f => string.Equals(f.Name, fieldName, StringComparison.Ordinal)
@@ -361,7 +362,7 @@ internal static class DynamicTextFormat
 
             if (firstHexDigit is { } highHex)
             {
-                sb.Append((char)ParseHexByte(highHex, ch));
+                _ = sb.Append((char)ParseHexByte(highHex, ch));
                 firstHexDigit = null;
 
                 continue;
@@ -375,7 +376,7 @@ internal static class DynamicTextFormat
                 }
                 else
                 {
-                    sb.Append(ch);
+                    _ = sb.Append(ch);
                 }
 
                 continue;
@@ -385,21 +386,21 @@ internal static class DynamicTextFormat
 
             switch (ch)
             {
-                case 'n': sb.Append('\n'); break;
+                case 'n': _ = sb.Append('\n'); break;
 
-                case 'r': sb.Append('\r'); break;
+                case 'r': _ = sb.Append('\r'); break;
 
-                case 't': sb.Append('\t'); break;
+                case 't': _ = sb.Append('\t'); break;
 
-                case '\\': sb.Append('\\'); break;
+                case '\\': _ = sb.Append('\\'); break;
 
-                case '"': sb.Append('"'); break;
+                case '"': _ = sb.Append('"'); break;
 
-                case '\'': sb.Append('\''); break;
+                case '\'': _ = sb.Append('\''); break;
 
                 case 'x': waitingForFirstHexDigit = true; break;
 
-                default: sb.Append(ch); break;
+                default: _ = sb.Append(ch); break;
             }
         }
 
@@ -597,7 +598,9 @@ internal static class DynamicTextFormat
 
             while (_pos < text.Length && !char.IsWhiteSpace(text[_pos]) &&
                    text[_pos] is not ':' and not '{' and not '}' and not ',' and not ';' and not '[' and not ']')
+            {
                 _pos++;
+            }
 
             return text[start.._pos];
         }
@@ -605,18 +608,23 @@ internal static class DynamicTextFormat
         private void SkipWhitespaceAndComments()
         {
             while (_pos < text.Length)
+            {
                 if (char.IsWhiteSpace(text[_pos]))
                 {
                     _pos++;
                 }
                 else if (text[_pos] == '#')
                 {
-                    while (_pos < text.Length && text[_pos] != '\n') _pos++;
+                    while (_pos < text.Length && text[_pos] != '\n')
+                    {
+                        _pos++;
+                    }
                 }
                 else
                 {
                     return;
                 }
+            }
         }
     }
 }

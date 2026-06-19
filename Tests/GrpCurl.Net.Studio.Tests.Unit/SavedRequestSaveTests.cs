@@ -221,7 +221,7 @@ public sealed class SavedRequestSaveTests
 
         await item.DeleteCommand.ExecuteAsync(null);
 
-        store.Requests.ShouldHaveSingleItem();
+        _ = store.Requests.ShouldHaveSingleItem();
     }
 
     [Fact]

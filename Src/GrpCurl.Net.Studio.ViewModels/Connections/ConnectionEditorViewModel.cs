@@ -1,5 +1,3 @@
-using System.Collections.ObjectModel;
-using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.DescriptorSources;
@@ -7,6 +5,8 @@ using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Panes;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Collections.ObjectModel;
+using System.Globalization;
 
 namespace GrpCurl.Net.Studio.ViewModels.Connections;
 
@@ -271,7 +271,7 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
         }
 
         var keepId = SelectedTlsProfile?.Profile?.Id;
-        await _dialogService!.ShowDialogAsync(
+        _ = await _dialogService!.ShowDialogAsync(
             new TlsProfileManagerViewModel(_profileStore!, _filePicker!, _dialogService!, _secretStore!));
 
         // The manager may have added, edited, or deleted profiles — re-sync the picker.
@@ -333,15 +333,15 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
     ];
 
     // FR-049: Core's defaults shown as the override watermarks (blank field = keep the default).
-    public string DefaultMaxProtosetFileBytes => DescriptorSourceOptions.DefaultMaxProtosetFileBytes.ToString(CultureInfo.InvariantCulture);
+    public static string DefaultMaxProtosetFileBytes => DescriptorSourceOptions.DefaultMaxProtosetFileBytes.ToString(CultureInfo.InvariantCulture);
 
-    public string DefaultMaxReflectionDescriptorBytes => DescriptorSourceOptions.DefaultMaxReflectionDescriptorBytes.ToString(CultureInfo.InvariantCulture);
+    public static string DefaultMaxReflectionDescriptorBytes => DescriptorSourceOptions.DefaultMaxReflectionDescriptorBytes.ToString(CultureInfo.InvariantCulture);
 
-    public string DefaultMaxFileDescriptors => DescriptorSourceOptions.DefaultMaxFileDescriptors.ToString(CultureInfo.InvariantCulture);
+    public static string DefaultMaxFileDescriptors => DescriptorSourceOptions.DefaultMaxFileDescriptors.ToString(CultureInfo.InvariantCulture);
 
-    public string DefaultMaxDependencyDepth => DescriptorSourceOptions.DefaultMaxDependencyDepth.ToString(CultureInfo.InvariantCulture);
+    public static string DefaultMaxDependencyDepth => DescriptorSourceOptions.DefaultMaxDependencyDepth.ToString(CultureInfo.InvariantCulture);
 
-    public string DefaultMaxSymbols => DescriptorSourceOptions.DefaultMaxSymbols.ToString(CultureInfo.InvariantCulture);
+    public static string DefaultMaxSymbols => DescriptorSourceOptions.DefaultMaxSymbols.ToString(CultureInfo.InvariantCulture);
 
     /// <summary>FR-049: the first invalid limit override (must be blank or a positive integer); null when all are valid.</summary>
     public string? LimitsError
@@ -428,9 +428,9 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
             return;
         }
 
-        ProtosetRows.Remove(row);
-        ProtoFileRows.Remove(row);
-        ImportPathRows.Remove(row);
+        _ = ProtosetRows.Remove(row);
+        _ = ProtoFileRows.Remove(row);
+        _ = ImportPathRows.Remove(row);
     }
 
     [RelayCommand]
@@ -471,7 +471,7 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
     {
         if (row is not null)
         {
-            ReflectionHeaders.Remove(row);
+            _ = ReflectionHeaders.Remove(row);
         }
     }
 

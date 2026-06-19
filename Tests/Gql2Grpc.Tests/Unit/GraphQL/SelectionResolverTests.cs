@@ -1,5 +1,5 @@
-using System.Text.Json.Nodes;
 using Gql2Grpc.GraphQL;
+using System.Text.Json.Nodes;
 
 namespace Gql2Grpc.Tests.Unit.GraphQL;
 
@@ -89,7 +89,7 @@ fragment F on Foo { id name }");
         var (resolver, op) = Prepare("query { a: foo a: bar }");
 
         // Assert
-        Should.Throw<ArgumentException>(() => resolver.Resolve(op.SelectionSet));
+        _ = Should.Throw<ArgumentException>(() => resolver.Resolve(op.SelectionSet));
     }
 
     private static (SelectionResolver Resolver, GraphQLOperation Op) Prepare(string source)

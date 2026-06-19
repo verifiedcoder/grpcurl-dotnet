@@ -1,8 +1,8 @@
+using GrpCurl.Net.Studio.ViewModels.Models.Diagnostics;
+using GrpCurl.Net.Studio.ViewModels.Services;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using GrpCurl.Net.Studio.ViewModels.Models.Diagnostics;
-using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.Services;
 
@@ -55,7 +55,7 @@ internal sealed class FileDiagnosticsLog : IDiagnosticsLog
         {
             try
             {
-                Directory.CreateDirectory(LogFolderPath);
+                _ = Directory.CreateDirectory(LogFolderPath);
                 File.AppendAllText(_path, Serialize(entry) + "\n", Utf8NoBom);
 
                 // Enforce periodically rather than on every line (logging is the hot path).

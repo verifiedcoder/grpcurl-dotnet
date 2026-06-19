@@ -1,5 +1,4 @@
 using GrpCurl.Net.Studio.TestSupport;
-using GrpCurl.Net.Studio.ViewModels.Explorer;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Descriptors;
 using GrpCurl.Net.Studio.ViewModels.Panes;
@@ -182,7 +181,7 @@ public sealed class ServiceExplorerViewModelTests
         descriptors.Result = DescriptorLoadResult.Success(SampleCatalog());
         selection.Set(Conn());
         vm.FilterText = "Admin";
-        vm.Services.ShouldHaveSingleItem();
+        _ = vm.Services.ShouldHaveSingleItem();
 
         vm.FilterText = string.Empty;
 
@@ -215,7 +214,7 @@ public sealed class ServiceExplorerViewModelTests
     [Fact]
     public void Selecting_a_connection_reloads_through_the_descriptor_service()
     {
-        var (vm, descriptors, selection, _, _) = Create();
+        var (_, descriptors, selection, _, _) = Create();
         descriptors.Result = DescriptorLoadResult.Success(SampleCatalog());
 
         var connection = Conn();
@@ -263,7 +262,7 @@ public sealed class ServiceExplorerViewModelTests
 
         vm.DescribeCommand.Execute("pkg.Greeter");
 
-        host.Last.ShouldNotBeNull();
+        _ = host.Last.ShouldNotBeNull();
         host.Last!.Value.Connection.ShouldBe(connection);
         host.Last.Value.Symbol.ShouldBe("pkg.Greeter");
         host.Last.Value.NewTab.ShouldBeFalse();
@@ -288,7 +287,7 @@ public sealed class ServiceExplorerViewModelTests
 
         vm.NewRequestCommand.Execute("pkg.Greeter/SayHello");
 
-        host.LastInvocation.ShouldNotBeNull();
+        _ = host.LastInvocation.ShouldNotBeNull();
         host.LastInvocation!.Value.Symbol.ShouldBe("pkg.Greeter/SayHello");
         host.LastInvocation.Value.Connection.ShouldBe(connection);
     }

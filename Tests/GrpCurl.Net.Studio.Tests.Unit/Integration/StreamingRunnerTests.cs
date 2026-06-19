@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using GrpCurl.Net.Studio.Services;
 using GrpCurl.Net.Studio.Tests.Unit.Fixtures;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
@@ -41,7 +40,7 @@ public sealed class StreamingRunnerTests(StudioPlaintextServerFixture server)
         await Task.CompletedTask;
     }
 
-    private async Task<List<StreamEventModel>> Collect(StreamRequestModel request, string json, CancellationToken ct)
+    private static async Task<List<StreamEventModel>> Collect(StreamRequestModel request, string json, CancellationToken ct)
     {
         var events = new List<StreamEventModel>();
         await foreach (var ev in Runner().InvokeStreamingAsync(request, Once(json), ct))
@@ -86,7 +85,7 @@ public sealed class StreamingRunnerTests(StudioPlaintextServerFixture server)
         var terminal = events[^1];
         terminal.Kind.ShouldBe(StreamEventKind.Status);
         terminal.Status!.Code.ShouldBe(5); // NotFound
-        terminal.Error.ShouldNotBeNull();
+        _ = terminal.Error.ShouldNotBeNull();
         terminal.Error!.StatusCode.ShouldBe(5);
     }
 
@@ -101,7 +100,7 @@ public sealed class StreamingRunnerTests(StudioPlaintextServerFixture server)
         events.ShouldNotContain(e => e.Kind == StreamEventKind.MessageReceived);
         events[^1].Kind.ShouldBe(StreamEventKind.Status);
         events[^1].Status!.Code.ShouldBe(7); // PermissionDenied
-        events[^1].Error.ShouldNotBeNull();
+        _ = events[^1].Error.ShouldNotBeNull();
     }
 
     [Fact]
@@ -116,7 +115,7 @@ public sealed class StreamingRunnerTests(StudioPlaintextServerFixture server)
             Once("""{ "response_parameters": [{ "size": 4, "interval_us": 60000 }, { "size": 4, "interval_us": 60000 }, { "size": 4, "interval_us": 60000 }, { "size": 4, "interval_us": 60000 }] }"""),
             cts.Token);
 
-        await Should.ThrowAsync<OperationCanceledException>(async () =>
+        _ = await Should.ThrowAsync<OperationCanceledException>(async () =>
         {
             await foreach (var ev in stream)
             {
@@ -173,7 +172,7 @@ public sealed class StreamingRunnerTests(StudioPlaintextServerFixture server)
             Request("testing.TestService/NoSuchStream"), "{}", TestContext.Current.CancellationToken);
 
         events.ShouldHaveSingleItem().Kind.ShouldBe(StreamEventKind.Status);
-        events[0].Error.ShouldNotBeNull();
+        _ = events[0].Error.ShouldNotBeNull();
         events[0].Error!.Headline.ShouldContain("not found");
     }
 }

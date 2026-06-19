@@ -122,6 +122,6 @@ internal static class ProtosetExporter
 
         fds.File.Add(fileProto);
 
-        processed.Add(fileDescriptor.Name);
+        _ = processed.Add(fileDescriptor.Name);
     }
 }

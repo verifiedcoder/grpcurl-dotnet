@@ -1,5 +1,5 @@
-using System.Text.Json;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
+using System.Text.Json;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
 

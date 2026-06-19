@@ -48,14 +48,14 @@ internal static class ConventionDefaults
             {
                 if (i > 0 && !char.IsUpper(input[i - 1]))
                 {
-                    builder.Append('_');
+                    _ = builder.Append('_');
                 }
 
-                builder.Append(char.ToLowerInvariant(c));
+                _ = builder.Append(char.ToLowerInvariant(c));
             }
             else
             {
-                builder.Append(c);
+                _ = builder.Append(c);
             }
         }
 

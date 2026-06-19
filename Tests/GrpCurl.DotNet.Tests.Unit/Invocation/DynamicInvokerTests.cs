@@ -22,8 +22,8 @@ public sealed class DynamicInvokerTests
         var message = DynamicInvoker.CreateMessageFromJson(descriptor, null);
 
         // Assert
-        message.ShouldNotBeNull();
-        message.ShouldBeOfType<SimpleDynamicMessage>();
+        _ = message.ShouldNotBeNull();
+        _ = message.ShouldBeOfType<SimpleDynamicMessage>();
 
         var dynamicMessage = (SimpleDynamicMessage)message;
 
@@ -42,8 +42,8 @@ public sealed class DynamicInvokerTests
         var message = DynamicInvoker.CreateMessageFromJson(descriptor, "{}");
 
         // Assert
-        message.ShouldNotBeNull();
-        message.ShouldBeOfType<SimpleDynamicMessage>();
+        _ = message.ShouldNotBeNull();
+        _ = message.ShouldBeOfType<SimpleDynamicMessage>();
 
         var dynamicMessage = (SimpleDynamicMessage)message;
 
@@ -80,7 +80,7 @@ public sealed class DynamicInvokerTests
         var message = DynamicInvoker.CreateMessageFromJson(descriptor, json);
 
         // Assert
-        message.ShouldNotBeNull();
+        _ = message.ShouldNotBeNull();
 
         var dynamicMessage = (SimpleDynamicMessage)message;
 
@@ -89,7 +89,7 @@ public sealed class DynamicInvokerTests
         // The known field should still be parsed
         var field = descriptor.FindFieldByName("response_size");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         dynamicMessage.Fields.ContainsKey(field).ShouldBeTrue();
         dynamicMessage.Fields[field].ShouldBe(42);
@@ -107,19 +107,19 @@ public sealed class DynamicInvokerTests
         var message = DynamicInvoker.CreateMessageFromJson(descriptor, json);
 
         // Assert
-        message.ShouldNotBeNull();
+        _ = message.ShouldNotBeNull();
 
         var dynamicMessage = (SimpleDynamicMessage)message;
 
         var sizeField = descriptor.FindFieldByName("response_size");
 
-        sizeField.ShouldNotBeNull();
+        _ = sizeField.ShouldNotBeNull();
 
         dynamicMessage.Fields[sizeField].ShouldBe(100);
 
         var usernameField = descriptor.FindFieldByName("fill_username");
 
-        usernameField.ShouldNotBeNull();
+        _ = usernameField.ShouldNotBeNull();
 
         dynamicMessage.Fields[usernameField].ShouldBe(true);
     }
@@ -209,7 +209,7 @@ public sealed class DynamicInvokerTests
         // Assert
         var field = descriptor.FindFieldByName("string_map");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.MapFields.ContainsKey(field).ShouldBeTrue();
 
@@ -237,7 +237,7 @@ public sealed class DynamicInvokerTests
         // Assert
         var field = descriptor.FindFieldByName("int_key_map");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.MapFields.ContainsKey(field).ShouldBeTrue();
 
@@ -267,7 +267,7 @@ public sealed class DynamicInvokerTests
         // Assert
         var field = descriptor.FindFieldByName("int_key_map");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.MapFields.ContainsKey(field).ShouldBeTrue();
 
@@ -292,7 +292,7 @@ public sealed class DynamicInvokerTests
         // Assert
         var field = descriptor.FindFieldByName("int_map");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.MapFields.ContainsKey(field).ShouldBeTrue();
 
@@ -320,7 +320,7 @@ public sealed class DynamicInvokerTests
         // Assert
         var field = descriptor.FindFieldByName("message_map");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.MapFields.ContainsKey(field).ShouldBeTrue();
 
@@ -332,7 +332,7 @@ public sealed class DynamicInvokerTests
         var payloadMessage = map["key1"].ShouldBeOfType<SimpleDynamicMessage>();
         var typeField = payloadMessage.Descriptor.FindFieldByName("type");
 
-        typeField.ShouldNotBeNull();
+        _ = typeField.ShouldNotBeNull();
 
         payloadMessage.Fields[typeField].ShouldBe(0); // COMPRESSABLE = 0
     }
@@ -351,7 +351,7 @@ public sealed class DynamicInvokerTests
         // Assert
         var field = descriptor.FindFieldByName("string_map");
 
-        field.ShouldNotBeNull();
+        _ = field.ShouldNotBeNull();
 
         message.MapFields.ContainsKey(field).ShouldBeTrue();
         message.MapFields[field].ShouldBeEmpty();
@@ -440,11 +440,11 @@ public sealed class DynamicInvokerTests
         result.ResponseHeaders.ShouldBeSameAs(headers);
         result.ResponseTrailers.ShouldBeSameAs(trailers);
 
-        result.ResponseHeaders.ShouldNotBeNull();
+        _ = result.ResponseHeaders.ShouldNotBeNull();
         result.ResponseHeaders[0].Key.ShouldBe("x-custom-header");
         result.ResponseHeaders[0].Value.ShouldBe("header-value");
 
-        result.ResponseTrailers.ShouldNotBeNull();
+        _ = result.ResponseTrailers.ShouldNotBeNull();
         result.ResponseTrailers[0].Key.ShouldBe("x-custom-trailer");
         result.ResponseTrailers[0].Value.ShouldBe("trailer-value");
     }
@@ -463,7 +463,7 @@ public sealed class DynamicInvokerTests
         };
 
         // Assert -- optional properties should default to null
-        result.Response.ShouldNotBeNull();
+        _ = result.Response.ShouldNotBeNull();
         result.ResponseHeaders.ShouldBeNull();
         result.ResponseTrailers.ShouldBeNull();
     }
@@ -489,7 +489,7 @@ public sealed class DynamicInvokerTests
         };
 
         // Assert
-        result.ResponseHeaders.ShouldNotBeNull();
+        _ = result.ResponseHeaders.ShouldNotBeNull();
         result.ResponseHeaders.Count.ShouldBe(3);
     }
 
@@ -507,7 +507,7 @@ public sealed class DynamicInvokerTests
         };
 
         // Assert -- Response is required and should never be null once constructed
-        result.Response.ShouldNotBeNull();
+        _ = result.Response.ShouldNotBeNull();
         result.Response.Descriptor.ShouldBe(descriptor);
     }
 
@@ -527,19 +527,19 @@ public sealed class DynamicInvokerTests
         var message = DynamicInvoker.CreateMessageFromJson(descriptor, json);
 
         // Assert
-        message.ShouldNotBeNull();
+        _ = message.ShouldNotBeNull();
 
         var dynamicMessage = (SimpleDynamicMessage)message;
 
         var stringMapField = descriptor.FindFieldByName("string_map");
 
-        stringMapField.ShouldNotBeNull();
+        _ = stringMapField.ShouldNotBeNull();
 
         dynamicMessage.MapFields[stringMapField]["a"].ShouldBe("1");
 
         var intKeyMapField = descriptor.FindFieldByName("int_key_map");
 
-        intKeyMapField.ShouldNotBeNull();
+        _ = intKeyMapField.ShouldNotBeNull();
 
         dynamicMessage.MapFields[intKeyMapField][5].ShouldBe("five");
     }

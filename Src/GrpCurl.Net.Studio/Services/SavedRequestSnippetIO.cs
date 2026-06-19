@@ -1,7 +1,7 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace GrpCurl.Net.Studio.Services;
 
@@ -24,7 +24,7 @@ internal sealed class SavedRequestSnippetIO : ISavedRequestSnippetIO
         var directory = Path.GetDirectoryName(path);
         if (!string.IsNullOrEmpty(directory))
         {
-            Directory.CreateDirectory(directory);
+            _ = Directory.CreateDirectory(directory);
         }
 
         await File.WriteAllTextAsync(path, json, cancellationToken).ConfigureAwait(false);

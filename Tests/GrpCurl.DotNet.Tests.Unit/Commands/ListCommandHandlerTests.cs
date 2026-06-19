@@ -1,5 +1,5 @@
-using System.CommandLine;
 using GrpCurl.Net.Commands;
+using System.CommandLine;
 
 namespace GrpCurl.Net.Tests.Unit.Commands;
 
@@ -14,7 +14,7 @@ public sealed class ListCommandHandlerTests
         var command = ListCommandHandler.Create();
 
         // Assert
-        command.ShouldNotBeNull();
+        _ = command.ShouldNotBeNull();
         command.Name.ShouldBe("list");
     }
 
@@ -55,7 +55,7 @@ public sealed class ListCommandHandlerTests
         // Assert
         var addressArg = command.Arguments.FirstOrDefault(a => a.Name == "address");
 
-        addressArg.ShouldNotBeNull();
+        _ = addressArg.ShouldNotBeNull();
     }
 
     [Fact]
@@ -69,7 +69,7 @@ public sealed class ListCommandHandlerTests
         // Assert
         var serviceArg = command.Arguments.FirstOrDefault(a => a.Name == "service");
 
-        serviceArg.ShouldNotBeNull();
+        _ = serviceArg.ShouldNotBeNull();
     }
 
     [Fact]
@@ -83,7 +83,7 @@ public sealed class ListCommandHandlerTests
         // Assert
         var addressArg = command.Arguments.FirstOrDefault(a => a.Name == "address");
 
-        addressArg.ShouldNotBeNull();
+        _ = addressArg.ShouldNotBeNull();
         addressArg.Arity.ShouldBe(ArgumentArity.ZeroOrOne);
     }
 
@@ -98,7 +98,7 @@ public sealed class ListCommandHandlerTests
         // Assert
         var serviceArg = command.Arguments.FirstOrDefault(a => a.Name == "service");
 
-        serviceArg.ShouldNotBeNull();
+        _ = serviceArg.ShouldNotBeNull();
         serviceArg.Arity.ShouldBe(ArgumentArity.ZeroOrOne);
     }
 

@@ -108,13 +108,13 @@ internal static partial class SecretRedactor
 
             if (replacement is null)
             {
-                builder?.Append(ch);
+                _ = (builder?.Append(ch));
 
                 continue;
             }
 
             builder ??= new StringBuilder(value[..i]);
-            builder.Append(replacement);
+            _ = builder.Append(replacement);
         }
 
         return builder?.ToString() ?? value;

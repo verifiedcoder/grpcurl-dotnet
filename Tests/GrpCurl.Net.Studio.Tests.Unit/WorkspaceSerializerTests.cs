@@ -1,7 +1,7 @@
-using System.Text;
 using GrpCurl.Net.Studio.Services;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Text;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
 

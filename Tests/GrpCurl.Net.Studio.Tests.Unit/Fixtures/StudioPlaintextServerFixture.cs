@@ -1,11 +1,11 @@
-using System.Net;
-using System.Net.Sockets;
 using GrpCurl.Net.TestServer.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Net;
+using System.Net.Sockets;
 
 namespace GrpCurl.Net.Studio.Tests.Unit.Fixtures;
 
@@ -34,16 +34,16 @@ public sealed class StudioPlaintextServerFixture : IAsyncLifetime
 
         var builder = WebApplication.CreateBuilder();
 
-        builder.Services.AddGrpc();
-        builder.Services.AddGrpcReflection();
-        builder.Logging.SetMinimumLevel(LogLevel.Warning);
+        _ = builder.Services.AddGrpc();
+        _ = builder.Services.AddGrpcReflection();
+        _ = builder.Logging.SetMinimumLevel(LogLevel.Warning);
 
-        builder.WebHost.ConfigureKestrel(options =>
+        _ = builder.WebHost.ConfigureKestrel(options =>
             options.ListenLocalhost(port, listenOptions => listenOptions.Protocols = HttpProtocols.Http2));
 
         _app = builder.Build();
-        _app.MapGrpcService<TestServiceImpl>();
-        _app.MapGrpcReflectionService();
+        _ = _app.MapGrpcService<TestServiceImpl>();
+        _ = _app.MapGrpcReflectionService();
 
         await _app.StartAsync();
     }

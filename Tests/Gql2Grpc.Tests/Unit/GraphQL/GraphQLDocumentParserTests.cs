@@ -62,7 +62,7 @@ query A { x }
 query B { y }");
 
         // Assert
-        Should.Throw<ArgumentException>(() => doc.SelectOperation(null));
+        _ = Should.Throw<ArgumentException>(() => doc.SelectOperation(null));
         doc.SelectOperation("A").Name.ShouldBe("A");
     }
 
@@ -74,7 +74,7 @@ query B { y }");
         // Assert
 
         // Act
-        Should.Throw<ArgumentException>(() => GraphQLDocumentParser.Parse(""));
+        _ = Should.Throw<ArgumentException>(() => GraphQLDocumentParser.Parse(""));
     }
 
     [Fact]
@@ -85,7 +85,7 @@ query B { y }");
         // Assert
 
         // Act
-        Should.Throw<ArgumentException>(() =>
+        _ = Should.Throw<ArgumentException>(() =>
             GraphQLDocumentParser.Parse("fragment X on T { id }"));
     }
 }

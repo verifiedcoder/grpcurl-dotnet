@@ -1,5 +1,3 @@
-using System.Collections.ObjectModel;
-using System.Runtime.CompilerServices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.Studio.ViewModels.Connections;
@@ -10,6 +8,8 @@ using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Panes;
 using GrpCurl.Net.Studio.ViewModels.Services;
 using GrpCurl.Net.Utilities;
+using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 
 namespace GrpCurl.Net.Studio.ViewModels.Documents;
 
@@ -20,7 +20,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 ///     marshalled back through <see cref="IUiDispatcher" />. On failure it surfaces the rich
 ///     <see cref="ErrorModel" /> (FR-090..099) with Retry / Copy-as-JSON / Open-help-link.
 /// </summary>
-public sealed partial class InvocationDocumentViewModel : DocumentViewModel
+public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDisposable
 {
     private readonly IInvocationRunner _runner;
     private readonly IDescriptorService _descriptors;
@@ -49,7 +49,6 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     private CancellationTokenSource? _elapsedCts;
     private DateTimeOffset _elapsedStart;
     private DateTimeOffset? _deadlineAt;
-    private readonly StreamDispatchPump _pump = new();
     private readonly Func<string, TextWriter> _writerFactory;
     private StreamCaptureWriter? _capture;
     private CancellationTokenSource? _validationCts;
@@ -389,7 +388,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
 
         if (clear)
         {
-            await _dispatcher.InvokeAsync(() => RequestJson = string.Empty);
+            _ = await _dispatcher.InvokeAsync(() => RequestJson = string.Empty);
         }
     }
 
@@ -540,7 +539,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
 
         try
         {
-            await _pump.RunAsync(
+            await StreamDispatchPump.RunAsync(
                 CaptureTap(_runner.InvokeStreamingAsync(BuildStreamRequest(), requestJson, cancellationToken), cancellationToken),
                 batch => _dispatcher.InvokeAsync(() => ApplyStreamBatch(batch)),
                 cancellationToken);
@@ -878,7 +877,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
                 "Open link",
                 $"Open this {parsed!.Scheme} link to {parsed.Host} in your browser?\n\n{url}"))
         {
-            await _launcher.LaunchUriAsync(url);
+            _ = await _launcher.LaunchUriAsync(url);
         }
     }
 
@@ -1012,7 +1011,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
     {
         if (row is not null)
         {
-            Headers.Remove(row);
+            _ = Headers.Remove(row);
         }
     }
 
@@ -1054,5 +1053,10 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel
         var trimmed = symbol.TrimEnd('.', '/');
         var last = trimmed.LastIndexOfAny(['.', '/']);
         return last >= 0 && last < trimmed.Length - 1 ? trimmed[(last + 1)..] : trimmed;
+    }
+
+    public void Dispose()
+    {
+        throw new NotImplementedException();
     }
 }

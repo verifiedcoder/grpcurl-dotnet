@@ -1,6 +1,6 @@
+using GrpCurl.Net.Studio.ViewModels.Services;
 using System.Diagnostics;
 using System.Runtime.Versioning;
-using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.Services.Secrets;
 

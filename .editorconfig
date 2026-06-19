@@ -31,69 +31,112 @@ indent_size = 4
 
 [*.cs]
 # ── C# language style (matches the existing codebase to avoid churn) ──────────────────────────────
-csharp_style_namespace_declarations = file_scoped:suggestion
-csharp_prefer_braces = true:suggestion
-csharp_style_var_for_built_in_types = true:suggestion
-csharp_style_var_when_type_is_apparent = true:suggestion
-csharp_style_var_elsewhere = true:suggestion
-csharp_style_expression_bodied_methods = when_on_single_line:suggestion
-csharp_style_expression_bodied_properties = true:suggestion
-csharp_style_expression_bodied_accessors = true:suggestion
-csharp_prefer_simple_using_statement = true:suggestion
-csharp_style_prefer_pattern_matching = true:suggestion
-csharp_style_prefer_switch_expression = true:suggestion
-csharp_style_prefer_primary_constructors = true:suggestion
-csharp_style_prefer_collection_expression = when_types_loosely_match:suggestion
+csharp_style_namespace_declarations = file_scoped:silent
+csharp_prefer_braces = true:silent
+csharp_style_var_for_built_in_types = true:silent
+csharp_style_var_when_type_is_apparent = true:silent
+csharp_style_var_elsewhere = true:silent
+csharp_style_expression_bodied_methods = when_on_single_line:silent
+csharp_style_expression_bodied_properties = true:silent
+csharp_style_expression_bodied_accessors = true:silent
+csharp_prefer_simple_using_statement = true:silent
+csharp_style_prefer_pattern_matching = true:silent
+csharp_style_prefer_switch_expression = true:silent
+csharp_style_prefer_primary_constructors = true:silent
+csharp_style_prefer_collection_expression = when_types_loosely_match:silent
 dotnet_style_namespace_match_folder = false
 dotnet_sort_system_directives_first = false
 
-# Naming: private fields are _camelCase (already pervasive); keep as a suggestion for now.
-dotnet_naming_rule.private_fields_underscore.severity = suggestion
-dotnet_naming_rule.private_fields_underscore.symbols = private_fields
-dotnet_naming_rule.private_fields_underscore.style = underscore_camel
-dotnet_naming_symbols.private_fields.applicable_kinds = field
-dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+# Naming (ENFORCED, mandatory per code-quality conformance):
+#   - private const / static-readonly fields → PascalCase (the .NET convention for constants);
+#   - all other private instance fields → _camelCase.
+# Const/static-readonly rules are declared first so they take precedence over the general field rule.
+dotnet_naming_rule.private_const_pascal.severity = warning
+dotnet_naming_rule.private_const_pascal.symbols = private_const_fields
+dotnet_naming_rule.private_const_pascal.style = pascal_case
+dotnet_naming_symbols.private_const_fields.applicable_kinds = field
+dotnet_naming_symbols.private_const_fields.applicable_accessibilities = private, internal
+dotnet_naming_symbols.private_const_fields.required_modifiers = const
+
+dotnet_naming_rule.private_static_readonly_pascal.severity = warning
+dotnet_naming_rule.private_static_readonly_pascal.symbols = private_static_readonly_fields
+dotnet_naming_rule.private_static_readonly_pascal.style = pascal_case
+dotnet_naming_symbols.private_static_readonly_fields.applicable_kinds = field
+dotnet_naming_symbols.private_static_readonly_fields.applicable_accessibilities = private, internal
+dotnet_naming_symbols.private_static_readonly_fields.required_modifiers = static, readonly
+
+dotnet_naming_rule.private_instance_underscore.severity = warning
+dotnet_naming_rule.private_instance_underscore.symbols = private_instance_fields
+dotnet_naming_rule.private_instance_underscore.style = underscore_camel
+dotnet_naming_symbols.private_instance_fields.applicable_kinds = field
+dotnet_naming_symbols.private_instance_fields.applicable_accessibilities = private
+
+dotnet_naming_style.pascal_case.capitalization = pascal_case
 dotnet_naming_style.underscore_camel.capitalization = camel_case
 dotnet_naming_style.underscore_camel.required_prefix = _
 
 # ── Analyzer severity governance ──────────────────────────────────────────────────────────────────
-# Default every analyzer diagnostic (IDE*, CA*, Sxxxx) to suggestion so the foundation builds clean.
-# Track C raises adopted rules to `warning` per category as their violations are fixed.
-dotnet_analyzer_diagnostic.severity = suggestion
+# Default EVERY analyzer diagnostic (IDE*, CA*, Sxxxx) to `none` so the build/IDE report ZERO messages
+# by default. The curated quality rules below are raised to `warning` (build-breaking under
+# TreatWarningsAsErrors) with all their violations conformed. Net effect: the VS "message" count is 0
+# and the build is the single source of truth — a regression in an enforced rule breaks it.
+#
+# AUDIT / replicate the full analyzer list at build time: temporarily set the next line to `warning`
+# and run:  dotnet build GrpCurl.Net.slnx -c Debug -p:TreatWarningsAsErrors=false 2>&1 | grep -oE "warning [A-Z0-9]+" | sort | uniq -c
+dotnet_analyzer_diagnostic.severity = none
 
-# ── Deliberately rejected rules (triaged out — kept off with rationale) ───────────────────────────
-# CA1859: "use concrete types for performance" — the codebase intentionally returns interfaces/
-# abstractions (IDescriptorSource, IReadOnlyList, etc.) for testability and decoupling.
-dotnet_diagnostic.CA1859.severity = none
-# IDE0007/IDE0008: `var` vs explicit type — the codebase consistently prefers `var`; the var_* prefs
-# above already encode that, so these would only add churn.
-dotnet_diagnostic.IDE0007.severity = none
-dotnet_diagnostic.IDE0008.severity = none
-# S1075: "URIs should not be hardcoded" — UpdateService intentionally embeds the project's own GitHub
-# releases URL (it is the product's home, not configuration). Pre-staged: inert until SonarAnalyzer lands.
-dotnet_diagnostic.S1075.severity = none
+# ── ENFORCED quality rules (warning; all violations conformed) ────────────────────────────────────
+# Correctness / API
+dotnet_diagnostic.CA2101.severity = warning   # P/Invoke string marshaling (security)
+dotnet_diagnostic.CA1305.severity = warning   # specify IFormatProvider (culture-correct formatting)
+dotnet_diagnostic.CA1310.severity = warning   # specify StringComparison (ordinal) for correctness
+dotnet_diagnostic.CA1001.severity = warning   # types owning disposable fields implement IDisposable
+dotnet_diagnostic.CA2016.severity = warning   # forward CancellationToken to cancelable callees
+dotnet_diagnostic.CA1806.severity = warning   # do not ignore method results / unused object creation
+# Cleanliness
+dotnet_diagnostic.IDE0058.severity = warning  # make discarded expression results explicit (_ =)
+dotnet_diagnostic.IDE0005.severity = warning  # remove unnecessary using directives
+dotnet_diagnostic.IDE0051.severity = warning  # remove unused private members
+dotnet_diagnostic.IDE0059.severity = warning  # remove unnecessary value assignments (dead stores)
+dotnet_diagnostic.IDE0011.severity = warning  # add braces to control-flow blocks
+dotnet_diagnostic.CA1822.severity = warning   # mark members static where no instance data is used
+# Modernization (already conformed in earlier C2/C3 work)
+dotnet_diagnostic.IDE0044.severity = warning  # make field readonly where never reassigned
+dotnet_diagnostic.IDE0330.severity = warning  # use System.Threading.Lock for lock objects (.NET 9)
+dotnet_diagnostic.IDE0270.severity = warning  # use null-coalescing throw (?? throw)
+dotnet_diagnostic.IDE0301.severity = warning  # use collection expression for Array.Empty<T>()
+dotnet_diagnostic.MVVMTK0042.severity = warning # [ObservableProperty] on a partial property, not a field
 
-# ── Adopted & ENFORCED rules (C2: messages.csv safe modernizations — all violations fixed) ─────────
-dotnet_diagnostic.CA2101.severity = warning  # specify marshaling for P/Invoke string args (security)
-dotnet_diagnostic.IDE0044.severity = warning # make field readonly where never reassigned
-dotnet_diagnostic.IDE0330.severity = warning # use System.Threading.Lock for lock objects (.NET 9)
-dotnet_diagnostic.IDE0270.severity = warning # use null-coalescing throw (?? throw)
-dotnet_diagnostic.IDE0301.severity = warning # use collection expression for Array.Empty<T>()
-# IDE0017 (object init), IDE0028 (collection init), IDE0042 (deconstruction) and IDE0059 (dead store)
-# stay at suggestion — remaining occurrences are test-code style nits. IDE0305 (collection expression
-# for fluent .ToList()/.ToArray()) has ~114 occurrences best swept with tooling; deferred.
-
-# C3: every [ObservableProperty] field migrated to a C# 13 partial property — enforce the form so a new
-# [ObservableProperty]-on-field regression is flagged at build (CommunityToolkit MVVM analyzer).
-dotnet_diagnostic.MVVMTK0042.severity = warning # use [ObservableProperty] on a partial property, not a field
+# ── Deliberate rejections (left at the `none` default; notable ones recorded) ─────────────────────
+# IDE0055: the codebase uses intentional column alignment (aligned `=>`, assignments) for readability;
+#   the whitespace formatter would strip it, so this is rejected by design.
+# IDE0046/IDE0045 (if→?:), IDE0021/IDE0022/IDE0061 (block vs expression body), IDE0072/IDE0010
+#   (populate switch — switches use an intentional default arm), IDE0290 (primary ctors),
+#   IDE0001/IDE0002 (name simplification), IDE0200 (lambda→method group), IDE0032 (auto property),
+#   IDE0042/IDE0078/IDE0048/IDE0066/IDE0390, JSON002 (intentional JSON literals): style preferences.
+# CA1859 (concrete-return perf), CA1711 (suffix conventions), CA1716 (keyword-like names),
+#   CA1068 (CT param order on internal APIs), CA5359 (the deliberate --insecure validation path),
+#   SYSLIB1054 (DllImport works as-is): rejected with cause.
+# IDE0007/IDE0008 (`var`): the codebase consistently prefers `var`.
+# IDE0370 ("unnecessary suppression"): its verdict on the `!` null-forgiving operator is nullable-flow-
+#   dependent and was inconsistent across build environments (clean locally, flagged in CI). The remaining
+#   `!` operators (e.g. JsonElement.GetString()!, FindFieldByNumber(n)!) are intentional and necessary, so
+#   the rule is rejected. (The genuinely-redundant suppressions were already removed during conformance.)
+dotnet_diagnostic.IDE0370.severity = none
+# SonarAnalyzer Sxxxx: adopted/suppressed per SONARANALYZER-SETUP.md on the analyzer-enablement work;
+#   the `none` default keeps them out of the message count here (S2325 make-static is covered by CA1822).
 
 [Tests/**/*.cs]
 # Test projects: don't gate on doc/style rules that target product code.
 dotnet_diagnostic.S2699.severity = suggestion  # "tests should include assertions" — many are render/smoke harnesses
 dotnet_diagnostic.CA1707.severity = none        # underscores in test method names are the convention here
+dotnet_diagnostic.CA1305.severity = none        # culture in test assertions is not a product concern
+dotnet_diagnostic.CA1310.severity = none        # ditto for ordinal-vs-culture string ops in tests
 
 [Src/*/obj/**/*.cs]
 generated_code = true
 
 [**/*.{Designer,g,g.i}.cs]
 generated_code = true
+
+[*.cs]

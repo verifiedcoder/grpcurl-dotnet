@@ -50,7 +50,7 @@ public sealed class InvokeStdinTtyTests(GrpcTestFixture fixture)
                     output: OutputFormat.Json));
 
             ex.ExitCode.ShouldBe(2);
-            ex.Envelope.ShouldNotBeNull();
+            _ = ex.Envelope.ShouldNotBeNull();
             ex.Envelope.Category.ShouldBe(ErrorCategory.Usage);
             ex.Envelope.Message.ShouldContain("--data @ requires stdin to be redirected");
         }

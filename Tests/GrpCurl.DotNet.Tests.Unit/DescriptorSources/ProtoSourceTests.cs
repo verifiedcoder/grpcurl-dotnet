@@ -78,7 +78,7 @@ public sealed class ProtoSourceTests
         var symbol = await source.FindSymbolAsync("testing.TestService", TestContext.Current.CancellationToken);
 
         // Assert
-        symbol.ShouldBeOfType<ServiceDescriptor>();
+        _ = symbol.ShouldBeOfType<ServiceDescriptor>();
         ((ServiceDescriptor)symbol).FullName.ShouldBe("testing.TestService");
     }
 
@@ -96,7 +96,7 @@ public sealed class ProtoSourceTests
         // Assert
         var ex = await Should.ThrowAsync<InvalidOperationException>(async () =>
         {
-            await ProtoSource.LoadFromProtoFilesAsync(
+            _ = await ProtoSource.LoadFromProtoFilesAsync(
                 ["does-not-exist.proto"],
                 [Environment.CurrentDirectory],
                 TestContext.Current.CancellationToken);
@@ -113,9 +113,9 @@ public sealed class ProtoSourceTests
         // Assert
 
         // Act
-        await Should.ThrowAsync<ArgumentException>(async () =>
+        _ = await Should.ThrowAsync<ArgumentException>(async () =>
         {
-            await ProtoSource.LoadFromProtoFilesAsync(
+            _ = await ProtoSource.LoadFromProtoFilesAsync(
                 [],
                 [],
                 TestContext.Current.CancellationToken);

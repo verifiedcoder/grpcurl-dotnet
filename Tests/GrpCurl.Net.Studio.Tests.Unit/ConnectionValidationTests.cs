@@ -25,7 +25,7 @@ public sealed class ConnectionValidationTests
     {
         var error = ConnectionValidation.ValidateAddress(address);
 
-        error.ShouldNotBeNull();
+        _ = error.ShouldNotBeNull();
         error.ShouldContain(expectedFragment);
     }
 
@@ -36,7 +36,7 @@ public sealed class ConnectionValidationTests
 
         if (OperatingSystem.IsWindows())
         {
-            result.ShouldNotBeNull();
+            _ = result.ShouldNotBeNull();
             result.ShouldContain("Windows");
         }
         else

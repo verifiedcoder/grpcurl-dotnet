@@ -1,6 +1,6 @@
-using System.Text.Json.Nodes;
 using Gql2Grpc.GraphQL;
 using Gql2Grpc.Translation;
+using System.Text.Json.Nodes;
 
 namespace Gql2Grpc.Tests.Unit.Translation;
 

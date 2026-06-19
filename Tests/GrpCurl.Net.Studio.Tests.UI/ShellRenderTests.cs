@@ -4,8 +4,8 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using GrpCurl.Net.Studio.Services;
-using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.Tests.UI.Headless;
+using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels;
 using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Panes;
@@ -39,11 +39,11 @@ public sealed class ShellRenderTests(HeadlessSessionFixture fixture) : HeadlessT
         window.Title.ShouldNotBeNullOrWhiteSpace();
         window.IsVisible.ShouldBeTrue();
 
-        window.FindControl<Control>("SidebarZone").ShouldNotBeNull();
-        window.FindControl<Control>("CentreZone").ShouldNotBeNull();
-        window.FindControl<Control>("InspectorZone").ShouldNotBeNull();
-        window.FindControl<Control>("ConsoleZone").ShouldNotBeNull();
-        window.FindControl<Control>("Welcome").ShouldNotBeNull();
+        _ = window.FindControl<Control>("SidebarZone").ShouldNotBeNull();
+        _ = window.FindControl<Control>("CentreZone").ShouldNotBeNull();
+        _ = window.FindControl<Control>("InspectorZone").ShouldNotBeNull();
+        _ = window.FindControl<Control>("ConsoleZone").ShouldNotBeNull();
+        _ = window.FindControl<Control>("Welcome").ShouldNotBeNull();
     });
 
     [Fact]

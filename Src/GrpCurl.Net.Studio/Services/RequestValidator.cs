@@ -1,9 +1,9 @@
-using System.Text.Json;
 using Google.Protobuf.Reflection;
 using GrpCurl.Net.DescriptorSources;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Text.Json;
 
 namespace GrpCurl.Net.Studio.Services;
 
@@ -13,7 +13,7 @@ namespace GrpCurl.Net.Studio.Services;
 ///     the channel) and probes <c>CreateMessageFromJson</c>. JSON syntax errors surface a line/column;
 ///     semantic errors surface a message only. Advisory: an unresolvable schema yields no problems.
 /// </summary>
-internal sealed class RequestValidator(IInvocationService invocation, ITlsProfileResolver? tlsResolver = null) : IRequestValidator
+internal sealed class RequestValidator(IInvocationService invocation, ITlsProfileResolver? tlsResolver = null) : IRequestValidator, IDisposable
 {
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly Dictionary<string, MessageDescriptor> _inputCache = [];
@@ -38,7 +38,7 @@ internal sealed class RequestValidator(IInvocationService invocation, ITlsProfil
 
         try
         {
-            invocation.CreateMessageFromJson(input, requestJson, allowUnknownFields);
+            _ = invocation.CreateMessageFromJson(input, requestJson, allowUnknownFields);
             return [];
         }
         catch (OperationCanceledException)
@@ -92,7 +92,7 @@ internal sealed class RequestValidator(IInvocationService invocation, ITlsProfil
         }
         finally
         {
-            _gate.Release();
+            _ = _gate.Release();
         }
     }
 
@@ -104,5 +104,10 @@ internal sealed class RequestValidator(IInvocationService invocation, ITlsProfil
     {
         var marker = message.IndexOf(" LineNumber:", StringComparison.Ordinal);
         return marker >= 0 ? message[..marker] : message;
+    }
+
+    public void Dispose()
+    {
+        throw new NotImplementedException();
     }
 }

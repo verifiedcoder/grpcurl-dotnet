@@ -55,7 +55,7 @@ public sealed class MTlsProfileTests(StudioMTlsServerFixture server)
         var result = await registry.TestConnectionAsync(connection, TestContext.Current.CancellationToken);
 
         result.Ok.ShouldBeTrue(result.Message);
-        result.ServiceCount.ShouldNotBeNull();
+        _ = result.ServiceCount.ShouldNotBeNull();
         result.ServiceCount!.Value.ShouldBeGreaterThan(0);
     }
 

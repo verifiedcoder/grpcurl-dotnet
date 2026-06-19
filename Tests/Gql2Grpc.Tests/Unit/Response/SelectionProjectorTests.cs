@@ -1,7 +1,7 @@
-using System.Text.Json.Nodes;
 using Gql2Grpc.Configuration;
 using Gql2Grpc.GraphQL;
 using Gql2Grpc.Response;
+using System.Text.Json.Nodes;
 
 namespace Gql2Grpc.Tests.Unit.Response;
 
@@ -101,7 +101,7 @@ public sealed class SelectionProjectorTests
         var errors = new List<GraphQLError>();
 
         // Act
-        strict.Project(source, selections, null, [], errors);
+        _ = strict.Project(source, selections, null, [], errors);
 
         // Assert
         errors.Count.ShouldBe(1);

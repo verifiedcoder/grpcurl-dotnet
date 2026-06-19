@@ -30,7 +30,7 @@ public sealed class ImportSecretsDialogViewModelTests
 
         vm.ApplyCommand.Execute(null);
 
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
         result!.Count.ShouldBe(1);
         result["ref-1"].ShouldBe("p@ss");
     }

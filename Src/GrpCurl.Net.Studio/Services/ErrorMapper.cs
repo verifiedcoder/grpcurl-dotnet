@@ -1,6 +1,3 @@
-using System.Text.Encodings.Web;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Google.Protobuf;
 using Google.Rpc;
 using Grpc.Core;
@@ -8,6 +5,9 @@ using GrpCurl.Net.Exceptions;
 using GrpCurl.Net.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace GrpCurl.Net.Studio.Services;
 

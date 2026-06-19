@@ -21,7 +21,7 @@ public sealed class RichStatusDecoderTests
         var decoded = RichStatusDecoder.TryDecodeBytes(status.ToByteArray());
 
         // Assert
-        decoded.ShouldNotBeNull();
+        _ = decoded.ShouldNotBeNull();
         decoded.Code.ShouldBe(5);
         decoded.Message.ShouldBe("not found");
         decoded.Details.ShouldBeEmpty();
@@ -50,14 +50,14 @@ public sealed class RichStatusDecoderTests
         var decoded = RichStatusDecoder.TryDecodeBytes(status.ToByteArray());
 
         // Assert
-        decoded.ShouldNotBeNull();
+        _ = decoded.ShouldNotBeNull();
         decoded.Details.Count.ShouldBe(1);
 
         var detail = decoded.Details[0];
 
         detail.TypeUrl.ShouldContain("ErrorInfo");
-        detail.ParsedMessage.ShouldNotBeNull();
-        detail.ParsedMessage.ShouldBeOfType<ErrorInfo>();
+        _ = detail.ParsedMessage.ShouldNotBeNull();
+        _ = detail.ParsedMessage.ShouldBeOfType<ErrorInfo>();
         ((ErrorInfo)detail.ParsedMessage!).Reason.ShouldBe("QUOTA_EXCEEDED");
     }
 
@@ -82,7 +82,7 @@ public sealed class RichStatusDecoderTests
         var decoded = RichStatusDecoder.TryDecodeBytes(status.ToByteArray());
 
         // Assert
-        decoded.ShouldNotBeNull();
+        _ = decoded.ShouldNotBeNull();
         decoded.Details.Count.ShouldBe(1);
         decoded.Details[0].ParsedMessage.ShouldBeNull();
         decoded.Details[0].RawValue.ShouldBe([1, 2, 3]);

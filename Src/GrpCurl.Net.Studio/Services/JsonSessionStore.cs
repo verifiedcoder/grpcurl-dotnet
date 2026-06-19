@@ -1,6 +1,6 @@
-using System.Text.Json;
 using GrpCurl.Net.Studio.ViewModels.Models.Session;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Text.Json;
 
 namespace GrpCurl.Net.Studio.Services;
 
@@ -51,7 +51,7 @@ internal sealed class JsonSessionStore : ISessionStore
 
     public async Task SaveAsync(SessionState state, CancellationToken cancellationToken = default)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
+        _ = Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
 
         var tempPath = _path + ".tmp";
 

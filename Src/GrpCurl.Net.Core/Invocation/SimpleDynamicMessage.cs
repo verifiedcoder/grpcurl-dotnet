@@ -169,12 +169,12 @@ internal class SimpleDynamicMessage : IMessage
             FieldType.Int32 or FieldType.SInt32 or FieldType.SFixed32 => element.GetInt32(),
             FieldType.Int64 or FieldType.SInt64 or FieldType.SFixed64 =>
                 element.ValueKind == JsonValueKind.String
-                    ? long.Parse(element.GetString()!)
+                    ? long.Parse(element.GetString()!, CultureInfo.InvariantCulture)
                     : element.GetInt64(),
             FieldType.UInt32 or FieldType.Fixed32 => element.GetUInt32(),
             FieldType.UInt64 or FieldType.Fixed64 =>
                 element.ValueKind == JsonValueKind.String
-                    ? ulong.Parse(element.GetString()!)
+                    ? ulong.Parse(element.GetString()!, CultureInfo.InvariantCulture)
                     : element.GetUInt64(),
             FieldType.Bool => element.GetBoolean(),
             FieldType.Float => element.ValueKind == JsonValueKind.String
@@ -446,26 +446,26 @@ internal class SimpleDynamicMessage : IMessage
             ? bs
             : ByteString.Empty;
 
-        sb.Append('{');
+        _ = sb.Append('{');
 
         if (string.IsNullOrEmpty(typeUrl))
         {
-            sb.Append('}');
+            _ = sb.Append('}');
 
             return;
         }
 
-        sb.Append("\"@type\":\"").Append(JsonEncodedText.Encode(typeUrl)).Append('"');
+        _ = sb.Append("\"@type\":\"").Append(JsonEncodedText.Encode(typeUrl)).Append('"');
 
         var embeddedDescriptor = AnyTypeResolver.ForContext(Descriptor).Resolve(typeUrl);
 
         if (embeddedDescriptor is null)
         {
             // Unresolvable: preserve the payload verbatim as base64 with an explicit marker.
-            sb.Append(",\"@error\":\"type not found\",\"value\":\"")
+            _ = sb.Append(",\"@error\":\"type not found\",\"value\":\"")
               .Append(Convert.ToBase64String(valueBytes.ToByteArray()))
               .Append('"');
-            sb.Append('}');
+            _ = sb.Append('}');
 
             return;
         }
@@ -479,7 +479,7 @@ internal class SimpleDynamicMessage : IMessage
 
         if (SpecialJsonWktNames.Contains(embeddedDescriptor.FullName))
         {
-            sb.Append(",\"value\":");
+            _ = sb.Append(",\"value\":");
             WriteSpecialWktInline(sb, embedded, embeddedDescriptor, includeDefaults);
         }
         else
@@ -489,11 +489,11 @@ internal class SimpleDynamicMessage : IMessage
             // Inline the embedded fields after @type; ToJson always returns a JSON object.
             if (inner.Length > 2 && inner[0] == '{' && inner[^1] == '}')
             {
-                sb.Append(',').Append(inner[1..^1]);
+                _ = sb.Append(',').Append(inner[1..^1]);
             }
         }
 
-        sb.Append('}');
+        _ = sb.Append('}');
     }
 
     private void WriteSpecialWktInline(StringBuilder sb, SimpleDynamicMessage embedded, MessageDescriptor descriptor, bool includeDefaults)
@@ -561,10 +561,10 @@ internal class SimpleDynamicMessage : IMessage
         return keyField.FieldType switch
         {
             FieldType.String                                          => keyString,
-            FieldType.Int32 or FieldType.SInt32 or FieldType.SFixed32 => int.Parse(keyString),
-            FieldType.Int64 or FieldType.SInt64 or FieldType.SFixed64 => long.Parse(keyString),
-            FieldType.UInt32 or FieldType.Fixed32                     => uint.Parse(keyString),
-            FieldType.UInt64 or FieldType.Fixed64                     => ulong.Parse(keyString),
+            FieldType.Int32 or FieldType.SInt32 or FieldType.SFixed32 => int.Parse(keyString, CultureInfo.InvariantCulture),
+            FieldType.Int64 or FieldType.SInt64 or FieldType.SFixed64 => long.Parse(keyString, CultureInfo.InvariantCulture),
+            FieldType.UInt32 or FieldType.Fixed32                     => uint.Parse(keyString, CultureInfo.InvariantCulture),
+            FieldType.UInt64 or FieldType.Fixed64                     => ulong.Parse(keyString, CultureInfo.InvariantCulture),
             FieldType.Bool                                            => bool.Parse(keyString),
             _                                                         => keyString
         };
@@ -627,15 +627,15 @@ internal class SimpleDynamicMessage : IMessage
 
             if (!first)
             {
-                sb.Append(',');
+                _ = sb.Append(',');
             }
 
             first = false;
 
             // Write field name (use proto field name for snake_case, matching Go grpcurl)
-            sb.Append('"');
-            sb.Append(field.Name);
-            sb.Append("\":");
+            _ = sb.Append('"');
+            _ = sb.Append(field.Name);
+            _ = sb.Append("\":");
 
             // Write field value
             WriteJsonValue(sb, field, value, includeDefaults);
@@ -651,28 +651,28 @@ internal class SimpleDynamicMessage : IMessage
 
             if (!first)
             {
-                sb.Append(',');
+                _ = sb.Append(',');
             }
 
             first = false;
 
             // Write field name (use proto field name for snake_case, matching Go grpcurl)
-            sb.Append('"');
-            sb.Append(field.Name);
-            sb.Append("\":[");
+            _ = sb.Append('"');
+            _ = sb.Append(field.Name);
+            _ = sb.Append("\":[");
 
             // Write array elements
             for (var i = 0; i < values.Count; i++)
             {
                 if (i > 0)
                 {
-                    sb.Append(',');
+                    _ = sb.Append(',');
                 }
 
                 WriteJsonValue(sb, field, values[i], includeDefaults);
             }
 
-            sb.Append(']');
+            _ = sb.Append(']');
         }
 
         // Write map fields as JSON objects
@@ -685,15 +685,15 @@ internal class SimpleDynamicMessage : IMessage
 
             if (!first)
             {
-                sb.Append(',');
+                _ = sb.Append(',');
             }
 
             first = false;
 
             // Write field name (use proto field name for snake_case, matching Go grpcurl)
-            sb.Append('"');
-            sb.Append(field.Name);
-            sb.Append("\":{");
+            _ = sb.Append('"');
+            _ = sb.Append(field.Name);
+            _ = sb.Append("\":{");
 
             // Get value field descriptor (key field not needed as FormatMapKey handles all valid key types)
             var mapDescriptor = field.MessageType;
@@ -705,15 +705,15 @@ internal class SimpleDynamicMessage : IMessage
             {
                 if (!firstEntry)
                 {
-                    sb.Append(',');
+                    _ = sb.Append(',');
                 }
 
                 firstEntry = false;
 
                 // Write key as string (JSON object keys are always strings)
-                sb.Append('"');
-                sb.Append(FormatMapKey(key));
-                sb.Append("\":");
+                _ = sb.Append('"');
+                _ = sb.Append(FormatMapKey(key));
+                _ = sb.Append("\":");
 
                 // Write value
                 if (valueField is not null)
@@ -722,7 +722,7 @@ internal class SimpleDynamicMessage : IMessage
                 }
             }
 
-            sb.Append('}');
+            _ = sb.Append('}');
         }
 
         // Emit default values for fields not already written
@@ -738,22 +738,22 @@ internal class SimpleDynamicMessage : IMessage
 
                 if (!first)
                 {
-                    sb.Append(',');
+                    _ = sb.Append(',');
                 }
 
                 first = false;
 
-                sb.Append('"');
-                sb.Append(field.Name);
-                sb.Append("\":");
+                _ = sb.Append('"');
+                _ = sb.Append(field.Name);
+                _ = sb.Append("\":");
 
                 if (field.IsMap)
                 {
-                    sb.Append("{}");
+                    _ = sb.Append("{}");
                 }
                 else if (field.IsRepeated)
                 {
-                    sb.Append("[]");
+                    _ = sb.Append("[]");
                 }
                 else
                 {
@@ -762,7 +762,7 @@ internal class SimpleDynamicMessage : IMessage
             }
         }
 
-        sb.Append('}');
+        _ = sb.Append('}');
 
         return sb.ToString();
     }
@@ -773,13 +773,13 @@ internal class SimpleDynamicMessage : IMessage
         {
             case FieldType.String:
 
-                sb.Append("\"\"");
+                _ = sb.Append("\"\"");
 
                 break;
 
             case FieldType.Bool:
 
-                sb.Append("false");
+                _ = sb.Append("false");
 
                 break;
 
@@ -791,7 +791,7 @@ internal class SimpleDynamicMessage : IMessage
             case FieldType.Float:
             case FieldType.Double:
 
-                sb.Append('0');
+                _ = sb.Append('0');
 
                 break;
 
@@ -802,13 +802,13 @@ internal class SimpleDynamicMessage : IMessage
             case FieldType.UInt64:
             case FieldType.Fixed64:
 
-                sb.Append("\"0\"");
+                _ = sb.Append("\"0\"");
 
                 break;
 
             case FieldType.Bytes:
 
-                sb.Append("\"\"");
+                _ = sb.Append("\"\"");
 
                 break;
 
@@ -818,13 +818,13 @@ internal class SimpleDynamicMessage : IMessage
 
                 if (enumValue is not null)
                 {
-                    sb.Append('"');
-                    sb.Append(enumValue.Name);
-                    sb.Append('"');
+                    _ = sb.Append('"');
+                    _ = sb.Append(enumValue.Name);
+                    _ = sb.Append('"');
                 }
                 else
                 {
-                    sb.Append('0');
+                    _ = sb.Append('0');
                 }
 
                 break;
@@ -833,13 +833,13 @@ internal class SimpleDynamicMessage : IMessage
             case FieldType.Message:
             case FieldType.Group:
 
-                sb.Append("null");
+                _ = sb.Append("null");
 
                 break;
 
             default:
 
-                sb.Append("null");
+                _ = sb.Append("null");
 
                 break;
         }
@@ -858,7 +858,7 @@ internal class SimpleDynamicMessage : IMessage
             return;
         }
 
-        sb.Append(value.ToString("G", CultureInfo.InvariantCulture));
+        _ = sb.Append(value.ToString("G", CultureInfo.InvariantCulture));
     }
 
     private static void AppendFloatingPoint(StringBuilder sb, double value)
@@ -868,22 +868,22 @@ internal class SimpleDynamicMessage : IMessage
             return;
         }
 
-        sb.Append(value.ToString("G", CultureInfo.InvariantCulture));
+        _ = sb.Append(value.ToString("G", CultureInfo.InvariantCulture));
     }
 
     private static bool TryAppendNonFinite(StringBuilder sb, bool isNaN, bool isPositiveInfinity, bool isNegativeInfinity)
     {
         if (isNaN)
         {
-            sb.Append("\"NaN\"");
+            _ = sb.Append("\"NaN\"");
         }
         else if (isPositiveInfinity)
         {
-            sb.Append("\"Infinity\"");
+            _ = sb.Append("\"Infinity\"");
         }
         else if (isNegativeInfinity)
         {
-            sb.Append("\"-Infinity\"");
+            _ = sb.Append("\"-Infinity\"");
         }
         else
         {
@@ -897,7 +897,7 @@ internal class SimpleDynamicMessage : IMessage
     {
         if (value is null)
         {
-            sb.Append("null");
+            _ = sb.Append("null");
 
             return;
         }
@@ -906,9 +906,9 @@ internal class SimpleDynamicMessage : IMessage
         {
             case FieldType.String:
 
-                sb.Append('"');
-                sb.Append(JsonEncodedText.Encode((string)value).ToString());
-                sb.Append('"');
+                _ = sb.Append('"');
+                _ = sb.Append(JsonEncodedText.Encode((string)value).ToString());
+                _ = sb.Append('"');
 
                 break;
 
@@ -916,7 +916,7 @@ internal class SimpleDynamicMessage : IMessage
             case FieldType.SInt32:
             case FieldType.SFixed32:
 
-                sb.Append((int)value);
+                _ = sb.Append((int)value);
 
                 break;
 
@@ -924,31 +924,31 @@ internal class SimpleDynamicMessage : IMessage
             case FieldType.SInt64:
             case FieldType.SFixed64:
 
-                sb.Append('"');
-                sb.Append((long)value);
-                sb.Append('"'); // JSON uses strings for int64
+                _ = sb.Append('"');
+                _ = sb.Append((long)value);
+                _ = sb.Append('"'); // JSON uses strings for int64
 
                 break;
 
             case FieldType.UInt32:
             case FieldType.Fixed32:
 
-                sb.Append((uint)value);
+                _ = sb.Append((uint)value);
 
                 break;
 
             case FieldType.UInt64:
             case FieldType.Fixed64:
 
-                sb.Append('"');
-                sb.Append((ulong)value);
-                sb.Append('"'); // JSON uses strings for uint64
+                _ = sb.Append('"');
+                _ = sb.Append((ulong)value);
+                _ = sb.Append('"'); // JSON uses strings for uint64
 
                 break;
 
             case FieldType.Bool:
 
-                sb.Append((bool)value ? "true" : "false");
+                _ = sb.Append((bool)value ? "true" : "false");
 
                 break;
 
@@ -966,9 +966,9 @@ internal class SimpleDynamicMessage : IMessage
 
             case FieldType.Bytes:
 
-                sb.Append('"');
-                sb.Append(Convert.ToBase64String(((ByteString)value).ToByteArray()));
-                sb.Append('"');
+                _ = sb.Append('"');
+                _ = sb.Append(Convert.ToBase64String(((ByteString)value).ToByteArray()));
+                _ = sb.Append('"');
 
                 break;
 
@@ -979,14 +979,14 @@ internal class SimpleDynamicMessage : IMessage
 
                 if (enumValue is not null)
                 {
-                    sb.Append('"');
-                    sb.Append(enumValue.Name);
-                    sb.Append('"');
+                        _ = sb.Append('"');
+                        _ = sb.Append(enumValue.Name);
+                        _ = sb.Append('"');
                 }
                 else
                 {
-                    // Fallback to integer if enum value not found
-                    sb.Append((int)value);
+                        // Fallback to integer if enum value not found
+                        _ = sb.Append((int)value);
                 }
 
                 break;
@@ -1068,14 +1068,14 @@ internal class SimpleDynamicMessage : IMessage
                         default:
 
                             // Regular message — pass includeDefaults for recursive emit-defaults
-                            sb.Append(nestedMessage.ToJson(includeDefaults));
+                            _ = sb.Append(nestedMessage.ToJson(includeDefaults));
 
                             break;
                     }
                 }
                 else
                 {
-                    sb.Append("null");
+                    _ = sb.Append("null");
                 }
 
                 break;
@@ -1084,13 +1084,13 @@ internal class SimpleDynamicMessage : IMessage
 
                 // Groups are a deprecated proto2 feature not supported in proto3.
                 // Modern gRPC services use proto3, so Group support is not implemented.
-                sb.Append("null");
+                _ = sb.Append("null");
 
                 break;
 
             default:
 
-                sb.Append("null");
+                _ = sb.Append("null");
 
                 break;
         }

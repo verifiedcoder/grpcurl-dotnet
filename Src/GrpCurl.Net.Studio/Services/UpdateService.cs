@@ -1,7 +1,7 @@
-using System.Reflection;
-using System.Text.Json;
 using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Reflection;
+using System.Text.Json;
 
 namespace GrpCurl.Net.Studio.Services;
 
@@ -86,7 +86,7 @@ internal sealed class UpdateService : IUpdateService
     private static async Task<string> DefaultFetchAsync(CancellationToken cancellationToken)
     {
         using var response = await Http.GetAsync(ApiReleasesUrl, cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        _ = response.EnsureSuccessStatusCode();
         return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
     }
 

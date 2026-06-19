@@ -1,8 +1,8 @@
-using System.Text.Json;
 using Gql2Grpc.Diagnostics;
 using Gql2Grpc.Translation;
 using Grpc.Core;
 using GrpCurl.Net.DescriptorSources;
+using System.Text.Json;
 
 namespace Gql2Grpc.Tests.Unit.Diagnostics;
 
@@ -20,7 +20,7 @@ public sealed class ExceptionTranslatorTests
 
         // Assert
         error.Path.ShouldBe(["foo"]);
-        error.Extensions.ShouldNotBeNull();
+        _ = error.Extensions.ShouldNotBeNull();
         error.Extensions!["code"].ShouldBe("UNKNOWN_ARGUMENT");
         error.Message.ShouldContain("testing.SimpleRequest");
         exitCode.ShouldBe(2);
@@ -37,7 +37,7 @@ public sealed class ExceptionTranslatorTests
 
         // Assert
         error.Path.ShouldBe(["foo"]);
-        error.Extensions.ShouldNotBeNull();
+        _ = error.Extensions.ShouldNotBeNull();
         error.Extensions!["code"].ShouldBe("UPSTREAM_ERROR");
         error.Extensions["grpcStatus"].ShouldBe("Unavailable");
         error.Extensions["grpcStatusCode"].ShouldBe((int)StatusCode.Unavailable);
@@ -54,7 +54,7 @@ public sealed class ExceptionTranslatorTests
 
         // Assert
         error.Path.ShouldBeEmpty();
-        error.Extensions.ShouldNotBeNull();
+        _ = error.Extensions.ShouldNotBeNull();
         error.Extensions!["grpcStatusCode"].ShouldBe((int)StatusCode.Unavailable);
     }
 
@@ -75,7 +75,7 @@ public sealed class ExceptionTranslatorTests
         var error = ExceptionTranslator.ToTopLevelError(ex);
 
         // Assert
-        error.Extensions.ShouldNotBeNull();
+        _ = error.Extensions.ShouldNotBeNull();
         error.Extensions!["code"].ShouldBe(expectedCode);
     }
 
@@ -88,7 +88,7 @@ public sealed class ExceptionTranslatorTests
         var error = ExceptionTranslator.ToTopLevelError(new OperationCanceledException());
 
         // Assert
-        error.Extensions.ShouldNotBeNull();
+        _ = error.Extensions.ShouldNotBeNull();
         error.Extensions!["code"].ShouldBe("CANCELLED");
     }
 

@@ -1,7 +1,7 @@
-using System.Text.Json;
 using Google.Protobuf.WellKnownTypes;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Text.Json;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
 
@@ -52,6 +52,6 @@ public sealed class NdjsonStreamFormatterTests
         var line = NdjsonStreamFormatter.Format(ev, _ => "{}");
 
         line.ShouldNotContain("\n");
-        Should.NotThrow(() => JsonDocument.Parse(line));
+        _ = Should.NotThrow(() => JsonDocument.Parse(line));
     }
 }

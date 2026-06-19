@@ -473,7 +473,7 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         message.Fields[codeField!].ShouldBe(42);
-        message.Fields.ShouldHaveSingleItem(); // Only one field should be present
+        _ = message.Fields.ShouldHaveSingleItem(); // Only one field should be present
     }
 
     #endregion
@@ -1941,7 +1941,7 @@ public sealed class ProtobufReaderWriterTests
 
         // Assert
         deserialized.MapFields.ContainsKey(stringMapField).ShouldBeTrue();
-        deserialized.MapFields[stringMapField].ShouldHaveSingleItem();
+        _ = deserialized.MapFields[stringMapField].ShouldHaveSingleItem();
         deserialized.MapFields[stringMapField]["only"].ShouldBe("entry");
     }
 

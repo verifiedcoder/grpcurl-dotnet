@@ -4,8 +4,8 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using GrpCurl.Net.Studio.Services;
-using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.Tests.UI.Headless;
+using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 

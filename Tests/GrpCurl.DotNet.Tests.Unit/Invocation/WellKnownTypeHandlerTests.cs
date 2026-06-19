@@ -27,7 +27,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertTimestamp(element, descriptor);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var secondsField = descriptor.FindFieldByNumber(1);
         var nanosField = descriptor.FindFieldByNumber(2);
@@ -94,7 +94,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertTimestamp(element, descriptor);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var secondsField = descriptor.FindFieldByNumber(1);
 
@@ -122,7 +122,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertDuration(element, descriptor);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var secondsField = descriptor.FindFieldByNumber(1);
         var nanosField = descriptor.FindFieldByNumber(2);
@@ -203,7 +203,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertDuration(element, descriptor);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var nanosField = descriptor.FindFieldByNumber(2);
         var nanos = (int)result.Fields[nanosField!]!;
@@ -229,7 +229,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertWrapperType(element, descriptor, ConvertJsonValue);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var valueField = descriptor.FindFieldByNumber(1);
 
@@ -250,7 +250,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertWrapperType(element, descriptor, ConvertJsonValue);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var valueField = descriptor.FindFieldByNumber(1);
 
@@ -271,7 +271,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertWrapperType(element, descriptor, ConvertJsonValue);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var valueField = descriptor.FindFieldByNumber(1);
 
@@ -291,7 +291,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertWrapperType(element, descriptor, ConvertJsonValue);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var valueField = descriptor.FindFieldByNumber(1);
 
@@ -313,7 +313,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertWrapperType(element, descriptor, ConvertJsonValue);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var valueField = descriptor.FindFieldByNumber(1);
 
@@ -334,7 +334,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertWrapperType(element, descriptor, ConvertJsonValue);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var valueField = descriptor.FindFieldByNumber(1);
 
@@ -354,7 +354,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertWrapperType(element, descriptor, ConvertJsonValue);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var valueField = descriptor.FindFieldByNumber(1);
 
@@ -375,7 +375,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertWrapperType(element, descriptor, ConvertJsonValue);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var valueField = descriptor.FindFieldByNumber(1);
 
@@ -394,11 +394,11 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertWrapperType(element, descriptor, ConvertJsonValue);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var valueField = descriptor.FindFieldByNumber(1);
 
-        result.Fields[valueField!].ShouldNotBeNull();
+        _ = result.Fields[valueField!].ShouldNotBeNull();
     }
 
     #endregion
@@ -418,7 +418,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertEmpty(descriptor);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
         result.Fields.ShouldBeEmpty();
     }
 
@@ -440,7 +440,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertFieldMask(element, descriptor);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var pathsField = descriptor.FindFieldByNumber(1);
 
@@ -463,7 +463,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertFieldMask(element, descriptor);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
     }
 
     [Fact]
@@ -491,7 +491,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertFieldMask(element, descriptor);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
     }
 
     #endregion
@@ -511,7 +511,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertStruct(element, descriptor, ConvertValue);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var fieldsField = descriptor.FindFieldByNumber(1);
 
@@ -530,7 +530,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertStruct(element, descriptor, ConvertValue);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
     }
 
     [Fact]
@@ -560,7 +560,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertStruct(element, descriptor, ConvertValue);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var fieldsField = descriptor.FindFieldByNumber(1);
 
@@ -582,7 +582,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertValue(element, descriptor, ConvertStruct, ConvertListValue);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var nullField = descriptor.FindFieldByNumber(1);
 
@@ -604,7 +604,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertValue(element, descriptor, ConvertStruct, ConvertListValue);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var numberField = descriptor.FindFieldByNumber(2);
 
@@ -624,7 +624,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertValue(element, descriptor, ConvertStruct, ConvertListValue);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var stringField = descriptor.FindFieldByNumber(3);
 
@@ -644,7 +644,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertValue(element, descriptor, ConvertStruct, ConvertListValue);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var boolField = descriptor.FindFieldByNumber(4);
 
@@ -662,7 +662,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertValue(element, descriptor, ConvertStruct, ConvertListValue);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var structField = descriptor.FindFieldByNumber(5);
 
@@ -680,7 +680,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertValue(element, descriptor, ConvertStruct, ConvertListValue);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var listField = descriptor.FindFieldByNumber(6);
 
@@ -698,7 +698,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertValue(element, descriptor, ConvertStruct, ConvertListValue);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var numberField = descriptor.FindFieldByNumber(2);
 
@@ -726,7 +726,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertListValue(element, descriptor, ConvertValue);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var valuesField = descriptor.FindFieldByNumber(1);
 
@@ -745,7 +745,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertListValue(element, descriptor, ConvertValue);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var valuesField = descriptor.FindFieldByNumber(1);
 
@@ -778,7 +778,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertListValue(element, descriptor, ConvertValue);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
 
         var valuesField = descriptor.FindFieldByNumber(1);
 
@@ -1369,15 +1369,15 @@ public sealed class WellKnownTypeHandlerTests
             case FieldType.SFixed64:
             case FieldType.Float:
             case FieldType.Double:
-                sb.Append(value);
+                _ = sb.Append(value);
                 break;
             case FieldType.Bool:
-                sb.Append((bool)value! ? "true" : "false");
+                _ = sb.Append((bool)value! ? "true" : "false");
                 break;
             case FieldType.String:
-                sb.Append('"');
-                sb.Append(value);
-                sb.Append('"');
+                _ = sb.Append('"');
+                _ = sb.Append(value);
+                _ = sb.Append('"');
                 break;
 
 #pragma warning disable S3458
@@ -1387,7 +1387,7 @@ public sealed class WellKnownTypeHandlerTests
             case FieldType.Enum:
 #pragma warning restore S3458
             default:
-                sb.Append("null");
+                _ = sb.Append("null");
                 break;
         }
     }
@@ -1420,7 +1420,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertTimestamp(element, descriptor);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
         result.Fields[descriptor.FindFieldByNumber(1)!].ShouldBe(expectedSeconds);
         result.Fields[descriptor.FindFieldByNumber(2)!].ShouldBe(expectedNanos);
     }
@@ -1460,7 +1460,7 @@ public sealed class WellKnownTypeHandlerTests
         var result = WellKnownTypeHandler.ConvertDuration(element, descriptor);
 
         // Assert
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
         result.Fields[descriptor.FindFieldByNumber(1)!].ShouldBe(expectedSeconds);
         result.Fields[descriptor.FindFieldByNumber(2)!].ShouldBe(expectedNanos);
     }
@@ -1521,7 +1521,7 @@ public sealed class WellKnownTypeHandlerTests
 
         // Act - parse then re-serialize
         var message = WellKnownTypeHandler.ConvertDuration(element, descriptor);
-        message.ShouldNotBeNull();
+        _ = message.ShouldNotBeNull();
 
         var sb = new StringBuilder();
         WellKnownTypeHandler.WriteDurationJson(sb, message);

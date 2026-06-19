@@ -10,7 +10,7 @@ namespace GrpCurl.Net.Studio.Tests.Unit;
 /// </summary>
 public sealed class SavedRequestTests
 {
-    private CancellationToken Ct => TestContext.Current.CancellationToken;
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     private static SavedRequest Sample() => new()
     {
@@ -63,7 +63,7 @@ public sealed class SavedRequestTests
         copy.Headers.Add(new HeaderEntry { Name = "x", Value = "y" });
         copy.Name = "changed";
 
-        original.Headers.ShouldHaveSingleItem(); // original untouched
+        _ = original.Headers.ShouldHaveSingleItem(); // original untouched
         original.Name.ShouldBe("say hello");
     }
 
@@ -86,8 +86,8 @@ public sealed class SavedRequestTests
 
         await store.SaveAsync(Sample(), Ct);
 
-        workspace.Current.Connections.ShouldHaveSingleItem();
-        workspace.Current.Environments.ShouldHaveSingleItem();
+        _ = workspace.Current.Connections.ShouldHaveSingleItem();
+        _ = workspace.Current.Environments.ShouldHaveSingleItem();
         store.Requests.ShouldContain(r => r.Name == "say hello");
     }
 
@@ -137,7 +137,7 @@ public sealed class SavedRequestTests
 
         await store.DeleteAsync("missing", Ct);
 
-        store.Requests.ShouldHaveSingleItem();
+        _ = store.Requests.ShouldHaveSingleItem();
         workspace.SaveCount.ShouldBe(before); // nothing written
     }
 }

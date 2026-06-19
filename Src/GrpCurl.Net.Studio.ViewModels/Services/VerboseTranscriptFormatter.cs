@@ -1,6 +1,7 @@
-using System.Text;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Utilities;
+using System.Text;
+using static System.FormattableString;
 
 namespace GrpCurl.Net.Studio.ViewModels.Services;
 
@@ -16,22 +17,22 @@ public static class VerboseTranscriptFormatter
     {
         var sb = new StringBuilder();
 
-        sb.AppendLine($"Target:    {t.Target}");
-        sb.AppendLine($"Authority: {t.Authority ?? "(default)"}");
-        sb.AppendLine();
-        sb.AppendLine("Request headers:");
+        _ = sb.AppendLine(Invariant($"Target:    {t.Target}"));
+        _ = sb.AppendLine(Invariant($"Authority: {t.Authority ?? "(default)"}"));
+        _ = sb.AppendLine();
+        _ = sb.AppendLine("Request headers:");
         AppendHeaders(sb, t.RequestHeaders);
-        sb.AppendLine();
-        sb.AppendLine("Response headers:");
+        _ = sb.AppendLine();
+        _ = sb.AppendLine("Response headers:");
         AppendHeaders(sb, t.ResponseHeaders);
-        sb.AppendLine();
-        sb.AppendLine("Response trailers:");
+        _ = sb.AppendLine();
+        _ = sb.AppendLine("Response trailers:");
         AppendHeaders(sb, t.ResponseTrailers);
-        sb.AppendLine();
-        sb.AppendLine($"Messages:  {t.RequestMessages} sent, {t.ResponseMessages} received");
+        _ = sb.AppendLine();
+        _ = sb.AppendLine(Invariant($"Messages:  {t.RequestMessages} sent, {t.ResponseMessages} received"));
 
         var detail = string.IsNullOrEmpty(t.Status.Detail) ? string.Empty : $" — {t.Status.Detail}";
-        sb.AppendLine($"Status:    {t.Status.Code} {t.Status.CodeName}{detail}");
+        _ = sb.AppendLine(Invariant($"Status:    {t.Status.Code} {t.Status.CodeName}{detail}"));
 
         return sb.ToString().TrimEnd();
     }
@@ -40,13 +41,13 @@ public static class VerboseTranscriptFormatter
     {
         if (headers.Count == 0)
         {
-            sb.AppendLine("  (none)");
+            _ = sb.AppendLine("  (none)");
             return;
         }
 
         foreach (var h in headers)
         {
-            sb.AppendLine($"  {h.Name}: {SecretRedactor.FormatValue(h.Name, h.Value, unsafeShowSecrets: false)}");
+            _ = sb.AppendLine(Invariant($"  {h.Name}: {SecretRedactor.FormatValue(h.Name, h.Value, unsafeShowSecrets: false)}"));
         }
     }
 }

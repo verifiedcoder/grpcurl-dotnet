@@ -41,7 +41,7 @@ public sealed class ParseErrorReporterTests
         using var writer = new StringWriter();
 
         // Act
-        ParseErrorReporter.TryHandleParseErrors(parseResult, writer, HelpHint);
+        _ = ParseErrorReporter.TryHandleParseErrors(parseResult, writer, HelpHint);
 
         // Assert
         var lines = writer.ToString()

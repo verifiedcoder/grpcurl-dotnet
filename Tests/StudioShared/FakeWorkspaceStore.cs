@@ -118,7 +118,7 @@ public sealed class FakeWorkspaceStore : IWorkspaceStore
 
         Current = OpenResult ?? Current;
         CurrentPath = path;
-        _recent.Remove(path);
+        _ = _recent.Remove(path);
         _recent.Insert(0, path);
         return Task.FromResult(Current);
     }
@@ -157,7 +157,7 @@ public sealed class FakeWorkspaceStore : IWorkspaceStore
         Current = workspace;
         CurrentPath = path;
         LastSavedAsPath = path;
-        _recent.Remove(path);
+        _ = _recent.Remove(path);
         _recent.Insert(0, path);
         SaveCount++;
         return Task.CompletedTask;
@@ -197,7 +197,7 @@ public sealed class FakeWorkspaceStore : IWorkspaceStore
 
     public Task RemoveRecentAsync(string path, CancellationToken cancellationToken = default)
     {
-        _recent.Remove(path);
+        _ = _recent.Remove(path);
         return Task.CompletedTask;
     }
 }

@@ -1,8 +1,8 @@
-using System.Text;
 using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Utilities;
+using System.Text;
 
 namespace GrpCurl.Net.Studio.ViewModels.Services;
 
@@ -146,7 +146,7 @@ public static class CliCommandBuilder
 
         foreach (var arg in args)
         {
-            sb.Append(' ').Append(ShellQuote(arg, dialect));
+            _ = sb.Append(' ').Append(ShellQuote(arg, dialect));
         }
 
         return sb.ToString();

@@ -55,7 +55,7 @@ public sealed class InvokeStdinLimitTests(GrpcTestFixture fixture)
                     maxStdinBytes: 16));
 
             ex.ExitCode.ShouldBe(2);
-            ex.Envelope.ShouldNotBeNull();
+            _ = ex.Envelope.ShouldNotBeNull();
             ex.Envelope.Category.ShouldBe(ErrorCategory.Usage);
             ex.Envelope.Message.ShouldContain("exceeded the maximum allowed size");
         }

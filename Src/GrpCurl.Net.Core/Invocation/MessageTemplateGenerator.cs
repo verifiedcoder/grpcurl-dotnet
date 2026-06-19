@@ -1,5 +1,5 @@
-using System.Text.Json;
 using Google.Protobuf.Reflection;
+using System.Text.Json;
 
 namespace GrpCurl.Net.Invocation;
 

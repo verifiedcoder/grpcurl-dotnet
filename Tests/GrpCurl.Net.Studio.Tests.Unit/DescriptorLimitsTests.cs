@@ -1,7 +1,7 @@
 using GrpCurl.Net.DescriptorSources;
 using GrpCurl.Net.Studio.Services;
-using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.Tests.Unit.Fakes;
+using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 

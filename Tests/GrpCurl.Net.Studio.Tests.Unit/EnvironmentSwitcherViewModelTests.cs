@@ -98,7 +98,7 @@ public sealed class EnvironmentSwitcherViewModelTests
     public async Task Manage_opens_the_manager_and_refreshes_the_dropdown()
     {
         var vm = Create(out _, out var store, out var dialog, out _);
-        vm.Options.ShouldHaveSingleItem(); // just "No environment"
+        _ = vm.Options.ShouldHaveSingleItem(); // just "No environment"
 
         // Simulate the manager adding an environment while the dialog is open.
         dialog.OnShowDialog = d =>

@@ -124,6 +124,6 @@ public sealed class DescriptorSourceTests(StudioPlaintextServerFixture server)
         var result = await new DescriptorService().LoadAsync(connection, TestContext.Current.CancellationToken);
 
         result.Ok.ShouldBeFalse();
-        result.Error.ShouldNotBeNull();
+        _ = result.Error.ShouldNotBeNull();
     }
 }

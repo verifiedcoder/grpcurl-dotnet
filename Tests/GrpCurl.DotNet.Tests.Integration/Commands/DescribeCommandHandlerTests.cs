@@ -366,7 +366,7 @@ public sealed class DescribeCommandHandlerTests(GrpcTestFixture fixture)
         {
             // Act
             // Assert
-            await Should.ThrowAsync<GrpcCommandException>(() =>
+            _ = await Should.ThrowAsync<GrpcCommandException>(() =>
                 DescribeCommandHandler.ExecuteAsync(
                     address: fixture.Address,
                     symbol: "testing.NonExistentSymbol",
@@ -401,7 +401,7 @@ public sealed class DescribeCommandHandlerTests(GrpcTestFixture fixture)
 
         // Act
         // Assert
-        await Should.ThrowAsync<GrpcCommandException>(() =>
+        _ = await Should.ThrowAsync<GrpcCommandException>(() =>
             DescribeCommandHandler.ExecuteAsync(
                 address: null,
                 symbol: null,
@@ -432,7 +432,7 @@ public sealed class DescribeCommandHandlerTests(GrpcTestFixture fixture)
 
         // Act
         // Assert
-        await Should.ThrowAsync<GrpcCommandException>(() =>
+        _ = await Should.ThrowAsync<GrpcCommandException>(() =>
             DescribeCommandHandler.ExecuteAsync(
                 address: null,
                 symbol: "testing.TestService",

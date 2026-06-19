@@ -447,7 +447,7 @@ internal static class InvokeCommandHandler
         // Validate options before proceeding. ValidateOptions parses --max-msg-sz on the
         // verbose warning path, so route any malformed-value ArgumentException through the
         // usage contract (exit 2) here too.
-        ErrorRenderer.ConvertOption(() =>
+        _ = ErrorRenderer.ConvertOption(() =>
         {
             ValidateOptions(plaintext, insecure, serverName, maxMsgSz, verbose);
 
@@ -1480,6 +1480,7 @@ internal static class InvokeCommandHandler
         var startIndex = 0;
 
         while (reader.Read())
+        {
             switch (reader.TokenType)
             {
                 case JsonTokenType.StartObject when reader.CurrentDepth == 0:
@@ -1515,6 +1516,7 @@ internal static class InvokeCommandHandler
 
                     break;
             }
+        }
 
         return results;
     }

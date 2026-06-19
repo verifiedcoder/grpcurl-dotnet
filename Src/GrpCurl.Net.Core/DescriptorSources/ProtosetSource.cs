@@ -40,7 +40,7 @@ public sealed class ProtosetSource : IDescriptorSource
     /// <inheritdoc />
     public Task<IDescriptor?> FindSymbolAsync(string fullyQualifiedName, CancellationToken cancellationToken = default)
     {
-        _symbolCache.TryGetValue(fullyQualifiedName, out var descriptor);
+        _ = _symbolCache.TryGetValue(fullyQualifiedName, out var descriptor);
 
         return Task.FromResult(descriptor);
     }
@@ -135,7 +135,7 @@ public sealed class ProtosetSource : IDescriptorSource
 
         foreach (var fileProto in fileDescriptorSet.File)
         {
-            ResolveFileDescriptor(fileProto.Name, unresolved, resolved, [], _options);
+            _ = ResolveFileDescriptor(fileProto.Name, unresolved, resolved, [], _options);
         }
 
         // Cache file descriptors, detecting conflicts
@@ -193,7 +193,7 @@ public sealed class ProtosetSource : IDescriptorSource
         }
 
         // Track current file in resolution path
-        visitedInCurrentPath.Add(fileName);
+        _ = visitedInCurrentPath.Add(fileName);
 
         try
         {
@@ -247,13 +247,13 @@ public sealed class ProtosetSource : IDescriptorSource
                 // Then add this dependency
                 byteStrings.Add(dep.SerializedData);
 
-                included.Add(dep.Name);
+                _ = included.Add(dep.Name);
             }
         }
         finally
         {
             // Remove from current path when done
-            visitedInCurrentPath.Remove(fileName);
+            _ = visitedInCurrentPath.Remove(fileName);
         }
     }
 

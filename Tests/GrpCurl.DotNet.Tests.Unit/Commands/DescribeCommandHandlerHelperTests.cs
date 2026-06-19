@@ -1,6 +1,6 @@
 using GrpCurl.Net.Commands;
-using GrpCurl.Net.Invocation;
 using GrpCurl.Net.DescriptorSources;
+using GrpCurl.Net.Invocation;
 using GrpCurl.Net.Tests.Unit.Fixtures;
 
 namespace GrpCurl.Net.Tests.Unit.Commands;
@@ -169,7 +169,7 @@ public sealed class DescribeCommandHandlerHelperTests
 
         // Assert - field names are snake_case (proto field names)
         template.ShouldContainKey("payload");
-        template["payload"].ShouldBeOfType<Dictionary<string, object?>>();
+        _ = template["payload"].ShouldBeOfType<Dictionary<string, object?>>();
 
         var payloadTemplate = (Dictionary<string, object?>)template["payload"]!;
 
@@ -202,12 +202,12 @@ public sealed class DescribeCommandHandlerHelperTests
 
         // Assert - field names are snake_case, map key is type-appropriate default ("" for string keys)
         template.ShouldContainKey("message_map");
-        template["message_map"].ShouldBeOfType<Dictionary<string, object?>>();
+        _ = template["message_map"].ShouldBeOfType<Dictionary<string, object?>>();
 
         var mapTemplate = (Dictionary<string, object?>)template["message_map"]!;
 
         mapTemplate.ShouldContainKey("");
-        mapTemplate[""].ShouldBeOfType<Dictionary<string, object?>>();
+        _ = mapTemplate[""].ShouldBeOfType<Dictionary<string, object?>>();
 
         var valueTemplate = (Dictionary<string, object?>)mapTemplate[""]!;
 
@@ -228,7 +228,7 @@ public sealed class DescribeCommandHandlerHelperTests
 
         // Assert - field names are snake_case, map key is type-appropriate default ("" for string keys)
         template.ShouldContainKey("enum_map");
-        template["enum_map"].ShouldBeOfType<Dictionary<string, object?>>();
+        _ = template["enum_map"].ShouldBeOfType<Dictionary<string, object?>>();
 
         var mapTemplate = (Dictionary<string, object?>)template["enum_map"]!;
 
@@ -247,7 +247,7 @@ public sealed class DescribeCommandHandlerHelperTests
 
         // Assert - field names are snake_case, map key is type-appropriate default ("" for string keys)
         template.ShouldContainKey("string_map");
-        template["string_map"].ShouldBeOfType<Dictionary<string, object?>>();
+        _ = template["string_map"].ShouldBeOfType<Dictionary<string, object?>>();
 
         var mapTemplate = (Dictionary<string, object?>)template["string_map"]!;
 
@@ -266,7 +266,7 @@ public sealed class DescribeCommandHandlerHelperTests
 
         // Assert - field names are snake_case, map key is type-appropriate default ("" for string keys)
         template.ShouldContainKey("int_map");
-        template["int_map"].ShouldBeOfType<Dictionary<string, object?>>();
+        _ = template["int_map"].ShouldBeOfType<Dictionary<string, object?>>();
 
         var mapTemplate = (Dictionary<string, object?>)template["int_map"]!;
 
@@ -288,7 +288,7 @@ public sealed class DescribeCommandHandlerHelperTests
         var result = MessageTemplateGenerator.HandleWellKnownType(descriptor, []);
 
         // Assert
-        result.ShouldBeOfType<Dictionary<string, object?>>();
+        _ = result.ShouldBeOfType<Dictionary<string, object?>>();
 
         var dict = (Dictionary<string, object?>)result;
 
@@ -306,7 +306,7 @@ public sealed class DescribeCommandHandlerHelperTests
         var result = MessageTemplateGenerator.HandleWellKnownType(descriptor, []);
 
         // Assert
-        result.ShouldBeOfType<Dictionary<string, object?>>();
+        _ = result.ShouldBeOfType<Dictionary<string, object?>>();
 
         var dict = (Dictionary<string, object?>)result;
 
@@ -324,12 +324,12 @@ public sealed class DescribeCommandHandlerHelperTests
         var result = MessageTemplateGenerator.HandleWellKnownType(descriptor, []);
 
         // Assert
-        result.ShouldBeOfType<List<object?>>();
+        _ = result.ShouldBeOfType<List<object?>>();
 
         var list = (List<object?>)result;
 
         list.Count.ShouldBe(1);
-        list[0].ShouldBeOfType<Dictionary<string, object?>>();
+        _ = list[0].ShouldBeOfType<Dictionary<string, object?>>();
 
         var hintDict = (Dictionary<string, object?>)list[0]!;
 
@@ -347,14 +347,14 @@ public sealed class DescribeCommandHandlerHelperTests
         var result = MessageTemplateGenerator.HandleWellKnownType(descriptor, []);
 
         // Assert
-        result.ShouldBeOfType<Dictionary<string, object?>>();
+        _ = result.ShouldBeOfType<Dictionary<string, object?>>();
 
         var dict = (Dictionary<string, object?>)result;
 
         dict.ShouldContainKey("@type");
         dict["@type"].ShouldBe("type.googleapis.com/google.protobuf.Empty");
         dict.ShouldContainKey("value");
-        dict["value"].ShouldBeOfType<Dictionary<string, object?>>();
+        _ = dict["value"].ShouldBeOfType<Dictionary<string, object?>>();
 
         var valueDict = (Dictionary<string, object?>)dict["value"]!;
 
@@ -371,12 +371,12 @@ public sealed class DescribeCommandHandlerHelperTests
         var result = MessageTemplateGenerator.HandleWellKnownType(descriptor, []);
 
         // Assert
-        result.ShouldBeOfType<Dictionary<string, object?>>();
+        _ = result.ShouldBeOfType<Dictionary<string, object?>>();
 
         var dict = (Dictionary<string, object?>)result;
 
         dict.ShouldContainKey("paths");
-        dict["paths"].ShouldBeOfType<List<object?>>();
+        _ = dict["paths"].ShouldBeOfType<List<object?>>();
 
         var paths = (List<object?>)dict["paths"]!;
 
@@ -420,7 +420,7 @@ public sealed class DescribeCommandHandlerHelperTests
         var result = MessageTemplateGenerator.HandleWellKnownType(descriptor, []);
 
         // Assert
-        result.ShouldBeOfType<Dictionary<string, object?>>();
+        _ = result.ShouldBeOfType<Dictionary<string, object?>>();
 
         var dict = (Dictionary<string, object?>)result;
 
@@ -478,18 +478,18 @@ public sealed class DescribeCommandHandlerHelperTests
 
         // Assert - Any
         template.ShouldContainKey("any_field");
-        template["any_field"].ShouldBeOfType<Dictionary<string, object?>>();
+        _ = template["any_field"].ShouldBeOfType<Dictionary<string, object?>>();
 
         var anyDict = (Dictionary<string, object?>)template["any_field"]!;
 
         anyDict.ShouldContainKey("@type");
         anyDict["@type"].ShouldBe("type.googleapis.com/google.protobuf.Empty");
         anyDict.ShouldContainKey("value");
-        anyDict["value"].ShouldBeOfType<Dictionary<string, object?>>();
+        _ = anyDict["value"].ShouldBeOfType<Dictionary<string, object?>>();
 
         // Assert - Struct
         template.ShouldContainKey("struct_field");
-        template["struct_field"].ShouldBeOfType<Dictionary<string, object?>>();
+        _ = template["struct_field"].ShouldBeOfType<Dictionary<string, object?>>();
 
         var structDict = (Dictionary<string, object?>)template["struct_field"]!;
 
@@ -498,7 +498,7 @@ public sealed class DescribeCommandHandlerHelperTests
 
         // Assert - Value
         template.ShouldContainKey("value_field");
-        template["value_field"].ShouldBeOfType<Dictionary<string, object?>>();
+        _ = template["value_field"].ShouldBeOfType<Dictionary<string, object?>>();
 
         var valueDict = (Dictionary<string, object?>)template["value_field"]!;
 
@@ -507,16 +507,16 @@ public sealed class DescribeCommandHandlerHelperTests
 
         // Assert - ListValue
         template.ShouldContainKey("list_value_field");
-        template["list_value_field"].ShouldBeOfType<List<object?>>();
+        _ = template["list_value_field"].ShouldBeOfType<List<object?>>();
 
         var listValue = (List<object?>)template["list_value_field"]!;
 
         listValue.Count.ShouldBe(1);
-        listValue[0].ShouldBeOfType<Dictionary<string, object?>>();
+        _ = listValue[0].ShouldBeOfType<Dictionary<string, object?>>();
 
         // Assert - FieldMask
         template.ShouldContainKey("field_mask");
-        template["field_mask"].ShouldBeOfType<Dictionary<string, object?>>();
+        _ = template["field_mask"].ShouldBeOfType<Dictionary<string, object?>>();
 
         var fieldMaskDict = (Dictionary<string, object?>)template["field_mask"]!;
 
@@ -995,7 +995,7 @@ public sealed class DescribeCommandHandlerHelperTests
 
         // Assert - int_key_map should use "0" as the key default for int32 keys
         template.ShouldContainKey("int_key_map");
-        template["int_key_map"].ShouldBeOfType<Dictionary<string, object?>>();
+        _ = template["int_key_map"].ShouldBeOfType<Dictionary<string, object?>>();
 
         var mapTemplate = (Dictionary<string, object?>)template["int_key_map"]!;
 

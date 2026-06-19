@@ -1,4 +1,3 @@
-using System.Reflection;
 using GrpCurl.Net.Studio.ViewModels;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;

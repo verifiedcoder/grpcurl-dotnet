@@ -63,7 +63,7 @@ public sealed class TlsProfileManagerViewModelTests
 
         var copy = store.Profiles.Single(p => p.Name == "mtls (copy)");
         copy.Id.ShouldNotBe(source.Id);
-        copy.ClientCertPasswordSecretRef.ShouldNotBeNull();
+        _ = copy.ClientCertPasswordSecretRef.ShouldNotBeNull();
         copy.ClientCertPasswordSecretRef.ShouldNotBe("ref-1"); // its own secret entry
         (await secrets.GetAsync(copy.ClientCertPasswordSecretRef!, TestContext.Current.CancellationToken)).ShouldBe("pw");
     }
@@ -90,7 +90,7 @@ public sealed class TlsProfileManagerViewModelTests
 
         await vm.DeleteProfileCommand.ExecuteAsync(vm.Profiles.Single());
 
-        store.Profiles.ShouldHaveSingleItem();
+        _ = store.Profiles.ShouldHaveSingleItem();
     }
 
     [Fact]

@@ -14,7 +14,7 @@ public sealed class InvokeCommandHandlerTests
         var command = InvokeCommandHandler.Create();
 
         // Assert
-        command.ShouldNotBeNull();
+        _ = command.ShouldNotBeNull();
         command.Name.ShouldBe("invoke");
     }
 
@@ -55,7 +55,7 @@ public sealed class InvokeCommandHandlerTests
         // Assert
         var addressArg = command.Arguments.FirstOrDefault(a => a.Name == "address");
 
-        addressArg.ShouldNotBeNull();
+        _ = addressArg.ShouldNotBeNull();
     }
 
     [Fact]
@@ -69,7 +69,7 @@ public sealed class InvokeCommandHandlerTests
         // Assert
         var methodArg = command.Arguments.FirstOrDefault(a => a.Name == "method");
 
-        methodArg.ShouldNotBeNull();
+        _ = methodArg.ShouldNotBeNull();
     }
 
     [Fact]
@@ -83,7 +83,7 @@ public sealed class InvokeCommandHandlerTests
         // Assert
         var addressArg = command.Arguments.FirstOrDefault(a => a.Name == "address");
 
-        addressArg.ShouldNotBeNull();
+        _ = addressArg.ShouldNotBeNull();
         addressArg.Arity.ShouldBe(ArgumentArity.ExactlyOne);
     }
 
@@ -98,7 +98,7 @@ public sealed class InvokeCommandHandlerTests
         // Assert
         var methodArg = command.Arguments.FirstOrDefault(a => a.Name == "method");
 
-        methodArg.ShouldNotBeNull();
+        _ = methodArg.ShouldNotBeNull();
         methodArg.Arity.ShouldBe(ArgumentArity.ExactlyOne);
     }
 

@@ -19,6 +19,9 @@ public static class AsyncStreamExtensions
         this IAsyncStreamReader<T> stream,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        while (await stream.MoveNext(cancellationToken)) yield return stream.Current;
+        while (await stream.MoveNext(cancellationToken))
+        {
+            yield return stream.Current;
+        }
     }
 }

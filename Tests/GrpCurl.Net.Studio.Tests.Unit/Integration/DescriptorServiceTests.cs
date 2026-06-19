@@ -32,7 +32,7 @@ public sealed class DescriptorServiceTests(StudioPlaintextServerFixture server)
             TestContext.Current.CancellationToken);
 
         result.Ok.ShouldBeTrue(result.Error?.Message);
-        result.Catalog.ShouldNotBeNull();
+        _ = result.Catalog.ShouldNotBeNull();
 
         var testService = result.Catalog!.Services.Single(s => s.FullName == "testing.TestService");
 
@@ -73,7 +73,7 @@ public sealed class DescriptorServiceTests(StudioPlaintextServerFixture server)
             TestContext.Current.CancellationToken);
 
         result.Ok.ShouldBeFalse();
-        result.Error.ShouldNotBeNull();
+        _ = result.Error.ShouldNotBeNull();
         result.Error!.Message.ShouldNotBeNullOrWhiteSpace();
     }
 
@@ -84,7 +84,7 @@ public sealed class DescriptorServiceTests(StudioPlaintextServerFixture server)
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(
+        _ = await Should.ThrowAsync<OperationCanceledException>(
             async () => await descriptors.LoadAsync(PlaintextReflection(server.Address), cts.Token));
     }
 }

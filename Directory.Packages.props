@@ -14,6 +14,9 @@
     <PackageVersion Include="Grpc.AspNetCore.Server.Reflection" Version="2.76.0" />
     <PackageVersion Include="Grpc.Tools" Version="2.80.0" />
 
+    <!-- Static Analysis -->
+    <GlobalPackageReference Include="SonarAnalyzer.CSharp" Version="10.27.0.140913" />
+
     <!-- ASP.NET Core test host (matches .NET 10 SDK). -->
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="10.0.6" />
 

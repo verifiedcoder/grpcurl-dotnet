@@ -117,12 +117,8 @@ public sealed class JsonRequestTranslator : IRequestTranslator
 
         for (var i = 0; i < segments.Length; i++)
         {
-            var field = current.FindFieldByName(segments[i]);
-
-            if (field is null)
-            {
-                throw new UnknownArgumentException(argName, path, current.FullName);
-            }
+            var field = current.FindFieldByName(segments[i])
+                        ?? throw new UnknownArgumentException(argName, path, current.FullName);
 
             if (i == segments.Length - 1)
             {

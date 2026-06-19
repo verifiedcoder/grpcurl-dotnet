@@ -24,7 +24,7 @@ internal sealed class FileDiagnosticsLog : IDiagnosticsLog
     private readonly long _maxBytes;
     private readonly TimeSpan _maxAge;
     private readonly Func<DateTimeOffset> _now;
-    private readonly object _gate = new();
+    private readonly System.Threading.Lock _gate = new();
 
     private int _sinceCheck;
 

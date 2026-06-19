@@ -76,8 +76,12 @@ dotnet_diagnostic.S1075.severity = none
 # ── Adopted & ENFORCED rules (C2: messages.csv safe modernizations — all violations fixed) ─────────
 dotnet_diagnostic.CA2101.severity = warning  # specify marshaling for P/Invoke string args (security)
 dotnet_diagnostic.IDE0044.severity = warning # make field readonly where never reassigned
-# IDE0017 (object init), IDE0028 (collection init) and IDE0059 (dead store) stay at the suggestion
-# default for now — their remaining occurrences are in test code; a later C2 pass cleans + elevates them.
+dotnet_diagnostic.IDE0330.severity = warning # use System.Threading.Lock for lock objects (.NET 9)
+dotnet_diagnostic.IDE0270.severity = warning # use null-coalescing throw (?? throw)
+dotnet_diagnostic.IDE0301.severity = warning # use collection expression for Array.Empty<T>()
+# IDE0017 (object init), IDE0028 (collection init), IDE0042 (deconstruction) and IDE0059 (dead store)
+# stay at suggestion — remaining occurrences are test-code style nits. IDE0305 (collection expression
+# for fluent .ToList()/.ToArray()) has ~114 occurrences best swept with tooling; deferred.
 
 [Tests/**/*.cs]
 # Test projects: don't gate on doc/style rules that target product code.

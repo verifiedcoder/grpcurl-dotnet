@@ -20,11 +20,17 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 /// </summary>
 public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
 {
+    /// <summary>The 4 MiB cap the CLI applies to <c>--file</c>/<c>--variables-file</c> (GQL-014/020).</summary>
+    internal const long MaxFileBytes = 4L * 1024 * 1024;
+
     private readonly IGraphQlService _graphql;
     private readonly IUiDispatcher _dispatcher;
     private readonly IClipboardService _clipboard;
     private readonly IHistoryRecorder? _recorder;
     private readonly IEnvironmentService? _environment;
+    private readonly IFilePickerService? _filePicker;
+    private readonly Func<string, TextWriter> _writerFactory;
+    private readonly Func<string, long, CancellationToken, Task<string>> _fileReader;
     private CancellationTokenSource? _parseCts;
 
     [ObservableProperty]
@@ -81,7 +87,10 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
         IUiDispatcher dispatcher,
         IClipboardService clipboard,
         IHistoryRecorder? recorder = null,
-        IEnvironmentService? environment = null)
+        IEnvironmentService? environment = null,
+        IFilePickerService? filePicker = null,
+        Func<string, TextWriter>? writerFactory = null,
+        Func<string, long, CancellationToken, Task<string>>? fileReader = null)
     {
         Connection = connection;
         _graphql = graphql;
@@ -89,9 +98,25 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
         _clipboard = clipboard;
         _recorder = recorder;
         _environment = environment;
+        _filePicker = filePicker;
+        _writerFactory = writerFactory ?? (path => new StreamWriter(path));
+        _fileReader = fileReader ?? ReadCappedAsync;
         Title = "GraphQL";
 
         Headers.CollectionChanged += OnHeadersChanged;
+    }
+
+    /// <summary>Default file read: rejects a file larger than <see cref="MaxFileBytes" /> (CLI parity), else reads it.</summary>
+    private static async Task<string> ReadCappedAsync(string path, long maxBytes, CancellationToken cancellationToken)
+    {
+        var info = new FileInfo(path);
+
+        if (info.Exists && info.Length > maxBytes)
+        {
+            throw new InvalidOperationException($"File exceeds the {maxBytes / (1024 * 1024)} MiB limit.");
+        }
+
+        return await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
     }
 
     public SavedConnection Connection { get; }
@@ -372,6 +397,76 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
         if (ResponseJson is not null)
         {
             await _clipboard.SetTextAsync(ResponseJson);
+        }
+    }
+
+    /// <summary>Whether file open/save/import is available (the picker is wired).</summary>
+    public bool CanUseFiles => _filePicker is not null;
+
+    /// <summary>GQL-014: load a <c>.graphql</c> document from disk (4 MiB cap).</summary>
+    [RelayCommand(CanExecute = nameof(CanUseFiles))]
+    private async Task OpenDocument()
+    {
+        if (_filePicker is null)
+        {
+            return;
+        }
+
+        var path = await _filePicker.OpenFileAsync("Open GraphQL document", [".graphql", ".gql"]);
+
+        if (path is not null && await TryReadAsync(path, MaxFileBytes) is { } text)
+        {
+            Document = text;
+        }
+    }
+
+    /// <summary>GQL-014: save the current document to a <c>.graphql</c> file.</summary>
+    [RelayCommand(CanExecute = nameof(CanUseFiles))]
+    private async Task SaveDocument()
+    {
+        if (_filePicker is null)
+        {
+            return;
+        }
+
+        var path = await _filePicker.SaveFileAsync("Save GraphQL document", "operation.graphql", [".graphql", ".gql"]);
+
+        if (path is not null)
+        {
+            await using var writer = _writerFactory(path);
+            await writer.WriteAsync(Document);
+        }
+    }
+
+    /// <summary>GQL-020: import a variables <c>.json</c> file into the variables pane (4 MiB cap).</summary>
+    [RelayCommand(CanExecute = nameof(CanUseFiles))]
+    private async Task ImportVariables()
+    {
+        if (_filePicker is null)
+        {
+            return;
+        }
+
+        var path = await _filePicker.OpenFileAsync("Import variables", [".json"]);
+
+        if (path is not null && await TryReadAsync(path, MaxFileBytes) is { } text)
+        {
+            VariablesJson = text;
+        }
+    }
+
+    /// <summary>Reads a file through the cap-enforcing reader; a failure surfaces as a configuration problem.</summary>
+    private async Task<string?> TryReadAsync(string path, long maxBytes)
+    {
+        try
+        {
+            return await _fileReader(path, maxBytes, CancellationToken.None);
+        }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or UnauthorizedAccessException)
+        {
+            Problems.Add(new GraphQlProblem(ex.Message, GraphQlProblemKind.Configuration));
+            OnPropertyChanged(nameof(HasProblems));
+            return null;
         }
     }
 

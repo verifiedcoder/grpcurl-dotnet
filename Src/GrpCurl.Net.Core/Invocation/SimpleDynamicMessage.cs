@@ -13,6 +13,11 @@ internal class SimpleDynamicMessage : IMessage
 {
     // List to track unknown fields encountered during JSON parsing
     private readonly List<string> _unknownFields = [];
+
+    // The unknown-field policy in force while this message is being populated. Threaded
+    // into nested/repeated/map/Any sub-messages so strict mode rejects unknown fields at
+    // any depth (not just the top level) and lenient mode tracks them with a dotted path.
+    private bool _allowUnknownFields = true;
     internal readonly Dictionary<FieldDescriptor, object?> Fields = [];
     internal readonly Dictionary<FieldDescriptor, Dictionary<object, object?>> MapFields = [];
 
@@ -46,6 +51,8 @@ internal class SimpleDynamicMessage : IMessage
     /// </summary>
     private void PopulateFromJsonObject(JsonElement root, bool allowUnknownFields)
     {
+        _allowUnknownFields = allowUnknownFields;
+
         foreach (var property in root.EnumerateObject())
         {
             var field = Descriptor.Fields.InDeclarationOrder().FirstOrDefault(f =>
@@ -294,20 +301,16 @@ internal class SimpleDynamicMessage : IMessage
             return null;
         }
 
-        // Recursively create a SimpleDynamicMessage for the nested message
+        // Recursively create a SimpleDynamicMessage for the nested message, honouring the
+        // same unknown-field policy (maps/repeated/oneof handling included) as the top level.
         var nestedMessage = new SimpleDynamicMessage(messageType);
+        nestedMessage.PopulateFromJsonObject(element, _allowUnknownFields);
 
-        // Parse nested fields
-        foreach (var property in element.EnumerateObject())
+        // Surface any unknown fields the nested message tracked with a dotted path so the
+        // root request's UnknownFields warning reports `field.unknown`, not a bare `unknown`.
+        foreach (var unknown in nestedMessage._unknownFields)
         {
-            var nestedField = messageType.Fields.InDeclarationOrder().FirstOrDefault(f =>
-                                                                                         f.JsonName.Equals(property.Name, StringComparison.OrdinalIgnoreCase) ||
-                                                                                         f.Name.Equals(property.Name, StringComparison.OrdinalIgnoreCase));
-
-            if (nestedField is not null)
-            {
-                nestedMessage.Fields[nestedField] = ConvertJsonValue(property.Value, nestedField);
-            }
+            _unknownFields.Add($"{field.Name}.{unknown}");
         }
 
         return nestedMessage;
@@ -403,7 +406,9 @@ internal class SimpleDynamicMessage : IMessage
 
         var embeddedJson = Encoding.UTF8.GetString(buffer.ToArray());
 
-        return new SimpleDynamicMessage(embeddedDescriptor, embeddedJson);
+        // Honour the in-force unknown-field policy: strict mode must reject unknown fields
+        // inside an Any payload too, rather than silently dropping them.
+        return new SimpleDynamicMessage(embeddedDescriptor, embeddedJson, _allowUnknownFields);
     }
 
     private SimpleDynamicMessage? BuildSpecialWktFromAny(JsonElement element, MessageDescriptor embeddedDescriptor)
@@ -843,6 +848,51 @@ internal class SimpleDynamicMessage : IMessage
     private static string FormatMapKey(object key) // Convert the key to a string for JSON
         => key.ToString() ?? "";
 
+    // proto3 JSON represents non-finite floating-point values as the quoted string
+    // tokens "NaN", "Infinity", and "-Infinity"; bare tokens are not valid JSON and
+    // make a successful RPC's response unparseable downstream (DynamicInvoker.MessageToJson).
+    private static void AppendFloatingPoint(StringBuilder sb, float value)
+    {
+        if (TryAppendNonFinite(sb, float.IsNaN(value), float.IsPositiveInfinity(value), float.IsNegativeInfinity(value)))
+        {
+            return;
+        }
+
+        sb.Append(value.ToString("G", CultureInfo.InvariantCulture));
+    }
+
+    private static void AppendFloatingPoint(StringBuilder sb, double value)
+    {
+        if (TryAppendNonFinite(sb, double.IsNaN(value), double.IsPositiveInfinity(value), double.IsNegativeInfinity(value)))
+        {
+            return;
+        }
+
+        sb.Append(value.ToString("G", CultureInfo.InvariantCulture));
+    }
+
+    private static bool TryAppendNonFinite(StringBuilder sb, bool isNaN, bool isPositiveInfinity, bool isNegativeInfinity)
+    {
+        if (isNaN)
+        {
+            sb.Append("\"NaN\"");
+        }
+        else if (isPositiveInfinity)
+        {
+            sb.Append("\"Infinity\"");
+        }
+        else if (isNegativeInfinity)
+        {
+            sb.Append("\"-Infinity\"");
+        }
+        else
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     private void WriteJsonValue(StringBuilder sb, FieldDescriptor field, object? value, bool includeDefaults = false)
     {
         if (value is null)
@@ -904,13 +954,13 @@ internal class SimpleDynamicMessage : IMessage
 
             case FieldType.Float:
 
-                sb.Append(((float)value).ToString("G", CultureInfo.InvariantCulture));
+                AppendFloatingPoint(sb, (float)value);
 
                 break;
 
             case FieldType.Double:
 
-                sb.Append(((double)value).ToString("G", CultureInfo.InvariantCulture));
+                AppendFloatingPoint(sb, (double)value);
 
                 break;
 

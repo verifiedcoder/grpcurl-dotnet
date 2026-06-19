@@ -188,7 +188,7 @@
                     <Button Content="Manage…" FontSize="12" Padding="8,1" VerticalAlignment="Center"
                             Command="{Binding Environment.ManageCommand}"
                             AutomationProperties.Name="Manage environments" />
-                    <TextBlock Text="v1.0.0" VerticalAlignment="Center" Opacity="0.7" Margin="4,0,0,0" />
+                    <TextBlock Text="{Binding Version}" VerticalAlignment="Center" Opacity="0.7" Margin="4,0,0,0" />
                 </StackPanel>
             </DockPanel>
         </Border>

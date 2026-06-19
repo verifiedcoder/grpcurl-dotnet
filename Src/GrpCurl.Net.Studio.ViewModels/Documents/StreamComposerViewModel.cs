@@ -22,7 +22,6 @@ public sealed partial class StreamComposerViewModel : ViewModelBase
 {
     private readonly SavedConnection _connection;
     private readonly string _methodSymbol;
-    private readonly bool _allowUnknownFields;
     private readonly IRequestValidator _validator;
     private readonly IUiDispatcher _dispatcher;
     private readonly IFilePickerService? _filePicker;
@@ -33,6 +32,15 @@ public sealed partial class StreamComposerViewModel : ViewModelBase
 
     [ObservableProperty]
     private string _messageJson = "{}";
+
+    /// <summary>
+    ///     P3 fix: mirrors the parent tab's "allow unknown fields" option <em>live</em>. The composer used
+    ///     to capture this once at construction, so toggling it afterwards left composer validation using
+    ///     the stale value while the actual send used the new one. The parent updates this and validation
+    ///     re-runs under the current option.
+    /// </summary>
+    [ObservableProperty]
+    private bool _allowUnknownFields;
 
     [ObservableProperty]
     private bool _clearAfterSend = true;
@@ -58,7 +66,7 @@ public sealed partial class StreamComposerViewModel : ViewModelBase
     {
         _connection = connection;
         _methodSymbol = methodSymbol;
-        _allowUnknownFields = allowUnknownFields;
+        _allowUnknownFields = allowUnknownFields; // set the backing field directly: no validation before Begin()
         _validator = validator;
         _dispatcher = dispatcher;
         _filePicker = filePicker;
@@ -67,6 +75,9 @@ public sealed partial class StreamComposerViewModel : ViewModelBase
 
     public ObservableCollection<SentMessageRow> SentQueue { get; } = [];
     public ObservableCollection<ValidationProblem> Problems { get; } = [];
+
+    /// <summary>True while the compose draft has advisory validation problems to show (P3 fix).</summary>
+    public bool HasProblems => Problems.Count > 0;
 
     /// <summary>FR-165: the full JSON of every message sent this session, for copy-as-CLI reproduction.</summary>
     public IReadOnlyList<string> SentMessages => SentQueue.Select(r => r.Json).ToList();
@@ -148,7 +159,13 @@ public sealed partial class StreamComposerViewModel : ViewModelBase
     }
 
     // FR-082: advisory validation, debounced, never blocks Send.
-    partial void OnMessageJsonChanged(string value)
+    partial void OnMessageJsonChanged(string value) => RestartValidation();
+
+    // Re-validate the current draft when the parent toggles "allow unknown fields" so the feedback
+    // matches the option the send will actually use.
+    partial void OnAllowUnknownFieldsChanged(bool value) => RestartValidation();
+
+    private void RestartValidation()
     {
         _validationCts?.Cancel();
         _validationCts?.Dispose();
@@ -177,7 +194,7 @@ public sealed partial class StreamComposerViewModel : ViewModelBase
     internal async Task RunValidationAsync(CancellationToken cancellationToken = default)
     {
         var problems = await _validator
-            .ValidateAsync(_connection, _methodSymbol, MessageJson, _allowUnknownFields, cancellationToken)
+            .ValidateAsync(_connection, _methodSymbol, MessageJson, AllowUnknownFields, cancellationToken)
             .ConfigureAwait(false);
 
         if (cancellationToken.IsCancellationRequested)
@@ -193,6 +210,8 @@ public sealed partial class StreamComposerViewModel : ViewModelBase
             {
                 Problems.Add(problem);
             }
+
+            OnPropertyChanged(nameof(HasProblems));
         });
     }
 

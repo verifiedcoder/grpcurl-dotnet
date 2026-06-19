@@ -334,6 +334,35 @@ public sealed class InvocationDocumentViewModelTests
         launcher.LaunchCount.ShouldBe(0);
     }
 
+    [Theory]
+    [InlineData("file:///etc/passwd")]
+    [InlineData("javascript:alert(1)")]
+    [InlineData("calc://run")]
+    [InlineData("not even a uri")]
+    public async Task Open_help_link_never_launches_a_non_http_scheme(string url)
+    {
+        // The link is server-controlled (google.rpc.Help); only http/https may be launched.
+        var doc = Create(out _, out _, out var clipboard, out var dialogs, out var launcher, out _);
+        dialogs.ConfirmResult = true; // user accepts the "copy instead?" prompt
+
+        await doc.OpenHelpLinkCommand.ExecuteAsync(url);
+
+        launcher.LaunchCount.ShouldBe(0);     // never handed to the OS launcher
+        clipboard.Text.ShouldBe(url);         // offered for copy instead
+    }
+
+    [Fact]
+    public async Task Open_help_link_allows_http_scheme()
+    {
+        var doc = Create(out _, out _, out _, out var dialogs, out var launcher, out _);
+        dialogs.ConfirmResult = true;
+
+        await doc.OpenHelpLinkCommand.ExecuteAsync("http://example.com/help");
+
+        launcher.LaunchCount.ShouldBe(1);
+        launcher.LastUri.ShouldBe("http://example.com/help");
+    }
+
     [Fact]
     public async Task Cancellation_during_invoke_sets_the_cancelled_state()
     {

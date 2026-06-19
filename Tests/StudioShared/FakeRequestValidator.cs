@@ -12,10 +12,14 @@ public sealed class FakeRequestValidator : IRequestValidator
 
     public int ValidateCount { get; private set; }
 
+    /// <summary>The <c>allowUnknownFields</c> argument of the most recent call (for live-flow assertions).</summary>
+    public bool? LastAllowUnknownFields { get; private set; }
+
     public Task<IReadOnlyList<ValidationProblem>> ValidateAsync(
         SavedConnection connection, string methodSymbol, string requestJson, bool allowUnknownFields, CancellationToken cancellationToken)
     {
         ValidateCount++;
+        LastAllowUnknownFields = allowUnknownFields;
         cancellationToken.ThrowIfCancellationRequested();
         return Task.FromResult(OnValidate?.Invoke(requestJson) ?? Problems);
     }

@@ -59,6 +59,59 @@ public sealed record GraphQlOperationInfo(string? Name, GraphQlOperationKind Kin
 /// <summary>A problem surfaced in the Problems strip / editor squiggle. Line/column are 1-based when known.</summary>
 public sealed record GraphQlProblem(string Message, GraphQlProblemKind Kind, int? Line = null, int? Column = null);
 
+/// <summary>
+///     How a response <c>errors[]</c> entry should be presented (GQL-073): an upstream gRPC failure is
+///     visually distinct from a usage/configuration error. Classification is by error <em>kind</em>
+///     (does it carry an upstream gRPC status) rather than by trusting <c>extensions.code</c>.
+/// </summary>
+public enum GraphQlErrorClass
+{
+    Configuration,
+    Upstream,
+    Unknown
+}
+
+/// <summary>
+///     One structured entry from a response envelope's <c>errors[]</c> (GQL-070): its message, the
+///     <c>path</c> breadcrumb, and the relevant <c>extensions</c> (code, and the upstream gRPC status when
+///     present).
+/// </summary>
+public sealed record GraphQlErrorInfo(
+    string Message,
+    IReadOnlyList<string> Path,
+    string? Code,
+    string? GrpcStatus,
+    int? GrpcStatusCode,
+    GraphQlErrorClass Class)
+{
+    public bool HasPath => Path.Count > 0;
+
+    /// <summary>The path rendered as a breadcrumb (GQL-070).</summary>
+    public string PathText => string.Join(" › ", Path);
+
+    public bool IsUpstream => Class == GraphQlErrorClass.Upstream;
+
+    /// <summary>A compact one-line summary of the extensions (code + upstream status when present).</summary>
+    public string ExtensionsText
+    {
+        get
+        {
+            var parts = new List<string>();
+            if (!string.IsNullOrEmpty(Code))
+            {
+                parts.Add(Code);
+            }
+
+            if (GrpcStatus is not null)
+            {
+                parts.Add(GrpcStatusCode is { } code ? $"{GrpcStatus} ({code})" : GrpcStatus);
+            }
+
+            return string.Join(" · ", parts);
+        }
+    }
+}
+
 /// <summary>Lifecycle state of one root field while a multi-field document executes (GQL-024).</summary>
 public enum GraphQlFieldState
 {
@@ -137,6 +190,9 @@ public sealed record GraphQlExecutionResult(
 {
     /// <summary>Captured verbose-pane lines (GQL-029): per-field resolved mapping, and request JSON at -vv.</summary>
     public IReadOnlyList<string> VerboseLog { get; init; } = [];
+
+    /// <summary>The structured <c>errors[]</c> from the envelope (GQL-070); empty when the call fully succeeded.</summary>
+    public IReadOnlyList<GraphQlErrorInfo> Errors { get; init; } = [];
 
     /// <summary>A configuration error short-circuited execution before any RPC (AC-5 / GQL-073).</summary>
     public bool IsConfigurationError => ConfigurationErrors.Count > 0;

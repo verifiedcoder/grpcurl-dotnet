@@ -130,7 +130,11 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
         var json = GraphQLResponseBuilder.Serialize(envelope);
         var ok = envelope["errors"] is not JsonArray errors || errors.Count == 0;
 
-        return new GraphQlExecutionResult(ok, json, []) { VerboseLog = [.. captured] };
+        return new GraphQlExecutionResult(ok, json, [])
+        {
+            VerboseLog = [.. captured],
+            Errors = ParseErrors(envelope)
+        };
     }
 
     public async IAsyncEnumerable<string> StreamAsync(
@@ -272,6 +276,57 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
         {
             return (null, null, new GraphQlProblem(ex.Message, GraphQlProblemKind.Variables));
         }
+    }
+
+    /// <summary>
+    ///     Parses the envelope's <c>errors[]</c> into structured Studio models (GQL-070). Classification is by
+    ///     kind (GQL-073): an entry carrying an upstream gRPC status is <see cref="GraphQlErrorClass.Upstream" />;
+    ///     any other coded entry is treated as configuration/usage, not trusting <c>extensions.code</c>.
+    /// </summary>
+    internal static IReadOnlyList<GraphQlErrorInfo> ParseErrors(JsonObject envelope)
+    {
+        if (envelope["errors"] is not JsonArray errors)
+        {
+            return [];
+        }
+
+        var list = new List<GraphQlErrorInfo>(errors.Count);
+
+        foreach (var node in errors)
+        {
+            if (node is not JsonObject error)
+            {
+                continue;
+            }
+
+            var message = error["message"]?.GetValue<string>() ?? "(error)";
+            var path = error["path"] is JsonArray pathArray
+                ? pathArray.Select(e => e?.ToString() ?? string.Empty).ToList()
+                : (IReadOnlyList<string>)[];
+
+            string? code = null;
+            string? grpcStatus = null;
+            int? grpcStatusCode = null;
+
+            if (error["extensions"] is JsonObject extensions)
+            {
+                code = extensions["code"]?.GetValue<string>();
+                grpcStatus = extensions["grpcStatus"]?.GetValue<string>();
+
+                if (extensions["grpcStatusCode"] is JsonValue statusValue && statusValue.TryGetValue(out int parsed))
+                {
+                    grpcStatusCode = parsed;
+                }
+            }
+
+            var category = grpcStatusCode is not null
+                ? GraphQlErrorClass.Upstream
+                : code is not null ? GraphQlErrorClass.Configuration : GraphQlErrorClass.Unknown;
+
+            list.Add(new GraphQlErrorInfo(message, path, code, grpcStatus, grpcStatusCode, category));
+        }
+
+        return list;
     }
 
     private static string ErrorEnvelope(string message)

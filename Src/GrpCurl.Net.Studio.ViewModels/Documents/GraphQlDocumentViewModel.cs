@@ -170,6 +170,11 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
 
     public bool HasVerboseLog => VerboseLog.Count > 0;
 
+    /// <summary>Structured <c>errors[]</c> from the last response (GQL-070), config-vs-upstream distinct (GQL-073).</summary>
+    public ObservableCollection<GraphQlErrorInfo> Errors { get; } = [];
+
+    public bool HasErrors => Errors.Count > 0;
+
     /// <summary>The verbosity options for the pane selector.</summary>
     public IReadOnlyList<GraphQlVerbosity> Verbosities { get; } =
         [GraphQlVerbosity.Off, GraphQlVerbosity.Verbose, GraphQlVerbosity.VeryVerbose];
@@ -444,6 +449,8 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
             OnPropertyChanged(nameof(HasFieldProgress));
             VerboseLog.Clear();
             OnPropertyChanged(nameof(HasVerboseLog));
+            Errors.Clear();
+            OnPropertyChanged(nameof(HasErrors));
             ClearExecutionProblems();
         });
 
@@ -624,6 +631,13 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
         }
 
         OnPropertyChanged(nameof(HasVerboseLog));
+
+        foreach (var error in result.Errors)
+        {
+            Errors.Add(error);
+        }
+
+        OnPropertyChanged(nameof(HasErrors));
 
         if (result.IsConfigurationError)
         {

@@ -257,6 +257,85 @@ public sealed class GraphQlDocumentViewModelTests
     }
 
     [Fact]
+    public async Task Open_document_loads_a_graphql_file()
+    {
+        var picker = new FakeFilePickerService { OpenResult = "/q.graphql" };
+        var vm = new GraphQlDocumentViewModel(
+            Conn(), new FakeGraphQlService { ParseResult = OneQuery() }, new ImmediateUiDispatcher(), new FakeClipboardService(),
+            filePicker: picker, fileReader: (_, _, _) => Task.FromResult("query Loaded { x }"))
+        {
+            ParseDebounce = TimeSpan.Zero
+        };
+
+        await vm.OpenDocumentCommand.ExecuteAsync(null);
+
+        vm.Document.ShouldBe("query Loaded { x }");
+    }
+
+    [Fact]
+    public async Task Save_document_writes_the_current_document()
+    {
+        StringWriter? captured = null;
+        var picker = new FakeFilePickerService { SaveResult = "/out.graphql" };
+        var vm = new GraphQlDocumentViewModel(
+            Conn(), new FakeGraphQlService(), new ImmediateUiDispatcher(), new FakeClipboardService(),
+            filePicker: picker, writerFactory: _ => captured = new StringWriter())
+        {
+            ParseDebounce = TimeSpan.Zero,
+            Document = "query Save { x }"
+        };
+
+        await vm.SaveDocumentCommand.ExecuteAsync(null);
+
+        _ = captured.ShouldNotBeNull();
+        captured!.GetStringBuilder().ToString().ShouldBe("query Save { x }");
+        picker.LastSaveSuggestedName.ShouldBe("operation.graphql");
+    }
+
+    [Fact]
+    public async Task Import_variables_loads_a_json_file()
+    {
+        var picker = new FakeFilePickerService { OpenResult = "/v.json" };
+        var vm = new GraphQlDocumentViewModel(
+            Conn(), new FakeGraphQlService(), new ImmediateUiDispatcher(), new FakeClipboardService(),
+            filePicker: picker, fileReader: (_, _, _) => Task.FromResult("{ \"a\": 1 }"))
+        {
+            ParseDebounce = TimeSpan.Zero
+        };
+
+        await vm.ImportVariablesCommand.ExecuteAsync(null);
+
+        vm.VariablesJson.ShouldBe("{ \"a\": 1 }");
+    }
+
+    [Fact]
+    public async Task An_unreadable_or_oversize_file_surfaces_a_configuration_problem()
+    {
+        var picker = new FakeFilePickerService { OpenResult = "/big.graphql" };
+        var vm = new GraphQlDocumentViewModel(
+            Conn(), new FakeGraphQlService(), new ImmediateUiDispatcher(), new FakeClipboardService(),
+            filePicker: picker, fileReader: (_, _, _) => throw new InvalidOperationException("File exceeds the 4 MiB limit."))
+        {
+            ParseDebounce = TimeSpan.Zero
+        };
+
+        await vm.OpenDocumentCommand.ExecuteAsync(null);
+
+        vm.Document.ShouldBeEmpty();
+        vm.Problems.ShouldContain(p => p.Kind == GraphQlProblemKind.Configuration);
+    }
+
+    [Fact]
+    public void File_commands_are_disabled_without_a_picker()
+    {
+        var vm = Create(out _, out _);
+
+        vm.OpenDocumentCommand.CanExecute(null).ShouldBeFalse();
+        vm.SaveDocumentCommand.CanExecute(null).ShouldBeFalse();
+        vm.ImportVariablesCommand.CanExecute(null).ShouldBeFalse();
+    }
+
+    [Fact]
     public void Re_parsing_keeps_the_prior_selection_when_the_operation_still_exists()
     {
         var vm = Create(out _, out _);

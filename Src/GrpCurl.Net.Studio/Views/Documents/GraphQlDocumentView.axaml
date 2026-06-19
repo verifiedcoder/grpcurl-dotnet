@@ -74,17 +74,29 @@
         <!-- ── Editors: document + variables (left) · response (right) ── -->
         <Grid Grid.Row="1" ColumnDefinitions="*,4,*">
 
-            <Grid Grid.Column="0" RowDefinitions="2*,Auto,*">
-                <Border Grid.Row="0" BorderBrush="{DynamicResource Status.Neutral}" BorderThickness="1" CornerRadius="3">
+            <Grid Grid.Column="0" RowDefinitions="Auto,2*,Auto,*">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" Margin="0,0,0,4">
+                    <TextBlock Text="Document" VerticalAlignment="Center" Opacity="0.7" FontSize="12" Margin="0,0,4,0" />
+                    <Button Content="Open…" Command="{Binding OpenDocumentCommand}" Padding="6,0"
+                            AutomationProperties.Name="Open GraphQL document" />
+                    <Button Content="Save…" Command="{Binding SaveDocumentCommand}" Padding="6,0"
+                            AutomationProperties.Name="Save GraphQL document" />
+                </StackPanel>
+
+                <Border Grid.Row="1" BorderBrush="{DynamicResource Status.Neutral}" BorderThickness="1" CornerRadius="3">
                     <ae:TextEditor x:Name="DocumentEditor" ShowLineNumbers="True"
                                    FontFamily="{DynamicResource Editor.FontFamily}"
                                    FontSize="{DynamicResource Editor.FontSize}"
                                    AutomationProperties.Name="GraphQL document" />
                 </Border>
 
-                <TextBlock Grid.Row="1" Text="Variables (JSON)" Margin="0,6,0,2" Opacity="0.7" FontSize="12" />
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="4" Margin="0,6,0,2">
+                    <TextBlock Text="Variables (JSON)" VerticalAlignment="Center" Opacity="0.7" FontSize="12" Margin="0,0,4,0" />
+                    <Button Content="Import…" Command="{Binding ImportVariablesCommand}" Padding="6,0"
+                            AutomationProperties.Name="Import variables" />
+                </StackPanel>
 
-                <Border Grid.Row="2" BorderBrush="{DynamicResource Status.Neutral}" BorderThickness="1" CornerRadius="3">
+                <Border Grid.Row="3" BorderBrush="{DynamicResource Status.Neutral}" BorderThickness="1" CornerRadius="3">
                     <ae:TextEditor x:Name="VariablesEditor"
                                    FontFamily="{DynamicResource Editor.FontFamily}"
                                    FontSize="{DynamicResource Editor.FontSize}"

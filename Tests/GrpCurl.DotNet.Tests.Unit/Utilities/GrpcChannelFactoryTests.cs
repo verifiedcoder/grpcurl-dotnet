@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
 using GrpCurl.Net.Utilities;
 
@@ -956,9 +957,30 @@ public sealed class GrpcChannelFactoryTests
     }
 
     [Fact]
+    public void ValidateTlsMaterialOptions_ClientKeyPathWithoutCertPath_ThrowsArgumentException()
+    {
+        var options = new GrpcChannelFactory.ChannelOptions
+        {
+            ClientKeyPath = "/tmp/client.key"
+        };
+
+        var ex = Should.Throw<ArgumentException>(() => GrpcChannelFactory.ValidateTlsMaterialOptions(options));
+
+        ex.Message.ShouldContain("--key");
+        ex.Message.ShouldContain("--cert");
+    }
+
+    [Fact]
     public void ValidateTlsMaterialOptions_ValidCombinations_DoNotThrow()
     {
         Should.NotThrow(() => GrpcChannelFactory.ValidateTlsMaterialOptions(new GrpcChannelFactory.ChannelOptions()));
+
+        // PEM cert + key supplied as paths is a valid pair.
+        Should.NotThrow(() => GrpcChannelFactory.ValidateTlsMaterialOptions(new GrpcChannelFactory.ChannelOptions
+        {
+            ClientCertPath = "/tmp/client.pem",
+            ClientKeyPath = "/tmp/client.key"
+        }));
 
         Should.NotThrow(() => GrpcChannelFactory.ValidateTlsMaterialOptions(new GrpcChannelFactory.ChannelOptions
         {
@@ -972,6 +994,47 @@ public sealed class GrpcChannelFactoryTests
             CaCertPath = "/tmp/ca.pem",
             ClientCertPath = "/tmp/client.p12"
         }));
+    }
+
+    #endregion
+
+    #region Culture-Invariant Parsing Tests
+
+    [Fact]
+    public void ParseDuration_CommaDecimalCulture_StillParsesDotDecimal()
+    {
+        // The duration grammar always uses '.' as the decimal separator. Under a culture
+        // whose decimal separator is ',', a culture-sensitive parse would reject "1.5s".
+        var original = CultureInfo.CurrentCulture;
+
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+
+            GrpcChannelFactory.ParseDuration("1.5s").ShouldBe(TimeSpan.FromSeconds(1.5));
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = original;
+        }
+    }
+
+    [Fact]
+    public void ParseSize_CommaDecimalCulture_StillParsesDotDecimal()
+    {
+        var original = CultureInfo.CurrentCulture;
+
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+
+            // 1.5MB = 1.5 * 1024 * 1024
+            GrpcChannelFactory.ParseSize("1.5MB").ShouldBe((int)(1.5 * 1024 * 1024));
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = original;
+        }
     }
 
     #endregion

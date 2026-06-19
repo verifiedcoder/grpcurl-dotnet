@@ -47,7 +47,9 @@ public static class WellKnownTypeRegistry
         RegisterDescriptor(registry, Timestamp.Descriptor.File);
         RegisterDescriptor(registry, Type.Descriptor.File);
 
-        // Wrappers (DoubleValue, FloatValue, Int64Value, etc.)
+        // Wrappers (DoubleValue, FloatValue, Int64Value, etc.) all live in the same
+        // wrappers.proto file, so registering any one wrapper's Descriptor.File pulls in
+        // every wrapper type. DoubleValue is just the representative entry point.
         RegisterDescriptor(registry, DoubleValue.Descriptor.File);
 
         return registry;

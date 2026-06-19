@@ -1,5 +1,6 @@
 using Grpc.Core;
 using Grpc.Net.Client;
+using System.Globalization;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography;
@@ -474,7 +475,10 @@ internal static partial class GrpcChannelFactory
             throw new ArgumentException($"Invalid duration format: '{duration}'. Expected formats: '10s', '1m', '500ms', '1.5h', or plain number for seconds");
         }
 
-        if (!double.TryParse(match.Groups[1].Value, out var value))
+        // Parse invariantly: the duration grammar uses '.' as the decimal separator
+        // regardless of the host locale, so a comma-decimal culture (e.g. de-DE) must not
+        // reject "1.5s" or silently mis-parse it.
+        if (!double.TryParse(match.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
         {
             throw new ArgumentException($"Invalid numeric value in duration: '{duration}'");
         }
@@ -519,7 +523,8 @@ internal static partial class GrpcChannelFactory
             throw new ArgumentException($"Invalid size format: '{size}'. Expected formats: '4MB', '10MB', '1GB', or plain number for bytes");
         }
 
-        if (!double.TryParse(match.Groups[1].Value, out var value))
+        // Parse invariantly so a comma-decimal culture cannot reject or mis-parse "1.5MB".
+        if (!double.TryParse(match.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
         {
             throw new ArgumentException($"Invalid numeric value in size: '{size}'");
         }
@@ -594,6 +599,13 @@ internal static partial class GrpcChannelFactory
         if (options.ClientCertPem is not null && options.ClientKeyPem is null)
         {
             throw new ArgumentException("ClientCertPem requires ClientKeyPem.");
+        }
+
+        // A private key with no certificate is meaningless. (The inverse — a certificate
+        // with no key — stays valid: a PKCS#12 .p12/.pfx file carries its own key.)
+        if (options.ClientKeyPath is not null && options.ClientCertPath is null)
+        {
+            throw new ArgumentException("--key requires --cert (a private key needs its certificate).");
         }
     }
 

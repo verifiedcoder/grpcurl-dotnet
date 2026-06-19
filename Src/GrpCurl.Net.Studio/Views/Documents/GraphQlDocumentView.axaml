@@ -90,10 +90,38 @@
                                    AutomationProperties.Name="GraphQL document" />
                 </Border>
 
-                <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="4" Margin="0,6,0,2">
-                    <TextBlock Text="Variables (JSON)" VerticalAlignment="Center" Opacity="0.7" FontSize="12" Margin="0,0,4,0" />
-                    <Button Content="Import…" Command="{Binding ImportVariablesCommand}" Padding="6,0"
-                            AutomationProperties.Name="Import variables" />
+                <StackPanel Grid.Row="2" Spacing="4" Margin="0,6,0,2">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="Variables (JSON)" VerticalAlignment="Center" Opacity="0.7" FontSize="12" Margin="0,0,4,0" />
+                        <Button Content="Import…" Command="{Binding ImportVariablesCommand}" Padding="6,0"
+                                AutomationProperties.Name="Import variables" />
+                    </StackPanel>
+
+                    <!-- GQL-018: quick-vars grid — a scalar projection of the variables JSON for the declared variables. -->
+                    <ItemsControl ItemsSource="{Binding VariableRows}" IsVisible="{Binding HasVariableRows}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="docs:GraphQlVariableRow">
+                                <Grid ColumnDefinitions="*,Auto,2*" ColumnSpacing="6" Margin="0,1">
+                                    <TextBlock Grid.Column="0" VerticalAlignment="Center" FontFamily="Cascadia Code,Consolas,monospace" FontSize="12">
+                                        <Run Text="$" /><Run Text="{Binding Name}" FontWeight="SemiBold" /><Run Text="{Binding RequiredMarker}" Foreground="{DynamicResource Status.Server}" />
+                                    </TextBlock>
+                                    <TextBlock Grid.Column="1" Text="{Binding Type}" VerticalAlignment="Center" Opacity="0.6" FontSize="11" />
+                                    <TextBox Grid.Column="2" Text="{Binding Value}" Watermark="value" FontSize="12"
+                                             AutomationProperties.Name="Variable value" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- GQL-019: unbound-required / undeclared-bound warnings. -->
+                    <ItemsControl ItemsSource="{Binding VariableWarnings}" IsVisible="{Binding HasVariableWarnings}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="gql:GraphQlProblem">
+                                <TextBlock Text="{Binding Message}" FontSize="11" TextWrapping="Wrap"
+                                           Foreground="{DynamicResource Status.Server}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </StackPanel>
 
                 <Border Grid.Row="3" BorderBrush="{DynamicResource Status.Neutral}" BorderThickness="1" CornerRadius="3">

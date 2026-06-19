@@ -211,6 +211,18 @@ public sealed class ConnectionsPaneViewModelTests
     }
 
     [Fact]
+    public void New_graphql_operation_opens_a_graphql_tab_for_the_connection()
+    {
+        var workspace = new WorkspaceModel { Connections = [new SavedConnection { Id = "c1", Name = "alpha", Address = "h:1" }] };
+        var pane = CreateWithSavedRequests(out var host, workspace);
+
+        pane.NewGraphQlOperationCommand.Execute(pane.Connections[0]);
+
+        _ = host.LastGraphQl.ShouldNotBeNull();
+        host.LastGraphQl!.Id.ShouldBe("c1");
+    }
+
+    [Fact]
     public void Saved_requests_are_grouped_under_their_connection()
     {
         var workspace = new WorkspaceModel

@@ -705,6 +705,16 @@
           "xunit.v3.runner.common": "[3.2.2]"
         }
       },
+      "gql2grpc": {
+        "type": "Project",
+        "dependencies": {
+          "GraphQL-Parser": "[9.5.1, )",
+          "GrpCurl.Net.Core": "[1.0.0, )",
+          "Spectre.Console": "[0.55.2, )",
+          "System.CommandLine": "[2.0.6, )",
+          "YamlDotNet": "[16.3.0, )"
+        }
+      },
       "grpcurl.net": {
         "type": "Project",
         "dependencies": {
@@ -733,6 +743,7 @@
           "Avalonia.Themes.Fluent": "[11.3.17, )",
           "AvaloniaEdit.TextMate": "[11.3.0, )",
           "CommunityToolkit.Mvvm": "[8.4.2, )",
+          "Gql2Grpc": "[1.0.0, )",
           "GrpCurl.Net.Core": "[1.0.0, )",
           "GrpCurl.Net.Studio.ViewModels": "[1.0.0, )",
           "Microsoft.Extensions.Hosting": "[10.0.9, )",
@@ -858,6 +869,12 @@
         "resolved": "3.34.1",
         "contentHash": "212vdYxRuVopGE5bess6Jg5oXWyizA6hcLPTI7G+qA4PthQEvfeof3njT+7VSY5v/+O0P22xTydiP5fSJJpGEA=="
       },
+      "GraphQL-Parser": {
+        "type": "CentralTransitive",
+        "requested": "[9.5.1, )",
+        "resolved": "9.5.1",
+        "contentHash": "pUYpupTsVyNcKemko8f0iknJa2z/oZsfzwb4crgEFN9/pKf3k35gxVXDDOkD3NVPF1ea6GUV0jgxkjCozFj7Fg=="
+      },
       "Grpc.Net.Client": {
         "type": "CentralTransitive",
         "requested": "[2.76.0, )",
@@ -942,6 +959,12 @@
         "dependencies": {
           "TextMateSharp": "1.0.70"
         }
+      },
+      "YamlDotNet": {
+        "type": "CentralTransitive",
+        "requested": "[16.3.0, )",
+        "resolved": "16.3.0",
+        "contentHash": "SgMOdxbz8X65z8hraIs6hOEdnkH6hESTAIUa7viEngHOYaH+6q5XJmwr1+yb9vJpNQ19hCQY69xbFsLtXpobQA=="
       }
     }
   }

@@ -80,6 +80,9 @@ internal static class ServiceRegistration
         _ = services.AddSingleton<IInvocationRunner, InvocationRunner>();
         _ = services.AddSingleton<IRequestValidator, RequestValidator>();
 
+        // GraphQL layer (P4 / SPEC-015) — the single seam over the Gql2Grpc bridge.
+        _ = services.AddSingleton<IGraphQlService, GraphQlService>();
+
         // View models — shell root + pane placeholders.
         _ = services.AddSingleton<ConnectionsPaneViewModel>();
         _ = services.AddSingleton<ServiceExplorerViewModel>();

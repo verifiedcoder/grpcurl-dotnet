@@ -23,6 +23,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     private readonly IClipboardService _clipboard;
     private readonly IRevealGate? _revealGate;
     private readonly IInvocationRunner _invocation;
+    private readonly IGraphQlService? _graphql;
     private readonly IDialogService _dialogs;
     private readonly ILauncherService _launcher;
     private readonly IRequestValidator _validator;
@@ -73,12 +74,14 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         IUpdateService? updates = null,
         IDiagnosticsLog? diagnostics = null,
         ISessionStore? session = null,
+        IGraphQlService? graphql = null,
         TimeSpan? sessionDebounce = null)
     {
         _descriptors = descriptors;
         _dispatcher = dispatcher;
         _clipboard = clipboard;
         _invocation = invocation;
+        _graphql = graphql;
         _dialogs = dialogs;
         _launcher = launcher;
         _validator = validator;
@@ -238,6 +241,17 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         document.CloseRequested += OnDocumentCloseRequested;
         Documents.Add(document);
         SelectedDocument = document;
+    }
+
+    public void OpenGraphQl(SavedConnection connection)
+    {
+        if (_graphql is null)
+        {
+            return; // GraphQL service not wired (bare unit construction)
+        }
+
+        var document = new GraphQlDocumentViewModel(connection, _graphql, _dispatcher, _clipboard);
+        Finish(document);
     }
 
     public void OpenSettings()

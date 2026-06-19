@@ -1,3 +1,5 @@
+- name: Install &amp; releases
+  href: install.md
 - name: CLI Reference
   href: cli-reference.md
 - name: Examples

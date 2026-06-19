@@ -126,6 +126,18 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
         return Task.CompletedTask;
     }
 
+    /// <summary>SPEC-015 §1: open a new GraphQL operation tab for a connection (its context menu).</summary>
+    [RelayCommand]
+    private void NewGraphQlOperation(ConnectionListItemViewModel? item)
+    {
+        var connection = (item ?? SelectedConnection)?.Connection;
+
+        if (connection is not null)
+        {
+            _documentHost?.OpenGraphQl(connection);
+        }
+    }
+
     /// <summary>FR-166: import a saved-request snippet into a connection (re-bound, with a deduped name).</summary>
     private async Task ImportRequestIntoAsync(ConnectionListItemViewModel item)
     {

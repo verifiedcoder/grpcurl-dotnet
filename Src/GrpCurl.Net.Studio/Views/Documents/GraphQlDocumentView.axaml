@@ -1,0 +1,137 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+             xmlns:docs="clr-namespace:GrpCurl.Net.Studio.ViewModels.Documents;assembly=GrpCurl.Net.Studio.ViewModels"
+             xmlns:conn="clr-namespace:GrpCurl.Net.Studio.ViewModels.Connections;assembly=GrpCurl.Net.Studio.ViewModels"
+             xmlns:gql="clr-namespace:GrpCurl.Net.Studio.ViewModels.Models.GraphQl;assembly=GrpCurl.Net.Studio.ViewModels"
+             x:Class="GrpCurl.Net.Studio.Views.Documents.GraphQlDocumentView"
+             x:Name="Root"
+             x:DataType="docs:GraphQlDocumentViewModel">
+
+    <UserControl.KeyBindings>
+        <!-- GQL-021: Execute on Ctrl+Enter, same chord as invocation tabs. -->
+        <KeyBinding Gesture="Ctrl+Enter" Command="{Binding ExecuteCommand}" />
+    </UserControl.KeyBindings>
+
+    <UserControl.Resources>
+        <!-- Request-header editor row (GQL-003): name/value + -bin validity. -->
+        <DataTemplate x:Key="GraphQlHeaderRowTemplate" x:DataType="conn:HeaderRowViewModel">
+            <StackPanel Margin="0,2" Spacing="1">
+                <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="4">
+                    <TextBox Grid.Column="0" Text="{Binding Name}" Watermark="name"
+                             AutomationProperties.Name="Header name" />
+                    <TextBox Grid.Column="1" Text="{Binding Value}" Watermark="value"
+                             AutomationProperties.Name="Header value" />
+                    <Button Grid.Column="2" Content="✕" Padding="6,0"
+                            Command="{Binding #Root.((docs:GraphQlDocumentViewModel)DataContext).RemoveHeaderCommand}"
+                            CommandParameter="{Binding}" AutomationProperties.Name="Remove header" />
+                </Grid>
+                <TextBlock Text="{Binding BinError}" FontSize="11" IsVisible="{Binding HasBinError}"
+                           Foreground="{DynamicResource Status.Server}" />
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="8">
+
+        <!-- ── Header bar: connection · operation picker · default service · Execute/Cancel · status ── -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*,Auto,Auto" ColumnSpacing="8" Margin="0,0,0,8">
+            <TextBlock Grid.Column="0" VerticalAlignment="Center" FontWeight="SemiBold"
+                       Text="{Binding Connection.Address}" ToolTip.Tip="Target connection" />
+
+            <ComboBox Grid.Column="1" MinWidth="160" ItemsSource="{Binding Operations}"
+                      SelectedItem="{Binding SelectedOperation}"
+                      AutomationProperties.Name="Operation"
+                      ToolTip.Tip="Operation to execute (GQL-012)">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="gql:GraphQlOperationInfo">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <Border Background="{DynamicResource Status.Neutral}" CornerRadius="3" Padding="4,0">
+                                <TextBlock Text="{Binding Kind}" FontSize="11" />
+                            </Border>
+                            <TextBlock Text="{Binding DisplayName}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <TextBox Grid.Column="2" Text="{Binding DefaultService}" Watermark="default service (e.g. pkg.Service)"
+                     AutomationProperties.Name="Default service"
+                     ToolTip.Tip="Fully-qualified gRPC service used by convention fallback (--default-service)" />
+
+            <Button Grid.Column="3" Content="Execute" Command="{Binding ExecuteCommand}"
+                    IsVisible="{Binding !IsInFlight}" Classes="accent"
+                    AutomationProperties.Name="Execute" />
+            <Button Grid.Column="3" Content="Cancel" Command="{Binding ExecuteCancelCommand}"
+                    IsVisible="{Binding IsInFlight}"
+                    AutomationProperties.Name="Cancel" />
+
+            <TextBlock Grid.Column="4" VerticalAlignment="Center" Text="{Binding StatusText}"
+                       IsVisible="{Binding StatusText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                       Foreground="{DynamicResource Status.Neutral}" />
+        </Grid>
+
+        <!-- ── Editors: document + variables (left) · response (right) ── -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,4,*">
+
+            <Grid Grid.Column="0" RowDefinitions="2*,Auto,*">
+                <Border Grid.Row="0" BorderBrush="{DynamicResource Status.Neutral}" BorderThickness="1" CornerRadius="3">
+                    <ae:TextEditor x:Name="DocumentEditor" ShowLineNumbers="True"
+                                   FontFamily="{DynamicResource Editor.FontFamily}"
+                                   FontSize="{DynamicResource Editor.FontSize}"
+                                   AutomationProperties.Name="GraphQL document" />
+                </Border>
+
+                <TextBlock Grid.Row="1" Text="Variables (JSON)" Margin="0,6,0,2" Opacity="0.7" FontSize="12" />
+
+                <Border Grid.Row="2" BorderBrush="{DynamicResource Status.Neutral}" BorderThickness="1" CornerRadius="3">
+                    <ae:TextEditor x:Name="VariablesEditor"
+                                   FontFamily="{DynamicResource Editor.FontFamily}"
+                                   FontSize="{DynamicResource Editor.FontSize}"
+                                   AutomationProperties.Name="Variables JSON" />
+                </Border>
+            </Grid>
+
+            <GridSplitter Grid.Column="1" Background="Transparent" />
+
+            <Border Grid.Column="2" BorderBrush="{DynamicResource Status.Neutral}" BorderThickness="1" CornerRadius="3">
+                <ae:TextEditor x:Name="ResponseEditor" IsReadOnly="True"
+                               FontFamily="{DynamicResource Editor.FontFamily}"
+                               FontSize="{DynamicResource Editor.FontSize}"
+                               AutomationProperties.Name="Response envelope" />
+            </Border>
+        </Grid>
+
+        <!-- ── Footer: output options · headers · Problems strip ── -->
+        <StackPanel Grid.Row="2" Spacing="4" Margin="0,8,0,0">
+            <WrapPanel>
+                <CheckBox Content="emit-defaults" IsChecked="{Binding EmitDefaults}" Margin="0,0,12,0" />
+                <CheckBox Content="allow-unknown-fields" IsChecked="{Binding AllowUnknownFields}" Margin="0,0,12,0" />
+                <CheckBox Content="strict-selection" IsChecked="{Binding StrictSelection}" Margin="0,0,12,0" />
+                <CheckBox Content="introspection" IsChecked="{Binding Introspection}" Margin="0,0,12,0" />
+                <Button Content="Copy response" Command="{Binding CopyResponseCommand}" Padding="6,0" />
+            </WrapPanel>
+
+            <Expander Header="Headers">
+                <StackPanel Spacing="2">
+                    <ItemsControl ItemsSource="{Binding Headers}" ItemTemplate="{StaticResource GraphQlHeaderRowTemplate}" />
+                    <Button Content="+ Add header" Command="{Binding AddHeaderCommand}" HorizontalAlignment="Left" Padding="6,0" />
+                </StackPanel>
+            </Expander>
+
+            <!-- Problems strip (GQL-011 syntax + AC-5 variable/config errors). -->
+            <ItemsControl ItemsSource="{Binding Problems}" IsVisible="{Binding HasProblems}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="gql:GraphQlProblem">
+                        <TextBlock Margin="0,1" TextWrapping="Wrap" FontSize="12"
+                                   Foreground="{DynamicResource Status.Server}">
+                            <Run Text="{Binding Kind}" FontWeight="SemiBold" />
+                            <Run Text=" — " />
+                            <Run Text="{Binding Message}" />
+                        </TextBlock>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </Grid>
+</UserControl>

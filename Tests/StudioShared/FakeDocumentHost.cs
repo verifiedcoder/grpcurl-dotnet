@@ -39,6 +39,12 @@ public sealed class FakeDocumentHost : IDocumentHost
     public void OpenSavedRequest(SavedConnection connection, SavedRequest request)
         => SavedRequests.Add((connection, request));
 
+    public List<SavedConnection> GraphQlOpened { get; } = [];
+
+    public SavedConnection? LastGraphQl => GraphQlOpened.Count == 0 ? null : GraphQlOpened[^1];
+
+    public void OpenGraphQl(SavedConnection connection) => GraphQlOpened.Add(connection);
+
     public int SettingsOpened { get; private set; }
 
     public void OpenSettings() => SettingsOpened++;

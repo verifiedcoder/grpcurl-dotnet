@@ -35,6 +35,10 @@
                         <!-- FR-166: import a saved-request snippet into this connection. -->
                         <Grid.ContextMenu>
                             <ContextMenu x:DataType="items:ConnectionListItemViewModel">
+                                <MenuItem Header="New GraphQL operation"
+                                          Command="{Binding $parent[ListBox].((vm:ConnectionsPaneViewModel)DataContext).NewGraphQlOperationCommand}"
+                                          CommandParameter="{Binding}"
+                                          AutomationProperties.Name="New GraphQL operation" />
                                 <MenuItem Header="Import request…" Command="{Binding ImportRequestCommand}"
                                           AutomationProperties.Name="Import request into connection" />
                             </ContextMenu>

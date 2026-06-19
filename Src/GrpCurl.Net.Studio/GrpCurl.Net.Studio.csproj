@@ -37,6 +37,8 @@
     <ItemGroup>
         <ProjectReference Include="..\GrpCurl.Net.Studio.ViewModels\GrpCurl.Net.Studio.ViewModels.csproj" />
         <ProjectReference Include="..\GrpCurl.Net.Core\GrpCurl.Net.Core.csproj" />
+        <!-- P4: Studio drives the Gql2Grpc bridge in-process (GQL-007 one-engine) via GraphQlService. -->
+        <ProjectReference Include="..\Gql2Grpc\Gql2Grpc.csproj" />
     </ItemGroup>
 
     <ItemGroup>

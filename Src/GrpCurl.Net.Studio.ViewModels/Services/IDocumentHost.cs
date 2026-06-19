@@ -37,6 +37,12 @@ public interface IDocumentHost
     /// </summary>
     void OpenSavedRequest(SavedConnection connection, SavedRequest request);
 
+    /// <summary>
+    ///     Opens a new GraphQL operation tab bound to <paramref name="connection" /> (SPEC-015 E4.1,
+    ///     "New GraphQL Operation"). GraphQL tabs are editable drafts, so each call opens a new one.
+    /// </summary>
+    void OpenGraphQl(SavedConnection connection);
+
     /// <summary>Opens the Settings tab (FR-150), or focuses it if already open (single instance).</summary>
     void OpenSettings();
 

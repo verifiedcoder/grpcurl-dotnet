@@ -561,13 +561,65 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
                 dropped.Add(unknown.ArgumentName);
             }
 
-            return new GraphQlFieldTranslation(selection.Name, $"{serviceName}/{entry.Method}", requestJson, dropped, null);
+            return new GraphQlFieldTranslation(selection.Name, $"{serviceName}/{entry.Method}", requestJson, dropped, null)
+            {
+                Annotations = Annotate(selection, entry, mappingConfig.Defaults),
+                FieldMask = entry.SelectionFieldMaskPath is null ? null : NullIfEmpty(Gql2Grpc.Translation.FieldMaskProjector.Build(selection.Children))
+            };
         }
         catch (InvalidOperationException ex)
         {
             return new GraphQlFieldTranslation(selection.Name, null, null, [], ex.Message);
         }
     }
+
+    /// <summary>GQL-051: annotate how each top-level request field was produced (the rule kind + target).</summary>
+    private static IReadOnlyList<GraphQlArgumentRule> Annotate(ResolvedSelection selection, MappingEntry entry, MappingDefaults defaults)
+    {
+        var annotations = new List<GraphQlArgumentRule>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var (argName, _) in selection.Arguments)
+        {
+            _ = seen.Add(argName);
+            annotations.Add(ClassifyArgument(argName, entry, defaults));
+        }
+
+        // Literals are applied even when the caller didn't supply the argument.
+        foreach (var (argName, rule) in entry.Arguments)
+        {
+            if (rule is ArgumentRule.Literal literal && seen.Add(argName))
+            {
+                annotations.Add(new GraphQlArgumentRule(argName, "literal", literal.Value));
+            }
+        }
+
+        return annotations;
+    }
+
+    private static GraphQlArgumentRule ClassifyArgument(string argName, MappingEntry entry, MappingDefaults defaults)
+    {
+        if (entry.Arguments.TryGetValue(argName, out var rule))
+        {
+            return rule switch
+            {
+                ArgumentRule.Rename rename => new GraphQlArgumentRule(argName, "rename", rename.GrpcFieldName),
+                ArgumentRule.PathRule { Path: "." } => new GraphQlArgumentRule(argName, "spread", null),
+                ArgumentRule.PathRule path => new GraphQlArgumentRule(argName, "path", path.Path),
+                ArgumentRule.Literal literal => new GraphQlArgumentRule(argName, "literal", literal.Value),
+                ArgumentRule.SkipArgument => new GraphQlArgumentRule(argName, "skip", null),
+                _ => new GraphQlArgumentRule(argName, "rule", null)
+            };
+        }
+
+        var aliases = ConventionDefaults.MergeArgumentAliases(defaults.ArgumentAliases);
+
+        return aliases.TryGetValue(argName, out var alias)
+            ? new GraphQlArgumentRule(argName, "alias", alias)
+            : new GraphQlArgumentRule(argName, "snake_case", ConventionDefaults.ToSnakeCase(argName));
+    }
+
+    private static string? NullIfEmpty(string value) => string.IsNullOrEmpty(value) ? null : value;
 
     private static string Prettify(string compactJson)
     {

@@ -201,9 +201,19 @@ public sealed record GraphQlResolutionResult(
     string? OverriddenService);
 
 /// <summary>
+///     How one request field was produced from an argument (GQL-051): the argument name, the rule kind
+///     (rename / path / spread / literal / skip / alias / snake_case), and the resulting target (or value).
+/// </summary>
+public sealed record GraphQlArgumentRule(string Argument, string Rule, string? Target)
+{
+    public string Display => Target is null ? $"{Argument} — {Rule}" : $"{Argument} — {Rule} → {Target}";
+}
+
+/// <summary>
 ///     The pre-flight translation of one root field (GQL-050/051): the exact gRPC request JSON that would
-///     be sent (no RPC), its resolved target, and any arguments the translator would silently drop because
-///     they match no request field (the Finding-4 guard, GQL-047).
+///     be sent (no RPC), its resolved target, how each argument was applied, the synthesised FieldMask, and
+///     any arguments the translator would silently drop because they match no request field (the Finding-4
+///     guard, GQL-047).
 /// </summary>
 public sealed record GraphQlFieldTranslation(
     string FieldName,
@@ -212,6 +222,16 @@ public sealed record GraphQlFieldTranslation(
     IReadOnlyList<string> DroppedArguments,
     string? Error)
 {
+    /// <summary>Per-argument rule annotations (GQL-051).</summary>
+    public IReadOnlyList<GraphQlArgumentRule> Annotations { get; init; } = [];
+
+    /// <summary>The synthesised <c>$selection</c> FieldMask string (GQL-051), when the entry uses one.</summary>
+    public string? FieldMask { get; init; }
+
+    public bool HasAnnotations => Annotations.Count > 0;
+
+    public bool HasFieldMask => !string.IsNullOrEmpty(FieldMask);
+
     public bool HasRequestJson => RequestJson is not null;
 
     public bool HasDroppedArguments => DroppedArguments.Count > 0;

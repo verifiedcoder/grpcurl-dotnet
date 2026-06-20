@@ -1,10 +1,10 @@
 name: Release
 
 # Zero-budget GitHub-Releases packaging (P5). Builds self-contained, unsigned
-# artifacts for Studio + both CLIs across 6 RIDs and stages them with a checksum
-# manifest. This revision is DRY-RUN ONLY — it never creates a GitHub Release;
-# the `gh release create` step lands in a follow-up. A pushed `v*` tag therefore
-# just produces stage artifacts for inspection.
+# artifacts for Studio + both CLIs across 6 RIDs, stages them with a checksum
+# manifest, and creates a DRAFT GitHub Release on a pushed `v*` tag (a maintainer
+# smoke-tests the draft assets, then publishes). A manual workflow_dispatch run is
+# always a dry run — it stages artifacts but never creates a Release.
 
 on:
   push:
@@ -94,11 +94,16 @@ jobs:
           path: artifacts/release/dist/*
           if-no-files-found: error
 
-  stage-release:
-    name: stage release (checksums)
+  release:
+    name: stage + draft release
     needs: [version, package]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # create the draft GitHub Release (built-in GITHUB_TOKEN; no secret)
     steps:
+      - name: Checkout (for the notes template + tag verify)
+        uses: actions/checkout@v5
+
       - name: Download all RID artifacts
         uses: actions/download-artifact@v4
         with:
@@ -117,9 +122,39 @@ jobs:
           echo
           cat release/SHA256SUMS
 
-      - name: Upload assembled release (dry run — no GitHub Release created)
+      - name: Upload assembled set as a workflow artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-${{ needs.version.outputs.version }}
           path: release/*
           if-no-files-found: error
+
+      # Real release only on a pushed v* tag. workflow_dispatch stays a dry run.
+      - name: Compose release notes
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          ver="${{ needs.version.outputs.version }}"
+          cat > release-notes.md <<EOF
+          **GrpCurl.Net $ver** — Studio + the \`grpcn\` and \`gql2grpc\` CLIs for Windows, macOS, and
+          Linux (x64 & arm64). Self-contained (no .NET runtime needed) and **unsigned** (zero-budget OSS).
+
+          See the [install guide](https://github.com/${GITHUB_REPOSITORY}/blob/v$ver/Docs/articles/install.md)
+          for downloads, \`SHA256SUMS\` verification, and first-launch (SmartScreen / Gatekeeper) steps.
+          EOF
+          echo "--- notes ---"; cat release-notes.md
+
+      - name: Create draft GitHub Release
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          ver="${{ needs.version.outputs.version }}"
+          gh release create "v$ver" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "v$ver" \
+            --notes-file release-notes.md \
+            --draft \
+            --verify-tag \
+            release/*

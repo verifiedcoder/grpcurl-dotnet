@@ -35,18 +35,35 @@ internal static class Program
         }
         finally
         {
-            // FR-146: capture the final open-tab state on the way out (catches edits made after the last
-            // debounced persist). SPEC-040 §8: release the advisory workspace lock on clean close.
-            host.Services.GetRequiredService<DocumentsViewModel>().FlushSessionAsync().GetAwaiter().GetResult();
-            host.Services.GetRequiredService<IWorkspaceStore>().ReleaseLock();
-            host.StopAsync().GetAwaiter().GetResult();
-            host.Dispose();
+            // After the UI lifetime ends, Avalonia's SynchronizationContext is still installed on this
+            // (main) thread but its dispatcher no longer pumps. The sync-over-async cleanup below would
+            // otherwise deadlock: an await that resumes on that context posts a continuation the dead
+            // dispatcher never runs, so GetResult() blocks forever — the window closes but the process
+            // hangs (observed on Windows). Clearing the context makes continuations resume on the thread
+            // pool instead. The try/catch keeps a shutdown hiccup from stranding the process.
+            SynchronizationContext.SetSynchronizationContext(null);
+
+            try
+            {
+                // FR-146: capture the final open-tab state on the way out (catches edits made after the
+                // last debounced persist). SPEC-040 §8: release the advisory workspace lock on clean close.
+                host.Services.GetRequiredService<DocumentsViewModel>().FlushSessionAsync().GetAwaiter().GetResult();
+                host.Services.GetRequiredService<IWorkspaceStore>().ReleaseLock();
+                host.StopAsync().GetAwaiter().GetResult();
+            }
+            catch (Exception)
+            {
+                // Best-effort shutdown cleanup; never let it keep the process alive.
+            }
+            finally
+            {
+                host.Dispose();
+            }
         }
 
-        // Avalonia/native platform shutdown can leave a non-background thread alive after the last
-        // window closes — observed on Windows as the window vanishing while the process keeps running
-        // and has to be killed manually. All persistence, the workspace lock, and the host have been
-        // torn down above, so force a clean process exit to guarantee termination on every platform.
+        // Belt-and-suspenders: even with clean cleanup, Avalonia/native shutdown can leave a
+        // non-background thread alive after the last window closes. All state is persisted above, so
+        // force a clean exit to guarantee termination on every platform.
         Environment.Exit(0);
     }
 

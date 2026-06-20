@@ -30,6 +30,10 @@ public sealed partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && _services is not null)
         {
+            // Guarantee the process terminates once shutdown starts, even if the lifetime never returns
+            // to Program.Main's cleanup (e.g. a hung disposal or a lingering native thread on Windows).
+            desktop.ShutdownRequested += (_, _) => ProcessExitGuard.Arm(TimeSpan.FromSeconds(4));
+
             var viewModel = _services.GetRequiredService<MainWindowViewModel>();
 
             // Apply the persisted theme and keep it live as the shared service changes.

@@ -16,7 +16,7 @@ internal static class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        using var host = Host.CreateApplicationBuilder(args)
+        var host = Host.CreateApplicationBuilder(args)
             .ConfigureStudioServices()
             .Build();
 
@@ -40,7 +40,14 @@ internal static class Program
             host.Services.GetRequiredService<DocumentsViewModel>().FlushSessionAsync().GetAwaiter().GetResult();
             host.Services.GetRequiredService<IWorkspaceStore>().ReleaseLock();
             host.StopAsync().GetAwaiter().GetResult();
+            host.Dispose();
         }
+
+        // Avalonia/native platform shutdown can leave a non-background thread alive after the last
+        // window closes — observed on Windows as the window vanishing while the process keeps running
+        // and has to be killed manually. All persistence, the workspace lock, and the host have been
+        // torn down above, so force a clean process exit to guarantee termination on every platform.
+        Environment.Exit(0);
     }
 
     private static AppBuilder BuildAvaloniaApp(IServiceProvider? serviceProvider)

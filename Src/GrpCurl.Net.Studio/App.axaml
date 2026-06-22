@@ -25,6 +25,8 @@
         <FluentTheme />
         <!-- Code editor styling for request/response payloads (ADR-004). -->
         <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
+        <!-- SPEC-020 §6: consistent accent keyboard-focus outline (after Fluent so it wins). -->
+        <StyleInclude Source="avares://GrpCurl.Net.Studio/Themes/FocusStyles.axaml" />
     </Application.Styles>
 
 </Application>

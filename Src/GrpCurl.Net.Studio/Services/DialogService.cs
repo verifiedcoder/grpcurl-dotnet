@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Layout;
+using Avalonia.VisualTree;
 using GrpCurl.Net.Studio.ViewModels;
 using GrpCurl.Net.Studio.ViewModels.Services;
 
@@ -111,6 +112,10 @@ internal sealed class DialogService : IDialogService
 
     private static async Task ShowModalAsync(Window window)
     {
+        // SPEC-020 §6: move keyboard focus into the dialog as soon as it opens, so it is fully operable
+        // without reaching for the mouse (the first input for an editor, the default button for a prompt).
+        window.Opened += (_, _) => FocusFirstFocusable(window);
+
         var owner = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
 
         if (owner is not null)
@@ -120,6 +125,18 @@ internal sealed class DialogService : IDialogService
         else
         {
             window.Show();
+        }
+    }
+
+    private static void FocusFirstFocusable(Visual root)
+    {
+        foreach (var control in root.GetVisualDescendants().OfType<Control>())
+        {
+            if (control is { Focusable: true, IsEffectivelyVisible: true, IsEffectivelyEnabled: true })
+            {
+                _ = control.Focus();
+                return;
+            }
         }
     }
 }

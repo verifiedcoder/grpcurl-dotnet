@@ -22,6 +22,10 @@
   href: gql2grpc-cookbook.md
 - name: Gql2Grpc future work
   href: gql2grpc-future-work.md
+- name: Studio
+  items:
+    - name: Accessibility charter
+      href: studio/accessibility-charter.md
 - name: Learn Protobuf
   href: learn-protobuf/
   homepage: learn-protobuf/index.md

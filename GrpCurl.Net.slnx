@@ -92,6 +92,7 @@
     <Project Path="Tests/GrpCurl.Net.Studio.Conformance/GrpCurl.Net.Studio.Conformance.csproj" />
     <Project Path="Tests/GrpCurl.Net.Studio.Tests.Unit/GrpCurl.Net.Studio.Tests.Unit.csproj" />
     <Project Path="Tests/GrpCurl.Net.Studio.Tests.UI/GrpCurl.Net.Studio.Tests.UI.csproj" />
+    <Project Path="Tests/GrpCurl.Net.Studio.Tests.Perf/GrpCurl.Net.Studio.Tests.Perf.csproj" />
   </Folder>
   <Project Path="Src/Gql2Grpc/Gql2Grpc.csproj" />
   <Project Path="Src/GrpCurl.Net.Core/GrpCurl.Net.Core.csproj" />

@@ -74,11 +74,13 @@
                                                         <TextBlock Text=" ( " VerticalAlignment="Center" Opacity="0.6" />
                                                         <Button Classes="link" Content="{Binding InputType.FullName}"
                                                                 ToolTip.Tip="{Binding InputType.Tooltip}" IsEnabled="{Binding InputType.Resolvable}"
+                                                                AutomationProperties.Name="{Binding InputType.FullName, StringFormat='Open input type {0}'}"
                                                                 Command="{Binding #Root.((docs:DescribeDocumentViewModel)DataContext).NavigateCommand}"
                                                                 CommandParameter="{Binding InputType}" />
                                                         <TextBlock Text=" ) returns ( " VerticalAlignment="Center" Opacity="0.6" />
                                                         <Button Classes="link" Content="{Binding OutputType.FullName}"
                                                                 ToolTip.Tip="{Binding OutputType.Tooltip}" IsEnabled="{Binding OutputType.Resolvable}"
+                                                                AutomationProperties.Name="{Binding OutputType.FullName, StringFormat='Open output type {0}'}"
                                                                 Command="{Binding #Root.((docs:DescribeDocumentViewModel)DataContext).NavigateCommand}"
                                                                 CommandParameter="{Binding OutputType}" />
                                                         <TextBlock Text=" )" VerticalAlignment="Center" Opacity="0.6" />
@@ -102,11 +104,13 @@
                                         <TextBlock Text=" ( " VerticalAlignment="Center" Opacity="0.6" />
                                         <Button Classes="link" Content="{Binding InputType.FullName}"
                                                 ToolTip.Tip="{Binding InputType.Tooltip}" IsEnabled="{Binding InputType.Resolvable}"
+                                                AutomationProperties.Name="{Binding InputType.FullName, StringFormat='Open input type {0}'}"
                                                 Command="{Binding #Root.((docs:DescribeDocumentViewModel)DataContext).NavigateCommand}"
                                                 CommandParameter="{Binding InputType}" />
                                         <TextBlock Text=" ) returns ( " VerticalAlignment="Center" Opacity="0.6" />
                                         <Button Classes="link" Content="{Binding OutputType.FullName}"
                                                 ToolTip.Tip="{Binding OutputType.Tooltip}" IsEnabled="{Binding OutputType.Resolvable}"
+                                                AutomationProperties.Name="{Binding OutputType.FullName, StringFormat='Open output type {0}'}"
                                                 Command="{Binding #Root.((docs:DescribeDocumentViewModel)DataContext).NavigateCommand}"
                                                 CommandParameter="{Binding OutputType}" />
                                         <TextBlock Text=" )" VerticalAlignment="Center" Opacity="0.6" />
@@ -115,6 +119,7 @@
                                         <TextBlock Text="in service " Opacity="0.6" VerticalAlignment="Center" />
                                         <Button Classes="link" Content="{Binding ParentService.FullName}"
                                                 ToolTip.Tip="{Binding ParentService.Tooltip}" IsEnabled="{Binding ParentService.Resolvable}"
+                                                AutomationProperties.Name="{Binding ParentService.FullName, StringFormat='Open service {0}'}"
                                                 Command="{Binding #Root.((docs:DescribeDocumentViewModel)DataContext).NavigateCommand}"
                                                 CommandParameter="{Binding ParentService}" />
                                     </WrapPanel>
@@ -135,6 +140,7 @@
                                                     <Button Classes="link" Content="{Binding TypeDisplay}" VerticalAlignment="Center"
                                                             ToolTip.Tip="{Binding Link.Tooltip}" IsEnabled="{Binding Link.Resolvable}"
                                                             IsVisible="{Binding Link, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                            AutomationProperties.Name="{Binding TypeDisplay, StringFormat='Open type {0}'}"
                                                             Command="{Binding #Root.((docs:DescribeDocumentViewModel)DataContext).NavigateCommand}"
                                                             CommandParameter="{Binding Link}" />
                                                     <TextBlock Text="{Binding TypeDisplay}" VerticalAlignment="Center"

@@ -31,6 +31,8 @@ public sealed record EnvironmentRow(WorkspaceEnvironment Environment)
 /// </summary>
 public sealed partial class EnvironmentManagerViewModel : DialogViewModel<bool>
 {
+    public override string Title => "Environments";
+
     private readonly IEnvironmentStore _store;
     private readonly IDialogService _dialogs;
     private readonly ISecretStore _secrets;

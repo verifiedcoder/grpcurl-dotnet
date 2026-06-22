@@ -20,7 +20,7 @@ public sealed partial class TextInputDialogViewModel : DialogViewModel<string?>
         Value = initialValue ?? string.Empty;
     }
 
-    public string Title { get; }
+    public override string Title { get; }
 
     public string Prompt { get; }
 

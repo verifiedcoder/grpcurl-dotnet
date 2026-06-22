@@ -189,7 +189,7 @@ public sealed partial class ConnectionEditorViewModel : DialogViewModel<SavedCon
 
     public bool IsEdit { get; }
 
-    public string Title => IsEdit ? "Edit connection" : "New connection";
+    public override string Title => IsEdit ? "Edit connection" : "New connection";
 
     public ObservableCollection<HeaderRowViewModel> ReflectionHeaders { get; }
 

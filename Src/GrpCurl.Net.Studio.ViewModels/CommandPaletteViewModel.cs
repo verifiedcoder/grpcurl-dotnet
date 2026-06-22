@@ -14,6 +14,8 @@ public sealed record PaletteItem(string Title, string Category, Func<Task> Invok
 /// </summary>
 public sealed partial class CommandPaletteViewModel : DialogViewModel<PaletteItem?>
 {
+    public override string Title => "Command palette";
+
     private readonly IReadOnlyList<PaletteItem> _all;
 
     [ObservableProperty]

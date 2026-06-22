@@ -125,7 +125,7 @@ public sealed partial class TlsProfileEditorViewModel : DialogViewModel<TlsProfi
 
     public bool HasClientCertFacts => ClientCertFacts is not null;
 
-    public string Title => IsEdit ? "Edit TLS profile" : "New TLS profile";
+    public override string Title => IsEdit ? "Edit TLS profile" : "New TLS profile";
 
     public IReadOnlyList<TlsValidationMode> ValidationModes { get; } =
         [TlsValidationMode.SystemRoots, TlsValidationMode.CustomCa, TlsValidationMode.SkipVerification];

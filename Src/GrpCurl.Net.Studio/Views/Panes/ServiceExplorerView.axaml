@@ -79,6 +79,12 @@
                 <TreeView Grid.Row="0" ItemsSource="{Binding Services}"
                           DoubleTapped="OnNodeDoubleTapped"
                           AutomationProperties.Name="Service tree">
+                    <!-- NFR-P5: virtualize so a 500-service server realizes only the visible rows. -->
+                    <TreeView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel />
+                        </ItemsPanelTemplate>
+                    </TreeView.ItemsPanel>
                     <TreeView.DataTemplates>
 
                         <TreeDataTemplate DataType="explorer:ServiceNodeViewModel" ItemsSource="{Binding Methods}">
@@ -138,6 +144,12 @@
                 <TreeView Grid.Row="3" ItemsSource="{Binding TypePackages}"
                           DoubleTapped="OnNodeDoubleTapped"
                           AutomationProperties.Name="Types tree">
+                    <!-- NFR-P5: virtualize the type tree too (large schemas carry many message/enum types). -->
+                    <TreeView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel />
+                        </ItemsPanelTemplate>
+                    </TreeView.ItemsPanel>
                     <TreeView.DataTemplates>
 
                         <TreeDataTemplate DataType="explorer:TypePackageNodeViewModel" ItemsSource="{Binding Types}">

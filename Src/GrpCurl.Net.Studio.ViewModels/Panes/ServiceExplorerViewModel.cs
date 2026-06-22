@@ -179,6 +179,11 @@ public sealed partial class ServiceExplorerViewModel : ViewModelBase
         }
     }
 
+    /// <summary>SPEC-020 §5 (Ctrl+T): open a new invocation tab on the method currently selected in the
+    /// tree. A no-op when no method is selected (e.g. a service/type node, or nothing).</summary>
+    [RelayCommand]
+    private void NewRequestForSelected() => NewRequest(SelectedMethod?.FullName);
+
     // ── schema export (FR-100..104) ──────────────────────────────────────────
 
     /// <summary>Export is offered once a schema is loaded and the file picker + dialog services are wired.</summary>

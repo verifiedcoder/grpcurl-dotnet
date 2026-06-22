@@ -64,8 +64,8 @@
             </Expander>
         </StackPanel>
 
-        <!-- Filter (debounced via binding Delay; FR-023) -->
-        <TextBox Grid.Row="2" Margin="8,6" Watermark="Filter services and types"
+        <!-- Filter (debounced via binding Delay; FR-023). Named so the shell's Ctrl+L can focus it. -->
+        <TextBox Grid.Row="2" x:Name="FilterBox" Margin="8,6" Watermark="Filter services and types"
                  Text="{Binding FilterText, Delay=200}"
                  IsVisible="{Binding IsLoaded}"
                  AutomationProperties.Name="Filter services and types" />

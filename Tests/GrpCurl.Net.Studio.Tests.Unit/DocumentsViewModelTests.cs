@@ -244,4 +244,26 @@ public sealed class DocumentsViewModelTests
         Should.NotThrow(() => docs.CancelActiveDocumentCommand.Execute(null));
         _ = docs.Documents.OfType<InvocationDocumentViewModel>().ShouldHaveSingleItem();
     }
+
+    [Fact]
+    public void Format_active_document_pretty_prints_the_invocation_request_body()
+    {
+        var docs = Create();
+        docs.OpenInvocation(Conn(), "pkg.Svc/Go", "{\"a\":1,\"b\":2}");
+        var tab = docs.Documents.OfType<InvocationDocumentViewModel>().Single();
+
+        docs.FormatActiveDocumentCommand.Execute(null);
+
+        tab.RequestJson.ShouldContain("\n");
+        tab.RequestJson.ShouldContain("  \"a\": 1");
+    }
+
+    [Fact]
+    public void Format_active_document_is_a_safe_no_op_for_a_non_editor_tab()
+    {
+        var docs = Create();
+        docs.OpenSettings();
+
+        Should.NotThrow(() => docs.FormatActiveDocumentCommand.Execute(null));
+    }
 }

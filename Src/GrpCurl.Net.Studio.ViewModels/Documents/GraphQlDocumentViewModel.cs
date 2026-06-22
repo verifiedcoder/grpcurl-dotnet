@@ -385,6 +385,17 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
         MappingText = InsertEntry(MappingText, BuildEntryYaml(field));
     }
 
+    /// <summary>SPEC-020 §5 (Ctrl+Shift+F): pretty-print the variables JSON. The GraphQL document itself is
+    /// not JSON, so formatting targets the variables editor; invalid/empty variables are left untouched.</summary>
+    [RelayCommand]
+    private void Format()
+    {
+        if (JsonText.TryPrettyPrint(VariablesJson, out var formatted))
+        {
+            VariablesJson = formatted;
+        }
+    }
+
     private string BuildEntryYaml(GraphQlFieldResolution field)
     {
         var operationType = SelectedOperation?.Kind switch

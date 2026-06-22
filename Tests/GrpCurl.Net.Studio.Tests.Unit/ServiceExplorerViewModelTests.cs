@@ -332,6 +332,41 @@ public sealed class ServiceExplorerViewModelTests
         vm.SelectedMethod.ShouldBeNull();
     }
 
+    // ── SPEC-020 §5 (Ctrl+T): new request tab from the current tree selection ──
+
+    [Fact]
+    public void NewRequestForSelected_opens_an_invocation_on_the_selected_method()
+    {
+        var descriptors = new FakeDescriptorService { Result = DescriptorLoadResult.Success(SampleCatalog()) };
+        var selection = new ConnectionSelection();
+        var host = new FakeDocumentHost();
+        var vm = new ServiceExplorerViewModel(
+            descriptors, selection, new FakeClipboardService(), new ImmediateUiDispatcher(), host);
+        selection.Set(Conn());
+        vm.SelectedNode = vm.Services.First(s => s.FullName == "pkg.Greeter").Methods.First(m => m.Name == "SayHello");
+
+        vm.NewRequestForSelectedCommand.Execute(null);
+
+        var opened = host.LastInvocation.ShouldNotBeNull();
+        opened.Symbol.ShouldBe("pkg.Greeter/SayHello");
+    }
+
+    [Fact]
+    public void NewRequestForSelected_is_a_no_op_when_no_method_is_selected()
+    {
+        var descriptors = new FakeDescriptorService { Result = DescriptorLoadResult.Success(SampleCatalog()) };
+        var selection = new ConnectionSelection();
+        var host = new FakeDocumentHost();
+        var vm = new ServiceExplorerViewModel(
+            descriptors, selection, new FakeClipboardService(), new ImmediateUiDispatcher(), host);
+        selection.Set(Conn());
+        vm.SelectedNode = vm.Services.First(); // a service node, not a method
+
+        vm.NewRequestForSelectedCommand.Execute(null);
+
+        host.Invocations.ShouldBeEmpty();
+    }
+
     // ── FR-029: sort toggle ──────────────────────────────────────────────────
 
     [Fact]

@@ -22,6 +22,7 @@
         <InternalsVisibleTo Include="GrpCurl.Net.Studio" />
         <InternalsVisibleTo Include="GrpCurl.Net.Studio.Tests.Unit" />
         <InternalsVisibleTo Include="GrpCurl.Net.Studio.Tests.UI" />
+        <InternalsVisibleTo Include="GrpCurl.Net.Studio.Tests.Perf" />
     </ItemGroup>
 
 </Project>

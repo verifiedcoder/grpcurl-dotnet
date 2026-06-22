@@ -1,0 +1,58 @@
+name: Perf (nightly)
+
+# SPEC-060 §2: the wall-clock V-BENCH budgets are noise-prone on shared runners, so they run on a
+# schedule (and on demand) rather than gating PRs. The PR `test` job excludes Category=Performance;
+# this lane runs exactly those tests, with the spec's 25% headroom baked into each assertion.
+on:
+  schedule:
+    - cron: "0 7 * * *" # 07:00 UTC daily
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+jobs:
+  perf:
+    name: wall-clock budgets
+    # ubuntu-22.04 for a consistent baseline (the glibc floor used by the release matrix).
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET (from global.json)
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore (locked mode)
+        run: dotnet restore --locked-mode GrpCurl.Net.slnx
+
+      - name: Build perf project (Release)
+        run: dotnet build Tests/GrpCurl.Net.Studio.Tests.Perf/GrpCurl.Net.Studio.Tests.Perf.csproj --configuration Release --no-restore
+
+      - name: Run wall-clock budgets
+        run: >
+          dotnet test Tests/GrpCurl.Net.Studio.Tests.Perf/GrpCurl.Net.Studio.Tests.Perf.csproj
+          --configuration Release
+          --no-build
+          --no-restore
+          --
+          --filter-trait "Category=Performance"
+          --report-xunit-trx
+          --results-directory=${{ github.workspace }}/TestResults
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-results
+          path: ${{ github.workspace }}/TestResults/**/*.trx
+          if-no-files-found: warn

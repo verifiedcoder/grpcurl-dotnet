@@ -15,14 +15,16 @@
             <!-- Status -->
             <Color x:Key="Status.SuccessColor">#107C10</Color>
             <Color x:Key="Status.NeutralColor">#616161</Color>
-            <Color x:Key="Status.CallerColor">#B8860B</Color>
+            <!-- NFR-A5: darkened from #B8860B so caller-status text clears WCAG AA 4.5:1 on the light pane surface. -->
+            <Color x:Key="Status.CallerColor">#8C5E00</Color>
             <Color x:Key="Status.TransientColor">#8A6D00</Color>
             <Color x:Key="Status.ServerColor">#C42B1C</Color>
             <!-- Danger banner (SEC-014 insecure-skip-verify) -->
             <Color x:Key="Banner.DangerBgColor">#FDE7E9</Color>
             <!-- Connection-state dots -->
             <Color x:Key="Conn.ConnectedColor">#107C10</Color>
-            <Color x:Key="Conn.IdleColor">#9E9E9E</Color>
+            <!-- NFR-A5: darkened from #9E9E9E so the idle dot clears the 3:1 non-text bar on the light pane surface. -->
+            <Color x:Key="Conn.IdleColor">#767676</Color>
             <Color x:Key="Conn.ConnectingColor">#0E639C</Color>
             <Color x:Key="Conn.FailedColor">#C42B1C</Color>
         </ResourceDictionary>

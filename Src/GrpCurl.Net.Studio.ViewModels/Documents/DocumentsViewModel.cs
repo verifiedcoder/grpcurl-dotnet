@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.Studio.ViewModels.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
@@ -366,6 +367,74 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     }
 
     partial void OnSelectedDocumentChanged(DocumentViewModel? value) => SchedulePersist();
+
+    // ── SPEC-020 §5: shell keyboard actions routed to the active tab ──────────
+    // The shell binds these to window-level KeyBindings so they fire even while an AvaloniaEdit
+    // editor holds focus; each is a safe no-op when there is no tab (or no applicable action).
+
+    /// <summary>Ctrl+Tab / Ctrl+PageDown: activate the next tab, wrapping at the end.</summary>
+    [RelayCommand]
+    private void SelectNextDocument() => CycleSelection(1);
+
+    /// <summary>Ctrl+Shift+Tab / Ctrl+PageUp: activate the previous tab, wrapping at the start.</summary>
+    [RelayCommand]
+    private void SelectPreviousDocument() => CycleSelection(-1);
+
+    private void CycleSelection(int delta)
+    {
+        if (Documents.Count == 0)
+        {
+            return;
+        }
+
+        var current = SelectedDocument is null ? 0 : Documents.IndexOf(SelectedDocument);
+        var next = ((current + delta) % Documents.Count + Documents.Count) % Documents.Count;
+        SelectedDocument = Documents[next];
+    }
+
+    /// <summary>Ctrl+W: close the active tab. Routes through the tab's own close path, so a derived
+    /// document's live-stream confirmation (FR — close while streaming) still runs.</summary>
+    [RelayCommand]
+    private void CloseActiveDocument() => SelectedDocument?.CloseCommand.Execute(null);
+
+    /// <summary>Ctrl+Enter: run the active tab's primary action — invoke (unary), start (streaming),
+    /// or execute (GraphQL). No-op for non-runnable tabs (settings, history, describe).</summary>
+    [RelayCommand]
+    private void RunActiveDocument()
+    {
+        switch (SelectedDocument)
+        {
+            case InvocationDocumentViewModel invocation:
+                Execute(invocation.IsStreaming ? invocation.StartStreamCommand : invocation.InvokeCommand);
+                break;
+            case GraphQlDocumentViewModel graphql:
+                Execute(graphql.ExecuteCommand);
+                break;
+        }
+    }
+
+    /// <summary>Ctrl+. : cancel the active tab's in-flight call or stream. No-op when nothing is running.</summary>
+    [RelayCommand]
+    private void CancelActiveDocument()
+    {
+        switch (SelectedDocument)
+        {
+            case InvocationDocumentViewModel invocation:
+                Execute(invocation.IsStreaming ? invocation.StartStreamCancelCommand : invocation.InvokeCancelCommand);
+                break;
+            case GraphQlDocumentViewModel graphql:
+                Execute(graphql.ExecuteCancelCommand);
+                break;
+        }
+    }
+
+    private static void Execute(System.Windows.Input.ICommand command)
+    {
+        if (command.CanExecute(null))
+        {
+            command.Execute(null);
+        }
+    }
 
     // ── FR-146: UI session capture + restore ─────────────────────────────────
 

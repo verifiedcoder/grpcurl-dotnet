@@ -42,6 +42,29 @@ public sealed class WallClockBudgetTests
         p95.ShouldBeLessThan(100 * PerfMeasure.Headroom, $"history search p95 {p95:0} ms (budget 100 ms +25%)");
     }
 
+    // NFR-P11: workspace load < 500 ms for a workspace with 100 saved requests (file read + deserialize).
+    [Fact]
+    [Trait("Category", "Performance")]
+    public void Workspace_load_for_100_requests_meets_NFR_P11()
+    {
+        var dir = Directory.CreateTempSubdirectory("grpcn-perf");
+
+        try
+        {
+            var path = Path.Combine(dir.FullName, "workspace.gcnws.json");
+            var store = new JsonWorkspaceStore(path, autosaveDebounce: TimeSpan.Zero);
+            store.SaveAsAsync(PerfFixtures.SyntheticWorkspace(100), path).GetAwaiter().GetResult();
+
+            var p95 = PerfMeasure.P95Millis(runs: 20, warmup: 3, () => store.ReadAsync(path).GetAwaiter().GetResult());
+
+            p95.ShouldBeLessThan(500 * PerfMeasure.Headroom, $"workspace load p95 {p95:0} ms (budget 500 ms +25%)");
+        }
+        finally
+        {
+            dir.Delete(recursive: true);
+        }
+    }
+
     private static HistoryDocumentViewModel LoadedHistory(int count)
     {
         var store = new FakeHistoryStore();

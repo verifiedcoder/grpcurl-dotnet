@@ -1,3 +1,4 @@
+using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Descriptors;
 using GrpCurl.Net.Studio.ViewModels.Models.History;
 
@@ -63,5 +64,34 @@ internal static class PerfFixtures
         }
 
         return entries;
+    }
+
+    /// <summary>
+    ///     A workspace with one connection carrying <paramref name="savedRequestCount" /> saved requests
+    ///     (NFR-P11 reference: 100). Each request has a small body + a header, so the file is representative
+    ///     of a real workspace's size.
+    /// </summary>
+    public static WorkspaceModel SyntheticWorkspace(int savedRequestCount)
+    {
+        var requests = new List<SavedRequest>(savedRequestCount);
+
+        for (var i = 0; i < savedRequestCount; i++)
+        {
+            requests.Add(new SavedRequest
+            {
+                Id = $"r{i:D4}",
+                Name = $"request-{i:D4}",
+                ConnectionId = "c",
+                Method = $"perf.v1.Service0001/Method{i % 100:D2}",
+                Body = "{\n  \"id\": 0,\n  \"name\": \"sample\"\n}",
+                Headers = [new HeaderEntry { Name = "x-trace", Value = $"trace-{i:D4}" }]
+            });
+        }
+
+        return new WorkspaceModel
+        {
+            Connections = [new SavedConnection { Id = "c", Name = "staging", Address = "h:1" }],
+            SavedRequests = requests
+        };
     }
 }

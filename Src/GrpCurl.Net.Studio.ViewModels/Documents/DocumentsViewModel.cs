@@ -428,6 +428,22 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         }
     }
 
+    /// <summary>Ctrl+Shift+F: format the active tab's editable JSON (request body / GraphQL variables).
+    /// No-op for tabs without a formattable editor (settings, history, describe).</summary>
+    [RelayCommand]
+    private void FormatActiveDocument()
+    {
+        switch (SelectedDocument)
+        {
+            case InvocationDocumentViewModel invocation:
+                Execute(invocation.FormatCommand);
+                break;
+            case GraphQlDocumentViewModel graphql:
+                Execute(graphql.FormatCommand);
+                break;
+        }
+    }
+
     private static void Execute(System.Windows.Input.ICommand command)
     {
         if (command.CanExecute(null))

@@ -34,6 +34,10 @@
         <KeyBinding Gesture="Ctrl+Enter" Command="{Binding Documents.RunActiveDocumentCommand}" />
         <KeyBinding Gesture="Ctrl+OemPeriod" Command="{Binding Documents.CancelActiveDocumentCommand}" />
         <KeyBinding Gesture="F5" Command="{Binding Explorer.RefreshCommand}" />
+        <KeyBinding Gesture="Ctrl+T" Command="{Binding Explorer.NewRequestForSelectedCommand}" />
+        <KeyBinding Gesture="Ctrl+Shift+F" Command="{Binding Documents.FormatActiveDocumentCommand}" />
+        <!-- Ctrl+L (focus filter), Ctrl+E (environment switcher) and F6 (cycle zones) are focus moves,
+             handled in code-behind (OnKeyDown) since they target controls, not commands. -->
     </Window.KeyBindings>
 
     <DockPanel>

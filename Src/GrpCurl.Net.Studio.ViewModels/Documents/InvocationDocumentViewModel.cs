@@ -368,6 +368,17 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
     /// <summary>The two request-body grammars for the editor toggle (FR-062).</summary>
     public IReadOnlyList<RequestBodyFormat> BodyFormats { get; } = [RequestBodyFormat.Json, RequestBodyFormat.Text];
 
+    /// <summary>SPEC-020 §5 (Ctrl+Shift+F): pretty-print the request body. JSON only — a Text body or an
+    /// invalid/empty body is left exactly as typed. Setting RequestJson flows to the editor via the view.</summary>
+    [RelayCommand]
+    private void Format()
+    {
+        if (BodyFormat == RequestBodyFormat.Json && JsonText.TryPrettyPrint(RequestJson, out var formatted))
+        {
+            RequestJson = formatted;
+        }
+    }
+
     partial void OnBodyFormatChanged(RequestBodyFormat value)
     {
         // Re-run (or clear) validation for the new grammar.

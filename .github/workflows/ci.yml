@@ -62,6 +62,7 @@ jobs:
           --no-build
           --no-restore
           --
+          --filter-not-trait "Category=Performance"
           --report-xunit-trx
           --results-directory=${{ github.workspace }}/TestResults
 

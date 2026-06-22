@@ -1,0 +1,20 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+        SPEC-020 §6 / NFR-A5: a consistent, always-visible keyboard focus outline. A 2 px accent border
+        (the Focus.Outline token, audited to ≥ 3:1 in both themes — see ThemeContrastTests) is drawn as a
+        FocusAdorner so it composes over each control's own template. The negative margin sets it just
+        outside the control's bounds; it only renders for keyboard focus (:focus-visible), never pointer
+        focus, and is never suppressed.
+    -->
+    <Style Selector=":is(TemplatedControl):focus-visible">
+        <Setter Property="FocusAdorner">
+            <FocusAdornerTemplate>
+                <Border BorderBrush="{DynamicResource Focus.Outline}"
+                        BorderThickness="2"
+                        CornerRadius="3"
+                        Margin="-2" />
+            </FocusAdornerTemplate>
+        </Setter>
+    </Style>
+</Styles>

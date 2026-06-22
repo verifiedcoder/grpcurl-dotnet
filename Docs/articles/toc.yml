@@ -24,6 +24,18 @@
   href: gql2grpc-future-work.md
 - name: Studio
   items:
+    - name: Overview
+      href: studio/index.md
+    - name: Install Studio
+      href: studio/install.md
+    - name: First run
+      href: studio/first-run.md
+    - name: Keyboard shortcuts
+      href: studio/keyboard-shortcuts.md
+    - name: Common workflows
+      href: studio/workflows.md
+    - name: Troubleshooting
+      href: studio/troubleshooting.md
     - name: Accessibility charter
       href: studio/accessibility-charter.md
 - name: Learn Protobuf

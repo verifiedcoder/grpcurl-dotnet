@@ -1,6 +1,7 @@
 # Getting Started
 
-This guide will help you install GrpCurl.Net and make your first gRPC calls.
+This guide will help you install GrpCurl.Net and make your first gRPC calls from the command line.
+Prefer a graphical client? See the [GrpCurl.Net Studio user guide](articles/studio/index.md).
 
 ## Prerequisites
 

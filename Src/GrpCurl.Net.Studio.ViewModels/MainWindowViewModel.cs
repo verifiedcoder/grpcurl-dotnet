@@ -28,6 +28,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private readonly IHistoryStore? _history;
     private readonly ISecretStore? _secrets;
     private readonly IUpdateService? _updates;
+    private readonly ILauncherService? _launcher;
 
     private SavedConnection? _insecureConnection;
 
@@ -94,7 +95,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         EnvironmentSwitcherViewModel? environment = null,
         IHistoryStore? history = null,
         ISecretStore? secrets = null,
-        IUpdateService? updates = null)
+        IUpdateService? updates = null,
+        ILauncherService? launcher = null)
     {
         _theme = theme;
         _profileStore = profileStore;
@@ -102,6 +104,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _history = history;
         _secrets = secrets;
         _updates = updates;
+        _launcher = launcher;
         _filePicker = filePicker;
         _dialogs = dialogs;
         Connections = connections;
@@ -341,6 +344,24 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <summary>Opens (or focuses) the History tab (FR-120).</summary>
     [RelayCommand]
     private void OpenHistory() => Documents.OpenHistory();
+
+    // ── Help menu (E5.4): open the user docs / shortcut reference / issue tracker in the browser ──
+
+    private const string DocsUrl = "https://github.com/verifiedcoder/grpcurl-dotnet/tree/main/Docs/articles/studio";
+    private const string KeyboardShortcutsUrl = "https://github.com/verifiedcoder/grpcurl-dotnet/blob/main/Docs/articles/studio/keyboard-shortcuts.md";
+    private const string NewIssueUrl = "https://github.com/verifiedcoder/grpcurl-dotnet/issues/new";
+
+    /// <summary>Help → User Guide: open the Studio documentation in the default browser.</summary>
+    [RelayCommand]
+    private Task OpenUserGuide() => _launcher?.LaunchUriAsync(DocsUrl) ?? Task.CompletedTask;
+
+    /// <summary>Help → Keyboard Shortcuts: open the SPEC-020 §5 shortcut reference.</summary>
+    [RelayCommand]
+    private Task OpenKeyboardShortcuts() => _launcher?.LaunchUriAsync(KeyboardShortcutsUrl) ?? Task.CompletedTask;
+
+    /// <summary>Help → Report an Issue: open the GitHub issue tracker.</summary>
+    [RelayCommand]
+    private Task ReportIssue() => _launcher?.LaunchUriAsync(NewIssueUrl) ?? Task.CompletedTask;
 
     // ── Command palette (Ctrl+K, SPEC-020) ───────────────────────────────────
 

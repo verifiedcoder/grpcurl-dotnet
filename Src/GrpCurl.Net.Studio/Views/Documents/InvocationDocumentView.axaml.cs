@@ -15,12 +15,20 @@ namespace GrpCurl.Net.Studio.Views.Documents;
 
 public sealed partial class InvocationDocumentView : UserControl
 {
+    // NFR-S7 / NFR-P12: above this size the response viewer drops syntax highlighting and brace folding,
+    // both of which are whole-document passes that would otherwise stall the UI thread on a huge body.
+    private const int HighlightingMaxChars = 4 * 1024 * 1024;
+
     private readonly SquiggleRenderer _squiggles = new();
     private readonly TextEditor? _requestEditor;
     private readonly TextEditor? _responseEditor;
     private readonly FoldingManager? _responseFolding;
+    private TextMate.Installation? _responseTextMate;
     private InvocationDocumentViewModel? _viewModel;
     private bool _syncingRequest;
+
+    /// <summary>Test seam (NFR-S7): whether the response viewer currently has syntax highlighting installed.</summary>
+    internal bool ResponseHighlightingEnabled => _responseTextMate is not null;
 
     public InvocationDocumentView()
     {
@@ -29,8 +37,8 @@ public sealed partial class InvocationDocumentView : UserControl
         _requestEditor = this.FindControl<TextEditor>("RequestEditor");
         _responseEditor = this.FindControl<TextEditor>("ResponseEditor");
 
-        InstallJsonGrammar(_requestEditor);
-        InstallJsonGrammar(_responseEditor);
+        _ = InstallJsonGrammar(_requestEditor);
+        _responseTextMate = InstallJsonGrammar(_responseEditor);
 
         if (_requestEditor is not null)
         {
@@ -63,11 +71,11 @@ public sealed partial class InvocationDocumentView : UserControl
 
     private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
 
-    private static void InstallJsonGrammar(TextEditor? editor)
+    private static TextMate.Installation? InstallJsonGrammar(TextEditor? editor)
     {
         if (editor is null)
         {
-            return;
+            return null;
         }
 
         // Theme follows the app variant; JSON is the only grammar needed for E1.4 (proto-text → E2.3).
@@ -75,6 +83,23 @@ public sealed partial class InvocationDocumentView : UserControl
         var registry = new RegistryOptions(isDark ? ThemeName.DarkPlus : ThemeName.LightPlus);
         var installation = editor.InstallTextMate(registry);
         installation.SetGrammar(registry.GetScopeByLanguageId("json"));
+        return installation;
+    }
+
+    // NFR-S7: toggle the response viewer's syntax highlighting around the size threshold, re-installing it
+    // when a later (smaller) response comes back so normal-sized bodies keep colour.
+    private void SetResponseHighlighting(bool enabled)
+    {
+        switch (enabled)
+        {
+            case true when _responseTextMate is null:
+                _responseTextMate = InstallJsonGrammar(_responseEditor);
+                break;
+            case false when _responseTextMate is not null:
+                _responseTextMate.Dispose();
+                _responseTextMate = null;
+                break;
+        }
     }
 
     private void OnDataContextChanged(object? sender, EventArgs e)
@@ -176,12 +201,20 @@ public sealed partial class InvocationDocumentView : UserControl
             return;
         }
 
-        _responseEditor.Text = text ?? string.Empty;
+        var body = text ?? string.Empty;
 
-        // FR-074: rebuild the collapse/expand regions for the new body.
+        // NFR-S7 / NFR-P12: keep highlighting + folding for normal bodies; drop both above the threshold so a
+        // multi-megabyte response renders without a whole-document tokenize/scan stalling the UI thread.
+        var lightweight = body.Length > HighlightingMaxChars;
+        SetResponseHighlighting(!lightweight);
+
+        _responseEditor.Text = body;
+
+        // FR-074: rebuild the collapse/expand regions for the new body (skipped for oversized bodies).
         if (_responseFolding is not null)
         {
-            _responseFolding.UpdateFoldings(CreateBraceFoldings(_responseEditor.Document), firstErrorOffset: -1);
+            _responseFolding.UpdateFoldings(
+                lightweight ? [] : CreateBraceFoldings(_responseEditor.Document), firstErrorOffset: -1);
         }
     }
 

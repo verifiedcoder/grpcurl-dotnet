@@ -498,7 +498,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
         {
             var result = await _runner.InvokeUnaryAsync(request, cancellationToken);
             await _dispatcher.InvokeAsync(() => Apply(result));
-            await RecordHistoryAsync(r => r.RecordUnaryAsync(request, result, cancellationToken));
+            await RecordHistoryAsync(r => r.RecordUnaryAsync(request, result, CancellationToken.None));
         }
         catch (OperationCanceledException)
         {
@@ -524,9 +524,10 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
         {
             await record(_recorder);
         }
-        catch (Exception ex) when (ex is IOException or InvalidOperationException)
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or OperationCanceledException)
         {
-            // History is a convenience; never surface a persistence hiccup to the invoke flow.
+            // History is a convenience; never surface a persistence hiccup — or a cancellation — to the
+            // invoke flow. An escaping exception here would fault the command and crash the app (a Stop did).
         }
     }
 
@@ -588,8 +589,11 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
                      ?? (State == RunState.Cancelled
                          ? new InvocationStatusModel(1, "Cancelled", string.Empty)
                          : new InvocationStatusModel(0, "OK", string.Empty));
+        // Record the outcome with an un-cancelled token: this runs after a Stop, so the call's own
+        // cancellation must not cancel (or throw out of) the history write — a cancelled stream is still
+        // recorded (FR-120), and a Stop must never crash the invoke.
         await RecordHistoryAsync(r => r.RecordStreamAsync(
-            BuildStreamRequest(), status, Log.ElapsedMs, (int)Log.TotalSent, (int)Log.TotalReceived, cancellationToken));
+            BuildStreamRequest(), status, Log.ElapsedMs, (int)Log.TotalSent, (int)Log.TotalReceived, CancellationToken.None));
     }
 
     private void ApplyStreamBatch(IReadOnlyList<StreamEventModel> batch)

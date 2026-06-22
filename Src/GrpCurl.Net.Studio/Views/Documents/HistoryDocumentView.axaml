@@ -75,10 +75,12 @@
                             <StackPanel Grid.Column="7" Orientation="Horizontal" Spacing="4">
                                 <Button Content="Replay" Padding="6,0" FontSize="11"
                                         Command="{Binding $parent[ListBox].((docs:HistoryDocumentViewModel)DataContext).ReplayCommand}"
-                                        CommandParameter="{Binding}" IsEnabled="{Binding Replayable}" />
+                                        CommandParameter="{Binding}" IsEnabled="{Binding Replayable}"
+                                        AutomationProperties.Name="{Binding Method, StringFormat='Replay {0}'}" />
                                 <Button Content="Pin" Padding="6,0" FontSize="11"
                                         Command="{Binding $parent[ListBox].((docs:HistoryDocumentViewModel)DataContext).TogglePinCommand}"
-                                        CommandParameter="{Binding}" />
+                                        CommandParameter="{Binding}"
+                                        AutomationProperties.Name="{Binding Method, StringFormat='Toggle pin for {0}'}" />
                             </StackPanel>
                         </Grid>
                     </DataTemplate>

@@ -170,7 +170,8 @@
                                         </Grid>
                                         <TextBox Text="{Binding Json}" IsReadOnly="True" IsVisible="{Binding IsExpanded}"
                                                  FontFamily="Cascadia Code,Consolas,monospace" FontSize="12"
-                                                 TextWrapping="Wrap" Background="Transparent" BorderThickness="0" />
+                                                 TextWrapping="Wrap" Background="Transparent" BorderThickness="0"
+                                                 AutomationProperties.Name="Envelope JSON" />
                                     </StackPanel>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
@@ -197,24 +198,34 @@
                 <CheckBox Content="strict-selection" IsChecked="{Binding StrictSelection}" Margin="0,0,12,0" />
                 <CheckBox Content="introspection" IsChecked="{Binding Introspection}" Margin="0,0,12,0" />
                 <CheckBox Content="strict args" IsChecked="{Binding PromoteDroppedArgumentsToError}" Margin="0,0,12,0"
-                          ToolTip.Tip="Block Execute when an argument would be silently dropped (GQL-047)" />
+                          ToolTip.Tip="Block Execute when an argument would be silently dropped (GQL-047)"
+                          AutomationProperties.HelpText="Block Execute when an argument would be silently dropped (GQL-047)" />
                 <CheckBox Content="as CLI" IsChecked="{Binding AsCliOutput}" Margin="0,0,12,0"
-                          ToolTip.Tip="Show the verbatim envelope (CLI stdout) vs. just the data payload" />
+                          ToolTip.Tip="Show the verbatim envelope (CLI stdout) vs. just the data payload"
+                          AutomationProperties.HelpText="Show the verbatim envelope (CLI stdout) vs. just the data payload" />
                 <CheckBox Content="raw" IsChecked="{Binding Raw}" Margin="0,0,12,0"
-                          ToolTip.Tip="Show the unprojected gRPC JSON (no GraphQL projection) — parity with CLI --raw" />
+                          ToolTip.Tip="Show the unprojected gRPC JSON (no GraphQL projection) — parity with CLI --raw"
+                          AutomationProperties.HelpText="Show the unprojected gRPC JSON (no GraphQL projection) — parity with CLI --raw" />
                 <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,0,12,0" VerticalAlignment="Center">
                     <TextBlock Text="Verbose" VerticalAlignment="Center" FontSize="12" Opacity="0.7" />
                     <ComboBox MinWidth="110" ItemsSource="{Binding Verbosities}" SelectedItem="{Binding Verbosity}"
                               AutomationProperties.Name="Verbose level"
                               ToolTip.Tip="Show per-field resolved mapping (-v) and request JSON (-vv)" />
                 </StackPanel>
-                <Button Content="Copy response" Command="{Binding CopyResponseCommand}" Padding="6,0" Margin="0,0,4,0" />
+                <Button Content="Copy response" Command="{Binding CopyResponseCommand}" Padding="6,0" Margin="0,0,4,0"
+                        AutomationProperties.Name="Copy response" />
                 <Button Content="Copy as CLI" Command="{Binding CopyAsCliCommand}" Padding="6,0" Margin="0,0,4,0"
-                        ToolTip.Tip="Copy the equivalent gql2grpc command (secrets as ${VAR})" />
+                        ToolTip.Tip="Copy the equivalent gql2grpc command (secrets as ${VAR})"
+                        AutomationProperties.Name="Copy as CLI command"
+                        AutomationProperties.HelpText="Copy the equivalent gql2grpc command (secrets as ${VAR})" />
                 <Button Content="Schema" Command="{Binding LoadSchemaCommand}" Padding="6,0" Margin="0,0,4,0"
-                        ToolTip.Tip="Derive the GraphQL schema locally from the descriptors (no RPC)" />
+                        ToolTip.Tip="Derive the GraphQL schema locally from the descriptors (no RPC)"
+                        AutomationProperties.Name="Load schema"
+                        AutomationProperties.HelpText="Derive the GraphQL schema locally from the descriptors (no RPC)" />
                 <Button Content="Inspect" Command="{Binding LoadTranslationCommand}" Padding="6,0"
-                        ToolTip.Tip="Show the exact gRPC request JSON each field would send (no RPC)" />
+                        ToolTip.Tip="Show the exact gRPC request JSON each field would send (no RPC)"
+                        AutomationProperties.Name="Inspect translation"
+                        AutomationProperties.HelpText="Show the exact gRPC request JSON each field would send (no RPC)" />
             </WrapPanel>
 
             <!-- GQL-025: a cancelled run keeps whatever was assembled, with a clear banner. -->

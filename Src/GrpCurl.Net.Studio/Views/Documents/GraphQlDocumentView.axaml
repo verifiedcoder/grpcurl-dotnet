@@ -8,10 +8,8 @@
              x:Name="Root"
              x:DataType="docs:GraphQlDocumentViewModel">
 
-    <UserControl.KeyBindings>
-        <!-- GQL-021: Execute on Ctrl+Enter, same chord as invocation tabs. -->
-        <KeyBinding Gesture="Ctrl+Enter" Command="{Binding ExecuteCommand}" />
-    </UserControl.KeyBindings>
+    <!-- GQL-021: Execute on Ctrl+Enter is bound at the shell window level (SPEC-020 §5), routed to the
+         active tab's primary action, so the chord works uniformly across invocation and GraphQL tabs. -->
 
     <UserControl.Resources>
         <!-- Request-header editor row (GQL-003): name/value + -bin validity. -->

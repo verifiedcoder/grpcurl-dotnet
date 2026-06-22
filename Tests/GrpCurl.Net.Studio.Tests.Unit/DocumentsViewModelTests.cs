@@ -180,4 +180,68 @@ public sealed class DocumentsViewModelTests
         docs.Documents.ShouldBeEmpty();
         docs.SelectedDocument.ShouldBeNull();
     }
+
+    // ── SPEC-020 §5: shell keyboard routing (Ctrl+Tab / Ctrl+W / Ctrl+Enter / Ctrl+.) ──
+
+    [Fact]
+    public void Select_next_and_previous_cycle_through_tabs_and_wrap()
+    {
+        var docs = Create();
+        var connection = Conn();
+        docs.OpenDescribe(connection, "pkg.Alpha");
+        docs.OpenDescribe(connection, "pkg.Beta");
+        docs.OpenDescribe(connection, "pkg.Gamma");
+        docs.SelectedDocument.ShouldBe(docs.Documents[2]); // newest tab is active
+
+        docs.SelectNextDocumentCommand.Execute(null);       // wraps past the end → first
+        docs.SelectedDocument.ShouldBe(docs.Documents[0]);
+
+        docs.SelectNextDocumentCommand.Execute(null);
+        docs.SelectedDocument.ShouldBe(docs.Documents[1]);
+
+        docs.SelectPreviousDocumentCommand.Execute(null);
+        docs.SelectedDocument.ShouldBe(docs.Documents[0]);
+
+        docs.SelectPreviousDocumentCommand.Execute(null);   // wraps before the start → last
+        docs.SelectedDocument.ShouldBe(docs.Documents[2]);
+    }
+
+    [Fact]
+    public void Cycling_with_no_tabs_open_is_a_safe_no_op()
+    {
+        var docs = Create();
+
+        Should.NotThrow(() => docs.SelectNextDocumentCommand.Execute(null));
+        Should.NotThrow(() => docs.SelectPreviousDocumentCommand.Execute(null));
+        docs.SelectedDocument.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Close_active_document_closes_the_selected_tab()
+    {
+        var docs = Create();
+        var connection = Conn();
+        docs.OpenDescribe(connection, "pkg.Alpha");
+        docs.OpenDescribe(connection, "pkg.Beta"); // Beta is active
+
+        docs.CloseActiveDocumentCommand.Execute(null);
+
+        _ = docs.Documents.ShouldHaveSingleItem();
+        ((DescribeDocumentViewModel)docs.Documents[0]).CurrentSymbol.ShouldBe("pkg.Alpha");
+    }
+
+    [Fact]
+    public void Run_and_cancel_active_document_are_safe_no_ops_for_non_runnable_or_idle_tabs()
+    {
+        var docs = Create();
+        docs.OpenSettings(); // a non-runnable tab is selected
+
+        Should.NotThrow(() => docs.RunActiveDocumentCommand.Execute(null));
+        Should.NotThrow(() => docs.CancelActiveDocumentCommand.Execute(null));
+
+        // An idle invocation tab: cancel with nothing in flight must not throw or change the tab set.
+        docs.OpenInvocation(Conn(), "pkg.Svc/Go", "{}");
+        Should.NotThrow(() => docs.CancelActiveDocumentCommand.Execute(null));
+        _ = docs.Documents.OfType<InvocationDocumentViewModel>().ShouldHaveSingleItem();
+    }
 }

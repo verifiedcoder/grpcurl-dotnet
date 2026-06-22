@@ -1,4 +1,5 @@
 using GrpCurl.Net.Studio.ViewModels.Models.Descriptors;
+using GrpCurl.Net.Studio.ViewModels.Models.History;
 
 namespace GrpCurl.Net.Studio.Tests.Perf;
 
@@ -41,5 +42,26 @@ internal static class PerfFixtures
         }
 
         return new ServiceCatalog(services, []);
+    }
+
+    /// <summary>
+    ///     A history of <paramref name="count" /> completed unary calls, newest timestamps last. Used to
+    ///     exercise the history list at scale (NFR-P6/P10); <paramref name="now" /> anchors the timestamps
+    ///     so the caller controls the clock.
+    /// </summary>
+    public static IReadOnlyList<HistoryEntry> SyntheticHistory(int count, DateTimeOffset now)
+    {
+        var entries = new List<HistoryEntry>(count);
+
+        for (var i = 0; i < count; i++)
+        {
+            entries.Add(new HistoryEntry(
+                HistoryEntry.CurrentVersion, $"e{i:D5}", now.AddSeconds(i), HistoryKind.Grpc,
+                new HistoryConnection("staging", "h:1", "tls", null), null, $"perf.v1.Service0001/Method{i % 100:D2}",
+                new HistoryRequest("json", "{}", false, [], "10s", false, false, null, null, null),
+                new HistoryOutcome("OK", "success", 0, 12, 1, 1, null, false, null)));
+        }
+
+        return entries;
     }
 }

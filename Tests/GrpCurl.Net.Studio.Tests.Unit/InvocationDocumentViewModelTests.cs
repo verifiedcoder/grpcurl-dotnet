@@ -773,7 +773,9 @@ public sealed class InvocationDocumentViewModelTests
     // record received the call's cancelled token, and a recorder that throws OperationCanceledException on
     // it escaped the command and faulted it (an unhandled exception on the UI thread). Stopping must never
     // crash, and the cancelled stream must still be recorded.
-    [Fact]
+    // Timeout: a fast Start→Stop also exercises the stream pump's cancellation teardown. If that ever
+    // regresses to a hang, fail in seconds rather than wedging CI until the job-level timeout.
+    [Fact(Timeout = 30_000)]
     public async Task Stopping_a_stream_does_not_crash_when_the_recorder_honours_cancellation()
     {
         var runner = new FakeInvocationRunner { OnStream = (_, _, ct) => StreamUntilCancelled(ct) };

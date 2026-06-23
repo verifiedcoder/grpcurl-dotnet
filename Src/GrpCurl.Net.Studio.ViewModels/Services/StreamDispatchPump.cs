@@ -34,6 +34,11 @@ public static class StreamDispatchPump
             FullMode = BoundedChannelFullMode.Wait
         });
 
+        // Deliberately NOT passing cancellationToken to Task.Run: if the token is already cancelled when
+        // the thread pool picks up the delegate (a fast Start→Stop), Task.Run would skip the delegate
+        // entirely, so the finally below would never complete the writer and the reader's
+        // WaitToReadAsync(None) would wait forever. Running the delegate unconditionally guarantees the
+        // writer is always completed; cancellation is still honored inside via WithCancellation/WriteAsync.
         var producer = Task.Run(async () =>
         {
             try
@@ -47,7 +52,7 @@ public static class StreamDispatchPump
             {
                 _ = queue.Writer.TryComplete();
             }
-        }, cancellationToken);
+        });
 
         // No token on the reader: drain to channel completion so queued events are applied even as
         // cancellation tears the producer down. The producer's exception is surfaced afterwards.

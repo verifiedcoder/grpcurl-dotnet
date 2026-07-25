@@ -53,38 +53,47 @@ public sealed class MacKeychainSecretStoreTests
         await store.DeleteAsync("absent", TestContext.Current.CancellationToken);
     }
 
+    // Every public operation, driven against locked/auth/unexpected statuses through the real backend code
+    // path, must (a) throw, (b) surface the OSStatus, and (c) classify locked/auth as the typed
+    // KeychainUnavailableException while any *other* failure stays a plain InvalidOperationException — the
+    // distinction the macOS availability probe relies on to skip only on genuine unavailability.
+    public static TheoryData<int, bool> NativeFailureStatuses => new()
+    {
+        { KeychainStatusMapping.ErrSecInteractionNotAllowed, true },  // keychain locked → unavailable
+        { KeychainStatusMapping.ErrSecAuthFailed, true },             // auth denied → unavailable
+        { -1, false },                                                // unexpected → plain failure
+        { -50, false },                                               // errSecParam → plain failure
+    };
+
     [Theory]
-    [InlineData(KeychainStatusMapping.ErrSecInteractionNotAllowed)] // keychain locked
-    [InlineData(KeychainStatusMapping.ErrSecAuthFailed)]            // auth denied
-    [InlineData(-1)]                                                // unexpected
-    public async Task Set_surfaces_native_failures_as_exceptions(int status)
+    [MemberData(nameof(NativeFailureStatuses))]
+    public async Task Set_classifies_native_failures(int status, bool unavailable)
+        => await AssertOperationClassifiesFailure(status, unavailable, (store, ct) => store.SetAsync("k", "s3cr3t", ct));
+
+    [Theory]
+    [MemberData(nameof(NativeFailureStatuses))]
+    public async Task Get_classifies_native_failures(int status, bool unavailable)
+        => await AssertOperationClassifiesFailure(status, unavailable, (store, ct) => store.GetAsync("k", ct));
+
+    [Theory]
+    [MemberData(nameof(NativeFailureStatuses))]
+    public async Task Delete_classifies_native_failures(int status, bool unavailable)
+        => await AssertOperationClassifiesFailure(status, unavailable, (store, ct) => store.DeleteAsync("k", ct));
+
+    [Theory]
+    [MemberData(nameof(NativeFailureStatuses))]
+    public async Task Exists_classifies_native_failures(int status, bool unavailable)
+        => await AssertOperationClassifiesFailure(status, unavailable, (store, ct) => store.ExistsAsync("k", ct));
+
+    private static async Task AssertOperationClassifiesFailure(int status, bool unavailable, Func<MacKeychainSecretStore, CancellationToken, Task> operation)
     {
         var store = new MacKeychainSecretStore(new FakeKeychainNative { ForcedStatus = status });
 
         var ex = await Should.ThrowAsync<InvalidOperationException>(
-            () => store.SetAsync("k", "s3cr3t", TestContext.Current.CancellationToken));
+            () => operation(store, TestContext.Current.CancellationToken));
+
         ex.Message.ShouldContain($"OSStatus {status}");
-    }
-
-    [Theory]
-    [InlineData(KeychainStatusMapping.ErrSecInteractionNotAllowed)]
-    [InlineData(KeychainStatusMapping.ErrSecAuthFailed)]
-    [InlineData(-1)]
-    public async Task Get_surfaces_native_failures_as_exceptions(int status)
-    {
-        var store = new MacKeychainSecretStore(new FakeKeychainNative { ForcedStatus = status });
-
-        _ = await Should.ThrowAsync<InvalidOperationException>(
-            () => store.GetAsync("k", TestContext.Current.CancellationToken));
-    }
-
-    [Fact]
-    public async Task Delete_surfaces_an_unexpected_native_failure_as_an_exception()
-    {
-        var store = new MacKeychainSecretStore(new FakeKeychainNative { ForcedStatus = -1 });
-
-        _ = await Should.ThrowAsync<InvalidOperationException>(
-            () => store.DeleteAsync("k", TestContext.Current.CancellationToken));
+        (ex is KeychainUnavailableException).ShouldBe(unavailable);
     }
 
     [Fact]
@@ -113,7 +122,7 @@ public sealed class MacKeychainSecretStoreTests
 
         var ex = KeychainStatusMapping.ToException(status, "add/update");
 
-        _ = ex.ShouldBeOfType<InvalidOperationException>();
+        _ = ex.ShouldBeAssignableTo<InvalidOperationException>();
         ex.Message.ShouldContain("add/update");
         ex.Message.ShouldMatch(@"OSStatus -?\d+");
         ex.Message.ShouldNotContain(secret);
@@ -268,22 +277,37 @@ public sealed class MacKeychainSecretStoreTests
         sightings.ShouldBeEmpty();
     }
 
+    // Skips the real-Keychain facts ONLY when the keychain is genuinely locked/denied
+    // (KeychainUnavailableException) or the platform has no backend. Any other native failure — a broken
+    // dictionary, errSecParam, an interop regression — is a plain InvalidOperationException that is NOT
+    // caught here, so it propagates and fails the test instead of masquerading as "unavailable → skip".
     private static async Task<bool> KeychainUsableAsync(MacKeychainSecretStore store, CancellationToken cancellationToken)
     {
         var probe = "grpcn-probe-" + Guid.NewGuid().ToString("N");
         try
         {
             await store.SetAsync(probe, "probe", cancellationToken);
-            await store.DeleteAsync(probe, cancellationToken);
             return true;
         }
-        catch (InvalidOperationException)
+        catch (KeychainUnavailableException)
         {
             return false; // locked / access denied on this host
         }
         catch (PlatformNotSupportedException)
         {
             return false;
+        }
+        finally
+        {
+            // Never leave probe data behind, even if the add succeeded but a later step threw.
+            try
+            {
+                await store.DeleteAsync(probe, cancellationToken);
+            }
+            catch (InvalidOperationException)
+            {
+                // Best-effort cleanup; the probe's own result already reflects usability.
+            }
         }
     }
 

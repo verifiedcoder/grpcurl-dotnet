@@ -9,10 +9,14 @@ namespace GrpCurl.Net.Studio.Services.Secrets;
 ///     items (PRD-001). Exists so <see cref="MacKeychainSecretStore" /> never has to hand a secret
 ///     value to a child process (argv/environment); the value only ever exists as in-process bytes.
 ///     On the write path the secret is wrapped with <c>CFDataCreateWithBytesNoCopy</c> over a pinned
-///     managed buffer (allocator <c>kCFAllocatorNull</c>), so CoreFoundation does <b>not</b> make a heap
-///     copy of the plaintext that <c>CFRelease</c> would later free without zeroing — the only plaintext
-///     copy this process owns is the caller's managed array, which the caller zeroes. Every CF object this
-///     class creates is released before the method returns.
+///     managed buffer (allocator <c>kCFAllocatorNull</c>) to <i>request</i> that CoreFoundation reference
+///     the buffer in place rather than copy it — avoiding the unconditional heap copy <c>CFDataCreate</c>
+///     would make and then free (via <c>CFRelease</c>) without zeroing. Apple's contract permits the
+///     framework to copy internally anyway, and <c>SecItemAdd</c>/<c>SecItemUpdate</c> necessarily copy the
+///     value into the keychain's own protected storage during the call; those framework-internal copies are
+///     outside this code's control. The only plaintext buffer this process deterministically owns and can
+///     wipe is the caller's managed array, which the caller zeroes. Every CF object this class creates is
+///     released before the method returns.
 /// </summary>
 [SupportedOSPlatform("macos")]
 internal sealed class SecurityFrameworkInterop : IKeychainNative

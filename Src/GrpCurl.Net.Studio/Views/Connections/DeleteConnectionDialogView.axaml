@@ -5,7 +5,6 @@
              x:DataType="conn:DeleteConnectionDialogViewModel"
              Width="420">
     <StackPanel Margin="20" Spacing="12">
-        <TextBlock Text="Delete connection" FontSize="16" FontWeight="SemiBold" />
         <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
         <CheckBox IsChecked="{Binding PurgeHistory}" IsVisible="{Binding HasHistory}"
                   Content="{Binding HistoryOptionText}" AutomationProperties.Name="Also delete history" />

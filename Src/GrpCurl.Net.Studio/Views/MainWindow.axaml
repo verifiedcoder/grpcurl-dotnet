@@ -113,6 +113,13 @@
                           AutomationProperties.Name="Add Connection" />
             </MenuItem>
             <MenuItem Header="_Help">
+                <MenuItem Header="_User Guide" Command="{Binding OpenUserGuideCommand}"
+                          AutomationProperties.Name="Open user guide" />
+                <MenuItem Header="_Keyboard Shortcuts" Command="{Binding OpenKeyboardShortcutsCommand}"
+                          AutomationProperties.Name="Open keyboard shortcuts" />
+                <MenuItem Header="_Report an Issue" Command="{Binding ReportIssueCommand}"
+                          AutomationProperties.Name="Report an issue" />
+                <Separator />
                 <MenuItem Header="_About" IsEnabled="False" />
             </MenuItem>
         </Menu>

@@ -11,5 +11,9 @@ public abstract class DialogViewModel<TResult> : ViewModelBase
     /// <summary>Raised when the view model asks to close, carrying the dialog result.</summary>
     public event Action<TResult?>? CloseRequested;
 
+    /// <summary>The dialog's window-chrome title. Empty leaves the host window untitled; concrete dialogs
+    /// override it so the title shows in the OS window bar rather than as a duplicated in-body header.</summary>
+    public virtual string Title => string.Empty;
+
     protected void Close(TResult? result) => CloseRequested?.Invoke(result);
 }

@@ -5,7 +5,6 @@
              x:DataType="docs:TextInputDialogViewModel"
              Width="380">
     <StackPanel Margin="20" Spacing="12">
-        <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" />
         <StackPanel Spacing="4">
             <TextBlock Text="{Binding Prompt}" />
             <TextBox Text="{Binding Value}" AutomationProperties.Name="Value" />

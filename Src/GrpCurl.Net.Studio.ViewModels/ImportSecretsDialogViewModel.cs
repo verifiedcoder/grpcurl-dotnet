@@ -36,6 +36,8 @@ public sealed partial class ImportSecretsDialogViewModel : DialogViewModel<IRead
     public ImportSecretsDialogViewModel(IReadOnlyList<MissingSecret> missing)
         => Rows = [.. missing.Select(m => new ImportSecretRowViewModel(m.DisplayName, m.KeyRef))];
 
+    public override string Title => "Supply imported secrets";
+
     public ObservableCollection<ImportSecretRowViewModel> Rows { get; }
 
     [RelayCommand]

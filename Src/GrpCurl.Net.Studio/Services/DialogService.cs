@@ -34,6 +34,7 @@ internal sealed class DialogService : IDialogService
         {
             Content = content,
             DataContext = dialogViewModel,
+            Title = dialogViewModel.Title,
             SizeToContent = SizeToContent.WidthAndHeight,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             CanResize = false,

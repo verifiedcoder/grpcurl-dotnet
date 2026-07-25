@@ -52,7 +52,7 @@ public sealed partial class EnvironmentEditorViewModel : DialogViewModel<Workspa
 
     public bool IsEdit { get; }
 
-    public string Title => IsEdit ? "Edit environment" : "New environment";
+    public override string Title => IsEdit ? "Edit environment" : "New environment";
 
     public ObservableCollection<EnvironmentVariableRowViewModel> Variables { get; }
 

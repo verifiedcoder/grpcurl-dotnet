@@ -18,6 +18,8 @@ public sealed partial class DeleteConnectionDialogViewModel : DialogViewModel<bo
             + (historyCount == 1 ? "entry" : "entries") + " recorded for this connection";
     }
 
+    public override string Title => "Delete connection";
+
     public string Message { get; }
 
     public int HistoryCount { get; }

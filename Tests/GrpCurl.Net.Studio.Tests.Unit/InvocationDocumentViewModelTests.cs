@@ -2,7 +2,9 @@ using GrpCurl.Net.Studio.TestSupport;
 using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Descriptors;
+using GrpCurl.Net.Studio.ViewModels.Models.GraphQl;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
+using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
 
@@ -765,5 +767,67 @@ public sealed class InvocationDocumentViewModelTests
         row.StatusName.ShouldBe("OK");
         row.IsError.ShouldBeFalse();
         row.Activity.Phases.ShouldContain(p => p.Phase == "Call");
+    }
+
+    // Regression: Start then Stop on a streaming method used to crash the app. The post-cancel history
+    // record received the call's cancelled token, and a recorder that throws OperationCanceledException on
+    // it escaped the command and faulted it (an unhandled exception on the UI thread). Stopping must never
+    // crash, and the cancelled stream must still be recorded.
+    // Timeout: a fast Start→Stop also exercises the stream pump's cancellation teardown. If that ever
+    // regresses to a hang, fail in seconds rather than wedging CI until the job-level timeout.
+    [Fact(Timeout = 30_000)]
+    public async Task Stopping_a_stream_does_not_crash_when_the_recorder_honours_cancellation()
+    {
+        var runner = new FakeInvocationRunner { OnStream = (_, _, ct) => StreamUntilCancelled(ct) };
+        var descriptors = new FakeDescriptorService
+        {
+            OnDescribe = (_, symbol, _) => Task.FromResult(DescribeResult.Success(
+                new MethodDescription(symbol, "Go", "f.proto", StreamingShape.ServerStreaming,
+                    new TypeRef("pkg.In", true), new TypeRef("pkg.Out", true), new TypeRef("pkg.Svc", true), "{}")))
+        };
+        var recorder = new CancelThrowingRecorder();
+        var doc = new InvocationDocumentViewModel(
+            Conn(), "pkg.Svc/Go", "{}", runner, descriptors, new ImmediateUiDispatcher(),
+            new FakeClipboardService(), new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator(),
+            recorder: recorder);
+
+        var streaming = doc.StartStreamCommand.ExecuteAsync(null); // suspends on the in-flight stream
+        doc.StartStreamCancelCommand.Execute(null);                // Stop
+
+        await Should.NotThrowAsync(async () => await streaming);
+        doc.State.ShouldBe(RunState.Cancelled);
+        recorder.StreamCount.ShouldBe(1); // the cancelled stream is still recorded
+    }
+
+    private static async IAsyncEnumerable<StreamEventModel> StreamUntilCancelled(
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        yield return new StreamEventModel(StreamEventKind.MessageReceived, 0, DateTimeOffset.Now, 0, "msg 0",
+            RawMessage: new Google.Protobuf.WellKnownTypes.Empty());
+        await Task.Delay(Timeout.Infinite, cancellationToken); // blocks until Stop cancels the token
+    }
+
+    // Models the real recorder, whose underlying cancellable file write throws on an already-cancelled token.
+    private sealed class CancelThrowingRecorder : IHistoryRecorder
+    {
+        public int StreamCount { get; private set; }
+
+        public Task RecordUnaryAsync(InvocationRequestModel request, InvocationResultModel result, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.CompletedTask;
+        }
+
+        public Task RecordStreamAsync(
+            StreamRequestModel request, InvocationStatusModel status, long durationMs,
+            int messagesSent, int messagesReceived, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            StreamCount++;
+            return Task.CompletedTask;
+        }
+
+        public Task RecordGraphQlAsync(GraphQlHistoryContext context, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
     }
 }

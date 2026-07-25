@@ -193,4 +193,21 @@ public sealed class StreamRowAndPumpTests
         // After releasing, everything still drains through.
         Volatile.Read(ref produced).ShouldBe(1000);
     }
+
+    // Regression: a fast Start→Stop can cancel before the producer's Task.Run delegate is scheduled.
+    // The producer must still run and complete the writer, or the reader (which drains to completion,
+    // ignoring the token) waits forever. Passing the token to Task.Run skipped the delegate and hung —
+    // the Timeout fails fast if that regresses instead of wedging the test run.
+    [Fact(Timeout = 10_000)]
+    public async Task Pump_returns_when_the_token_is_already_cancelled_before_the_producer_starts()
+    {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        _ = await Should.ThrowAsync<OperationCanceledException>(async () =>
+            await StreamDispatchPump.RunAsync(
+                Range(5, cts.Token),
+                batch => Task.CompletedTask,
+                cts.Token));
+    }
 }

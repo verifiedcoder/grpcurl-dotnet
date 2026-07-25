@@ -29,6 +29,8 @@ public sealed record TlsProfileRow(TlsProfile Profile, int UsageCount)
 /// </summary>
 public sealed partial class TlsProfileManagerViewModel : DialogViewModel<bool>
 {
+    public override string Title => "TLS profiles";
+
     private readonly ITlsProfileStore _store;
     private readonly IFilePickerService _filePicker;
     private readonly IDialogService _dialogService;

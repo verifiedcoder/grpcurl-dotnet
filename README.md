@@ -48,6 +48,8 @@ grpcn invoke --plaintext --max-time 30s \
 
 Prebuilt, self-contained binaries for **GrpCurl.Net Studio**, `grpcn`, and `gql2grpc` are published on the [**Releases page**](https://github.com/verifiedcoder/grpcurl-dotnet/releases) for Windows, macOS, and Linux (x64 & arm64) — no .NET runtime required. See the [**install guide**](Docs/articles/install.md) for picking the right archive, verifying `SHA256SUMS`, and first-launch steps (the binaries are unsigned — zero-budget OSS). There is no NuGet.org / `dotnet tool` feed.
 
+New to the desktop app? The [**Studio user guide**](Docs/articles/studio/index.md) covers the UI tour, first run, the keyboard map, and common workflows.
+
 ### Build the CLIs from source
 
 GrpCurl.Net can also be installed by building the [.NET tool](https://learn.microsoft.com/dotnet/core/tools/global-tools) packages from source. The packages are **not published to NuGet.org**; there is no public-feed install path.

@@ -130,4 +130,39 @@ public sealed class ServiceExplorerUiTests(HeadlessSessionFixture fixture) : Hea
         _ = export.ShouldNotBeNull();
         export!.IsEffectivelyVisible.ShouldBeTrue();
     });
+
+    // FR-020 regression guard: selecting a method *through the rendered tree* (not by setting the view
+    // model directly) must feed the inspector. The earlier VM-only test passed while the view's
+    // SelectedItem binding was missing, so the running app showed nothing on selection.
+    [Fact]
+    public Task Selecting_a_method_in_the_tree_feeds_the_inspector() => RunOnUiThread(() =>
+    {
+        var descriptors = new FakeDescriptorService
+        {
+            Result = DescriptorLoadResult.Success(new ServiceCatalog(
+                [new ServiceEntry("pkg.Greeter", [new ServiceMethod("SayHello", "pkg.Greeter/SayHello", StreamingShape.Unary, "pkg.Req", "pkg.Resp")])], []))
+        };
+        var selection = new ConnectionSelection();
+        var inspector = new InspectorViewModel();
+        var vm = new ServiceExplorerViewModel(
+            descriptors, selection, new FakeClipboardService(), new ImmediateUiDispatcher(), new FakeDocumentHost(),
+            inspector: inspector);
+        selection.Set(new SavedConnection { Name = "c", Address = "h:1" });
+
+        var window = new Window { Content = new ServiceExplorerView { DataContext = vm }, Width = 320, Height = 480 };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        var tree = window.GetVisualDescendants().OfType<TreeView>()
+            .Single(t => Equals(t.GetValue(Avalonia.Automation.AutomationProperties.NameProperty), "Service tree"));
+        var method = vm.Services.Single().Methods.Single(m => m.Name == "SayHello");
+
+        // Select through the control, which only reaches the view model if the SelectedItem binding exists.
+        tree.SelectedItem = method;
+        Dispatcher.UIThread.RunJobs();
+
+        vm.SelectedNode.ShouldBe(method);
+        var shown = inspector.Content.ShouldBeOfType<MethodSignatureContent>();
+        shown.FullName.ShouldBe("pkg.Greeter/SayHello");
+    });
 }

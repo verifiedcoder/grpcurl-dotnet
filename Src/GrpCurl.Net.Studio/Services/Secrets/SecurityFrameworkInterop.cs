@@ -85,7 +85,8 @@ internal sealed class SecurityFrameworkInterop : IKeychainNative
         finally
         {
             // Release the CFData while the buffer is still pinned, then unpin. With kCFAllocatorNull the
-            // release frees only the CFData wrapper, never the caller's bytes.
+            // release frees the CFData wrapper (and any framework-internal copy it may have made), but
+            // never the caller's pinned bytes — those are ours to zero.
             if (dataRef != IntPtr.Zero)
             {
                 CFRelease(dataRef);

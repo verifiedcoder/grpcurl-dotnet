@@ -4,7 +4,9 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+    # `feature/**` covers the bug-fix integration flow (fix/* → feature/bug-fixes → main), so each
+    # fix PR gets the full gate, not just the eventual integration PR into main.
+    branches: [main, "feature/**"]
   workflow_dispatch:
   # Lets release.yml reuse the full gate (build-test + coverage + validation + conformance)
   # as a single source of truth — a release can never ship un-tested bits.

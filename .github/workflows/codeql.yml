@@ -15,7 +15,8 @@ on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+    # Also gate the fix/* → feature/bug-fixes → main integration flow, not just PRs into main.
+    branches: [ "main", "feature/**" ]
   schedule:
     - cron: '21 6 * * 6'
 

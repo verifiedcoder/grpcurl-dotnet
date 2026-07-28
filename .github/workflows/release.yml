@@ -107,22 +107,23 @@ jobs:
           tar -xzf "artifacts/release/dist/grpcn-${{ matrix.rid }}-${ver}.tar.gz" -C "$tmp"
           bash Scripts/package/verify-version.sh "$ver" "$tmp/grpcn"
 
-      # One attestation per product, binding that archive to its own SBOM. Consumers resolve the
-      # inventory of a downloaded artifact with `gh attestation verify --predicate-type ...`.
+      # One attestation per product, binding that archive to its own SBOM (predicate type
+      # https://cyclonedx.org/bom). Consumers resolve the inventory of a downloaded artifact with
+      # `gh attestation verify --predicate-type https://cyclonedx.org/bom`.
       - name: Attest SBOM (grpcn)
-        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
           subject-path: artifacts/release/dist/grpcn-${{ matrix.rid }}-${{ needs.version.outputs.version }}.${{ matrix.ext }}
           sbom-path: artifacts/release/dist/grpcn-${{ matrix.rid }}-${{ needs.version.outputs.version }}.cdx.json
 
       - name: Attest SBOM (gql2grpc)
-        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
           subject-path: artifacts/release/dist/gql2grpc-${{ matrix.rid }}-${{ needs.version.outputs.version }}.${{ matrix.ext }}
           sbom-path: artifacts/release/dist/gql2grpc-${{ matrix.rid }}-${{ needs.version.outputs.version }}.cdx.json
 
       - name: Attest SBOM (Studio)
-        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
           subject-path: artifacts/release/dist/GrpCurlNetStudio-${{ matrix.rid }}-${{ needs.version.outputs.version }}.${{ matrix.ext }}
           sbom-path: artifacts/release/dist/GrpCurlNetStudio-${{ matrix.rid }}-${{ needs.version.outputs.version }}.cdx.json
@@ -202,19 +203,45 @@ jobs:
           path: release/*
           if-no-files-found: error
 
-      # A broken attestation must fail this run, not the consumer — so verify before drafting.
+      # A broken attestation must fail this run, not the consumer — so verify before drafting, and
+      # verify with the same identity policy the install guide tells consumers to use: --repo alone
+      # would accept an attestation from any workflow and any ref in this repository.
       - name: Verify attestations
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
+          policy=(
+            --repo "$GITHUB_REPOSITORY"
+            --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/release.yml"
+            --source-ref "$GITHUB_REF"
+            --source-digest "$GITHUB_SHA"
+          )
+
+          # 1. SLSA build provenance — every asset, including the SBOMs and the checksum manifest.
           for asset in release/*; do
             case "$asset" in
               release/SHA256SUMS.sigstore.json) continue ;;
             esac
-            echo "==> gh attestation verify $(basename "$asset")"
-            gh attestation verify "$asset" --repo "$GITHUB_REPOSITORY"
+            echo "==> provenance: $(basename "$asset")"
+            gh attestation verify "$asset" "${policy[@]}"
+          done
+
+          # 2. The CycloneDX attestations. These carry a different predicate type, so the provenance
+          #    loop above never looks at them — without this, an archive could ship with a missing or
+          #    unsigned SBOM and still pass. The verified predicate must also BE the SBOM we publish.
+          mkdir -p verified-predicates
+          shopt -s nullglob
+          for archive in release/*.zip release/*.tar.gz; do
+            base="$(basename "$archive")"; stem="${base%.zip}"; stem="${stem%.tar.gz}"
+            echo "==> sbom attestation: $base"
+            gh attestation verify "$archive" "${policy[@]}" \
+              --predicate-type https://cyclonedx.org/bom \
+              --format json --jq '.[0].verificationResult.statement.predicate' \
+              > "verified-predicates/$stem.json"
+            bash Scripts/package/compare-sbom-predicate.sh \
+              "verified-predicates/$stem.json" "release/$stem.cdx.json"
           done
 
       - name: Trust-artifact gate

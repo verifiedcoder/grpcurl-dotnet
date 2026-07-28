@@ -20,12 +20,22 @@ changes — so normal `dotnet build`/test and `PackAsTool` are untouched.
 
 | Script | Purpose |
 |--------|---------|
-| `publish.sh <rid> <version> [staging]` | Publish Studio + both CLIs self-contained for one RID and archive them into `<staging>/dist`. CLIs are single-file; Studio is a folder archive (a `.app` bundle on `osx-*`). `win-*` → `.zip`, else `.tar.gz`. Every archive also gets `LICENSE` + `THIRD-PARTY-NOTICES.md`. |
-| `make-macos-app.sh <publish-dir> <version> <app-path>` | Wrap a Studio publish dir into `GrpCurl.Net Studio.app`, put the legal material in `Contents/Resources`, and **ad-hoc** codesign it (free; lets arm64 run after quarantine is cleared — not notarization). `codesign` runs only on macOS. |
-| `generate-sbom.sh <rid> <version> [staging]` | Emit a CycloneDX SBOM per product beside the archives (`<product>-<rid>-<version>.cdx.json`). Run **after** `publish.sh` for the same RID: restore is disabled, so the SBOM describes the graph that publish actually used and no lock file is touched. Uses the CycloneDX tool pinned in `.config/dotnet-tools.json`. |
+| `publish.sh <rid> <version> [staging]` | Publish Studio + both CLIs self-contained for one RID and archive them into `<staging>/dist`. CLIs are single-file; Studio is a folder archive (a `.app` bundle on `osx-*`). `win-*` → `.zip`, else `.tar.gz`. Every archive also gets the four legal files (below). |
+| `make-macos-app.sh <publish-dir> <version> <app-path> <csproj> <rid>` | Wrap a Studio publish dir into `GrpCurl.Net Studio.app`, put the legal material in `Contents/Resources`, and **ad-hoc** codesign it (free; lets arm64 run after quarantine is cleared — not notarization). `codesign` runs only on macOS. |
+| `generate-sbom.sh <rid> <version> [staging]` | Emit a CycloneDX SBOM per product beside the archives (`<product>-<rid>-<version>.cdx.json`), then merge in the embedded .NET runtime pack. Run **after** `publish.sh` for the same RID: restore is disabled, so the SBOM describes the graph that publish actually used and no lock file is touched. Uses the CycloneDX tool pinned in `.config/dotnet-tools.json`. |
 | `generate-third-party-notices.sh [--check]` | Regenerate the committed `THIRD-PARTY-NOTICES.md` from the shipped projects' `packages.lock.json` plus the `.nuspec` metadata in the local NuGet cache (offline; needs a completed restore and `python3`). `--check` fails on drift and runs in CI. |
-| `verify-trust-artifacts.sh <dir> [--allow-partial] [--skip-signature]` | Pre-draft gate: every archive has a well-formed SBOM and ships `LICENSE` + `THIRD-PARTY-NOTICES.md`, `SHA256SUMS` is complete and verifies, the cosign bundle is present, and the full 6×3 matrix is staged. |
+| `runtime-pack.sh` | Sourced helper (not run directly): reads the embedded runtime pack id/version out of the publish's `deps.json` and locates the pack on disk. The runtime pack is SDK-resolved, so it appears in neither `packages.lock.json` nor `project.assets.json`. |
+| `compare-sbom-predicate.sh <predicate> <cdx.json>` | Assert a verified SBOM attestation is the SBOM being published, not merely a same-named file. |
+| `verify-trust-artifacts.sh <dir> [--allow-partial] [--skip-signature]` | Pre-draft gate: every archive has a well-formed SBOM that accounts for its RID's runtime pack and ships all four legal files, `SHA256SUMS` is complete and verifies, the cosign bundle is present, and the full 6×3 matrix is staged. |
 | `verify-version.sh <version> <exe>` | Assert a published CLI reports the expected version (core before `+`), guarding tag↔binary agreement for the Studio update check. |
+
+## Legal material in every archive
+
+`LICENSE` and `THIRD-PARTY-NOTICES.md` (the product and its NuGet graph), plus
+`LICENSE.dotnet-runtime.txt` and `THIRD-PARTY-NOTICES.dotnet-runtime.txt` copied verbatim from the
+runtime pack the build embedded. The runtime files are not decoration: a self-contained archive is
+mostly .NET runtime, and the pack carries attributions and non-MIT terms that the NuGet-graph notices
+cannot cover. `publish.sh` fails rather than shipping an archive without them.
 
 ## RIDs
 

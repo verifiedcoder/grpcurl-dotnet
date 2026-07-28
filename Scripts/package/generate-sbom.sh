@@ -26,11 +26,67 @@ STAGING="${3:-artifacts/release}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
+# shellcheck source=Scripts/package/runtime-pack.sh
+. "$ROOT/Scripts/package/runtime-pack.sh"
+
 DIST="$STAGING/dist"
 mkdir -p "$DIST"
 
 # Version-pinned in .config/dotnet-tools.json — no floating `dotnet tool install` in the release path.
 dotnet tool restore
+
+# add_runtime_packs <sbom-file> <project-csproj> — CycloneDX reads the NuGet project graph, which by
+# construction excludes the .NET runtime pack a self-contained publish embeds (it is an SDK-resolved
+# pack, absent from packages.lock.json and project.assets.json). Without this the SBOM would omit the
+# largest single part of the shipped payload, so merge each pack in as a first-class component, with
+# the same SHA-512 NuGet itself records for the package.
+add_runtime_packs() {
+  local sbom="$1" proj="$2" pack id ver nupkg hash rootref tmp added=0
+  rootref="$(jq -r '.metadata.component["bom-ref"] // empty' "$sbom")"
+
+  while read -r pack; do
+    [ -n "$pack" ] || continue
+    id="${pack%%/*}"; ver="${pack##*/}"
+    hash=""
+    if nupkg="$(runtime_pack_nupkg "$id" "$ver" 2>/dev/null)"; then
+      hash="$(openssl dgst -sha512 -hex "$nupkg" | awk '{print $NF}')"
+    fi
+    tmp="$sbom.tmp"
+    jq --arg id "$id" --arg ver "$ver" --arg hash "$hash" --arg rootref "$rootref" '
+      ($ARGS.named.id + "@" + $ARGS.named.ver) as $ref
+      | ("pkg:nuget/" + $ARGS.named.id + "@" + $ARGS.named.ver) as $purl
+      | .components += [
+          {
+            "type": "framework",
+            "bom-ref": $ref,
+            "name": $id,
+            "version": $ver,
+            "purl": $purl,
+            "publisher": "Microsoft Corporation",
+            "description": "Self-contained .NET runtime pack embedded in this artifact.",
+            "licenses": [ { "license": { "id": "MIT" } } ],
+            "externalReferences": [
+              { "type": "distribution", "url": "https://github.com/dotnet/runtime" },
+              { "type": "license", "url": "https://github.com/dotnet/runtime/blob/main/LICENSE.TXT" }
+            ]
+          }
+          + (if $hash == "" then {} else { "hashes": [ { "alg": "SHA-512", "content": $hash } ] } end)
+        ]
+      | if (.dependencies? and $rootref != "")
+        then .dependencies = ((.dependencies | map(
+               if .ref == $rootref then .dependsOn = ((.dependsOn // []) + [$ref] | unique) else . end))
+               + [ { "ref": $ref, "dependsOn": [] } ])
+        else . end
+    ' "$sbom" > "$tmp" && mv "$tmp" "$sbom"
+    echo "  + runtime pack $id $ver${hash:+ (sha512 recorded)}"
+    added=1
+  done < <(runtime_packs "$proj" "$RID")
+
+  if [ "$added" -eq 0 ]; then
+    echo "generate-sbom: no runtime pack found for $proj ($RID) — the SBOM would omit the embedded runtime" >&2
+    exit 1
+  fi
+}
 
 sbom() {
   local proj="$1" friendly="$2"
@@ -52,6 +108,7 @@ sbom() {
     --recursive \
     --disable-package-restore
   [ -s "$DIST/$out" ] || { echo "generate-sbom: $out was not written" >&2; exit 1; }
+  add_runtime_packs "$DIST/$out" "$proj"
 }
 
 echo "### generate-sbom.sh  rid=$RID  version=$VERSION"

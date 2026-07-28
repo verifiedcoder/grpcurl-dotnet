@@ -10,18 +10,26 @@ by `Scripts/package/generate-third-party-notices.sh`. **Do not edit it by hand**
 and fails the build if it has drifted from the lock files. Build-time-only dependencies (analyzers,
 code generators, test frameworks) are excluded: they are never distributed.
 
-## .NET runtime and libraries
+## .NET runtime
 
-Portions of this software are distributed with the **.NET runtime and shared framework**
-(`Microsoft.NETCore.App`, `Microsoft.WindowsDesktop.App` and the matching runtime packs), which the
-self-contained publish embeds in every archive.
+Every archive embeds the **.NET runtime** (the self-contained publish bundles it, so no runtime has
+to be installed first).
 
 - Publisher: Microsoft Corporation and the .NET Foundation
 - Project: <https://github.com/dotnet/runtime>
 - Licence: MIT (<https://github.com/dotnet/runtime/blob/main/LICENSE.TXT>)
 
-The exact runtime-pack versions are resolved from the SDK pinned in `global.json` at publish time
-and are recorded per artifact in the release's CycloneDX SBOM (`*.cdx.json`).
+The runtime is **not** part of the NuGet dependency graph this file is generated from, so it is
+covered separately and completely:
+
+- the runtime's own licence and third-party attributions (which include non-MIT terms) ship in the
+  same archive as `LICENSE.dotnet-runtime.txt` and `THIRD-PARTY-NOTICES.dotnet-runtime.txt`, copied
+  verbatim from the runtime pack the build embedded;
+- the exact pack — id, version and the SHA-512 NuGet records for it — is listed as a component in
+  that artifact's CycloneDX SBOM (`*.cdx.json`).
+
+The pack version is resolved from the SDK pinned in `global.json` and is RID-specific, which is why
+it is recorded per artifact rather than in this file.
 
 ## NuGet packages
 
@@ -456,6 +464,13 @@ and are recorded per artifact in the release's CycloneDX SBOM (`*.cdx.json`).
 - Copyright: © Microsoft Corporation. All rights reserved.
 
 ### Microsoft.Extensions.Primitives 10.0.9
+
+- Authors: Microsoft
+- Project: <https://dot.net/>
+- Licence: MIT
+- Copyright: © Microsoft Corporation. All rights reserved.
+
+### Microsoft.NET.ILLink.Tasks 10.0.0
 
 - Authors: Microsoft
 - Project: <https://dot.net/>

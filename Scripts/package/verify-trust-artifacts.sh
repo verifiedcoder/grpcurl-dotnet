@@ -42,7 +42,9 @@ fi
 
 PRODUCTS=(grpcn gql2grpc GrpCurlNetStudio)
 RIDS=(win-x64 win-arm64 osx-x64 osx-arm64 linux-x64 linux-arm64)
-LEGAL=(LICENSE THIRD-PARTY-NOTICES.md)
+# The runtime files are not optional extras: a self-contained archive is mostly .NET runtime, and the
+# runtime pack carries its own attributions that the NuGet-graph notices cannot cover.
+LEGAL=(LICENSE THIRD-PARTY-NOTICES.md LICENSE.dotnet-runtime.txt THIRD-PARTY-NOTICES.dotnet-runtime.txt)
 
 FAILURES=0
 fail() { echo "  FAIL: $*" >&2; FAILURES=$((FAILURES + 1)); }
@@ -72,19 +74,53 @@ for archive in "${ARCHIVES[@]}"; do
   base="$(basename "$archive")"
   stem="${base%.zip}"; stem="${stem%.tar.gz}"
 
+  # <product>-<rid>-<version>: the RID decides which runtime pack the SBOM must account for.
+  archive_rid=""
+  for rid in "${RIDS[@]}"; do
+    case "$stem" in *"-$rid-"*) archive_rid="$rid" ;; esac
+  done
+  [ -n "$archive_rid" ] || fail "$base does not carry a known RID in its name"
+
   sbom="$DIR/$stem.cdx.json"
   if [ ! -f "$sbom" ]; then
     fail "$base has no SBOM ($stem.cdx.json)"
-  elif ! python3 -c '
-import json, sys
-with open(sys.argv[1], encoding="utf-8") as fh:
-    doc = json.load(fh)
-assert doc.get("bomFormat") == "CycloneDX", "not a CycloneDX document"
-assert doc.get("components"), "SBOM lists no components"
-' "$sbom" 2>/dev/null; then
-    fail "$stem.cdx.json is not a well-formed, non-empty CycloneDX SBOM"
   else
-    ok "$base -> $stem.cdx.json"
+    sbom_error="$(python3 -c '
+import json, sys
+
+path, rid = sys.argv[1], sys.argv[2]
+try:
+    with open(path, encoding="utf-8") as fh:
+        doc = json.load(fh)
+except Exception as exc:                      # noqa: BLE001 - reported verbatim to the operator
+    print(f"not readable as JSON: {exc}")
+    raise SystemExit(0)
+
+if doc.get("bomFormat") != "CycloneDX":
+    print("not a CycloneDX document")
+    raise SystemExit(0)
+components = doc.get("components") or []
+if not components:
+    print("lists no components")
+    raise SystemExit(0)
+
+# The self-contained runtime pack is the biggest single part of the payload and is absent from the
+# NuGet project graph, so its presence is the check that the SBOM inventories what actually ships.
+suffix = ".App.Runtime." + rid
+runtime = [c for c in components if str(c.get("name", "")).endswith(suffix)]
+if not runtime:
+    print(f"no *{suffix} runtime-pack component")
+    raise SystemExit(0)
+for component in runtime:
+    if not component.get("version"):
+        print("runtime component " + str(component.get("name")) + " has no version")
+        raise SystemExit(0)
+' "$sbom" "$archive_rid" 2>&1)"
+    if [ -n "$sbom_error" ]; then
+      fail "$stem.cdx.json $sbom_error"
+    else
+      ok "$base -> $stem.cdx.json"
+    fi
   fi
 
   members="$(list_archive "$archive")" || { fail "$base could not be listed"; continue; }

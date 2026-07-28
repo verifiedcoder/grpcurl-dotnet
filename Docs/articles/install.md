@@ -48,15 +48,27 @@ these claims. If a verification command reports anything else, do not run the bi
 
 ### 1. Verify build provenance (strongest check)
 
-Requires the [GitHub CLI](https://cli.github.com/) 2.49 or newer. This works offline against the
-downloaded file plus GitHub's attestation store:
+Requires the [GitHub CLI](https://cli.github.com/) 2.49 or newer. The command hashes your local file
+and checks it against the attestations GitHub holds, so it needs network access to `api.github.com`:
 
 ```bash
-gh attestation verify grpcn-linux-x64-1.0.0.tar.gz --repo verifiedcoder/grpcurl-dotnet
+gh attestation verify grpcn-linux-x64-1.0.0.tar.gz \
+  --repo verifiedcoder/grpcurl-dotnet \
+  --signer-workflow verifiedcoder/grpcurl-dotnet/.github/workflows/release.yml \
+  --source-ref refs/tags/v1.0.0
 ```
 
-It prints the workflow, commit and tag the artifact was built from, and fails if the file was
-modified, was not produced by this repository, or has no attestation at all.
+`--repo` on its own is a weak policy: it accepts an attestation produced by *any* workflow on *any*
+ref in this repository. `--signer-workflow` and `--source-ref` are what make the command actually
+enforce the publisher identity in the table above, so keep them.
+
+The command prints the workflow, commit and ref the artifact was built from, and fails if the file
+was modified, was not produced by this repository's release workflow, or has no attestation at all.
+
+**Air-gapped verification.** Fetch the attestation bundle once on a connected machine
+(`gh attestation download <asset> --repo verifiedcoder/grpcurl-dotnet`), carry the resulting
+`.jsonl` across, and verify with `--bundle <file>` and the same policy flags. Without `--bundle`,
+`gh attestation verify` requires network access.
 
 ### 2. Verify the signed checksum manifest
 
@@ -91,23 +103,39 @@ On Windows (PowerShell):
 ## Software bill of materials
 
 Each archive is published with a matching CycloneDX SBOM — `<product>-<rid>-<version>.cdx.json` —
-listing every NuGet package that went into it, with versions and licences. The SBOM is attested to
-its artifact, so you can confirm the inventory belongs to the binary you downloaded:
+listing every NuGet package that went into it plus the exact .NET runtime pack the self-contained
+build embedded (with the SHA-512 NuGet records for it), each with versions and licences. The SBOM is
+attested to its artifact, so you can confirm the inventory belongs to the binary you downloaded:
 
 ```bash
-gh attestation verify grpcn-linux-x64-1.0.0.tar.gz --repo verifiedcoder/grpcurl-dotnet \
+gh attestation verify grpcn-linux-x64-1.0.0.tar.gz \
+  --repo verifiedcoder/grpcurl-dotnet \
+  --signer-workflow verifiedcoder/grpcurl-dotnet/.github/workflows/release.yml \
+  --source-ref refs/tags/v1.0.0 \
   --predicate-type https://cyclonedx.org/bom
 ```
 
-The SBOM covers the NuGet dependency graph. The bundled .NET runtime itself comes from the SDK
-pinned in `global.json` at build time and is recorded in `THIRD-PARTY-NOTICES.md` rather than the
-package graph.
+Add `--format json --jq '.[0].verificationResult.statement.predicate'` to print the attested SBOM
+itself, which lets you confirm the published `.cdx.json` asset is the document that was signed —
+the release pipeline runs exactly that comparison before drafting a release.
+
+Note that the SBOM enumerates the package graph and the runtime pack; the runtime pack's own internal
+components are covered by the runtime's third-party notice, which ships in every archive (below).
 
 ## Licence and third-party notices
 
-Every archive ships `LICENSE` (MIT) and `THIRD-PARTY-NOTICES.md`, which lists every bundled
-third-party component and its licence. In the macOS Studio bundle both files live in
-`GrpCurl.Net Studio.app/Contents/Resources/`.
+Every archive ships four legal files:
+
+| File | Covers |
+|------|--------|
+| `LICENSE` | GrpCurl.Net itself (MIT) |
+| `THIRD-PARTY-NOTICES.md` | every bundled NuGet package, with licence text where the package supplies it |
+| `LICENSE.dotnet-runtime.txt` | the embedded .NET runtime (MIT) |
+| `THIRD-PARTY-NOTICES.dotnet-runtime.txt` | the runtime's own third-party attributions, including non-MIT terms |
+
+The last two are shipped verbatim from the runtime pack the build embedded, because a self-contained
+archive is mostly .NET runtime and those attributions are not part of the NuGet package graph. In the
+macOS Studio bundle all four live in `GrpCurl.Net Studio.app/Contents/Resources/`.
 
 ## A note on code signing
 

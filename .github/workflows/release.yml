@@ -263,7 +263,9 @@ jobs:
           (\`SHA256SUMS.sigstore.json\`):
 
           \`\`\`bash
-          gh attestation verify <asset> --repo ${GITHUB_REPOSITORY}
+          gh attestation verify <asset> --repo ${GITHUB_REPOSITORY} \\
+            --signer-workflow ${GITHUB_REPOSITORY}/.github/workflows/release.yml \\
+            --source-ref refs/tags/v$ver
           cosign verify-blob SHA256SUMS --bundle SHA256SUMS.sigstore.json \\
             --certificate-identity-regexp '^https://github.com/${GITHUB_REPOSITORY}/\.github/workflows/release\.yml@refs/tags/v' \\
             --certificate-oidc-issuer https://token.actions.githubusercontent.com

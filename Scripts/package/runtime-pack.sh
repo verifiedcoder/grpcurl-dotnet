@@ -58,6 +58,11 @@ runtime_pack_nupkg() {
   local id="$1" ver="$2" dir lower
   dir="$(runtime_pack_dir "$id" "$ver")" || return 1
   lower="$(printf '%s' "$id" | tr '[:upper:]' '[:lower:]')"
-  [ -f "$dir/$lower.$ver.nupkg" ] || return 1
+  if [ ! -f "$dir/$lower.$ver.nupkg" ]; then
+    # Packs restored into the NuGet cache keep their .nupkg; one resolved from the SDK's packs/
+    # folder does not, and then there is no NuGet-recorded artifact to hash.
+    echo "runtime-pack: $dir has no $lower.$ver.nupkg to hash" >&2
+    return 1
+  fi
   echo "$dir/$lower.$ver.nupkg"
 }

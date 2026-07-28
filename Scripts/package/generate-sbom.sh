@@ -47,9 +47,17 @@ add_runtime_packs() {
   while read -r pack; do
     [ -n "$pack" ] || continue
     id="${pack%%/*}"; ver="${pack##*/}"
-    hash=""
-    if nupkg="$(runtime_pack_nupkg "$id" "$ver" 2>/dev/null)"; then
-      hash="$(openssl dgst -sha512 -hex "$nupkg" | awk '{print $NF}')"
+    # The install guide promises every SBOM records this hash, so a pack we cannot hash is a hard
+    # failure, not a component quietly emitted without `hashes`. A pack resolved from the SDK's
+    # packs/ folder has no .nupkg and lands here — deliberately loud, so the contract cannot rot.
+    nupkg="$(runtime_pack_nupkg "$id" "$ver")" || {
+      echo "generate-sbom: no .nupkg for $id $ver — cannot record the SHA-512 the release contract promises" >&2
+      exit 1
+    }
+    hash="$(openssl dgst -sha512 -hex "$nupkg" | awk '{print $NF}')"
+    if [[ ! "$hash" =~ ^[0-9a-f]{128}$ ]]; then
+      echo "generate-sbom: openssl produced no usable SHA-512 for $nupkg (got '${hash}')" >&2
+      exit 1
     fi
     tmp="$sbom.tmp"
     jq --arg id "$id" --arg ver "$ver" --arg hash "$hash" --arg rootref "$rootref" '
@@ -68,9 +76,9 @@ add_runtime_packs() {
             "externalReferences": [
               { "type": "distribution", "url": "https://github.com/dotnet/runtime" },
               { "type": "license", "url": "https://github.com/dotnet/runtime/blob/main/LICENSE.TXT" }
-            ]
+            ],
+            "hashes": [ { "alg": "SHA-512", "content": $hash } ]
           }
-          + (if $hash == "" then {} else { "hashes": [ { "alg": "SHA-512", "content": $hash } ] } end)
         ]
       | if (.dependencies? and $rootref != "")
         then .dependencies = ((.dependencies | map(
@@ -78,7 +86,7 @@ add_runtime_packs() {
                + [ { "ref": $ref, "dependsOn": [] } ])
         else . end
     ' "$sbom" > "$tmp" && mv "$tmp" "$sbom"
-    echo "  + runtime pack $id $ver${hash:+ (sha512 recorded)}"
+    echo "  + runtime pack $id $ver (sha512 recorded)"
     added=1
   done < <(runtime_packs "$proj" "$RID")
 

@@ -112,9 +112,24 @@ if not runtime:
     print(f"no *{suffix} runtime-pack component")
     raise SystemExit(0)
 for component in runtime:
+    name = str(component.get("name"))
     if not component.get("version"):
-        print("runtime component " + str(component.get("name")) + " has no version")
+        print("runtime component " + name + " has no version")
         raise SystemExit(0)
+    # The install guide promises the pack is recorded with the SHA-512 NuGet holds for it, so an
+    # unhashed component is a broken promise, not a cosmetic omission.
+    digests = [
+        str(h.get("content", ""))
+        for h in (component.get("hashes") or [])
+        if str(h.get("alg", "")).upper() == "SHA-512"
+    ]
+    if not digests:
+        print("runtime component " + name + " has no SHA-512 hash")
+        raise SystemExit(0)
+    for digest in digests:
+        if len(digest) != 128 or any(c not in "0123456789abcdef" for c in digest.lower()):
+            print("runtime component " + name + " has a malformed SHA-512 (" + digest[:16] + "...)")
+            raise SystemExit(0)
 ' "$sbom" "$archive_rid" 2>&1)"
     if [ -n "$sbom_error" ]; then
       fail "$stem.cdx.json $sbom_error"

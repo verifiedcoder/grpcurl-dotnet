@@ -46,7 +46,7 @@ grpcn invoke --plaintext --max-time 30s \
 
 ### Download a release (recommended)
 
-Prebuilt, self-contained binaries for **GrpCurl.Net Studio**, `grpcn`, and `gql2grpc` are published on the [**Releases page**](https://github.com/verifiedcoder/grpcurl-dotnet/releases) for Windows, macOS, and Linux (x64 & arm64) — no .NET runtime required. See the [**install guide**](Docs/articles/install.md) for picking the right archive, verifying `SHA256SUMS`, and first-launch steps (the binaries are unsigned — zero-budget OSS). There is no NuGet.org / `dotnet tool` feed.
+Prebuilt, self-contained binaries for **GrpCurl.Net Studio**, `grpcn`, and `gql2grpc` are published on the [**Releases page**](https://github.com/verifiedcoder/grpcurl-dotnet/releases) for Windows, macOS, and Linux (x64 & arm64) — no .NET runtime required. Every asset ships with a Sigstore-signed build-provenance attestation, a CycloneDX SBOM, a cosign-signed `SHA256SUMS` manifest, and the bundled `LICENSE` + `THIRD-PARTY-NOTICES.md`. See the [**install guide**](Docs/articles/install.md) for picking the right archive, the `gh attestation verify` / `cosign verify-blob` / `sha256sum` procedure, and first-launch steps (there is no paid Authenticode or Apple Developer ID signature — GrpCurl.Net is free of charge — so SmartScreen and Gatekeeper still prompt). There is no NuGet.org / `dotnet tool` feed.
 
 New to the desktop app? The [**Studio user guide**](Docs/articles/studio/index.md) covers the UI tour, first run, the keyboard map, and common workflows.
 

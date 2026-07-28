@@ -7,10 +7,12 @@
 # at all once the user clears Gatekeeper quarantine (xattr -dr com.apple.quarantine).
 # It is NOT notarization — there is no paid Apple Developer identity here.
 #
-# Usage: make-macos-app.sh <publish-dir> <version> <output-app-path>
+# Usage: make-macos-app.sh <publish-dir> <version> <output-app-path> <project-csproj> <rid>
 #   <publish-dir>      a `dotnet publish` output folder (osx-x64 / osx-arm64, self-contained)
 #   <version>          X.Y.Z (no leading v)
 #   <output-app-path>  e.g. .../dist/GrpCurl.Net Studio.app
+#   <project-csproj>   the Studio project, used to resolve the embedded .NET runtime pack's notices
+#   <rid>              osx-x64 | osx-arm64
 #
 # `codesign` only runs on macOS; on other hosts the bundle is assembled but left
 # unsigned (the real release runs this step on a macOS runner).
@@ -19,6 +21,12 @@ set -euo pipefail
 PUBLISH_DIR="$1"
 VERSION="$2"
 APP_PATH="$3"
+PROJECT="${4:?usage: make-macos-app.sh <publish-dir> <version> <output-app-path> <project-csproj> <rid>}"
+RID="${5:?usage: make-macos-app.sh <publish-dir> <version> <output-app-path> <project-csproj> <rid>}"
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+# shellcheck source=Scripts/package/runtime-pack.sh
+. "$ROOT/Scripts/package/runtime-pack.sh"
 
 MAIN_ASSEMBLY="GrpCurl.Net.Studio"     # AssemblyName -> apphost name in the publish dir
 BUNDLE_ID="net.grpcurl.studio"
@@ -60,6 +68,31 @@ cat > "$APP_PATH/Contents/Info.plist" <<PLIST
 PLIST
 
 chmod +x "$APP_PATH/Contents/MacOS/$MAIN_ASSEMBLY"
+
+# Legal material lives in Contents/Resources, the conventional place in a .app bundle (PRD-002):
+# the product licence and notices, plus the embedded .NET runtime's own licence and third-party
+# attributions. Copied before signing so the ad-hoc signature covers them.
+if [ ! -f "$ROOT/THIRD-PARTY-NOTICES.md" ]; then
+  echo "make-macos-app: THIRD-PARTY-NOTICES.md missing — run Scripts/package/generate-third-party-notices.sh" >&2
+  exit 1
+fi
+cp "$ROOT/LICENSE" "$ROOT/THIRD-PARTY-NOTICES.md" "$APP_PATH/Contents/Resources/"
+
+runtime_copied=0
+while read -r pack; do
+  [ -n "$pack" ] || continue
+  pack_id="${pack%%/*}"; pack_ver="${pack##*/}"
+  pack_dir="$(runtime_pack_dir "$pack_id" "$pack_ver")"
+  cp "$pack_dir/LICENSE.TXT"             "$APP_PATH/Contents/Resources/LICENSE.dotnet-runtime.txt"
+  cp "$pack_dir/THIRD-PARTY-NOTICES.TXT" "$APP_PATH/Contents/Resources/THIRD-PARTY-NOTICES.dotnet-runtime.txt"
+  echo "make-macos-app: bundled $pack_id $pack_ver notices"
+  runtime_copied=1
+done < <(runtime_packs "$PROJECT" "$RID")
+
+if [ "$runtime_copied" -eq 0 ]; then
+  echo "make-macos-app: no runtime pack found for $PROJECT ($RID) — refusing to ship without its notices" >&2
+  exit 1
+fi
 
 if command -v codesign >/dev/null 2>&1; then
   echo "make-macos-app: ad-hoc signing $APP_PATH"

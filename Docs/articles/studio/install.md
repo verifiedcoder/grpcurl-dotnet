@@ -3,17 +3,20 @@
 Studio ships as a **self-contained** download — no .NET runtime to install first. Builds are published
 on the [GitHub Releases page](https://github.com/verifiedcoder/grpcurl-dotnet/releases) for six platforms:
 Windows, macOS, and Linux on x64 and arm64. See the general [Install & releases](../install.md) page for
-the full asset list and `SHA256SUMS` verification steps.
+the full asset list and the verification procedure — every asset carries a Sigstore-signed build
+provenance attestation, a CycloneDX SBOM, and a cosign-signed `SHA256SUMS` manifest.
 
-The binaries are **unsigned** (the project ships at zero cost), so each OS shows a one-time "unverified
-publisher" prompt. The steps below clear it.
+The binaries carry **no Authenticode or Apple Developer ID signature** (Studio is free of charge; those
+identities are not), so each OS shows a one-time "unverified publisher" prompt. The steps below clear it.
 
 ## Windows
 
 1. Download `GrpCurlNetStudio-win-x64-<version>.zip` (or `win-arm64`) and unzip it.
 2. Run `GrpCurl.Net.Studio.exe`.
 3. SmartScreen may show **"Windows protected your PC."** Click **More info → Run anyway**. This is
-   expected for unsigned apps and only appears the first time.
+   expected without a publisher certificate and only appears the first time. To confirm the download
+   is genuine first, verify its provenance as described in
+   [Install & releases](../install.md#verify-your-download).
 
 ## macOS
 

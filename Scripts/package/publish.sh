@@ -31,6 +31,9 @@ STAGING="${3:-artifacts/release}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
+# shellcheck source=Scripts/package/runtime-pack.sh
+. "$ROOT/Scripts/package/runtime-pack.sh"
+
 GIT_SHA="${GIT_SHA:-$(git rev-parse --short HEAD 2>/dev/null || echo local)}"
 INFO_VERSION="${VERSION}+${GIT_SHA}"
 
@@ -80,6 +83,38 @@ archive() {
   fi
 }
 
+# stage_legal <stage-dir> <project-csproj> — every archive ships four legal files (PRD-002):
+#   LICENSE                                 the product's own MIT licence
+#   THIRD-PARTY-NOTICES.md                  its NuGet dependencies (committed, CI-checked)
+#   LICENSE.dotnet-runtime.txt              the embedded .NET runtime's licence
+#   THIRD-PARTY-NOTICES.dotnet-runtime.txt  the runtime's own third-party attributions
+# The last two matter because a self-contained archive is mostly runtime: the runtime pack carries
+# attributions and non-MIT terms of its own, and it is not part of the NuGet graph the generated
+# notices are built from.
+stage_legal() {
+  local dest="$1" proj="$2" pack id ver dir copied=0
+  if [ ! -f "$ROOT/THIRD-PARTY-NOTICES.md" ]; then
+    echo "publish: THIRD-PARTY-NOTICES.md missing — run Scripts/package/generate-third-party-notices.sh" >&2
+    exit 1
+  fi
+  cp "$ROOT/LICENSE" "$ROOT/THIRD-PARTY-NOTICES.md" "$dest/"
+
+  while read -r pack; do
+    [ -n "$pack" ] || continue
+    id="${pack%%/*}"; ver="${pack##*/}"
+    dir="$(runtime_pack_dir "$id" "$ver")"
+    cp "$dir/LICENSE.TXT"              "$dest/LICENSE.dotnet-runtime.txt"
+    cp "$dir/THIRD-PARTY-NOTICES.TXT"  "$dest/THIRD-PARTY-NOTICES.dotnet-runtime.txt"
+    echo "  legal: bundled $id $ver notices"
+    copied=1
+  done < <(runtime_packs "$proj" "$RID")
+
+  if [ "$copied" -eq 0 ]; then
+    echo "publish: no runtime pack found for $proj ($RID) — refusing to ship without its notices" >&2
+    exit 1
+  fi
+}
+
 publish_cli() {
   local proj="$1" asm="$2" friendly="$3"
   local out="$PUB/$friendly"
@@ -94,6 +129,7 @@ publish_cli() {
   rm -rf "$s"; mkdir -p "$s"
   cp "$out/$asm$EXE" "$s/$friendly$EXE"
   chmod +x "$s/$friendly$EXE"
+  stage_legal "$s" "$proj"
   archive "$s" "$friendly-$RID-$VERSION"
 }
 
@@ -103,8 +139,9 @@ publish_cli "Src/GrpCurl.Net/GrpCurl.Net.csproj" "GrpCurl.Net" "grpcn"
 publish_cli "Src/Gql2Grpc/Gql2Grpc.csproj"        "Gql2Grpc"    "gql2grpc"
 
 echo "==> publishing Studio ($RID)"
+STUDIO_PROJ="Src/GrpCurl.Net.Studio/GrpCurl.Net.Studio.csproj"
 STUDIO_OUT="$PUB/studio"
-dotnet publish "Src/GrpCurl.Net.Studio/GrpCurl.Net.Studio.csproj" "${COMMON[@]}" --output "$STUDIO_OUT"
+dotnet publish "$STUDIO_PROJ" "${COMMON[@]}" --output "$STUDIO_OUT"
 rm -f "$STUDIO_OUT/"*.pdb || true
 
 case "$RID" in
@@ -112,13 +149,14 @@ case "$RID" in
     APP_PARENT="$STAGE/studio"
     rm -rf "$APP_PARENT"; mkdir -p "$APP_PARENT"
     bash "$ROOT/Scripts/package/make-macos-app.sh" \
-      "$STUDIO_OUT" "$VERSION" "$APP_PARENT/GrpCurl.Net Studio.app"
+      "$STUDIO_OUT" "$VERSION" "$APP_PARENT/GrpCurl.Net Studio.app" "$STUDIO_PROJ" "$RID"
     archive "$APP_PARENT" "GrpCurlNetStudio-$RID-$VERSION"
     ;;
   *)
     STUDIO_STAGE="$STAGE/studio/GrpCurlNetStudio-$RID-$VERSION"
     rm -rf "$STAGE/studio"; mkdir -p "$STUDIO_STAGE"
     cp -R "$STUDIO_OUT/." "$STUDIO_STAGE/"
+    stage_legal "$STUDIO_STAGE" "$STUDIO_PROJ"
     archive "$STAGE/studio" "GrpCurlNetStudio-$RID-$VERSION"
     ;;
 esac

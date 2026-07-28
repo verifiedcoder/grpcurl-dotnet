@@ -10,7 +10,12 @@ namespace GrpCurl.Net.Studio.Tests.Perf;
 /// </summary>
 public static class TestAppBuilder
 {
+    // WithInterFont mirrors Program.BuildAvaloniaApp: it registers the embedded font collection the app
+    // actually renders with, so text layout never has to fall back to enumerating the host's system fonts.
+    // On a headless Windows runner that fallback is what surfaced as an intermittent
+    // KeyNotFoundException 'fonts:SystemFonts' out of FontManager while a Window was being constructed.
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
-            .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = true });
+            .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = true })
+            .WithInterFont();
 }

@@ -470,13 +470,6 @@ it is recorded per artifact rather than in this file.
 - Licence: MIT
 - Copyright: © Microsoft Corporation. All rights reserved.
 
-### Microsoft.NET.ILLink.Tasks 10.0.0
-
-- Authors: Microsoft
-- Project: <https://dot.net/>
-- Licence: MIT
-- Copyright: © Microsoft Corporation. All rights reserved.
-
 ### Onigwrap 1.0.8
 
 - Authors: Aikawa Yataro

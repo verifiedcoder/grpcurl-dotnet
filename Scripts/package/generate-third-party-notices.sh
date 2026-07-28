@@ -32,6 +32,19 @@ OUT="$ROOT/THIRD-PARTY-NOTICES.md"
 TMP="$(mktemp)"
 trap 'rm -f "$TMP"' EXIT
 
+# A local `publish.sh` run restores unlocked and adds RID-specific entries (e.g.
+# Microsoft.NET.ILLink.Tasks) to the lock files. Regenerating on top of that churn bakes packages
+# into the notices that CI — which regenerates from the committed lock files — will not produce, and
+# the --check gate then fails. A dependency bump makes the lock files dirty too, so warn, don't fail.
+if [ "$MODE" = "write" ] && command -v git >/dev/null 2>&1; then
+  DIRTY="$(git -C "$ROOT" status --porcelain -- '*packages.lock.json' 2>/dev/null || true)"
+  if [ -n "$DIRTY" ]; then
+    echo "generate-third-party-notices: WARNING — these lock files have uncommitted changes:" >&2
+    printf '%s\n' "$DIRTY" >&2
+    echo "If that is churn from a local publish.sh run, revert it first: git checkout -- '*packages.lock.json'" >&2
+  fi
+fi
+
 # Only the projects that actually ship inside a release archive. Test/tool/benchmark projects are
 # excluded deliberately — their dependencies are never distributed.
 python3 Scripts/package/third_party_notices.py \

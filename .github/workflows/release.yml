@@ -1,10 +1,20 @@
 name: Release
 
-# Zero-budget GitHub-Releases packaging (P5). Builds self-contained, unsigned
-# artifacts for Studio + both CLIs across 6 RIDs, stages them with a checksum
-# manifest, and creates a DRAFT GitHub Release on a pushed `v*` tag (a maintainer
-# smoke-tests the draft assets, then publishes). A manual workflow_dispatch run is
-# always a dry run — it stages artifacts but never creates a Release.
+# Zero-budget GitHub-Releases packaging (P5). Builds self-contained artifacts for Studio + both CLIs
+# across 6 RIDs and creates a DRAFT GitHub Release on a pushed `v*` tag (a maintainer smoke-tests the
+# draft assets, then publishes). A manual workflow_dispatch run is always a dry run — it stages
+# artifacts, and exercises the whole trust path, but never creates a Release.
+#
+# Trust metadata (PRD-002) — all of it free and keyless, none of it requiring a paid certificate:
+#   * every archive ships LICENSE + THIRD-PARTY-NOTICES.md;
+#   * every archive has a CycloneDX SBOM (`*.cdx.json`) attested to that exact artifact;
+#   * every asset carries SLSA build provenance signed via Sigstore (verify: `gh attestation verify`);
+#   * SHA256SUMS is signed keylessly with cosign (`SHA256SUMS.sigstore.json`);
+#   * the release is not drafted unless all of the above verify.
+# The binaries still carry no Authenticode/Developer ID signature — the product is free of charge and
+# those identities are not, so SmartScreen/Gatekeeper prompts remain. See Docs/articles/install.md.
+#
+# Third-party actions are pinned to full commit SHAs (immutable); the readable version is in a comment.
 
 on:
   push:
@@ -56,18 +66,22 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { rid: win-x64,     os: windows-latest, verify: false }
-          - { rid: win-arm64,   os: windows-latest, verify: false }
-          - { rid: osx-x64,     os: macos-latest,   verify: false }
-          - { rid: osx-arm64,   os: macos-latest,   verify: true  }
-          - { rid: linux-x64,   os: ubuntu-22.04,   verify: true  }
-          - { rid: linux-arm64, os: ubuntu-22.04,   verify: false }
+          - { rid: win-x64,     os: windows-latest, ext: zip,    verify: false }
+          - { rid: win-arm64,   os: windows-latest, ext: zip,    verify: false }
+          - { rid: osx-x64,     os: macos-latest,   ext: tar.gz, verify: false }
+          - { rid: osx-arm64,   os: macos-latest,   ext: tar.gz, verify: true  }
+          - { rid: linux-x64,   os: ubuntu-22.04,   ext: tar.gz, verify: true  }
+          - { rid: linux-arm64, os: ubuntu-22.04,   ext: tar.gz, verify: false }
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      id-token: write      # OIDC → Sigstore, for the SBOM attestations below
+      attestations: write  # store the attestations on the repository
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       - name: Setup .NET (from global.json)
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
           global-json-file: global.json
 
@@ -76,6 +90,12 @@ jobs:
         run: |
           GIT_SHA="$(git rev-parse --short HEAD)" \
             bash Scripts/package/publish.sh "${{ matrix.rid }}" "${{ needs.version.outputs.version }}" artifacts/release
+
+      # Runs with restore disabled, so each SBOM describes the graph the publish above actually used.
+      - name: Generate SBOMs (${{ matrix.rid }})
+        shell: bash
+        run: |
+          bash Scripts/package/generate-sbom.sh "${{ matrix.rid }}" "${{ needs.version.outputs.version }}" artifacts/release
 
       # Only on a host whose arch matches the RID can the published binary actually run.
       - name: Verify version (host-arch)
@@ -87,8 +107,28 @@ jobs:
           tar -xzf "artifacts/release/dist/grpcn-${{ matrix.rid }}-${ver}.tar.gz" -C "$tmp"
           bash Scripts/package/verify-version.sh "$ver" "$tmp/grpcn"
 
+      # One attestation per product, binding that archive to its own SBOM. Consumers resolve the
+      # inventory of a downloaded artifact with `gh attestation verify --predicate-type ...`.
+      - name: Attest SBOM (grpcn)
+        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        with:
+          subject-path: artifacts/release/dist/grpcn-${{ matrix.rid }}-${{ needs.version.outputs.version }}.${{ matrix.ext }}
+          sbom-path: artifacts/release/dist/grpcn-${{ matrix.rid }}-${{ needs.version.outputs.version }}.cdx.json
+
+      - name: Attest SBOM (gql2grpc)
+        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        with:
+          subject-path: artifacts/release/dist/gql2grpc-${{ matrix.rid }}-${{ needs.version.outputs.version }}.${{ matrix.ext }}
+          sbom-path: artifacts/release/dist/gql2grpc-${{ matrix.rid }}-${{ needs.version.outputs.version }}.cdx.json
+
+      - name: Attest SBOM (Studio)
+        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        with:
+          subject-path: artifacts/release/dist/GrpCurlNetStudio-${{ matrix.rid }}-${{ needs.version.outputs.version }}.${{ matrix.ext }}
+          sbom-path: artifacts/release/dist/GrpCurlNetStudio-${{ matrix.rid }}-${{ needs.version.outputs.version }}.cdx.json
+
       - name: Upload stage artifacts (${{ matrix.rid }})
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: dist-${{ matrix.rid }}
           path: artifacts/release/dist/*
@@ -99,13 +139,15 @@ jobs:
     needs: [version, package]
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # create the draft GitHub Release (built-in GITHUB_TOKEN; no secret)
+      contents: write      # create the draft GitHub Release (built-in GITHUB_TOKEN; no secret)
+      id-token: write      # OIDC → Sigstore, for provenance + the cosign signature
+      attestations: write  # store the attestations on the repository
     steps:
       - name: Checkout (for the notes template + tag verify)
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       - name: Download all RID artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           path: incoming
           pattern: dist-*
@@ -122,12 +164,59 @@ jobs:
           echo
           cat release/SHA256SUMS
 
+      # Signs the manifest that every asset hash chains off, so the checksums become
+      # publisher-authenticated instead of merely colocated with the files they describe.
+      - name: Install cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+        with:
+          cosign-release: 'v3.1.2'   # pinned so the documented verification commands match the signer
+
+      - name: Sign SHA256SUMS (keyless)
+        shell: bash
+        run: |
+          cosign sign-blob --yes release/SHA256SUMS --bundle release/SHA256SUMS.sigstore.json
+          cosign verify-blob release/SHA256SUMS \
+            --bundle release/SHA256SUMS.sigstore.json \
+            --certificate-identity-regexp "^https://github.com/${GITHUB_REPOSITORY}/\.github/workflows/release\.yml@" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com
+          echo "cosign: SHA256SUMS signature verifies against this workflow's identity"
+
+      # SLSA provenance bound to this repo, tag, commit and workflow. Consumers verify with
+      # `gh attestation verify <asset> --repo <owner>/<repo>` — no key distribution problem.
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        with:
+          subject-path: |
+            release/*.zip
+            release/*.tar.gz
+            release/*.cdx.json
+            release/SHA256SUMS
+
       - name: Upload assembled set as a workflow artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: release-${{ needs.version.outputs.version }}
           path: release/*
           if-no-files-found: error
+
+      # A broken attestation must fail this run, not the consumer — so verify before drafting.
+      - name: Verify attestations
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for asset in release/*; do
+            case "$asset" in
+              release/SHA256SUMS.sigstore.json) continue ;;
+            esac
+            echo "==> gh attestation verify $(basename "$asset")"
+            gh attestation verify "$asset" --repo "$GITHUB_REPOSITORY"
+          done
+
+      - name: Trust-artifact gate
+        shell: bash
+        run: bash Scripts/package/verify-trust-artifacts.sh release
 
       # Real release only on a pushed v* tag. workflow_dispatch stays a dry run.
       - name: Compose release notes
@@ -137,10 +226,25 @@ jobs:
           ver="${{ needs.version.outputs.version }}"
           cat > release-notes.md <<EOF
           **GrpCurl.Net $ver** — Studio + the \`grpcn\` and \`gql2grpc\` CLIs for Windows, macOS, and
-          Linux (x64 & arm64). Self-contained (no .NET runtime needed) and **unsigned** (zero-budget OSS).
+          Linux (x64 & arm64). Self-contained: no .NET runtime needed.
 
-          See the [install guide](https://github.com/${GITHUB_REPOSITORY}/blob/v$ver/Docs/articles/install.md)
-          for downloads, \`SHA256SUMS\` verification, and first-launch (SmartScreen / Gatekeeper) steps.
+          **Verifying these assets.** Every archive carries Sigstore-signed SLSA build provenance and a
+          CycloneDX SBOM (\`*.cdx.json\`), and \`SHA256SUMS\` is signed with cosign
+          (\`SHA256SUMS.sigstore.json\`):
+
+          \`\`\`bash
+          gh attestation verify <asset> --repo ${GITHUB_REPOSITORY}
+          cosign verify-blob SHA256SUMS --bundle SHA256SUMS.sigstore.json \\
+            --certificate-identity-regexp '^https://github.com/${GITHUB_REPOSITORY}/\.github/workflows/release\.yml@' \\
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com
+          sha256sum --ignore-missing -c SHA256SUMS
+          \`\`\`
+
+          The binaries carry **no Authenticode or Apple Developer ID signature** — this product is free
+          of charge and those identities are not — so Windows SmartScreen and macOS Gatekeeper still
+          prompt on first launch. See the
+          [install guide](https://github.com/${GITHUB_REPOSITORY}/blob/v$ver/Docs/articles/install.md)
+          for downloads, the full verification procedure, and first-launch steps.
           EOF
           echo "--- notes ---"; cat release-notes.md
 

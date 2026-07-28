@@ -20,6 +20,8 @@ PUBLISH_DIR="$1"
 VERSION="$2"
 APP_PATH="$3"
 
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
 MAIN_ASSEMBLY="GrpCurl.Net.Studio"     # AssemblyName -> apphost name in the publish dir
 BUNDLE_ID="net.grpcurl.studio"
 
@@ -60,6 +62,14 @@ cat > "$APP_PATH/Contents/Info.plist" <<PLIST
 PLIST
 
 chmod +x "$APP_PATH/Contents/MacOS/$MAIN_ASSEMBLY"
+
+# Legal material lives in Contents/Resources, the conventional place in a .app bundle (PRD-002).
+# Copied before signing so the ad-hoc signature covers it.
+if [ ! -f "$ROOT/THIRD-PARTY-NOTICES.md" ]; then
+  echo "make-macos-app: THIRD-PARTY-NOTICES.md missing — run Scripts/package/generate-third-party-notices.sh" >&2
+  exit 1
+fi
+cp "$ROOT/LICENSE" "$ROOT/THIRD-PARTY-NOTICES.md" "$APP_PATH/Contents/Resources/"
 
 if command -v codesign >/dev/null 2>&1; then
   echo "make-macos-app: ad-hoc signing $APP_PATH"

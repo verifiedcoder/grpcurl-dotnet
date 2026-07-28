@@ -54,6 +54,13 @@ jobs:
       - name: Restore (locked mode)
         run: dotnet restore --locked-mode GrpCurl.Net.slnx
 
+      # THIRD-PARTY-NOTICES.md ships inside every release archive (PRD-002), so a dependency change
+      # that is not reflected in it must fail here rather than at release time. Linux leg only — the
+      # generator reads the same lock files and NuGet cache metadata whatever the OS.
+      - name: Verify third-party notices are current
+        if: runner.os == 'Linux'
+        run: bash Scripts/package/generate-third-party-notices.sh --check
+
       - name: Build (Release)
         run: dotnet build GrpCurl.Net.slnx --configuration Release --no-restore
 

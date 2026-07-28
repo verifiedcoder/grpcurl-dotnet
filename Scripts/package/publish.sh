@@ -80,6 +80,17 @@ archive() {
   fi
 }
 
+# stage_legal <stage-dir> — every archive ships the product licence plus the generated third-party
+# notices (PRD-002). THIRD-PARTY-NOTICES.md is committed and CI-checked, so it is always current.
+stage_legal() {
+  local dest="$1"
+  if [ ! -f "$ROOT/THIRD-PARTY-NOTICES.md" ]; then
+    echo "publish: THIRD-PARTY-NOTICES.md missing — run Scripts/package/generate-third-party-notices.sh" >&2
+    exit 1
+  fi
+  cp "$ROOT/LICENSE" "$ROOT/THIRD-PARTY-NOTICES.md" "$dest/"
+}
+
 publish_cli() {
   local proj="$1" asm="$2" friendly="$3"
   local out="$PUB/$friendly"
@@ -94,6 +105,7 @@ publish_cli() {
   rm -rf "$s"; mkdir -p "$s"
   cp "$out/$asm$EXE" "$s/$friendly$EXE"
   chmod +x "$s/$friendly$EXE"
+  stage_legal "$s"
   archive "$s" "$friendly-$RID-$VERSION"
 }
 
@@ -119,6 +131,7 @@ case "$RID" in
     STUDIO_STAGE="$STAGE/studio/GrpCurlNetStudio-$RID-$VERSION"
     rm -rf "$STAGE/studio"; mkdir -p "$STUDIO_STAGE"
     cp -R "$STUDIO_OUT/." "$STUDIO_STAGE/"
+    stage_legal "$STUDIO_STAGE"
     archive "$STAGE/studio" "GrpCurlNetStudio-$RID-$VERSION"
     ;;
 esac

@@ -175,11 +175,14 @@ jobs:
         shell: bash
         run: |
           cosign sign-blob --yes release/SHA256SUMS --bundle release/SHA256SUMS.sigstore.json
+          # Assert the exact identity the certificate must carry: this workflow, on this ref. On a
+          # real release that is refs/tags/v<version> — the ref consumers are told to require.
+          ref="$(printf '%s' "$GITHUB_REF" | sed 's/[.[\*^$()+?{|]/\\&/g')"
           cosign verify-blob release/SHA256SUMS \
             --bundle release/SHA256SUMS.sigstore.json \
-            --certificate-identity-regexp "^https://github.com/${GITHUB_REPOSITORY}/\.github/workflows/release\.yml@" \
+            --certificate-identity-regexp "^https://github.com/${GITHUB_REPOSITORY}/\.github/workflows/release\.yml@${ref}\$" \
             --certificate-oidc-issuer https://token.actions.githubusercontent.com
-          echo "cosign: SHA256SUMS signature verifies against this workflow's identity"
+          echo "cosign: SHA256SUMS signature verifies against ${GITHUB_REPOSITORY} @ ${GITHUB_REF}"
 
       # SLSA provenance bound to this repo, tag, commit and workflow. Consumers verify with
       # `gh attestation verify <asset> --repo <owner>/<repo>` — no key distribution problem.
@@ -235,7 +238,7 @@ jobs:
           \`\`\`bash
           gh attestation verify <asset> --repo ${GITHUB_REPOSITORY}
           cosign verify-blob SHA256SUMS --bundle SHA256SUMS.sigstore.json \\
-            --certificate-identity-regexp '^https://github.com/${GITHUB_REPOSITORY}/\.github/workflows/release\.yml@' \\
+            --certificate-identity-regexp '^https://github.com/${GITHUB_REPOSITORY}/\.github/workflows/release\.yml@refs/tags/v' \\
             --certificate-oidc-issuer https://token.actions.githubusercontent.com
           sha256sum --ignore-missing -c SHA256SUMS
           \`\`\`

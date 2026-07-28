@@ -90,7 +90,9 @@ assert doc.get("components"), "SBOM lists no components"
   members="$(list_archive "$archive")" || { fail "$base could not be listed"; continue; }
   for legal in "${LEGAL[@]}"; do
     # Plain archives carry the file at the root; the macOS .app carries it in Contents/Resources.
-    if ! printf '%s\n' "$members" | grep -qE "(^|/)(Contents/Resources/)?${legal}$"; then
+    # A here-string, not a pipe: `grep -q` exits at the first match, and under `set -o pipefail`
+    # the resulting SIGPIPE on the writer would fail the whole pipeline on long listings.
+    if ! grep -qE "(^|/)(Contents/Resources/)?${legal}$" <<< "$members"; then
       fail "$base does not contain $legal"
     fi
   done

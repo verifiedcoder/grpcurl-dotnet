@@ -65,9 +65,12 @@ signature ships beside it as `SHA256SUMS.sigstore.json`:
 
 ```bash
 cosign verify-blob SHA256SUMS --bundle SHA256SUMS.sigstore.json \
-  --certificate-identity-regexp '^https://github.com/verifiedcoder/grpcurl-dotnet/\.github/workflows/release\.yml@' \
+  --certificate-identity-regexp '^https://github.com/verifiedcoder/grpcurl-dotnet/\.github/workflows/release\.yml@refs/tags/v' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
+
+The `refs/tags/v` suffix matters: it accepts only a signature produced by a tagged release run, so a
+signature from a branch or a dry run is rejected.
 
 ### 3. Check the hashes
 

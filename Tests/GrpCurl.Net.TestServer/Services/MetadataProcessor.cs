@@ -80,7 +80,9 @@ public static class MetadataProcessor
                 continue;
             }
 
-            if (int.TryParse(entry.Value, out var count) && count > 0)
+            // Zero is meaningful: complete without reading a single request, which is valid duplex
+            // behaviour and the only way to exercise a client whose request half never gets going.
+            if (int.TryParse(entry.Value, out var count) && count >= 0)
             {
                 return count;
             }

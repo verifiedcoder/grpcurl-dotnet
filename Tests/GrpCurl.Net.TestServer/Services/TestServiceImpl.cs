@@ -255,6 +255,12 @@ public class TestServiceImpl : TestService.TestServiceBase
 
         var handled = 0;
 
+        if (completeAfterRequests == handled)
+        {
+            // Zero: complete without reading anything at all.
+            return;
+        }
+
         await foreach (var request in requestStream.ReadAllAsync(context.CancellationToken))
         {
             context.CancellationToken.ThrowIfCancellationRequested();

@@ -15,11 +15,11 @@ namespace GrpCurl.Net.Tests.Integration.Invocation;
 ///     Lifecycle coverage for <see cref="DynamicInvoker.InvokeDuplexStreamingWithMetadataAsync" /> —
 ///     the bidi path the CLI, Studio and the conformance adapter all use (PRD-003).
 ///     <para>
-///         18 executed cases from 15 methods. Six drive a source that parks indefinitely — the shape
-///         that reproduces the filed hang, since the finite-list sources used elsewhere always
+///         20 executed cases from 17 methods. Seven drive a source that parks indefinitely — the
+///         shape that reproduces the filed hang, since the finite-list sources used elsewhere always
 ///         complete on their own and can never strand a producer; nine drive a source that fails
 ///         mid-stream, one of them a four-case theory over the exception types that are ambiguous
-///         between a source and the transport; one fails on the write half instead; two are
+///         between a source and the transport; two fail on the write half instead; two are
 ///         regression cover for the finite and writer-less paths. No test cancels the caller's
 ///         token, so anything that unblocks a source proves the invoker's own cancellation did it.
 ///     </para>
@@ -396,6 +396,64 @@ public sealed class DuplexLifecycleTests(GrpcTestFixture fixture)
     }
 
     [Fact]
+    public async Task WriteFault_SurvivesTheCancellationItsOwnAbortCauses()
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        using var channel = GrpcChannelFactory.Create(
+            $"http://{fixture.Address}",
+            new GrpcChannelFactory.ChannelOptions
+            {
+                Plaintext = true,
+                MaxSendMessageSize = 1024
+            });
+
+        var methodDescriptor = await GetDuplexMethod(channel);
+        var invoker = new DynamicInvoker(channel);
+
+        var small = CreateStreamingOutputRequest(methodDescriptor.InputType, [64]);
+        var oversized = CreateRequestWithPayload(methodDescriptor.InputType, 64 * 1024);
+
+        // The server is still busy when the second write fails locally with RESOURCE_EXHAUSTED, so
+        // nothing else can end the call: the producer's own bounded abort is what releases the read,
+        // and the CANCELLED it produces is an artifact of that abort. The genuine write fault must
+        // not be discarded in favour of the status it itself caused.
+        var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.DelayMs}: 30000"]);
+
+        await using var result = invoker.InvokeDuplexStreamingWithMetadataAsync(
+            methodDescriptor, ToAsyncEnumerable([small, oversized]), metadata, cancellationToken: token);
+
+        var drain = DrainAsync(result, token);
+
+        var exception = await Should.ThrowAsync<RpcException>(async () => await drain.WaitAsync(Bounded, token));
+
+        exception.StatusCode.ShouldBe(StatusCode.ResourceExhausted);
+    }
+
+    [Fact]
+    public async Task ImmediateServerCompletion_IsNotReplacedByAnAcquisitionFault()
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        using var channel = CreateChannel();
+
+        var methodDescriptor = await GetDuplexMethod(channel);
+        var invoker = new DynamicInvoker(channel);
+
+        // Completing without reading a single request is valid duplex behaviour, and the enumerator
+        // is acquired synchronously — a path the causal guard originally missed, so a source that
+        // translates teardown cancellation during acquisition could still fault a successful call.
+        var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.CompleteAfterRequests}: 0"]);
+
+        await using var result = invoker.InvokeDuplexStreamingWithMetadataAsync(
+            methodDescriptor, new AcquisitionFaultingSource(), metadata, cancellationToken: token);
+
+        var responses = await DrainAsync(result, token).WaitAsync(Bounded, token);
+
+        responses.ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task FiniteRequests_MetadataOverload_ReturnsAllResponsesAndTrailers()
     {
         var token = TestContext.Current.CancellationToken;
@@ -618,6 +676,20 @@ public sealed class DuplexLifecycleTests(GrpcTestFixture fixture)
         await Task.Yield();
 
         throw new RpcException(status);
+    }
+
+    /// <summary>
+    ///     Fails during synchronous enumerator acquisition rather than during enumeration, waiting for
+    ///     teardown and then reporting it as an ordinary exception.
+    /// </summary>
+    private sealed class AcquisitionFaultingSource : IAsyncEnumerable<IMessage>
+    {
+        public IAsyncEnumerator<IMessage> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        {
+            _ = cancellationToken.WaitHandle.WaitOne();
+
+            throw new RequestSourceFailure();
+        }
     }
 
     /// <summary>Exception shapes that are ambiguous between a caller's source and the transport.</summary>

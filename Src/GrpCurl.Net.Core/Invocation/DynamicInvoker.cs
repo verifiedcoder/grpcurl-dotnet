@@ -350,13 +350,20 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
                         // error the server actually reported. (The producer declines to record such
                         // faults at all; this ordering is the second half of the same guarantee.)
                         //
-                        // Only a SOURCE fault may displace it. A write-side failure is always a shadow
-                        // of the call itself failing, and the read half carries the authoritative
-                        // status; a source failure is the one thing the read half cannot know about.
-                        // Preferring a write fault here would report grpc-dotnet's teardown artifact —
-                        // CreateCanceledStatusException yields Status(Cancelled) whenever the call task
-                        // has not completed yet — in place of the server's real status.
-                        var causalFault = producer.Fault is { FromWrite: false } sourceFault ? sourceFault.Exception : null;
+                        // A SOURCE fault always displaces it: the read half cannot know the caller's
+                        // own enumerable failed. A WRITE fault normally must not, because a write-side
+                        // failure is otherwise just a shadow of the call failing and the server's
+                        // status is the better report — except when the read failure is the
+                        // CANCELLED this producer's own abort manufactured to release us, in which
+                        // case discarding the write fault would lose the only real error there is.
+                        var causalFault = producer.Fault switch
+                        {
+                            { FromWrite: false } source => source.Exception,
+                            { FromWrite: true } write when producer.AbortedCall
+                                                           && readFault is RpcException { StatusCode: StatusCode.Cancelled }
+                                => write.Exception,
+                            _ => null
+                        };
 
                         ExceptionDispatchInfo.Capture(causalFault ?? readFault).Throw();
 

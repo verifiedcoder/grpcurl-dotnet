@@ -62,6 +62,7 @@ internal sealed class DuplexRequestProducer
     private readonly TaskCompletionSource _responseEnded = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly CancellationTokenSource _writerCts;
 
+    private int _abortedCall;
     private ProducerFault? _fault;
     private int _released;
 
@@ -82,6 +83,14 @@ internal sealed class DuplexRequestProducer
     ///     only <i>because</i> it was cancelled — see <see cref="PumpAsync" />.
     /// </summary>
     public ProducerFault? Fault => Volatile.Read(ref _fault);
+
+    /// <summary>
+    ///     Whether this producer aborted the call to release a reader the server was not going to
+    ///     release itself. When true, a <see cref="StatusCode.Cancelled" /> read failure is this
+    ///     producer's own artifact rather than anything the server reported — which is what lets the
+    ///     read side keep a genuine write fault instead of the cancellation that fault caused.
+    /// </summary>
+    public bool AbortedCall => Volatile.Read(ref _abortedCall) != 0;
 
     /// <summary>
     ///     Starts pumping <paramref name="requests" /> into <paramref name="requestStream" />. Takes
@@ -225,6 +234,14 @@ internal sealed class DuplexRequestProducer
         }
         catch (Exception ex)
         {
+            // Acquisition is the caller's code too, and gets the same causality guard as every other
+            // fault path: a source that blocks in GetAsyncEnumerator and reports our teardown as an
+            // ordinary exception must not be able to fault a call that has already completed.
+            if (writerToken.IsCancellationRequested)
+            {
+                return;
+            }
+
             await FailAsync(ex, fromWrite: false).ConfigureAwait(false);
 
             throw;
@@ -350,7 +367,10 @@ internal sealed class DuplexRequestProducer
         }
 
         // The server is under no obligation to finish on request EOF, and the caller is owed this
-        // fault within a bound. Abort so the outstanding read is released.
+        // fault within a bound. Abort so the outstanding read is released. Flag it first, so the
+        // CANCELLED the reader is about to see is already attributable to us by the time it arrives.
+        Volatile.Write(ref _abortedCall, 1);
+
         await CancelQuietlyAsync(_callCts).ConfigureAwait(false);
     }
 

@@ -13,7 +13,48 @@ internal static class RpcErrorNormalizer
 {
     private const string BadHttpStatusPrefix = "Bad gRPC response. HTTP status code: ";
 
+    /// <summary>
+    ///     The detail grpc-dotnet generates for a request torn down under an in-flight call. Note this
+    ///     is only a <i>hint</i>: `grpc-message` is server-controlled text, so a server is free to send
+    ///     UNAVAILABLE carrying the same phrase. <see cref="IsCancellationArtifact" /> pairs it with a
+    ///     provenance check; see there.
+    /// </summary>
+    private const string AbortedRequestDetail = "The request was aborted";
+
     private static readonly TimeSpan DeadlineSkewTolerance = TimeSpan.FromMilliseconds(50);
+
+    /// <summary>
+    ///     True when a failure is one of the two shapes cancelling a grpc-dotnet call can produce:
+    ///     a plain CANCELLED, or the aborted-request UNAVAILABLE that appears when HTTP/2 teardown
+    ///     beats cancellation-token propagation.
+    ///     <para>
+    ///         Callers that cancel a call themselves use this to recognise their own artifact. It
+    ///         deliberately does not consider any token state — the caller knows whether it did the
+    ///         cancelling; <see cref="Normalize" /> is the path that keys off the caller's token.
+    ///     </para>
+    ///     <para>
+    ///         The UNAVAILABLE arm requires transport provenance, not just the detail text. In
+    ///         Grpc.Net.Client 2.76.0 a status decoded from server trailers is built as
+    ///         <c>new Status(code, grpcMessage)</c> with no exception, while one converted from a
+    ///         transport failure is built as <c>new Status(code, summary, ex)</c>
+    ///         (<c>GrpcProtocolHelpers.TryGetStatusCore</c> and <c>CreateStatusFromException</c>). So a
+    ///         non-null <see cref="Status.DebugException" /> is what actually distinguishes our own
+    ///         teardown from a server-reported status — <c>grpc-message</c> is server-controlled text,
+    ///         and a server may legitimately send UNAVAILABLE carrying the same phrase.
+    ///     </para>
+    /// </summary>
+    public static bool IsCancellationArtifact(RpcException exception)
+        => exception.StatusCode == StatusCode.Cancelled
+           || (HasAbortedRequestDetail(exception) && exception.Status.DebugException is not null);
+
+    /// <summary>
+    ///     Detail-only match. <see cref="NormalizeClientCancellation" /> uses this rather than the
+    ///     provenance-checked predicate because it is already gated on the caller having cancelled,
+    ///     and because tightening it would change the CU-6 remap that the conformance suite pins.
+    /// </summary>
+    private static bool HasAbortedRequestDetail(RpcException exception)
+        => exception.StatusCode == StatusCode.Unavailable
+           && exception.Status.Detail.Contains(AbortedRequestDetail, StringComparison.Ordinal);
 
     public static RpcException Normalize(RpcException exception, DateTime? deadline, bool cancellationRequested = false)
     {
@@ -33,9 +74,7 @@ internal static class RpcErrorNormalizer
     /// </summary>
     private static RpcException NormalizeClientCancellation(RpcException exception, bool cancellationRequested)
     {
-        if (cancellationRequested
-            && exception.StatusCode == StatusCode.Unavailable
-            && exception.Status.Detail.Contains("The request was aborted", StringComparison.Ordinal))
+        if (cancellationRequested && HasAbortedRequestDetail(exception))
         {
             return WithStatusCode(exception, StatusCode.Cancelled);
         }

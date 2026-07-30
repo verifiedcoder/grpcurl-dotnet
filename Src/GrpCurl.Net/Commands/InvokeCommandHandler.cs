@@ -1088,7 +1088,7 @@ internal static class InvokeCommandHandler
         var responseCount = 0;
         long totalResponseSize = 0;
 
-        using var streamingResult = invoker.InvokeServerStreamingWithMetadataAsync(methodDescriptor, request, metadata, deadline, cancellationToken);
+        await using var streamingResult = invoker.InvokeServerStreamingWithMetadataAsync(methodDescriptor, request, metadata, deadline, cancellationToken);
 
         if (verbose)
         {
@@ -1231,7 +1231,7 @@ internal static class InvokeCommandHandler
         long totalRequestSize = 0;
         long totalResponseSize = 0;
 
-        using var duplexResult = invoker.InvokeDuplexStreamingWithMetadataAsync(methodDescriptor, TrackRequests(), metadata, deadline, cancellationToken);
+        await using var duplexResult = invoker.InvokeDuplexStreamingWithMetadataAsync(methodDescriptor, TrackRequests(), metadata, deadline, cancellationToken);
 
         if (verbose)
         {

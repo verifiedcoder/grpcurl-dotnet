@@ -3,6 +3,7 @@ using Google.Protobuf.Reflection;
 using Grpc.Core;
 using Grpc.Net.Client;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 
@@ -24,6 +25,14 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
         WriteIndented = false,
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
+
+    /// <summary>
+    ///     How long teardown waits for a cancelled bidi request producer to unwind, so a fault
+    ///     raised by the caller's own request source is still surfaced. Bounded on purpose: a
+    ///     source can be parked in an operation that ignores cancellation — an interactive stdin
+    ///     read is the canonical case — and blocking on that is the hang PRD-003 fixes.
+    /// </summary>
+    internal static readonly TimeSpan WriterDrainGrace = TimeSpan.FromMilliseconds(250);
 
     private readonly GrpcChannel _channel = channel ?? throw new ArgumentNullException(nameof(channel));
 
@@ -116,7 +125,7 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
     /// <summary>
     ///     Server-streaming variant that surfaces response headers and trailers alongside
     ///     the stream so verbose CLI output can render them uniformly with the unary path.
-    ///     Caller must <see cref="StreamingInvocationResult.Dispose" /> when finished.
+    ///     Caller must <see cref="StreamingInvocationResult.DisposeAsync" /> when finished.
     /// </summary>
     public StreamingInvocationResult InvokeServerStreamingWithMetadataAsync(
         MethodDescriptor methodDescriptor,
@@ -259,8 +268,9 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
 
     /// <summary>
     ///     Bidi-streaming variant exposing response headers and trailers alongside the
-    ///     downstream message enumerable. Internally manages the write task identically
-    ///     to <see cref="InvokeDuplexStreamingAsync" />; caller must dispose the result.
+    ///     downstream message enumerable. Ownership of the request producer — its linked
+    ///     cancellation source and its task — passes to the returned result, which the caller
+    ///     must dispose with <c>await using</c>.
     /// </summary>
     public StreamingInvocationResult InvokeDuplexStreamingWithMetadataAsync(
         MethodDescriptor methodDescriptor,
@@ -273,42 +283,139 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
 
         var method = CreateMethod<IMessage, IMessage>(methodDescriptor, MethodType.DuplexStreaming);
         var callInvoker = _channel.CreateCallInvoker();
-        var callOptions = new CallOptions(headers, deadline, cancellationToken);
-        var call = callInvoker.AsyncDuplexStreamingCall(method, null, callOptions);
 
-        var requestStream = call.RequestStream;
+        // The call runs on a linked token rather than the caller's own so a failed request producer
+        // can abort it, which is the only bounded way to release a reader whose server has not
+        // finished. Caller cancellation still reaches the call through the link, and normalization
+        // below continues to key off the caller's token so the two can never be confused.
+        var callCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-        var writeTask = Task.Run(async () =>
+        AsyncDuplexStreamingCall<IMessage, IMessage>? call = null;
+
+        try
+        {
+            var callOptions = new CallOptions(headers, deadline, callCts.Token);
+
+            call = callInvoker.AsyncDuplexStreamingCall(method, null, callOptions);
+
+            // The producer takes ownership of callCts, and holds the request stream rather than the
+            // call, which the result disposes while the producer may still be running.
+            var producer = DuplexRequestProducer.Start(requests, call.RequestStream, callCts);
+
+            return new StreamingInvocationResult(
+                call.ResponseHeadersAsync,
+                ReadAll(producer),
+                call.GetTrailers,
+                call.Dispose,
+                producer);
+        }
+        catch
+        {
+            // Nothing took ownership, so release here rather than leaking the HTTP/2 stream.
+            call?.Dispose();
+            callCts.Dispose();
+
+            throw;
+        }
+
+        async IAsyncEnumerable<IMessage> ReadAll(DuplexRequestProducer producer)
         {
             try
             {
-                await foreach (var msg in requests.WithCancellation(cancellationToken).ConfigureAwait(false))
+                // INVARIANT: the CALLER's token is passed here, never the call's or the writer's. It
+                // is what RpcErrorNormalizer.NormalizeClientCancellation keys on, so an internal
+                // abort must never be able to masquerade as caller cancellation.
+                var responses = RemapDeadlineExpiry(call.ResponseStream.ReadAllAsync(cancellationToken), deadline, cancellationToken);
+
+                await using var enumerator = responses.GetAsyncEnumerator(cancellationToken);
+
+                while (true)
                 {
-                    await requestStream.WriteAsync(msg, cancellationToken).ConfigureAwait(false);
+                    IMessage response;
+
+                    try
+                    {
+                        if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
+                        {
+                            break;
+                        }
+
+                        response = enumerator.Current;
+                    }
+                    catch (Exception readFault)
+                    {
+                        // Read the producer's fault BEFORE stopping it, so only one that was already
+                        // recorded — and therefore preceded, and plausibly caused, this status — can
+                        // win. A fault our own cancellation goes on to create must never displace the
+                        // error the server actually reported. (The producer declines to record such
+                        // faults at all; this ordering is the second half of the same guarantee.)
+                        //
+                        // A SOURCE fault always displaces it: the read half cannot know the caller's
+                        // own enumerable failed. A WRITE fault normally must not, because a write-side
+                        // failure is otherwise just a shadow of the call failing and the server's
+                        // status is the better report — except when the read failure is the artifact
+                        // this producer's own abort manufactured to release us, in which case
+                        // discarding the write fault would lose the only real error there is.
+                        //
+                        // Both artifact shapes count: cancelling a grpc-dotnet call surfaces either
+                        // CANCELLED or, when HTTP/2 teardown beats token propagation, the
+                        // aborted-request UNAVAILABLE. RpcErrorNormalizer owns that predicate — it
+                        // cannot be recognised here by status alone, and the caller's token is
+                        // deliberately not the one we cancelled, so Normalize leaves the second shape
+                        // as UNAVAILABLE.
+                        var causalFault = producer.Fault switch
+                        {
+                            { FromWrite: false } source => source.Exception,
+                            { FromWrite: true } write when producer.AbortedCall
+                                                           && readFault is RpcException rpcFault
+                                                           && RpcErrorNormalizer.IsCancellationArtifact(rpcFault)
+                                => write.Exception,
+                            _ => null
+                        };
+
+                        ExceptionDispatchInfo.Capture(causalFault ?? readFault).Throw();
+
+                        throw;
+                    }
+
+                    yield return response;
                 }
-
-                await requestStream.CompleteAsync().ConfigureAwait(false);
             }
-            catch (OperationCanceledException)
+            finally
             {
-                // Caller cancelled — let the read side see the cancellation too.
+                // The response side is finished — cleanly, with an error, or because the consumer
+                // abandoned enumeration. Tell the producer to stop waiting to abort a call that is
+                // already over, then stop it: no further write can reach the server.
+                producer.OnResponseEnded();
+
+                await producer.CancelAsync().ConfigureAwait(false);
             }
-        }, cancellationToken);
 
-        return new StreamingInvocationResult(
-            call.ResponseHeadersAsync,
-            ReadAll(),
-            call.GetTrailers,
-            call.Dispose);
+            // Reached only on clean completion: the server returned OK, so the RPC succeeded and the
+            // read side has nothing left to report. The one thing still worth surfacing is a fault
+            // the producer raised of its own accord — never one this drain's cancellation provokes,
+            // which the producer declines to record, so an OK call stays OK.
+            // INVARIANT: never await the producer unbounded (see WriterDrainGrace).
+            var lateFault = await producer.DrainAsync(WriterDrainGrace).ConfigureAwait(false);
 
-        async IAsyncEnumerable<IMessage> ReadAll()
-        {
-            await foreach (var response in RemapDeadlineExpiry(call.ResponseStream.ReadAllAsync(cancellationToken), deadline, cancellationToken).ConfigureAwait(false))
+            switch (lateFault)
             {
-                yield return response;
-            }
+                case null:
+                    break;
 
-            await writeTask.ConfigureAwait(false);
+                case { FromWrite: true, Exception: RpcException rpc }:
+                    // A write that failed on its own merits (an oversize message, a marshaller
+                    // failure) belongs to this call, so it is normalized exactly like a read fault.
+                    throw RpcErrorNormalizer.Normalize(rpc, deadline, cancellationToken.IsCancellationRequested);
+
+                default:
+                    // The caller's own error — malformed JSON, a stdin limit breach, or an
+                    // RpcException belonging to a gRPC-backed source's own call — propagates
+                    // untouched, exactly as it does on the read-error path.
+                    ExceptionDispatchInfo.Capture(lateFault.Exception).Throw();
+
+                    break;
+            }
         }
     }
 

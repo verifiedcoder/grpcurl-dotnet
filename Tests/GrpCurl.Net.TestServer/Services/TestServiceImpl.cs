@@ -242,6 +242,7 @@ public class TestServiceImpl : TestService.TestServiceBase
         ServerCallContext context)
     {
         var (headers, trailers, failEarly, failLate, delayMs) = MetadataProcessor.ProcessMetadata(context);
+        var completeAfterRequests = MetadataProcessor.GetCompleteAfterRequests(context);
 
         await MetadataProcessor.SetResponseHeadersAsync(context, headers);
 
@@ -250,6 +251,14 @@ public class TestServiceImpl : TestService.TestServiceBase
         if (failEarly.HasValue)
         {
             throw new RpcException(new Status(failEarly.Value, "fail"));
+        }
+
+        var handled = 0;
+
+        if (completeAfterRequests == handled)
+        {
+            // Zero: complete without reading anything at all.
+            return;
         }
 
         await foreach (var request in requestStream.ReadAllAsync(context.CancellationToken))
@@ -280,6 +289,15 @@ public class TestServiceImpl : TestService.TestServiceBase
                 };
 
                 await responseStream.WriteAsync(response, context.CancellationToken);
+            }
+
+            handled++;
+
+            if (completeAfterRequests == handled)
+            {
+                // Close the response side with OK while the client's request producer is very
+                // likely still running, deliberately leaving the request stream undrained.
+                return;
             }
         }
 

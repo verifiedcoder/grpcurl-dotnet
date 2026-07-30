@@ -15,11 +15,12 @@ namespace GrpCurl.Net.Tests.Integration.Invocation;
 ///     Lifecycle coverage for <see cref="DynamicInvoker.InvokeDuplexStreamingWithMetadataAsync" /> —
 ///     the bidi path the CLI, Studio and the conformance adapter all use (PRD-003).
 ///     <para>
-///         Every test here drives a request source that blocks indefinitely, because that is the
-///         only shape that reproduces the bug: the finite-list sources used elsewhere always
-///         complete on their own and so can never leave a producer stranded. None of these tests
-///         cancels the caller's token, so anything that unblocks a source proves the invoker's own
-///         writer cancellation did it.
+///         Four of these tests drive a request source that blocks indefinitely, because that is
+///         the shape which reproduces the filed hang: the finite-list sources used elsewhere
+///         always complete on their own and so can never leave a producer stranded. Two more
+///         cover a source that faults mid-stream, and the last two are regression cover for the
+///         finite and writer-less paths. No test cancels the caller's token, so anything that
+///         unblocks a source proves the invoker's own writer cancellation did it.
 ///     </para>
 /// </summary>
 [Collection("GrpcServer")]
@@ -85,6 +86,10 @@ public sealed class DuplexLifecycleTests(GrpcTestFixture fixture)
         {
             source.ReleaseUncancellable();
         }
+
+        // The stranded producer is released only once the call is over, so it cannot have been
+        // what ended the enumeration above — and awaiting it here leaves nothing running.
+        await source.Unwound.Task.WaitAsync(Bounded, token);
     }
 
     [Fact]
@@ -152,6 +157,53 @@ public sealed class DuplexLifecycleTests(GrpcTestFixture fixture)
 
         // The caller's own input errors (malformed request JSON, a stdin limit breach) reach the
         // CLI through this path; absorbing transport write noise must not absorb them too.
+        _ = await Should.ThrowAsync<RequestSourceFailure>(async () => await drain.WaitAsync(Bounded, token));
+    }
+
+    [Fact]
+    public async Task RequestSourceFault_WhileServerAwaitsMoreRequests_SurfacesToTheCaller()
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        using var channel = CreateChannel();
+
+        var methodDescriptor = await GetDuplexMethod(channel);
+        var invoker = new DynamicInvoker(channel);
+        var request = CreateStreamingOutputRequest(methodDescriptor.InputType, [64]);
+
+        // Deliberately NO complete-after-requests: an ordinary bidi server reads until the client
+        // half-closes, so nothing but the producer's own failure can end this call. Without that
+        // coupling the server waits for a request that never comes while the reader waits for the
+        // server, and the fault can never reach the caller.
+        await using var result = invoker.InvokeDuplexStreamingWithMetadataAsync(
+            methodDescriptor, FaultingSource(request), cancellationToken: token);
+
+        var drain = DrainAsync(result, token);
+
+        _ = await Should.ThrowAsync<RequestSourceFailure>(async () => await drain.WaitAsync(Bounded, token));
+    }
+
+    [Fact]
+    public async Task RequestSourceFault_IsPreferredOverTheStatusItProvokes()
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        using var channel = CreateChannel();
+
+        var methodDescriptor = await GetDuplexMethod(channel);
+        var invoker = new DynamicInvoker(channel);
+        var request = CreateStreamingOutputRequest(methodDescriptor.InputType, [64]);
+
+        // fail-late fires once the server has drained the request stream — i.e. immediately after
+        // the half-close the faulting producer performs. Both halves therefore end badly, and the
+        // caller's own failure is the root cause: it is what truncated the stream.
+        var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.FailLate}: {(int)StatusCode.Internal}"]);
+
+        await using var result = invoker.InvokeDuplexStreamingWithMetadataAsync(
+            methodDescriptor, FaultingSource(request), metadata, cancellationToken: token);
+
+        var drain = DrainAsync(result, token);
+
         _ = await Should.ThrowAsync<RequestSourceFailure>(async () => await drain.WaitAsync(Bounded, token));
     }
 

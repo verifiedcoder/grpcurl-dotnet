@@ -12,8 +12,12 @@ namespace GrpCurl.Net.Invocation;
 ///     <para>
 ///         For bidi-streaming the result also owns the request producer's lifetime: the
 ///         linked <paramref name="writerCts" /> that can stop it and the <paramref name="writerTask" />
-///         that runs it. Disposal cancels the producer and waits for it before releasing the
-///         call, so the call is never torn down underneath an in-flight write (PRD-003).
+///         that runs it. Disposal cancels the producer and waits a bounded grace for it to unwind
+///         before releasing the call (PRD-003). A producer that honours cancellation is therefore
+///         always finished before the call is released. One that does not — an OS read already in
+///         flight cannot be recalled — is deliberately left behind rather than hanging the caller:
+///         the call is released anyway, its fault is observed so it cannot escape unobserved, and
+///         the producer absorbs the resulting <see cref="ObjectDisposedException" />.
 ///         Server-streaming passes neither, and disposal degenerates to releasing the call.
 ///     </para>
 /// </summary>
@@ -72,6 +76,9 @@ internal sealed class StreamingInvocationResult(
 
         await CancelQuietlyAsync(writerCts).ConfigureAwait(false);
 
+        // Cleared when a stranded producer takes over releasing the token source.
+        var releaseTokenSourceHere = true;
+
         if (writerTask is not null)
         {
             try
@@ -81,10 +88,14 @@ internal sealed class StreamingInvocationResult(
             catch (TimeoutException)
             {
                 // The producer is parked in an operation that does not honour cancellation
-                // (an interactive stdin read is the canonical case). Observe any later fault
-                // so it cannot escape unobserved, then release the call anyway — blocking on
-                // the caller's request source is exactly the hang PRD-003 fixes.
-                DynamicInvoker.ObserveFault(writerTask);
+                // (an interactive stdin read is the canonical case). Release the call anyway —
+                // blocking on the caller's request source is exactly the hang PRD-003 fixes —
+                // and hand both fault observation and token-source release to the producer's own
+                // completion, which is the only moment it is safe to dispose a source whose token
+                // it still holds.
+                DynamicInvoker.ObserveFaultAndRelease(writerTask, writerCts);
+
+                releaseTokenSourceHere = false;
             }
             catch
             {
@@ -95,10 +106,7 @@ internal sealed class StreamingInvocationResult(
 
         dispose();
 
-        // Only safe once nothing can still be holding the token: a parked producer would
-        // otherwise observe a disposed source. The linked registration is released with the
-        // caller's own token source.
-        if (writerTask is null or { IsCompleted: true })
+        if (releaseTokenSourceHere)
         {
             writerCts?.Dispose();
         }

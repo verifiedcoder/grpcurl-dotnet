@@ -4,6 +4,19 @@ using Grpc.Core;
 namespace GrpCurl.Net.Invocation;
 
 /// <summary>
+///     A request-half failure together with which side raised it.
+///     <para>
+///         The distinction matters for <see cref="RpcException" />. One raised by a write belongs to
+///         <i>this</i> call, so it is normalized like a read fault. One raised by the caller's source
+///         belongs to whatever that source was doing — a gRPC-backed source carries its own call's
+///         status — so it is surfaced untouched. Normalizing it would rewrite a foreign status using
+///         this call's deadline and cancellation state, and would make the reported status depend on
+///         how quickly this server happened to finish.
+///     </para>
+/// </summary>
+internal sealed record ProducerFault(Exception Exception, bool FromWrite);
+
+/// <summary>
 ///     Owns the request half of a bidi call (PRD-003): the task pumping the caller's request source
 ///     into the request stream, the token sources that stop it, and the fault it failed with.
 ///     <para>
@@ -19,10 +32,12 @@ namespace GrpCurl.Net.Invocation;
 ///         fault regardless of its type.
 ///     </para>
 ///     <para>
-///         <b>A recorded fault is stamped before any teardown it triggers.</b> That ordering is what
-///         lets the read side distinguish "the producer failed, and that is why the call ended" from
-///         "the call ended, and our own cleanup then made the producer fail". Only the former may be
-///         preferred over the status the server reported.
+///         <b>A recorded fault is stamped before any teardown it triggers, and a fault caused by
+///         teardown is not recorded at all.</b> Together those give the read side a causal test: a
+///         non-null <see cref="Fault" /> always predates, and plausibly explains, whatever the call
+///         finished with. "The call ended, and our own cancellation then made the producer fail" can
+///         never masquerade as the reverse — in either direction, so a completed response half stays
+///         authoritative whether it ended with an error or with OK.
 ///     </para>
 /// </summary>
 internal sealed class DuplexRequestProducer
@@ -47,7 +62,7 @@ internal sealed class DuplexRequestProducer
     private readonly TaskCompletionSource _responseEnded = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly CancellationTokenSource _writerCts;
 
-    private Exception? _fault;
+    private ProducerFault? _fault;
     private int _released;
 
     private DuplexRequestProducer(IClientStreamWriter<IMessage> requestStream, CancellationTokenSource callCts)
@@ -63,9 +78,10 @@ internal sealed class DuplexRequestProducer
     /// <summary>
     ///     The first fault raised by the caller's source or by a write that failed on its own merits,
     ///     stamped here <i>before</i> the half-close or abort it triggers. <see langword="null" />
-    ///     while the producer is healthy, or when it merely observed cancellation.
+    ///     while the producer is healthy, when it merely observed cancellation, or when it failed
+    ///     only <i>because</i> it was cancelled — see <see cref="PumpAsync" />.
     /// </summary>
-    public Exception? Fault => Volatile.Read(ref _fault);
+    public ProducerFault? Fault => Volatile.Read(ref _fault);
 
     /// <summary>
     ///     Starts pumping <paramref name="requests" /> into <paramref name="requestStream" />. Takes
@@ -126,7 +142,7 @@ internal sealed class DuplexRequestProducer
     ///     cancellation — an already-issued console read cannot be recalled — and blocking on that is
     ///     the filed hang. A producer that merely observed cancellation yields <see langword="null" />.
     /// </summary>
-    public async ValueTask<Exception?> DrainAsync(TimeSpan grace)
+    public async ValueTask<ProducerFault?> DrainAsync(TimeSpan grace)
     {
         await CancelAsync().ConfigureAwait(false);
 
@@ -147,7 +163,7 @@ internal sealed class DuplexRequestProducer
         {
             // Fault is the attributed value; fall back to the raw task exception for anything the
             // pump itself failed with outside the recorded paths.
-            return Fault ?? ex;
+            return Fault ?? new ProducerFault(ex, FromWrite: false);
         }
 
         return Fault;
@@ -209,7 +225,7 @@ internal sealed class DuplexRequestProducer
         }
         catch (Exception ex)
         {
-            await FailAsync(ex).ConfigureAwait(false);
+            await FailAsync(ex, fromWrite: false).ConfigureAwait(false);
 
             throw;
         }
@@ -239,8 +255,18 @@ internal sealed class DuplexRequestProducer
                 }
                 catch (Exception ex)
                 {
+                    // A source that reports our own cancellation as something other than an
+                    // OperationCanceledException lands here. Its failure is a consequence of the
+                    // teardown, not a cause of it, so it must never be recorded: doing so would let
+                    // cleanup manufacture the error the read side then reports in place of the
+                    // status the call actually finished with.
+                    if (writerToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
                     // Anything else the source raises is the caller's failure, whatever its type.
-                    await FailAsync(ex).ConfigureAwait(false);
+                    await FailAsync(ex, fromWrite: false).ConfigureAwait(false);
 
                     throw;
                 }
@@ -255,9 +281,14 @@ internal sealed class DuplexRequestProducer
                 }
                 catch (Exception ex)
                 {
+                    if (writerToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
                     // A write that failed on its own merits — an oversize message, a marshaller
                     // failure — rather than because the call had already finished.
-                    await FailAsync(ex).ConfigureAwait(false);
+                    await FailAsync(ex, fromWrite: true).ConfigureAwait(false);
 
                     throw;
                 }
@@ -281,11 +312,18 @@ internal sealed class DuplexRequestProducer
         {
             // Torn down deliberately.
         }
-        catch (Exception ex)
+        catch (Exception ex) when (!writerToken.IsCancellationRequested)
         {
             // Disposal is still the caller's code, so its failure is still the caller's fault — but
-            // never let it displace one already recorded on the way here.
-            await FailAsync(ex).ConfigureAwait(false);
+            // never let it displace one already recorded on the way here, and never record one that
+            // our own cancellation provoked.
+            await FailAsync(ex, fromWrite: false).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _ = ex;
+
+            // Provoked by teardown; observed and discarded.
         }
     }
 
@@ -294,9 +332,9 @@ internal sealed class DuplexRequestProducer
     ///     to be visible before anything it provokes can reach the read side, or the read side cannot
     ///     tell cause from consequence.
     /// </summary>
-    private async ValueTask FailAsync(Exception fault)
+    private async ValueTask FailAsync(Exception fault, bool fromWrite)
     {
-        if (Interlocked.CompareExchange(ref _fault, fault, null) is not null)
+        if (Interlocked.CompareExchange(ref _fault, new ProducerFault(fault, fromWrite), null) is not null)
         {
             return;
         }

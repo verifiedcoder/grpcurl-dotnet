@@ -347,10 +347,11 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
                         // Read the producer's fault BEFORE stopping it, so only one that was already
                         // recorded — and therefore preceded, and plausibly caused, this status — can
                         // win. A fault our own cancellation goes on to create must never displace the
-                        // error the server actually reported.
+                        // error the server actually reported. (The producer declines to record such
+                        // faults at all; this ordering is the second half of the same guarantee.)
                         var causalFault = producer.Fault;
 
-                        ExceptionDispatchInfo.Capture(causalFault ?? readFault).Throw();
+                        ExceptionDispatchInfo.Capture(causalFault?.Exception ?? readFault).Throw();
 
                         throw;
                     }
@@ -370,7 +371,8 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
 
             // Reached only on clean completion: the server returned OK, so the RPC succeeded and the
             // read side has nothing left to report. The one thing still worth surfacing is a fault
-            // from the caller's own source, which DrainAsync returns if it raised one.
+            // the producer raised of its own accord — never one this drain's cancellation provokes,
+            // which the producer declines to record, so an OK call stays OK.
             // INVARIANT: never await the producer unbounded (see WriterDrainGrace).
             var lateFault = await producer.DrainAsync(WriterDrainGrace).ConfigureAwait(false);
 
@@ -379,15 +381,16 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
                 case null:
                     break;
 
-                case RpcException rpc:
+                case { FromWrite: true, Exception: RpcException rpc }:
                     // A write that failed on its own merits (an oversize message, a marshaller
-                    // failure), normalized exactly like a read fault.
+                    // failure) belongs to this call, so it is normalized exactly like a read fault.
                     throw RpcErrorNormalizer.Normalize(rpc, deadline, cancellationToken.IsCancellationRequested);
 
                 default:
-                    // The caller's own error — malformed JSON, a stdin limit breach — propagates
-                    // unchanged, so the CLI still reports exactly what it reports today.
-                    ExceptionDispatchInfo.Capture(lateFault).Throw();
+                    // The caller's own error — malformed JSON, a stdin limit breach, or an
+                    // RpcException belonging to a gRPC-backed source's own call — propagates
+                    // untouched, exactly as it does on the read-error path.
+                    ExceptionDispatchInfo.Capture(lateFault.Exception).Throw();
 
                     break;
             }

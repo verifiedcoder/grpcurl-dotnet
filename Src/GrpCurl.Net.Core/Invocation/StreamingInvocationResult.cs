@@ -10,15 +10,14 @@ namespace GrpCurl.Net.Invocation;
 ///     can emit headers/trailers uniformly with the unary case (CODE-REVIEW.md P2
 ///     "Response Headers/Trailers Parity").
 ///     <para>
-///         For bidi-streaming the result also owns the request producer's lifetime: the
-///         linked <paramref name="writerCts" /> that can stop it and the <paramref name="writerTask" />
-///         that runs it. Disposal cancels the producer and waits a bounded grace for it to unwind
-///         before releasing the call (PRD-003). A producer that honours cancellation is therefore
-///         always finished before the call is released. One that does not — an OS read already in
-///         flight cannot be recalled — is deliberately left behind rather than hanging the caller:
-///         the call is released anyway, its fault is observed so it cannot escape unobserved, and
-///         the producer absorbs the resulting <see cref="ObjectDisposedException" />.
-///         Server-streaming passes neither, and disposal degenerates to releasing the call.
+///         For bidi-streaming the result also owns the request half's lifetime, via the
+///         <paramref name="producer" />. Disposal cancels it and waits a bounded grace for it to
+///         unwind before releasing the call (PRD-003). A producer that honours cancellation is
+///         therefore always finished before the call is released. One that does not — an OS read
+///         already in flight cannot be recalled — is deliberately left behind rather than hanging the
+///         caller: the call is released anyway, its fault is observed so it cannot escape unobserved,
+///         and the producer absorbs the resulting <see cref="ObjectDisposedException" />.
+///         Server-streaming passes no producer, and disposal degenerates to releasing the call.
 ///     </para>
 /// </summary>
 /// <remarks>

@@ -15,14 +15,13 @@ namespace GrpCurl.Net.Tests.Integration.Invocation;
 ///     Lifecycle coverage for <see cref="DynamicInvoker.InvokeDuplexStreamingWithMetadataAsync" /> —
 ///     the bidi path the CLI, Studio and the conformance adapter all use (PRD-003).
 ///     <para>
-///         Of the 15 cases here: four drive a request source that blocks indefinitely — the shape
+///         17 executed cases from 14 methods. Six drive a source that parks indefinitely — the shape
 ///         that reproduces the filed hang, since the finite-list sources used elsewhere always
-///         complete on their own and can never strand a producer; eight cover a source that fails
-///         mid-stream (one of them a <see cref="Theory" /> over the four exception types that are
-///         ambiguous between a source and the transport); one covers a server error that the
-///         producer did not cause; and two are regression cover for the finite and writer-less
-///         paths. No test cancels the caller's token, so anything that unblocks a source proves the
-///         invoker's own cancellation did it.
+///         complete on their own and can never strand a producer; nine drive a source that fails
+///         mid-stream, one of them a four-case theory over the exception types that are ambiguous
+///         between a source and the transport; two are regression cover for the finite and
+///         writer-less paths. No test cancels the caller's token, so anything that unblocks a source
+///         proves the invoker's own cancellation did it.
 ///     </para>
 /// </summary>
 [Collection("GrpcServer")]
@@ -292,6 +291,56 @@ public sealed class DuplexLifecycleTests(GrpcTestFixture fixture)
     }
 
     [Fact]
+    public async Task CleanServerCompletion_IsNotReplacedByACleanupFault()
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        using var channel = CreateChannel();
+
+        var methodDescriptor = await GetDuplexMethod(channel);
+        var invoker = new DynamicInvoker(channel);
+        var request = CreateStreamingOutputRequest(methodDescriptor.InputType, [64]);
+
+        var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.CompleteAfterRequests}: 1"]);
+
+        // The successful counterpart of IndependentServerError_IsNotReplacedByACleanupFault: the RPC
+        // completed OK, and the source only fails because teardown then cancelled it. A completed
+        // response half is authoritative, so that cleanup fault must not turn OK into an error.
+        await using var result = invoker.InvokeDuplexStreamingWithMetadataAsync(
+            methodDescriptor, CancellationTranslatingSource(request), metadata, cancellationToken: token);
+
+        var responses = await DrainAsync(result, token).WaitAsync(Bounded, token);
+
+        responses.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task SourceThrownRpcException_KeepsItsOwnStatus()
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        using var channel = CreateChannel();
+
+        var methodDescriptor = await GetDuplexMethod(channel);
+        var invoker = new DynamicInvoker(channel);
+        var request = CreateStreamingOutputRequest(methodDescriptor.InputType, [64]);
+
+        // A gRPC-backed request source can raise an RpcException of its own. It belongs to that
+        // source's call, not to this one, so this call's deadline and protocol normalization must
+        // not rewrite it — and it must not depend on how quickly this server happens to finish.
+        var sourceStatus = new Status(StatusCode.Cancelled, "No grpc-status found on response");
+
+        await using var result = invoker.InvokeDuplexStreamingWithMetadataAsync(
+            methodDescriptor, RpcFaultingSource(request, sourceStatus), cancellationToken: token);
+
+        var drain = DrainAsync(result, token);
+
+        var exception = await Should.ThrowAsync<RpcException>(async () => await drain.WaitAsync(Bounded, token));
+
+        exception.StatusCode.ShouldBe(StatusCode.Cancelled);
+    }
+
+    [Fact]
     public async Task FiniteRequests_MetadataOverload_ReturnsAllResponsesAndTrailers()
     {
         var token = TestContext.Current.CancellationToken;
@@ -463,10 +512,16 @@ public sealed class DuplexLifecycleTests(GrpcTestFixture fixture)
     ///     cancellation — the shape that exposes non-causal fault preference.
     /// </summary>
     private static async IAsyncEnumerable<IMessage> CancellationTranslatingSource(
+        IMessage? first = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        // Parks before yielding anything, so the producer is waiting on the source rather than on a
-        // write. Nothing it does can end the call; only the read path's cancellation makes it fail.
+        // Parks, so nothing it does can end the call: only the read path's cancellation makes it
+        // fail, and it reports that as an ordinary exception rather than a cancellation.
+        if (first is not null)
+        {
+            yield return first;
+        }
+
         try
         {
             await Task.Delay(Timeout.Infinite, cancellationToken);
@@ -475,8 +530,16 @@ public sealed class DuplexLifecycleTests(GrpcTestFixture fixture)
         {
             throw new RequestSourceFailure();
         }
+    }
 
-        yield break;
+    /// <summary>Fails with an <see cref="RpcException" /> of its own, as a gRPC-backed source can.</summary>
+    private static async IAsyncEnumerable<IMessage> RpcFaultingSource(IMessage first, Status status)
+    {
+        yield return first;
+
+        await Task.Yield();
+
+        throw new RpcException(status);
     }
 
     /// <summary>Exception shapes that are ambiguous between a caller's source and the transport.</summary>

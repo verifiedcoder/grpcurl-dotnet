@@ -392,7 +392,13 @@ internal sealed class DuplexRequestProducer
         OperationCanceledException => true,
         InvalidOperationException => true,
         IOException => true,
-        RpcException rpc => writerToken.IsCancellationRequested || rpc.StatusCode == StatusCode.OK,
+        // OK and CANCELLED are both teardown artifacts rather than statuses a write earned:
+        // CreateCanceledStatusException hands back the completed call's status when there is one
+        // (OK for a server that finished cleanly) and Status(Cancelled) when there is not, i.e. the
+        // call went away underneath the write. A write that failed on its own merits — an oversize
+        // message giving RESOURCE_EXHAUSTED, a marshaller failure — carries neither.
+        RpcException rpc => writerToken.IsCancellationRequested
+                            || rpc.StatusCode is StatusCode.OK or StatusCode.Cancelled,
         _ => false
     };
 }

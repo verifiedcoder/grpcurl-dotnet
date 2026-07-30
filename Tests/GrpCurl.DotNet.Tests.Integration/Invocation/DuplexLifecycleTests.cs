@@ -15,13 +15,13 @@ namespace GrpCurl.Net.Tests.Integration.Invocation;
 ///     Lifecycle coverage for <see cref="DynamicInvoker.InvokeDuplexStreamingWithMetadataAsync" /> —
 ///     the bidi path the CLI, Studio and the conformance adapter all use (PRD-003).
 ///     <para>
-///         17 executed cases from 14 methods. Six drive a source that parks indefinitely — the shape
+///         18 executed cases from 15 methods. Six drive a source that parks indefinitely — the shape
 ///         that reproduces the filed hang, since the finite-list sources used elsewhere always
 ///         complete on their own and can never strand a producer; nine drive a source that fails
 ///         mid-stream, one of them a four-case theory over the exception types that are ambiguous
-///         between a source and the transport; two are regression cover for the finite and
-///         writer-less paths. No test cancels the caller's token, so anything that unblocks a source
-///         proves the invoker's own cancellation did it.
+///         between a source and the transport; one fails on the write half instead; two are
+///         regression cover for the finite and writer-less paths. No test cancels the caller's
+///         token, so anything that unblocks a source proves the invoker's own cancellation did it.
 ///     </para>
 /// </summary>
 [Collection("GrpcServer")]
@@ -341,6 +341,42 @@ public sealed class DuplexLifecycleTests(GrpcTestFixture fixture)
     }
 
     [Fact]
+    public async Task WriteSideFailure_DoesNotDisplaceTheServerStatus()
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        // A send limit small enough that the request below cannot be written at all, so the write
+        // half is guaranteed to fail while the server is independently failing the call.
+        using var channel = GrpcChannelFactory.Create(
+            $"http://{fixture.Address}",
+            new GrpcChannelFactory.ChannelOptions
+            {
+                Plaintext = true,
+                MaxSendMessageSize = 64
+            });
+
+        var methodDescriptor = await GetDuplexMethod(channel);
+        var invoker = new DynamicInvoker(channel);
+        var oversized = CreateRequestWithPayload(methodDescriptor.InputType, 64 * 1024);
+
+        var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.FailEarly}: {(int)StatusCode.Internal}"]);
+
+        // A write-half failure is always a shadow of the call itself failing — whether it surfaces
+        // as RESOURCE_EXHAUSTED on its own merits or as grpc-dotnet's Status(Cancelled) teardown
+        // artifact. The read half carries the authoritative status, so the server's error must win
+        // either way. (On Windows the artifact form of this race reported CANCELLED instead of
+        // INTERNAL; this pins the outcome regardless of which way the write loses.)
+        await using var result = invoker.InvokeDuplexStreamingWithMetadataAsync(
+            methodDescriptor, ToAsyncEnumerable([oversized]), metadata, cancellationToken: token);
+
+        var drain = DrainAsync(result, token);
+
+        var exception = await Should.ThrowAsync<RpcException>(async () => await drain.WaitAsync(Bounded, token));
+
+        exception.StatusCode.ShouldBe(StatusCode.Internal);
+    }
+
+    [Fact]
     public async Task FiniteRequests_MetadataOverload_ReturnsAllResponsesAndTrailers()
     {
         var token = TestContext.Current.CancellationToken;
@@ -460,6 +496,29 @@ public sealed class DuplexLifecycleTests(GrpcTestFixture fixture)
 
             message.RepeatedFields[paramsField].Add(param);
         }
+
+        return message;
+    }
+
+    private static SimpleDynamicMessage CreateRequestWithPayload(MessageDescriptor descriptor, int payloadSize)
+    {
+        var message = new SimpleDynamicMessage(descriptor);
+        var payloadField = descriptor.FindFieldByName("payload");
+
+        if (payloadField?.MessageType is null)
+        {
+            return message;
+        }
+
+        var payload = new SimpleDynamicMessage(payloadField.MessageType);
+        var bodyField = payloadField.MessageType.FindFieldByName("body");
+
+        if (bodyField is not null)
+        {
+            payload.Fields[bodyField] = ByteString.CopyFrom(new byte[payloadSize]);
+        }
+
+        message.Fields[payloadField] = payload;
 
         return message;
     }

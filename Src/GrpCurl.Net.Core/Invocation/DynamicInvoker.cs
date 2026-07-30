@@ -349,9 +349,16 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
                         // win. A fault our own cancellation goes on to create must never displace the
                         // error the server actually reported. (The producer declines to record such
                         // faults at all; this ordering is the second half of the same guarantee.)
-                        var causalFault = producer.Fault;
+                        //
+                        // Only a SOURCE fault may displace it. A write-side failure is always a shadow
+                        // of the call itself failing, and the read half carries the authoritative
+                        // status; a source failure is the one thing the read half cannot know about.
+                        // Preferring a write fault here would report grpc-dotnet's teardown artifact —
+                        // CreateCanceledStatusException yields Status(Cancelled) whenever the call task
+                        // has not completed yet — in place of the server's real status.
+                        var causalFault = producer.Fault is { FromWrite: false } sourceFault ? sourceFault.Exception : null;
 
-                        ExceptionDispatchInfo.Capture(causalFault?.Exception ?? readFault).Throw();
+                        ExceptionDispatchInfo.Capture(causalFault ?? readFault).Throw();
 
                         throw;
                     }

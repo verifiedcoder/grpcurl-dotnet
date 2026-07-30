@@ -139,7 +139,7 @@ public sealed class DuplexLifecycleTests(GrpcTestFixture fixture)
     }
 
     [Fact]
-    public async Task RequestSourceFault_SurfacesToTheCaller()
+    public async Task RequestSourceFault_RacingIndependentServerCompletion_EndsBoundedEitherWay()
     {
         var token = TestContext.Current.CancellationToken;
 
@@ -156,9 +156,28 @@ public sealed class DuplexLifecycleTests(GrpcTestFixture fixture)
 
         var drain = DrainAsync(result, token);
 
-        // The caller's own input errors (malformed request JSON, a stdin limit breach) reach the
-        // CLI through this path; absorbing transport write noise must not absorb them too.
-        _ = await Should.ThrowAsync<RequestSourceFailure>(async () => await drain.WaitAsync(Bounded, token));
+        // This is the one scenario with a genuinely undetermined outcome, and the assertion says so
+        // rather than pretending otherwise. The server here completes OK on its own after the first
+        // request, so it races the source's failure:
+        //
+        //   * source throws first  -> the fault is recorded and surfaces;
+        //   * server completes first -> teardown cancels the source before it throws, and a failure
+        //     raised after we asked it to stop is deliberately not recorded (§13.1), so the
+        //     successful RPC stays successful.
+        //
+        // Both are correct. What must never happen is a hang or a lost response, so that is what is
+        // asserted. Source faults are pinned deterministically by the tests that use an ordinary
+        // server, which has no independent reason to finish.
+        try
+        {
+            var responses = await drain.WaitAsync(Bounded, token);
+
+            responses.Count.ShouldBe(1);
+        }
+        catch (RequestSourceFailure)
+        {
+            // The other legal outcome.
+        }
     }
 
     [Fact]

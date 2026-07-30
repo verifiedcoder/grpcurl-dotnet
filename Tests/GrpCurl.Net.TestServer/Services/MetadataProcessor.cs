@@ -67,6 +67,29 @@ public static class MetadataProcessor
     }
 
     /// <summary>
+    ///     Reads <see cref="MetadataConstants.CompleteAfterRequests" />, returning
+    ///     <see langword="null" /> when absent, unparseable, or not positive. Kept separate from
+    ///     <see cref="ProcessMetadata" /> because only the bidi handler honours it.
+    /// </summary>
+    public static int? GetCompleteAfterRequests(ServerCallContext context)
+    {
+        foreach (var entry in context.RequestHeaders)
+        {
+            if (!string.Equals(entry.Key, MetadataConstants.CompleteAfterRequests, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (int.TryParse(entry.Value, out var count) && count > 0)
+            {
+                return count;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
     ///     Parses a header value in the format "key: value" and adds it to the metadata collection.
     /// </summary>
     private static void ParseHeaderValue(string value, Metadata metadata)

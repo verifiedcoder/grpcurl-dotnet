@@ -160,7 +160,7 @@ public sealed class InvocationService : IInvocationService
     {
         var request = await FirstAsync(requests, ct).ConfigureAwait(false);
 
-        using var streaming = invoker.InvokeServerStreamingWithMetadataAsync(method, request, headers, deadline, ct);
+        await using var streaming = invoker.InvokeServerStreamingWithMetadataAsync(method, request, headers, deadline, ct);
 
         await EmitAsync(writer, new HeadersReceived(await streaming.ResponseHeadersAsync.ConfigureAwait(false)), clock, ct).ConfigureAwait(false);
 
@@ -188,7 +188,7 @@ public sealed class InvocationService : IInvocationService
         DynamicInvoker invoker, MethodDescriptor method, IAsyncEnumerable<IMessage> requests,
         Metadata headers, DateTime? deadline, ChannelWriter<StreamEvent> writer, Stopwatch clock, CancellationToken ct)
     {
-        using var streaming = invoker.InvokeDuplexStreamingWithMetadataAsync(method, requests, headers, deadline, ct);
+        await using var streaming = invoker.InvokeDuplexStreamingWithMetadataAsync(method, requests, headers, deadline, ct);
 
         await EmitAsync(writer, new HeadersReceived(await streaming.ResponseHeadersAsync.ConfigureAwait(false)), clock, ct).ConfigureAwait(false);
 

@@ -264,7 +264,7 @@ internal static class TestCaseRunner
 
         try
         {
-            using var streaming = invoker.InvokeServerStreamingWithMetadataAsync(method, message, metadata, deadline, cts.Token);
+            await using var streaming = invoker.InvokeServerStreamingWithMetadataAsync(method, message, metadata, deadline, cts.Token);
 
             await ConsumeResponsesAsync(streaming, result, method, AfterNumResponses(request), context, cts);
         }
@@ -340,7 +340,7 @@ internal static class TestCaseRunner
 
         try
         {
-            using var streaming = invoker.InvokeDuplexStreamingWithMetadataAsync(method, source, metadata, deadline, cts.Token);
+            await using var streaming = invoker.InvokeDuplexStreamingWithMetadataAsync(method, source, metadata, deadline, cts.Token);
 
             await ConsumeResponsesAsync(streaming, result, method, AfterNumResponses(request), context, cts);
         }

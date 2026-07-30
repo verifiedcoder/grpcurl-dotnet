@@ -40,4 +40,13 @@ public static class MetadataConstants
     ///     Useful for testing timeouts.
     /// </summary>
     public const string DelayMs = "delay-ms";
+
+    /// <summary>
+    ///     Request header that, if present and positive, makes a bidi-streaming RPC return
+    ///     successfully once it has answered that many request messages, without reading the
+    ///     rest of the request stream. Unlike <see cref="FailEarly" /> the call completes with
+    ///     OK, which is what reproduces a client whose request producer is still running after
+    ///     the server has closed its response side.
+    /// </summary>
+    public const string CompleteAfterRequests = "complete-after-requests";
 }

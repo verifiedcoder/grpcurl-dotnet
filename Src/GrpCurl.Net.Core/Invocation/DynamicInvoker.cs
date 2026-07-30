@@ -283,52 +283,48 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
 
         var method = CreateMethod<IMessage, IMessage>(methodDescriptor, MethodType.DuplexStreaming);
         var callInvoker = _channel.CreateCallInvoker();
-        var callOptions = new CallOptions(headers, deadline, cancellationToken);
-        var call = callInvoker.AsyncDuplexStreamingCall(method, null, callOptions);
 
-        CancellationTokenSource? writerCts = null;
+        // The call runs on a linked token rather than the caller's own so a failed request producer
+        // can abort it, which is the only bounded way to release a reader whose server has not
+        // finished. Caller cancellation still reaches the call through the link, and normalization
+        // below continues to key off the caller's token so the two can never be confused.
+        var callCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+        AsyncDuplexStreamingCall<IMessage, IMessage>? call = null;
 
         try
         {
-            // Linked so the response side can stop the producer without touching the caller's
-            // token. Deliberately not `using`-scoped: the returned result owns and disposes it.
-            writerCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var callOptions = new CallOptions(headers, deadline, callCts.Token);
 
-            var writerToken = writerCts.Token;
+            call = callInvoker.AsyncDuplexStreamingCall(method, null, callOptions);
 
-            // Capture the stream so the producer does not close over 'call', which is disposed
-            // by the result while the producer may still hold the request stream.
-            var requestStream = call.RequestStream;
-
-            // CancellationToken.None: a token already cancelled when the task is scheduled must
-            // still run the pump's own unwind rather than leave the task Canceled and unshaped.
-            var writeTask = Task.Run(() => PumpRequestsAsync(requests, requestStream, writerToken), CancellationToken.None);
+            // The producer takes ownership of callCts, and holds the request stream rather than the
+            // call, which the result disposes while the producer may still be running.
+            var producer = DuplexRequestProducer.Start(requests, call.RequestStream, callCts);
 
             return new StreamingInvocationResult(
                 call.ResponseHeadersAsync,
-                ReadAll(writerCts, writeTask),
+                ReadAll(producer),
                 call.GetTrailers,
                 call.Dispose,
-                writerCts,
-                writeTask);
+                producer);
         }
         catch
         {
-            // Nothing took ownership of the call, so release it here rather than leaking the
-            // HTTP/2 stream.
-            writerCts?.Dispose();
-            call.Dispose();
+            // Nothing took ownership, so release here rather than leaking the HTTP/2 stream.
+            call?.Dispose();
+            callCts.Dispose();
 
             throw;
         }
 
-        async IAsyncEnumerable<IMessage> ReadAll(CancellationTokenSource producerCts, Task producerTask)
+        async IAsyncEnumerable<IMessage> ReadAll(DuplexRequestProducer producer)
         {
             try
             {
-                // INVARIANT: the CALLER's token is passed here, never the writer's. It is what
-                // RpcErrorNormalizer.NormalizeClientCancellation keys on, so an internal
-                // producer cancel must never be able to masquerade as caller cancellation.
+                // INVARIANT: the CALLER's token is passed here, never the call's or the writer's. It
+                // is what RpcErrorNormalizer.NormalizeClientCancellation keys on, so an internal
+                // abort must never be able to masquerade as caller cancellation.
                 var responses = RemapDeadlineExpiry(call.ResponseStream.ReadAllAsync(cancellationToken), deadline, cancellationToken);
 
                 await using var enumerator = responses.GetAsyncEnumerator(cancellationToken);
@@ -348,12 +344,13 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
                     }
                     catch (Exception readFault)
                     {
-                        // A failed producer half-closes, so most reads that end badly here ended
-                        // because of it. Its fault is the root cause and the actionable one —
-                        // prefer it over the teardown status it provoked.
-                        var producerFault = await DrainProducerFaultAsync(producerCts, producerTask).ConfigureAwait(false);
+                        // Read the producer's fault BEFORE stopping it, so only one that was already
+                        // recorded — and therefore preceded, and plausibly caused, this status — can
+                        // win. A fault our own cancellation goes on to create must never displace the
+                        // error the server actually reported.
+                        var causalFault = producer.Fault;
 
-                        ExceptionDispatchInfo.Capture(producerFault ?? readFault).Throw();
+                        ExceptionDispatchInfo.Capture(causalFault ?? readFault).Throw();
 
                         throw;
                     }
@@ -363,221 +360,39 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
             }
             finally
             {
-                // The response side is finished — cleanly, with an error, or because the
-                // consumer abandoned enumeration. No further write can reach the server, so
-                // stop the producer now instead of leaving it parked on its source.
-                await StreamingInvocationResult.CancelQuietlyAsync(producerCts).ConfigureAwait(false);
+                // The response side is finished — cleanly, with an error, or because the consumer
+                // abandoned enumeration. Tell the producer to stop waiting to abort a call that is
+                // already over, then stop it: no further write can reach the server.
+                producer.OnResponseEnded();
+
+                await producer.CancelAsync().ConfigureAwait(false);
             }
 
-            // Reached only on clean completion: the server returned OK, so the RPC succeeded and
-            // the read side has nothing left to report. The one thing still worth surfacing is a
-            // fault raised by the caller's own request source — PumpRequestsAsync guarantees that
-            // is all this task's fault channel can carry.
+            // Reached only on clean completion: the server returned OK, so the RPC succeeded and the
+            // read side has nothing left to report. The one thing still worth surfacing is a fault
+            // from the caller's own source, which DrainAsync returns if it raised one.
             // INVARIANT: never await the producer unbounded (see WriterDrainGrace).
-            try
-            {
-                // CancellationToken.None: the grace is already bounded, and the caller's token
-                // has usually just fired on the cancellation paths that reach here.
-                await producerTask.WaitAsync(WriterDrainGrace, CancellationToken.None).ConfigureAwait(false);
-            }
-            catch (TimeoutException)
-            {
-                // Producer parked in an operation that ignores cancellation. The RPC already
-                // succeeded; observe any later fault rather than hanging the consumer on it.
-                ObserveFault(producerTask);
-            }
-            catch (OperationCanceledException)
-            {
-                // Producer unwound on cancellation. Not an RPC failure.
-            }
-            catch (RpcException ex)
-            {
-                // A write that failed on its own merits (an oversize message, a marshaller
-                // failure) rather than because the call had already finished.
-                throw RpcErrorNormalizer.Normalize(ex, deadline, cancellationToken.IsCancellationRequested);
-            }
+            var lateFault = await producer.DrainAsync(WriterDrainGrace).ConfigureAwait(false);
 
-            // Anything else is an error from the caller's request source — malformed JSON, a
-            // stdin limit breach — and propagates unchanged so the CLI still reports it.
+            switch (lateFault)
+            {
+                case null:
+                    break;
+
+                case RpcException rpc:
+                    // A write that failed on its own merits (an oversize message, a marshaller
+                    // failure), normalized exactly like a read fault.
+                    throw RpcErrorNormalizer.Normalize(rpc, deadline, cancellationToken.IsCancellationRequested);
+
+                default:
+                    // The caller's own error — malformed JSON, a stdin limit breach — propagates
+                    // unchanged, so the CLI still reports exactly what it reports today.
+                    ExceptionDispatchInfo.Capture(lateFault).Throw();
+
+                    break;
+            }
         }
     }
-
-    /// <summary>
-    ///     Drives the caller's request source into the call's request stream.
-    ///     <para>
-    ///         Transport failures are absorbed at the exact await that produced them, so this
-    ///         task's fault channel carries ONLY exceptions raised by the caller's source. That
-    ///         is what lets the read side tell "your request JSON was malformed" apart from "the
-    ///         server closed its half of the stream while a write was in flight" without having
-    ///         to guess from exception types, which are ambiguous between the two.
-    ///     </para>
-    ///     <para>
-    ///         A source fault half-closes before propagating. The response side is usually still
-    ///         live at that point — an ordinary bidi server reads until the client half-closes —
-    ///         so without it the server would wait for a request that never comes while the reader
-    ///         waits for the server, and the fault could never reach the caller.
-    ///     </para>
-    /// </summary>
-    private static async Task PumpRequestsAsync(
-        IAsyncEnumerable<IMessage> requests,
-        IClientStreamWriter<IMessage> requestStream,
-        CancellationToken writerToken)
-    {
-        try
-        {
-            await using var enumerator = requests.GetAsyncEnumerator(writerToken);
-
-            while (true)
-            {
-                IMessage message;
-
-                try
-                {
-                    if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
-                    {
-                        break;
-                    }
-
-                    message = enumerator.Current;
-                }
-                catch (OperationCanceledException) when (writerToken.IsCancellationRequested)
-                {
-                    // The response side finished, the consumer walked away, or the caller
-                    // cancelled: the source was torn down deliberately. Deliberately no
-                    // CompleteAsync — once writes are moot, half-closing only perturbs the wire
-                    // shape the conformance suite's before_close_send cases observe.
-                    return;
-                }
-
-                try
-                {
-                    await requestStream.WriteAsync(message, writerToken).ConfigureAwait(false);
-                }
-                catch (Exception ex) when (IsPostCompletionWriteNoise(ex, writerToken))
-                {
-                    return;
-                }
-            }
-
-            await HalfCloseAsync(requestStream, writerToken).ConfigureAwait(false);
-        }
-        catch (Exception ex) when (!IsPostCompletionWriteNoise(ex, writerToken))
-        {
-            // The caller's source failed with the call still live. Tell the server no more
-            // requests are coming so it stops waiting and completes; that releases the response
-            // read, which is the only path by which this fault can be surfaced.
-            await HalfCloseAsync(requestStream, writerToken).ConfigureAwait(false);
-
-            throw;
-        }
-    }
-
-    /// <summary>
-    ///     Half-closes the request stream, tolerating a call that has already finished.
-    /// </summary>
-    private static async Task HalfCloseAsync(IClientStreamWriter<IMessage> requestStream, CancellationToken writerToken)
-    {
-        try
-        {
-            await requestStream.CompleteAsync().ConfigureAwait(false);
-        }
-        catch (Exception ex) when (IsPostCompletionWriteNoise(ex, writerToken))
-        {
-            // The half-close raced the server's own completion; immaterial for the same reason.
-        }
-    }
-
-    /// <summary>
-    ///     Stops the producer and returns the fault it failed with, or <see langword="null" /> if
-    ///     it completed, was merely cancelled, or is still parked when the drain grace elapses.
-    ///     Cancelling first means a cooperative source unwinds rather than burning the grace.
-    /// </summary>
-    private static async ValueTask<Exception?> DrainProducerFaultAsync(CancellationTokenSource producerCts, Task producerTask)
-    {
-        await StreamingInvocationResult.CancelQuietlyAsync(producerCts).ConfigureAwait(false);
-
-        try
-        {
-            await producerTask.WaitAsync(WriterDrainGrace, CancellationToken.None).ConfigureAwait(false);
-        }
-        catch (TimeoutException)
-        {
-            ObserveFault(producerTask);
-
-            return null;
-        }
-        catch (Exception ex)
-        {
-            return ex;
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    ///     True when a write-half failure is a consequence of the call already being finished
-    ///     rather than a fault of its own. A gRPC call's status is the server's status, delivered
-    ///     on the read half; a write that could not land is not an RPC failure (upstream grpcurl
-    ///     likewise discards <c>SendMsg</c>'s <c>io.EOF</c> and reports the status from
-    ///     <c>RecvMsg</c>).
-    ///     <para>
-    ///         Shapes, verified against Grpc.Net.Client 2.76.0: once the call has completed,
-    ///         <c>HttpContentClientStreamWriter.WriteAsync</c> hands back
-    ///         <c>GrpcCall.CreateCanceledStatusException()</c>, which carries the completed call's
-    ///         own status — so a server that finished cleanly yields an <see cref="RpcException" />
-    ///         whose status code is <see cref="StatusCode.OK" />. Half-close after completion gives
-    ///         <see cref="InvalidOperationException" />, writing to a disposed call gives
-    ///         <see cref="ObjectDisposedException" />, and a torn-down HTTP/2 stream gives
-    ///         <see cref="IOException" />.
-    ///     </para>
-    ///     <para>
-    ///         The <see cref="RpcException" /> arm is filtered rather than blanket-swallowed so a
-    ///         write that genuinely failed on its own merits — an oversize message giving
-    ///         RESOURCE_EXHAUSTED, a marshaller failure — still faults the pump and reaches the
-    ///         caller.
-    ///     </para>
-    /// </summary>
-    private static bool IsPostCompletionWriteNoise(Exception exception, CancellationToken writerToken) => exception switch
-    {
-        OperationCanceledException => true,
-        // ObjectDisposedException derives from InvalidOperationException, so this one arm covers
-        // both the half-close-after-completion and the write-to-a-disposed-call shapes.
-        InvalidOperationException => true,
-        IOException => true,
-        RpcException rpc => writerToken.IsCancellationRequested || rpc.StatusCode == StatusCode.OK,
-        _ => false
-    };
-
-    /// <summary>
-    ///     Consumes a task's eventual fault so an abandoned producer cannot surface it as an
-    ///     unobserved task exception.
-    /// </summary>
-    internal static void ObserveFault(Task task)
-        => _ = task.ContinueWith(
-            static completed => _ = completed.Exception,
-            CancellationToken.None,
-            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
-            TaskScheduler.Default);
-
-    /// <summary>
-    ///     Observes a task's eventual fault and releases <paramref name="producerCts" /> once it
-    ///     finishes. Used when a producer outlives the drain grace: it still holds the token, so
-    ///     the source cannot be disposed now, but there is no reason to keep a linked source — and
-    ///     its registration on a potentially long-lived caller token — alive after the producer has
-    ///     finally unwound.
-    /// </summary>
-    internal static void ObserveFaultAndRelease(Task task, CancellationTokenSource? producerCts)
-        => _ = task.ContinueWith(
-            static (completed, state) =>
-            {
-                _ = completed.Exception;
-
-                (state as CancellationTokenSource)?.Dispose();
-            },
-            producerCts,
-            CancellationToken.None,
-            TaskContinuationOptions.ExecuteSynchronously,
-            TaskScheduler.Default);
 
     /// <summary>
     ///     Invokes a bidirectional-streaming RPC method.

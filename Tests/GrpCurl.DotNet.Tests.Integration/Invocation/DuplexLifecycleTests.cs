@@ -15,12 +15,14 @@ namespace GrpCurl.Net.Tests.Integration.Invocation;
 ///     Lifecycle coverage for <see cref="DynamicInvoker.InvokeDuplexStreamingWithMetadataAsync" /> —
 ///     the bidi path the CLI, Studio and the conformance adapter all use (PRD-003).
 ///     <para>
-///         Four of these tests drive a request source that blocks indefinitely, because that is
-///         the shape which reproduces the filed hang: the finite-list sources used elsewhere
-///         always complete on their own and so can never leave a producer stranded. Two more
-///         cover a source that faults mid-stream, and the last two are regression cover for the
-///         finite and writer-less paths. No test cancels the caller's token, so anything that
-///         unblocks a source proves the invoker's own writer cancellation did it.
+///         Of the 15 cases here: four drive a request source that blocks indefinitely — the shape
+///         that reproduces the filed hang, since the finite-list sources used elsewhere always
+///         complete on their own and can never strand a producer; eight cover a source that fails
+///         mid-stream (one of them a <see cref="Theory" /> over the four exception types that are
+///         ambiguous between a source and the transport); one covers a server error that the
+///         producer did not cause; and two are regression cover for the finite and writer-less
+///         paths. No test cancels the caller's token, so anything that unblocks a source proves the
+///         invoker's own cancellation did it.
 ///     </para>
 /// </summary>
 [Collection("GrpcServer")]
@@ -208,6 +210,88 @@ public sealed class DuplexLifecycleTests(GrpcTestFixture fixture)
     }
 
     [Fact]
+    public async Task RequestSourceFault_WithSlowServer_StillSurfacesWithinBound()
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        using var channel = CreateChannel();
+
+        var methodDescriptor = await GetDuplexMethod(channel);
+        var invoker = new DynamicInvoker(channel);
+        var request = CreateStreamingOutputRequest(methodDescriptor.InputType, [64]);
+
+        // A half-close is ordinary request EOF; gRPC does not make the server's response completion
+        // a consequence of it. Here the server is still working on the first request long after the
+        // producer has failed, so releasing the reader cannot depend on the server volunteering.
+        var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.DelayMs}: 30000"]);
+
+        await using var result = invoker.InvokeDuplexStreamingWithMetadataAsync(
+            methodDescriptor, FaultingSource(request), metadata, cancellationToken: token);
+
+        var drain = DrainAsync(result, token);
+
+        _ = await Should.ThrowAsync<RequestSourceFailure>(async () => await drain.WaitAsync(Bounded, token));
+    }
+
+    [Theory]
+    [InlineData(AmbiguousFault.InvalidOperation)]
+    [InlineData(AmbiguousFault.Io)]
+    [InlineData(AmbiguousFault.RpcOk)]
+    [InlineData(AmbiguousFault.Canceled)]
+    public async Task SourceFaultOfAmbiguousType_IsNotSwallowedAsTransportNoise(AmbiguousFault shape)
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        using var channel = CreateChannel();
+
+        var methodDescriptor = await GetDuplexMethod(channel);
+        var invoker = new DynamicInvoker(channel);
+        var request = CreateStreamingOutputRequest(methodDescriptor.InputType, [64]);
+
+        // Every one of these types is also a shape the transport produces after a completed call.
+        // Classifying by type is only safe around the write itself; a source that happens to throw
+        // one of them must still be reported, not silently treated as post-completion noise.
+        await using var result = invoker.InvokeDuplexStreamingWithMetadataAsync(
+            methodDescriptor, AmbiguouslyFaultingSource(request, shape), cancellationToken: token);
+
+        var drain = DrainAsync(result, token);
+
+        var thrown = await Should.ThrowAsync<Exception>(async () => await drain.WaitAsync(Bounded, token));
+
+        // Assignable rather than exact: an async iterator that throws OperationCanceledException
+        // completes its MoveNextAsync as *canceled*, so the awaiter raises a fresh
+        // TaskCanceledException rather than the instance the source threw. What matters is that the
+        // failure reaches the caller as its own kind instead of being discarded as transport noise.
+        thrown.ShouldBeAssignableTo(ExpectedType(shape));
+        thrown.ShouldNotBeOfType<TimeoutException>();
+    }
+
+    [Fact]
+    public async Task IndependentServerError_IsNotReplacedByACleanupFault()
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        using var channel = CreateChannel();
+
+        var methodDescriptor = await GetDuplexMethod(channel);
+        var invoker = new DynamicInvoker(channel);
+
+        var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.FailEarly}: {(int)StatusCode.Internal}"]);
+
+        // The server fails on its own; the source is merely parked and only fails *because* the
+        // read path then cancels it. A fault our own cleanup created must never be promoted over
+        // the server status that actually ended the call.
+        await using var result = invoker.InvokeDuplexStreamingWithMetadataAsync(
+            methodDescriptor, CancellationTranslatingSource(), metadata, cancellationToken: token);
+
+        var drain = DrainAsync(result, token);
+
+        var exception = await Should.ThrowAsync<RpcException>(async () => await drain.WaitAsync(Bounded, token));
+
+        exception.StatusCode.ShouldBe(StatusCode.Internal);
+    }
+
+    [Fact]
     public async Task FiniteRequests_MetadataOverload_ReturnsAllResponsesAndTrailers()
     {
         var token = TestContext.Current.CancellationToken;
@@ -348,6 +432,60 @@ public sealed class DuplexLifecycleTests(GrpcTestFixture fixture)
         await Task.Yield();
 
         throw new RequestSourceFailure();
+    }
+
+    /// <summary>Fails with a type the transport also produces after a completed call.</summary>
+    private static async IAsyncEnumerable<IMessage> AmbiguouslyFaultingSource(IMessage first, AmbiguousFault shape)
+    {
+        yield return first;
+
+        await Task.Yield();
+
+        throw shape switch
+        {
+            AmbiguousFault.InvalidOperation => new InvalidOperationException("source failed"),
+            AmbiguousFault.Io => new IOException("source failed"),
+            AmbiguousFault.RpcOk => new RpcException(new Status(StatusCode.OK, string.Empty)),
+            _ => new OperationCanceledException("source failed")
+        };
+    }
+
+    private static Type ExpectedType(AmbiguousFault shape) => shape switch
+    {
+        AmbiguousFault.InvalidOperation => typeof(InvalidOperationException),
+        AmbiguousFault.Io => typeof(IOException),
+        AmbiguousFault.RpcOk => typeof(RpcException),
+        _ => typeof(OperationCanceledException)
+    };
+
+    /// <summary>
+    ///     Parks until cancelled and then reports its own failure type rather than propagating the
+    ///     cancellation — the shape that exposes non-causal fault preference.
+    /// </summary>
+    private static async IAsyncEnumerable<IMessage> CancellationTranslatingSource(
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        // Parks before yielding anything, so the producer is waiting on the source rather than on a
+        // write. Nothing it does can end the call; only the read path's cancellation makes it fail.
+        try
+        {
+            await Task.Delay(Timeout.Infinite, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            throw new RequestSourceFailure();
+        }
+
+        yield break;
+    }
+
+    /// <summary>Exception shapes that are ambiguous between a caller's source and the transport.</summary>
+    public enum AmbiguousFault
+    {
+        InvalidOperation,
+        Io,
+        RpcOk,
+        Canceled
     }
 
     /// <summary>

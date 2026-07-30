@@ -33,39 +33,13 @@ internal sealed class StreamingInvocationResult(
     IAsyncEnumerable<IMessage> responseStream,
     Func<Metadata?> trailersAccessor,
     Action dispose,
-    CancellationTokenSource? writerCts = null,
-    Task? writerTask = null) : IAsyncDisposable
+    DuplexRequestProducer? producer = null) : IAsyncDisposable
 {
     private int _disposed;
 
     public Task<Metadata> ResponseHeadersAsync { get; } = headers;
 
     public IAsyncEnumerable<IMessage> ResponseStream { get; } = responseStream;
-
-    /// <summary>
-    ///     Cancels a writer token source that a concurrent teardown may already have disposed.
-    ///     <see cref="CancellationTokenSource.Cancel()" /> throws <see cref="ObjectDisposedException" />
-    ///     after disposal and <see cref="CancellationTokenSource.CancelAsync" /> returns a faulted
-    ///     task, and <c>CancellationTokenSource.Dispose</c> is documented as not thread-safe against
-    ///     concurrent calls. <c>CancelAsync</c> is used rather than <c>Cancel</c> so grpc-dotnet's
-    ///     cancellation callback does not run inline on the response reader's thread.
-    /// </summary>
-    internal static async ValueTask CancelQuietlyAsync(CancellationTokenSource? cts)
-    {
-        if (cts is null)
-        {
-            return;
-        }
-
-        try
-        {
-            await cts.CancelAsync().ConfigureAwait(false);
-        }
-        catch (ObjectDisposedException)
-        {
-            // Teardown already ran; the producer is stopping or has stopped.
-        }
-    }
 
     public async ValueTask DisposeAsync()
     {
@@ -74,42 +48,22 @@ internal sealed class StreamingInvocationResult(
             return;
         }
 
-        await CancelQuietlyAsync(writerCts).ConfigureAwait(false);
-
-        // Cleared when a stranded producer takes over releasing the token source.
-        var releaseTokenSourceHere = true;
-
-        if (writerTask is not null)
+        if (producer is not null)
         {
-            try
-            {
-                await writerTask.WaitAsync(DynamicInvoker.WriterDrainGrace).ConfigureAwait(false);
-            }
-            catch (TimeoutException)
-            {
-                // The producer is parked in an operation that does not honour cancellation
-                // (an interactive stdin read is the canonical case). Release the call anyway —
-                // blocking on the caller's request source is exactly the hang PRD-003 fixes —
-                // and hand both fault observation and token-source release to the producer's own
-                // completion, which is the only moment it is safe to dispose a source whose token
-                // it still holds.
-                DynamicInvoker.ObserveFaultAndRelease(writerTask, writerCts);
+            // The fault, if any, is discarded rather than rethrown: whoever enumerated the response
+            // stream has already been given the call's outcome, and disposal must not throw a second
+            // error at a caller that is only cleaning up. Draining is bounded, so a producer parked
+            // in an operation that ignores cancellation cannot hold up teardown.
+            producer.OnResponseEnded();
 
-                releaseTokenSourceHere = false;
-            }
-            catch
-            {
-                // Observed. The response side is authoritative for the call's outcome, and the
-                // consumer has already seen it; a producer fault here would be a duplicate.
-            }
+            _ = await producer.DrainAsync(DynamicInvoker.WriterDrainGrace).ConfigureAwait(false);
         }
 
         dispose();
 
-        if (releaseTokenSourceHere)
-        {
-            writerCts?.Dispose();
-        }
+        // Releases the producer's token sources now if it has stopped, or when it eventually does —
+        // a source whose token a parked producer still holds cannot be disposed safely yet.
+        producer?.ReleaseWhenIdle();
     }
 
     /// <summary>

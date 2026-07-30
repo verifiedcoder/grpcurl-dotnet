@@ -13,7 +13,32 @@ internal static class RpcErrorNormalizer
 {
     private const string BadHttpStatusPrefix = "Bad gRPC response. HTTP status code: ";
 
+    /// <summary>
+    ///     grpc-dotnet's client-generated detail for a request torn down under an in-flight call.
+    ///     Never server-supplied, so matching on it cannot misfire on a genuine server status.
+    /// </summary>
+    private const string AbortedRequestDetail = "The request was aborted";
+
     private static readonly TimeSpan DeadlineSkewTolerance = TimeSpan.FromMilliseconds(50);
+
+    /// <summary>
+    ///     True when a failure is one of the two shapes cancelling a grpc-dotnet call can produce:
+    ///     a plain CANCELLED, or the aborted-request UNAVAILABLE that appears when HTTP/2 teardown
+    ///     beats cancellation-token propagation.
+    ///     <para>
+    ///         Callers that cancel a call themselves use this to recognise their own artifact. It
+    ///         deliberately does not consider any token state — the caller knows whether it did the
+    ///         cancelling; <see cref="Normalize" /> is the path that keys off the caller's token.
+    ///         Because the UNAVAILABLE arm matches a client-generated detail string, a genuine server
+    ///         UNAVAILABLE is never mistaken for one of ours.
+    ///     </para>
+    /// </summary>
+    public static bool IsCancellationArtifact(RpcException exception)
+        => exception.StatusCode == StatusCode.Cancelled || IsAbortedRequest(exception);
+
+    private static bool IsAbortedRequest(RpcException exception)
+        => exception.StatusCode == StatusCode.Unavailable
+           && exception.Status.Detail.Contains(AbortedRequestDetail, StringComparison.Ordinal);
 
     public static RpcException Normalize(RpcException exception, DateTime? deadline, bool cancellationRequested = false)
     {
@@ -33,9 +58,7 @@ internal static class RpcErrorNormalizer
     /// </summary>
     private static RpcException NormalizeClientCancellation(RpcException exception, bool cancellationRequested)
     {
-        if (cancellationRequested
-            && exception.StatusCode == StatusCode.Unavailable
-            && exception.Status.Detail.Contains("The request was aborted", StringComparison.Ordinal))
+        if (cancellationRequested && IsAbortedRequest(exception))
         {
             return WithStatusCode(exception, StatusCode.Cancelled);
         }

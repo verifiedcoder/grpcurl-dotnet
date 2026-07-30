@@ -353,14 +353,22 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
                         // A SOURCE fault always displaces it: the read half cannot know the caller's
                         // own enumerable failed. A WRITE fault normally must not, because a write-side
                         // failure is otherwise just a shadow of the call failing and the server's
-                        // status is the better report — except when the read failure is the
-                        // CANCELLED this producer's own abort manufactured to release us, in which
-                        // case discarding the write fault would lose the only real error there is.
+                        // status is the better report — except when the read failure is the artifact
+                        // this producer's own abort manufactured to release us, in which case
+                        // discarding the write fault would lose the only real error there is.
+                        //
+                        // Both artifact shapes count: cancelling a grpc-dotnet call surfaces either
+                        // CANCELLED or, when HTTP/2 teardown beats token propagation, the
+                        // aborted-request UNAVAILABLE. RpcErrorNormalizer owns that predicate — it
+                        // cannot be recognised here by status alone, and the caller's token is
+                        // deliberately not the one we cancelled, so Normalize leaves the second shape
+                        // as UNAVAILABLE.
                         var causalFault = producer.Fault switch
                         {
                             { FromWrite: false } source => source.Exception,
                             { FromWrite: true } write when producer.AbortedCall
-                                                           && readFault is RpcException { StatusCode: StatusCode.Cancelled }
+                                                           && readFault is RpcException rpcFault
+                                                           && RpcErrorNormalizer.IsCancellationArtifact(rpcFault)
                                 => write.Exception,
                             _ => null
                         };

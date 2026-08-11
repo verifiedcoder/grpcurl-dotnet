@@ -71,6 +71,23 @@ public static class MetadataProcessor
     ///     <see langword="null" /> when absent, unparseable, or not positive. Kept separate from
     ///     <see cref="ProcessMetadata" /> because only the bidi handler honours it.
     /// </summary>
+    /// <summary>
+    ///     Returns the correlation id a test registered with <see cref="CallAbortObserver" />, or null
+    ///     when the caller is not observing this call.
+    /// </summary>
+    public static string? GetObserveAbortId(ServerCallContext context)
+    {
+        foreach (var entry in context.RequestHeaders)
+        {
+            if (string.Equals(entry.Key, MetadataConstants.ObserveAbortId, StringComparison.OrdinalIgnoreCase))
+            {
+                return entry.Value;
+            }
+        }
+
+        return null;
+    }
+
     public static int? GetCompleteAfterRequests(ServerCallContext context)
     {
         foreach (var entry in context.RequestHeaders)

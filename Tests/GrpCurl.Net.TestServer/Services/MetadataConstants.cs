@@ -49,4 +49,13 @@ public static class MetadataConstants
     ///     the server has closed its response side. Zero completes without reading anything.
     /// </summary>
     public const string CompleteAfterRequests = "complete-after-requests";
+
+    /// <summary>
+    ///     Request header carrying a correlation id previously registered with
+    ///     <see cref="CallAbortObserver" />. The handler records how it unwound against that id and
+    ///     nothing else — it grants the server no way to end the call on its own, so a test that
+    ///     waits for an <see cref="CallAbortObserver.Outcome.Aborted" /> result is waiting for the
+    ///     client to reset the stream and for no other reason (PRD-004).
+    /// </summary>
+    public const string ObserveAbortId = "observe-abort-id";
 }

@@ -201,34 +201,56 @@ public class TestServiceImpl : TestService.TestServiceBase
 
         MetadataProcessor.SetResponseTrailers(context, trailers);
 
-        if (failEarly.HasValue)
+        // Records how this handler unwound, for tests that need to see the client release the call
+        // from the server's side. It observes only — the handler's own control flow is unchanged.
+        var observeId = MetadataProcessor.GetObserveAbortId(context);
+
+        try
         {
-            throw new RpcException(new Status(failEarly.Value, "fail"));
+            if (failEarly.HasValue)
+            {
+                throw new RpcException(new Status(failEarly.Value, "fail"));
+            }
+
+            if (delayMs > 0)
+            {
+                await Task.Delay(delayMs, context.CancellationToken);
+            }
+
+            var totalSize = 0;
+
+            await foreach (var request in requestStream.ReadAllAsync(context.CancellationToken))
+            {
+                context.CancellationToken.ThrowIfCancellationRequested();
+
+                totalSize += request.Payload?.Body?.Length ?? 0;
+            }
+
+            if (failLate.HasValue)
+            {
+                throw new RpcException(new Status(failLate.Value, "fail"));
+            }
+
+            CallAbortObserver.Record(observeId, CallAbortObserver.Outcome.Drained);
+
+            return new StreamingInputCallResponse
+            {
+                AggregatedPayloadSize = totalSize
+            };
         }
-
-        if (delayMs > 0)
+        catch (Exception ex)
         {
-            await Task.Delay(delayMs, context.CancellationToken);
+            // An abandoned request stream reaches us as cancellation or as the IOException Kestrel
+            // raises when the peer resets the stream; both mean the client let go of the call.
+            var aborted = context.CancellationToken.IsCancellationRequested
+                          || ex is OperationCanceledException or IOException;
+
+            CallAbortObserver.Record(
+                observeId,
+                aborted ? CallAbortObserver.Outcome.Aborted : CallAbortObserver.Outcome.Faulted);
+
+            throw;
         }
-
-        var totalSize = 0;
-
-        await foreach (var request in requestStream.ReadAllAsync(context.CancellationToken))
-        {
-            context.CancellationToken.ThrowIfCancellationRequested();
-
-            totalSize += request.Payload?.Body?.Length ?? 0;
-        }
-
-        if (failLate.HasValue)
-        {
-            throw new RpcException(new Status(failLate.Value, "fail"));
-        }
-
-        return new StreamingInputCallResponse
-        {
-            AggregatedPayloadSize = totalSize
-        };
     }
 
     /// <summary>

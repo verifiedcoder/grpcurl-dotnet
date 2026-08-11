@@ -67,11 +67,6 @@ public static class MetadataProcessor
     }
 
     /// <summary>
-    ///     Reads <see cref="MetadataConstants.CompleteAfterRequests" />, returning
-    ///     <see langword="null" /> when absent, unparseable, or not positive. Kept separate from
-    ///     <see cref="ProcessMetadata" /> because only the bidi handler honours it.
-    /// </summary>
-    /// <summary>
     ///     Returns the correlation id a test registered with <see cref="CallAbortObserver" />, or null
     ///     when the caller is not observing this call.
     /// </summary>
@@ -88,6 +83,11 @@ public static class MetadataProcessor
         return null;
     }
 
+    /// <summary>
+    ///     Reads <see cref="MetadataConstants.CompleteAfterRequests" />, returning
+    ///     <see langword="null" /> when absent, unparseable, or not positive. Kept separate from
+    ///     <see cref="ProcessMetadata" /> because only the bidi handler honours it.
+    /// </summary>
     public static int? GetCompleteAfterRequests(ServerCallContext context)
     {
         foreach (var entry in context.RequestHeaders)

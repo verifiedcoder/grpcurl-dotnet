@@ -71,7 +71,7 @@ public sealed class ClientStreamingLifecycleTests(GrpcTestFixture fixture)
     private const int ServerParkMs = 30_000;
 
     [Fact]
-    public async Task WriteSideFailure_WhileServerIsStillReading_ReleasesTheCall()
+    public async Task WriteSideFailure_WhenTheServerHasSentNoHeaders_StillReleasesTheCall()
     {
         var token = TestContext.Current.CancellationToken;
 
@@ -82,14 +82,12 @@ public sealed class ClientStreamingLifecycleTests(GrpcTestFixture fixture)
         var invoker = new DynamicInvoker(channel);
         var oversized = CreateRequestWithPayload(methodDescriptor.InputType, 64 * 1024);
 
-        // reply-with-headers matters twice over: it is what the RpcInvocationException assertion below
-        // reads, and AttachResponseHeadersAsync awaits the headers task unbounded — without it the
-        // invoker would sit on that await for the full server park before ever reaching its finally.
-        var metadata = GrpcChannelFactory.CreateMetadata(
-            [
-                $"{MetadataConstants.ReplyWithHeaders}: x-cs-header: leak",
-                $"{MetadataConstants.DelayMs}: {ServerParkMs}"
-            ]);
+        // No reply-with-headers, deliberately. The server parks before sending anything, so the header
+        // task the catch consults never resolves. An earlier revision of this test set that header and
+        // in doing so hid the defect the PRD-004 review found: the catch awaited those headers, and the
+        // finally cannot run until the catch returns, so a pre-header write failure stayed live for as
+        // long as the server chose. This is the regression for that, and it fails without the fix.
+        var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.DelayMs}: {ServerParkMs}"]);
 
         // The write fails locally on its own merits while the server is parked: no deadline, no caller
         // cancellation, no server status. Disposing the call is the only thing that can release it.
@@ -100,9 +98,10 @@ public sealed class ClientStreamingLifecycleTests(GrpcTestFixture fixture)
 
         exception.StatusCode.ShouldBe(StatusCode.ResourceExhausted);
 
-        var invocationException = exception.ShouldBeOfType<RpcInvocationException>();
-
-        invocationException.ResponseHeaders.GetValue("x-cs-header").ShouldBe("leak");
+        // Bare, not enriched: there were no headers when it failed, and the invoker declines to wait
+        // for headers that may never come. Asserted rather than left implicit, because the difference
+        // between this and RpcInvocationException is exactly what buys the release below.
+        exception.ShouldNotBeOfType<RpcInvocationException>();
 
         await probe.Released.Task.WaitAsync(Bounded, token);
     }

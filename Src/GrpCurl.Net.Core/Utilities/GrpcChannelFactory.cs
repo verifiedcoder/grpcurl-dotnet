@@ -253,7 +253,12 @@ internal static partial class GrpcChannelFactory
     ///     spec-conformant trailers-only handling on responses and the compressed-flag
     ///     fix on empty request messages.
     /// </summary>
-    private static HttpMessageHandler WrapWithProtocolGuards(HttpMessageHandler inner) =>
+    /// <remarks>
+    ///     Internal rather than private so a test that must build its own channel — to observe the
+    ///     transport directly — still gets the production guard chain instead of a channel that only
+    ///     resembles one.
+    /// </remarks>
+    internal static HttpMessageHandler WrapWithProtocolGuards(HttpMessageHandler inner) =>
         new TrailersOnlyGuardHandler(new CompressedEmptyMessageFixHandler(inner));
 
     /// <summary>

@@ -61,37 +61,51 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
             callOptions,
             request);
 
-        IMessage response;
-
+        // Nothing outlives this method: InvocationResult holds materialized values, never the call.
+        // Every exit here is already terminal — a response arrived, or a status did — so unlike the
+        // streaming paths this releases managed call state rather than a live HTTP/2 stream, but it
+        // is the same ownership rule and the same reason to state it once (PRD-004).
         try
         {
-            response = await call.ResponseAsync;
-        }
-        catch (RpcException ex)
-        {
-            throw await AttachResponseHeadersAsync(
-                RpcErrorNormalizer.Normalize(ex, deadline, cancellationToken.IsCancellationRequested), call.ResponseHeadersAsync);
-        }
+            IMessage response;
 
-        var responseHeaders = await call.ResponseHeadersAsync;
+            try
+            {
+                response = await call.ResponseAsync;
+            }
+            catch (RpcException ex)
+            {
+                // Read inside the try, so the call is still live when the headers are taken. By here
+                // the call is terminal, so the header task has already resolved and the
+                // never-wait rule in AttachResponseHeaders costs this path nothing.
+                throw AttachResponseHeaders(
+                    RpcErrorNormalizer.Normalize(ex, deadline, cancellationToken.IsCancellationRequested), call.ResponseHeadersAsync);
+            }
 
-        Metadata? responseTrailers = null;
+            var responseHeaders = await call.ResponseHeadersAsync;
 
-        try
-        {
-            responseTrailers = call.GetTrailers();
+            Metadata? responseTrailers = null;
+
+            try
+            {
+                responseTrailers = call.GetTrailers();
+            }
+            catch
+            {
+                // Trailers may not be available
+            }
+
+            return new InvocationResult
+            {
+                Response = response,
+                ResponseHeaders = responseHeaders,
+                ResponseTrailers = responseTrailers
+            };
         }
-        catch
+        finally
         {
-            // Trailers may not be available
+            call.Dispose();
         }
-
-        return new InvocationResult
-        {
-            Response = response,
-            ResponseHeaders = responseHeaders,
-            ResponseTrailers = responseTrailers
-        };
     }
 
     /// <summary>
@@ -116,9 +130,21 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
             callOptions,
             request);
 
-        await foreach (var response in RemapDeadlineExpiry(call.ResponseStream.ReadAllAsync(cancellationToken), deadline, cancellationToken))
+        // Unlike the metadata overload there is no result object to hand ownership to, so this
+        // iterator owns the call for its whole lifetime. The finally runs when the consumer's
+        // enumerator is disposed — including on `break` and on a fault — which is the only thing
+        // that releases an in-flight call whose server is still streaming. Gql2Grpc's subscription
+        // path (Execution/GrpcTransport.cs) is the production consumer that can break mid-stream.
+        try
         {
-            yield return response;
+            await foreach (var response in RemapDeadlineExpiry(call.ResponseStream.ReadAllAsync(cancellationToken), deadline, cancellationToken))
+            {
+                yield return response;
+            }
+        }
+        finally
+        {
+            call.Dispose();
         }
     }
 
@@ -139,13 +165,29 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
         var method = CreateMethod<IMessage, IMessage>(methodDescriptor, MethodType.ServerStreaming);
         var callInvoker = _channel.CreateCallInvoker();
         var callOptions = new CallOptions(headers, deadline, cancellationToken);
-        var call = callInvoker.AsyncServerStreamingCall(method, null, callOptions, request);
 
-        return new StreamingInvocationResult(
-            call.ResponseHeadersAsync,
-            RemapDeadlineExpiry(call.ResponseStream.ReadAllAsync(cancellationToken), deadline, cancellationToken),
-            call.GetTrailers,
-            call.Dispose);
+        AsyncServerStreamingCall<IMessage>? call = null;
+
+        // Defensive only, and deliberately so: there is no await between creating the call and
+        // handing it to the result, so nothing in this window can fail today. It states the same
+        // ownership rule the duplex overload below enforces for real, so a future edit that adds
+        // work here cannot silently reintroduce a leak.
+        try
+        {
+            call = callInvoker.AsyncServerStreamingCall(method, null, callOptions, request);
+
+            return new StreamingInvocationResult(
+                call.ResponseHeadersAsync,
+                RemapDeadlineExpiry(call.ResponseStream.ReadAllAsync(cancellationToken), deadline, cancellationToken),
+                call.GetTrailers,
+                call.Dispose);
+        }
+        catch
+        {
+            call?.Dispose();
+
+            throw;
+        }
     }
 
     /// <summary>
@@ -188,6 +230,13 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
         var callOptions = new CallOptions(headers, deadline, cancellationToken);
         var call = callInvoker.AsyncClientStreamingCall(method, null, callOptions);
 
+        // Ownership moves to the result only if we get as far as constructing one. Every other exit —
+        // a fault from the caller's source, a write that failed on its own merits, a server status,
+        // caller cancellation — leaves us holding the call, and an undisposed AsyncClientStreamingCall
+        // keeps its HTTP/2 stream open. On the paths where we never half-closed, that also strands the
+        // server in ReadAllAsync waiting on a request stream nobody will finish (PRD-004).
+        var ownershipTransferred = false;
+
         try
         {
             await foreach (var request in requests.WithCancellation(cancellationToken))
@@ -199,16 +248,49 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
 
             var response = await call.ResponseAsync;
 
-            return new ClientStreamingInvocationResult(
+            var invocation = new ClientStreamingInvocationResult(
                 call.ResponseHeadersAsync,
                 response,
                 call.GetTrailers,
                 call.Dispose);
+
+            // Assigned before the return rather than inside it: `finally` runs after the returned
+            // value has been computed, so returning the expression directly would put the flag
+            // beyond the finally's reach.
+            //
+            // No test can catch its removal, and that is stated rather than papered over: by here
+            // `await call.ResponseAsync` has returned, so the call is terminal and the double
+            // disposal that dropping the flag would cause is invisible. The flag is what keeps that
+            // from being load-bearing — correctness should not rest on grpc-dotnet's Dispose
+            // happening to be idempotent, nor on the success path never gaining work before the
+            // handover.
+            ownershipTransferred = true;
+
+            return invocation;
         }
         catch (RpcException ex)
         {
-            throw await AttachResponseHeadersAsync(
+            // INVARIANT: this catch and the finally below belong to the SAME try, so the response
+            // headers are taken while the call is still live. Splitting them — an outer catch
+            // wrapping an inner try/finally — would dispose first, cancel the headers task, and
+            // silently downgrade RpcInvocationException to a bare RpcException on every error path.
+            //
+            // The second half of that invariant is that nothing here may WAIT. This catch runs before
+            // the finally that releases the call, so a wait on a header task the server has not
+            // resolved postpones the release for as long as the server likes — which is how a
+            // pre-header write failure stayed live despite the finally (PRD-004 review, finding 1).
+            // AttachResponseHeaders therefore takes what has already arrived and never blocks.
+            throw AttachResponseHeaders(
                 RpcErrorNormalizer.Normalize(ex, deadline, cancellationToken.IsCancellationRequested), call.ResponseHeadersAsync);
+        }
+        finally
+        {
+            if (!ownershipTransferred)
+            {
+                // Disposing an in-flight call resets the HTTP/2 stream, which is also what releases
+                // a server still reading the request stream we abandoned.
+                call.Dispose();
+            }
         }
     }
 
@@ -217,21 +299,46 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
     ///     so error paths can surface them via <see cref="RpcInvocationException" />.
     ///     Connection-level failures, where the headers task faults, rethrow unchanged.
     /// </summary>
-    private static async Task<RpcException> AttachResponseHeadersAsync(RpcException exception, Task<Metadata> responseHeadersTask)
+    /// <remarks>
+    ///     Never waits on a header task that has not already resolved. Enrichment is diagnostic, but
+    ///     the wait is not free: this runs inside a <c>catch</c> whose <c>finally</c> releases the
+    ///     call, so blocking here holds the very resource the caller is trying to let go of. A write
+    ///     that fails before the server sends anything — an oversize message against a server still
+    ///     reading — leaves the header task pending for as long as that server chooses, which is
+    ///     unbounded (PRD-004 review, finding 1).
+    ///     <para>
+    ///         The cost is that such a failure surfaces as a bare <see cref="RpcException" /> rather
+    ///         than an <see cref="RpcInvocationException" />. That is the intended trade: there were
+    ///         no headers to report at the moment it failed, and prompt release is worth more than
+    ///         metadata that may never arrive. Paths where the server did send headers before failing
+    ///         — every server-reported status — resolve the task first and still enrich.
+    ///     </para>
+    /// </remarks>
+    private static RpcException AttachResponseHeaders(RpcException exception, Task<Metadata> responseHeadersTask)
     {
-        Metadata responseHeaders;
+        if (!responseHeadersTask.IsCompletedSuccessfully)
+        {
+            // Pending, faulted or cancelled — all three mean there is nothing to attach right now.
+            // Observe it either way: releasing the call faults this task, and nobody is left waiting
+            // on it, so an unobserved exception would surface at finalization instead.
+            ObserveInBackground(responseHeadersTask);
 
-        try
-        {
-            responseHeaders = await responseHeadersTask.ConfigureAwait(false);
-        }
-        catch
-        {
             return exception;
         }
 
-        return new RpcInvocationException(exception, responseHeaders);
+        return new RpcInvocationException(exception, responseHeadersTask.Result);
     }
+
+    /// <summary>
+    ///     Swallows the eventual outcome of a task nobody awaits, so a later fault cannot escape as an
+    ///     unobserved task exception.
+    /// </summary>
+    private static void ObserveInBackground(Task task) =>
+        _ = task.ContinueWith(
+            static observed => _ = observed.Exception,
+            CancellationToken.None,
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
 
     /// <summary>
     ///     Applies <see cref="RpcErrorNormalizer.Normalize" /> to failures observed while

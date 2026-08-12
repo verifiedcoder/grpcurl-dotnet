@@ -37,6 +37,17 @@ namespace GrpCurl.Net.Tests.Integration.Invocation;
 ///         up at all.
 ///     </para>
 ///     <para>
+///         <b>Editing the callback sources:</b> <see cref="CallbackBlockingSource" /> and
+///         <see cref="CallbackThrowingSource" /> keep their <see cref="CancellationTokenRegistration" />
+///         test-owned rather than scoping it to the iterator with <c>using</c>, and no test asserts a
+///         callback ran by checking a flag after the call returned. Both rules exist because the
+///         opposite of each shipped once and failed on CI while passing locally: an iterator-scoped
+///         registration races the cancel that is trying to invoke it — the same cancel unwinds the
+///         iterator — and reading the ordering off the clock assumes caller code got there before
+///         teardown did. Wait for the signal instead. That assumption has now caused three separate
+///         flaky cases in this class, which is why it is written here and not just in the fix details.
+///     </para>
+///     <para>
 ///         Deliberately absent, so the omissions are not read as oversights:
 ///         <list type="bullet">
 ///             <item>

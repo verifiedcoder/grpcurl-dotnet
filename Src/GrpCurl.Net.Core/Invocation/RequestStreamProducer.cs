@@ -17,10 +17,33 @@ namespace GrpCurl.Net.Invocation;
 internal sealed record ProducerFault(Exception Exception, bool FromWrite);
 
 /// <summary>
-///     Owns the request half of a bidi call (PRD-003): the task pumping the caller's request source
-///     into the request stream, the token sources that stop it, and the fault it failed with.
+///     What a producer does to the call when its own request half fails.
+/// </summary>
+internal enum RequestFaultPolicy
+{
+    /// <summary>
+    ///     Half-close, give the server <c>ResponseReleaseGrace</c> to finish on its own, and abort only
+    ///     if it does not. Bidi's policy (PRD-003): the responses already streamed stand on their own,
+    ///     and request EOF is all a server needs if it finishes on one.
+    /// </summary>
+    HalfCloseThenAbort,
+
+    /// <summary>
+    ///     Abort at once, without half-closing. Client streaming's policy (PRD-004A): the server's
+    ///     single response is an aggregate over the <i>whole</i> request stream, so a clean EOF would
+    ///     invite it to compute and commit one over a stream the client already knows is truncated.
+    ///     RST_STREAM is the honest signal, and it releases the response side immediately.
+    /// </summary>
+    AbortImmediately
+}
+
+/// <summary>
+///     Owns the request half of a client-streaming or bidi call (PRD-003, extended by PRD-004A): the
+///     task pumping the caller's request source into the request stream, the token sources that stop
+///     it, and the fault it failed with.
 ///     <para>
-///         Two rules drive the whole design.
+///         Two rules drive the whole design. They are the same for both call shapes; only
+///         <see cref="RequestFaultPolicy" /> — what a fault does to the call — differs.
 ///     </para>
 ///     <para>
 ///         <b>Fault attribution is structural, never by exception type.</b> A transport write failure
@@ -40,11 +63,12 @@ internal sealed record ProducerFault(Exception Exception, bool FromWrite);
 ///         authoritative whether it ended with an error or with OK.
 ///     </para>
 /// </summary>
-internal sealed class DuplexRequestProducer
+internal sealed class RequestStreamProducer
 {
     /// <summary>
     ///     How long a failed producer waits for the server to end the response stream on its own
-    ///     after the half-close, before aborting the call.
+    ///     after the half-close, before aborting the call. Applies only under
+    ///     <see cref="RequestFaultPolicy.HalfCloseThenAbort" />.
     ///     <para>
     ///         A half-close is ordinary request EOF; gRPC does not make response completion a
     ///         consequence of it. A duplex server may still be processing, waiting on something
@@ -57,6 +81,7 @@ internal sealed class DuplexRequestProducer
     private static readonly TimeSpan ResponseReleaseGrace = TimeSpan.FromMilliseconds(250);
 
     private readonly CancellationTokenSource _callCts;
+    private readonly RequestFaultPolicy _faultPolicy;
     private readonly IClientStreamWriter<IMessage> _requestStream;
 
     private readonly TaskCompletionSource _responseEnded = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -66,10 +91,14 @@ internal sealed class DuplexRequestProducer
     private ProducerFault? _fault;
     private int _released;
 
-    private DuplexRequestProducer(IClientStreamWriter<IMessage> requestStream, CancellationTokenSource callCts)
+    private RequestStreamProducer(
+        IClientStreamWriter<IMessage> requestStream,
+        CancellationTokenSource callCts,
+        RequestFaultPolicy faultPolicy)
     {
         _requestStream = requestStream;
         _callCts = callCts;
+        _faultPolicy = faultPolicy;
         _writerCts = CancellationTokenSource.CreateLinkedTokenSource(callCts.Token);
     }
 
@@ -97,12 +126,13 @@ internal sealed class DuplexRequestProducer
     ///     ownership of <paramref name="callCts" />, whose token must already be the call's own, so a
     ///     failed producer can abort the call to release a blocked reader.
     /// </summary>
-    public static DuplexRequestProducer Start(
+    public static RequestStreamProducer Start(
         IAsyncEnumerable<IMessage> requests,
         IClientStreamWriter<IMessage> requestStream,
-        CancellationTokenSource callCts)
+        CancellationTokenSource callCts,
+        RequestFaultPolicy faultPolicy = RequestFaultPolicy.HalfCloseThenAbort)
     {
-        var producer = new DuplexRequestProducer(requestStream, callCts);
+        var producer = new RequestStreamProducer(requestStream, callCts, faultPolicy);
 
         // CancellationToken.None: a token already cancelled when the task is scheduled must still run
         // the pump's own unwind rather than leave the task Canceled and unshaped.
@@ -199,7 +229,7 @@ internal sealed class DuplexRequestProducer
             {
                 _ = completed.Exception;
 
-                ((DuplexRequestProducer)state!).Release();
+                ((RequestStreamProducer)state!).Release();
             },
             this,
             CancellationToken.None,
@@ -356,16 +386,24 @@ internal sealed class DuplexRequestProducer
             return;
         }
 
-        // Graceful first: request EOF is all a server needs if it finishes on it.
-        await HalfCloseAsync(_writerCts.Token).ConfigureAwait(false);
-
-        var released = await Task.WhenAny(_responseEnded.Task, Task.Delay(ResponseReleaseGrace)).ConfigureAwait(false);
-
-        if (released == _responseEnded.Task)
+        if (_faultPolicy is RequestFaultPolicy.HalfCloseThenAbort)
         {
-            return;
+            // Graceful first: request EOF is all a server needs if it finishes on it.
+            await HalfCloseAsync(_writerCts.Token).ConfigureAwait(false);
+
+            var released = await Task.WhenAny(_responseEnded.Task, Task.Delay(ResponseReleaseGrace)).ConfigureAwait(false);
+
+            if (released == _responseEnded.Task)
+            {
+                return;
+            }
         }
 
+        // Under AbortImmediately there is deliberately no half-close and no grace: a clean EOF would
+        // tell a client-streaming server that the request stream it is aggregating ended normally,
+        // and it would answer — committing whatever it had. The client already knows the stream is
+        // short, so the only honest signal is a reset.
+        //
         // The server is under no obligation to finish on request EOF, and the caller is owed this
         // fault within a bound. Abort so the outstanding read is released. Flag it first, so the
         // CANCELLED the reader is about to see is already attributable to us by the time it arrives.

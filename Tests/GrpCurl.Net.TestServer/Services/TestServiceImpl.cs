@@ -196,6 +196,7 @@ public class TestServiceImpl : TestService.TestServiceBase
         ServerCallContext context)
     {
         var (headers, trailers, failEarly, failLate, delayMs) = MetadataProcessor.ProcessMetadata(context);
+        var completeAfterRequests = MetadataProcessor.GetCompleteAfterRequests(context);
 
         await MetadataProcessor.SetResponseHeadersAsync(context, headers);
 
@@ -218,12 +219,40 @@ public class TestServiceImpl : TestService.TestServiceBase
             }
 
             var totalSize = 0;
+            var handled = 0;
+
+            if (completeAfterRequests == handled)
+            {
+                // Zero: answer without reading anything at all — the client-streaming analogue of a
+                // request half that never gets going.
+                CallAbortObserver.Record(observeId, CallAbortObserver.Outcome.CompletedEarly);
+
+                return new StreamingInputCallResponse
+                {
+                    AggregatedPayloadSize = 0
+                };
+            }
 
             await foreach (var request in requestStream.ReadAllAsync(context.CancellationToken))
             {
                 context.CancellationToken.ThrowIfCancellationRequested();
 
                 totalSize += request.Payload?.Body?.Length ?? 0;
+                handled++;
+
+                if (completeAfterRequests != handled)
+                {
+                    continue;
+                }
+
+                // Answer with OK while the client's request producer is very likely still running,
+                // deliberately leaving the request stream undrained.
+                CallAbortObserver.Record(observeId, CallAbortObserver.Outcome.CompletedEarly);
+
+                return new StreamingInputCallResponse
+                {
+                    AggregatedPayloadSize = totalSize
+                };
             }
 
             if (failLate.HasValue)

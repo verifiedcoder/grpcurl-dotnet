@@ -215,6 +215,13 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
     /// <summary>
     ///     Client-streaming variant that returns the response along with headers and trailers
     ///     so verbose CLI output can render them uniformly with the unary path.
+    ///     <para>
+    ///         The request half runs on a <see cref="RequestStreamProducer" /> rather than inline, so
+    ///         the response is observed concurrently with the writes (PRD-004A). Writing inline meant a
+    ///         source parked in an operation that ignores cancellation never reached
+    ///         <c>ResponseAsync</c>: a status the server had already returned went unseen, and caller
+    ///         cancellation could not make the call return.
+    ///     </para>
     /// </summary>
     public async Task<ClientStreamingInvocationResult> InvokeClientStreamingWithMetadataAsync(
         MethodDescriptor methodDescriptor,
@@ -227,8 +234,15 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
 
         var method = CreateMethod<IMessage, IMessage>(methodDescriptor, MethodType.ClientStreaming);
         var callInvoker = _channel.CreateCallInvoker();
-        var callOptions = new CallOptions(headers, deadline, cancellationToken);
-        var call = callInvoker.AsyncClientStreamingCall(method, null, callOptions);
+
+        // The call runs on a linked token rather than the caller's own so a failed producer can abort
+        // it, which is the only bounded way to release a response side the server has not finished.
+        // Caller cancellation still reaches the call through the link, and normalization below
+        // continues to key off the caller's token so the two can never be confused.
+        var callCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+        AsyncClientStreamingCall<IMessage, IMessage>? call = null;
+        RequestStreamProducer? producer = null;
 
         // Ownership moves to the result only if we get as far as constructing one. Every other exit —
         // a fault from the caller's source, a write that failed on its own merits, a server status,
@@ -239,49 +253,116 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
 
         try
         {
-            await foreach (var request in requests.WithCancellation(cancellationToken))
+            var callOptions = new CallOptions(headers, deadline, callCts.Token);
+
+            call = callInvoker.AsyncClientStreamingCall(method, null, callOptions);
+
+            // The producer takes ownership of callCts, and holds the request stream rather than the
+            // call. AbortImmediately rather than the duplex half-close: this server's single response
+            // aggregates the whole request stream, so a clean EOF after a fault would invite it to
+            // answer over a stream the client already knows is truncated.
+            producer = RequestStreamProducer.Start(
+                requests, call.RequestStream, callCts, RequestFaultPolicy.AbortImmediately);
+
+            IMessage response;
+
+            try
             {
-                await call.RequestStream.WriteAsync(request, cancellationToken);
+                response = await call.ResponseAsync.ConfigureAwait(false);
+            }
+            catch (Exception readFault)
+            {
+                // Read the producer's fault BEFORE stopping it, so only one that was already
+                // recorded — and therefore preceded, and plausibly caused, this failure — can win.
+                // A SOURCE fault always displaces: the response side cannot know the caller's own
+                // enumerable failed. A WRITE fault normally must not, because a write-side failure is
+                // otherwise a shadow of the call failing and the server's status is the better
+                // report — except when the failure is the artifact this producer's own abort
+                // manufactured to release us, where discarding it would lose the only real error.
+                var causalFault = producer.Fault switch
+                {
+                    { FromWrite: false } source => source.Exception,
+                    { FromWrite: true } write when producer.AbortedCall
+                                                   && readFault is RpcException rpcFault
+                                                   && RpcErrorNormalizer.IsCancellationArtifact(rpcFault)
+                        => write.Exception,
+                    _ => null
+                };
+
+                if (causalFault is not null)
+                {
+                    ExceptionDispatchInfo.Capture(causalFault).Throw();
+                }
+
+                // Unlike the duplex read path, ResponseAsync takes no token, so caller cancellation
+                // arrives as RpcException(Cancelled) rather than an OperationCanceledException. The
+                // CLI maps OCE to exit 130 and RPC failures to 64 + status, so the shape has to be
+                // restored here. Gated on the caller's own token — never the call's, which this
+                // producer may have cancelled — so a server-sent CANCELLED is not rewritten.
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (readFault is not RpcException rpc)
+                {
+                    throw;
+                }
+
+                // INVARIANT: this runs while the call is still live, and it must never WAIT. The
+                // finally below releases the call, and a wait on a header task the server has not
+                // resolved postpones that release for as long as the server likes (PRD-004 review,
+                // finding 1). AttachResponseHeaders takes what has already arrived and never blocks.
+                throw AttachResponseHeaders(
+                    RpcErrorNormalizer.Normalize(rpc, deadline, cancellationToken.IsCancellationRequested), call.ResponseHeadersAsync);
+            }
+            finally
+            {
+                // The response side is finished — with a value or with an error. Tell the producer to
+                // stop waiting to abort a call that is already over, then stop it: no further write
+                // can reach the server.
+                producer.OnResponseEnded();
+
+                await producer.CancelAsync().ConfigureAwait(false);
             }
 
-            await call.RequestStream.CompleteAsync();
+            // Reached only when the server answered, so the RPC succeeded. The one thing still worth
+            // surfacing is a fault the producer raised of its own accord — never one this drain's
+            // cancellation provokes, which the producer declines to record, so an OK call stays OK.
+            // INVARIANT: never await the producer unbounded (see WriterDrainGrace).
+            var lateFault = await producer.DrainAsync(WriterDrainGrace).ConfigureAwait(false);
 
-            var response = await call.ResponseAsync;
+            switch (lateFault)
+            {
+                case null:
+                    break;
+
+                case { FromWrite: true, Exception: RpcException writeFault }:
+                    // A write that failed on its own merits (an oversize message, a marshaller
+                    // failure) belongs to this call, so it is normalized exactly like a read fault.
+                    throw RpcErrorNormalizer.Normalize(writeFault, deadline, cancellationToken.IsCancellationRequested);
+
+                default:
+                    // The caller's own error — malformed JSON, a stdin limit breach, or an
+                    // RpcException belonging to a gRPC-backed source's own call — propagates
+                    // untouched, exactly as it does on the response-error path.
+                    ExceptionDispatchInfo.Capture(lateFault.Exception).Throw();
+
+                    break;
+            }
 
             var invocation = new ClientStreamingInvocationResult(
                 call.ResponseHeadersAsync,
                 response,
                 call.GetTrailers,
-                call.Dispose);
+                // Ordering matters and is the same as the duplex result's: release the call first,
+                // then the producer's token sources. A source whose token a producer parked past the
+                // drain still holds cannot be disposed any earlier.
+                DisposeCallAndProducer(call, producer));
 
             // Assigned before the return rather than inside it: `finally` runs after the returned
             // value has been computed, so returning the expression directly would put the flag
             // beyond the finally's reach.
-            //
-            // No test can catch its removal, and that is stated rather than papered over: by here
-            // `await call.ResponseAsync` has returned, so the call is terminal and the double
-            // disposal that dropping the flag would cause is invisible. The flag is what keeps that
-            // from being load-bearing — correctness should not rest on grpc-dotnet's Dispose
-            // happening to be idempotent, nor on the success path never gaining work before the
-            // handover.
             ownershipTransferred = true;
 
             return invocation;
-        }
-        catch (RpcException ex)
-        {
-            // INVARIANT: this catch and the finally below belong to the SAME try, so the response
-            // headers are taken while the call is still live. Splitting them — an outer catch
-            // wrapping an inner try/finally — would dispose first, cancel the headers task, and
-            // silently downgrade RpcInvocationException to a bare RpcException on every error path.
-            //
-            // The second half of that invariant is that nothing here may WAIT. This catch runs before
-            // the finally that releases the call, so a wait on a header task the server has not
-            // resolved postpones the release for as long as the server likes — which is how a
-            // pre-header write failure stayed live despite the finally (PRD-004 review, finding 1).
-            // AttachResponseHeaders therefore takes what has already arrived and never blocks.
-            throw AttachResponseHeaders(
-                RpcErrorNormalizer.Normalize(ex, deadline, cancellationToken.IsCancellationRequested), call.ResponseHeadersAsync);
         }
         finally
         {
@@ -289,9 +370,27 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
             {
                 // Disposing an in-flight call resets the HTTP/2 stream, which is also what releases
                 // a server still reading the request stream we abandoned.
-                call.Dispose();
+                call?.Dispose();
+
+                if (producer is not null)
+                {
+                    producer.ReleaseWhenIdle();
+                }
+                else
+                {
+                    // Construction failed before anything took ownership of the linked source.
+                    callCts.Dispose();
+                }
             }
         }
+
+        static Action DisposeCallAndProducer(AsyncClientStreamingCall<IMessage, IMessage> call, RequestStreamProducer producer)
+            => () =>
+            {
+                call.Dispose();
+
+                producer.ReleaseWhenIdle();
+            };
     }
 
     /// <summary>
@@ -407,7 +506,7 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
 
             // The producer takes ownership of callCts, and holds the request stream rather than the
             // call, which the result disposes while the producer may still be running.
-            var producer = DuplexRequestProducer.Start(requests, call.RequestStream, callCts);
+            var producer = RequestStreamProducer.Start(requests, call.RequestStream, callCts);
 
             return new StreamingInvocationResult(
                 call.ResponseHeadersAsync,
@@ -425,7 +524,7 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
             throw;
         }
 
-        async IAsyncEnumerable<IMessage> ReadAll(DuplexRequestProducer producer)
+        async IAsyncEnumerable<IMessage> ReadAll(RequestStreamProducer producer)
         {
             try
             {

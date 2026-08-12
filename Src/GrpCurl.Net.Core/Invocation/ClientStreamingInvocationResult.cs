@@ -18,11 +18,24 @@ internal sealed class ClientStreamingInvocationResult(
     public IMessage Response { get; } = response;
 
     /// <summary>
-    ///     Releases the underlying call. Idempotence is delegated to <c>GrpcCall.Dispose</c>, which is
-    ///     guarded internally: unlike <see cref="StreamingInvocationResult" /> — whose own
-    ///     <c>Interlocked</c> guard exists because it drains a request producer and releases token
-    ///     sources — this type does no non-idempotent teardown of its own.
+    ///     Releases the underlying call, and then the request producer's token sources.
     /// </summary>
+    /// <remarks>
+    ///     Deliberately still <see cref="IDisposable" />, where <see cref="StreamingInvocationResult" />
+    ///     is <see cref="IAsyncDisposable" />-only. That type has to <i>drain</i> its producer at
+    ///     disposal, which a synchronous <c>Dispose</c> cannot do, so it omits the synchronous
+    ///     interface to make the compiler reject <c>using</c> everywhere. Here the response is already
+    ///     materialised before this object exists — there is no post-return enumeration during which a
+    ///     producer could still be doing anything the caller cares about — so the bounded drain has
+    ///     already happened inside
+    ///     <see cref="DynamicInvoker.InvokeClientStreamingWithMetadataAsync" /> and nothing
+    ///     asynchronous remains. What is left is releasing the call and then the producer's token
+    ///     sources, in that order, both of which are synchronous.
+    ///     <para>
+    ///         Idempotence is delegated to <c>GrpcCall.Dispose</c> and to the producer's own
+    ///         <c>Interlocked</c> release guard; this type adds no non-idempotent teardown of its own.
+    ///     </para>
+    /// </remarks>
     public void Dispose() => dispose();
 
     public Metadata? GetTrailers()

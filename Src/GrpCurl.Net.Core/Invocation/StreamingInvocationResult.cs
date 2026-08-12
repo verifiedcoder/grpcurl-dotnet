@@ -32,7 +32,7 @@ internal sealed class StreamingInvocationResult(
     IAsyncEnumerable<IMessage> responseStream,
     Func<Metadata?> trailersAccessor,
     Action dispose,
-    DuplexRequestProducer? producer = null) : IAsyncDisposable
+    RequestStreamProducer? producer = null) : IAsyncDisposable
 {
     private int _disposed;
 

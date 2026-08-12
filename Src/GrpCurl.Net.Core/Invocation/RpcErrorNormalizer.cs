@@ -33,19 +33,29 @@ internal static class RpcErrorNormalizer
     ///         cancelling; <see cref="Normalize" /> is the path that keys off the caller's token.
     ///     </para>
     ///     <para>
-    ///         The UNAVAILABLE arm requires transport provenance, not just the detail text. In
+    ///         <b>Both</b> arms require transport provenance, not just a status code or detail text. In
     ///         Grpc.Net.Client 2.76.0 a status decoded from server trailers is built as
     ///         <c>new Status(code, grpcMessage)</c> with no exception, while one converted from a
     ///         transport failure is built as <c>new Status(code, summary, ex)</c>
     ///         (<c>GrpcProtocolHelpers.TryGetStatusCore</c> and <c>CreateStatusFromException</c>). So a
     ///         non-null <see cref="Status.DebugException" /> is what actually distinguishes our own
-    ///         teardown from a server-reported status — <c>grpc-message</c> is server-controlled text,
-    ///         and a server may legitimately send UNAVAILABLE carrying the same phrase.
+    ///         teardown from a server-reported status — the status code and <c>grpc-message</c> are
+    ///         both server-controlled, and a server may legitimately send either shape.
+    ///     </para>
+    ///     <para>
+    ///         The CANCELLED arm carried no provenance check until PRD-004A's review, which is a defect
+    ///         a server can trip: CANCELLED is a status servers are allowed to return, and this
+    ///         repository's own <c>fail-early</c> hook does. A caller arbitrating between its own write
+    ///         fault and the response failure would then discard a genuine server status in favour of
+    ///         the local shadow. Measured against the real transport: a server-sent CANCELLED arrives
+    ///         with <c>DebugException</c> null, detail <c>'fail'</c> and its trailers, while a
+    ///         client-aborted call arrives with an <see cref="OperationCanceledException" />, detail
+    ///         "Call canceled by the client." and no trailers.
     ///     </para>
     /// </summary>
     public static bool IsCancellationArtifact(RpcException exception)
-        => exception.StatusCode == StatusCode.Cancelled
-           || (HasAbortedRequestDetail(exception) && exception.Status.DebugException is not null);
+        => exception.Status.DebugException is not null
+           && (exception.StatusCode == StatusCode.Cancelled || HasAbortedRequestDetail(exception));
 
     /// <summary>
     ///     Detail-only match. <see cref="NormalizeClientCancellation" /> uses this rather than the

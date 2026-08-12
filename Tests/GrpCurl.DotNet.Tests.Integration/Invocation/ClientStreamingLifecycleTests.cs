@@ -7,46 +7,71 @@ using GrpCurl.Net.Invocation;
 using GrpCurl.Net.Tests.Integration.Fixtures;
 using GrpCurl.Net.TestServer.Services;
 using GrpCurl.Net.Utilities;
+using System.Runtime.CompilerServices;
 
 namespace GrpCurl.Net.Tests.Integration.Invocation;
 
 /// <summary>
-///     Call-ownership coverage for <see cref="DynamicInvoker.InvokeClientStreamingWithMetadataAsync" />
-///     and the non-metadata <see cref="DynamicInvoker.InvokeServerStreamingAsync" /> — the paths that
-///     used to abandon a live call on every failure exit (PRD-004).
+///     Lifecycle coverage for <see cref="DynamicInvoker.InvokeClientStreamingWithMetadataAsync" /> and
+///     the non-metadata <see cref="DynamicInvoker.InvokeServerStreamingAsync" />: the paths that used to
+///     abandon a live call on every failure exit (PRD-004), and — since the request half moved onto a
+///     <c>RequestStreamProducer</c> — the parked-source hang (PRD-004A).
 ///     <para>
-///         Five of the eight cases are proved by <see cref="CallCancellationProbe" />, which watches the
-///         cancellation token grpc-dotnet hands to the transport. Only <c>call.Dispose()</c> cancels that
-///         token in these scenarios, and neither <c>GrpcCall</c> nor <see cref="CancellationTokenSource" />
-///         has a finalizer, so a garbage collection cannot fire it instead. A probe that stopped working
-///         would fail those tests rather than silently pass them, and
-///         <see cref="CallerCancellation_WhileWriting_StaysAnOperationCanceledException" /> is the declared
-///         positive control that proves it is wired up at all.
+///         Two independent observation mechanisms, each with its own ablation answer.
+///         <see cref="CallCancellationProbe" /> watches the cancellation token grpc-dotnet hands to the
+///         transport. Nothing in these scenarios fires that token by accident — neither <c>GrpcCall</c>
+///         nor <see cref="CancellationTokenSource" /> has a finalizer, so a garbage collection cannot —
+///         but note it is fired by <i>either</i> of two deliberate acts: <c>call.Dispose()</c>, or the
+///         producer aborting the call after a fault. On the source- and write-fault paths it is the
+///         abort that gets there first, which is why ablating PRD-004's disposal alone no longer fails
+///         anything (Fix-Details §7). The probe proves the call was released, not which act released it.
+///     </para>
+///     <para>
+///         <c>BlockingRequestSource.Unwound</c> proves the invoker's own writer cancellation released a
+///         source nothing else could reach. Three cases cancel the caller's token —
+///         <see cref="CallerCancellation_WhileWriting_StaysAnOperationCanceledException" />,
+///         <see cref="CallerCancellation_ParkedSource_StaysAnOperationCanceledException" /> and
+///         <see cref="CallerCancellation_UncancellableSource_StillReturnsWithinBound" /> — and each says
+///         so in its name; in every other case, anything that unblocks a source proves the producer did
+///         it. The first of those three is also the declared positive control proving the probe is wired
+///         up at all.
+///     </para>
+///     <para>
+///         <b>Editing the callback sources:</b> <see cref="CallbackBlockingSource" /> and
+///         <see cref="CallbackThrowingSource" /> keep their <see cref="CancellationTokenRegistration" />
+///         test-owned rather than scoping it to the iterator with <c>using</c>, and no test asserts a
+///         callback ran by checking a flag after the call returned. Both rules exist because the
+///         opposite of each shipped once and failed on CI while passing locally: an iterator-scoped
+///         registration races the cancel that is trying to invoke it — the same cancel unwinds the
+///         iterator — and reading the ordering off the clock assumes caller code got there before
+///         teardown did. Wait for the signal instead. That assumption has now caused three separate
+///         flaky cases in this class, which is why it is written here and not just in the fix details.
 ///     </para>
 ///     <para>
 ///         Deliberately absent, so the omissions are not read as oversights:
 ///         <list type="bullet">
-///             <item>
-///                 No test drives a source that parks. This method awaits the caller's enumerable
-///                 <em>inline</em> — there is no producer task and no linked writer token — so a parked
-///                 source holds the call hostage with or without this fix. That is the client-streaming
-///                 analogue of the duplex hang PRD-003 fixed, and it is not fixed here.
-///             </item>
 ///             <item>
 ///                 No leak test for <c>fail-late</c> or for caller cancellation: in both the call is
 ///                 already terminal (the server sent trailers, or the token in <c>CallOptions</c> is the
 ///                 one that was cancelled), so disposal is not separately observable either side.
 ///             </item>
 ///             <item>
-///                 No double-dispose test. <see cref="ClientStreamingInvocationResult.Dispose" /> is a
-///                 passthrough to grpc-dotnet's own idempotent <c>Dispose</c>, so such a test would pass
-///                 identically with and without a guard and would prove nothing.
+///                 No double-dispose test. <see cref="ClientStreamingInvocationResult.Dispose" /> now
+///                 releases the call and then the producer's token sources, but both are idempotent on
+///                 their own (grpc-dotnet's guarded <c>Dispose</c>, the producer's <c>Interlocked</c>
+///                 release), so such a test would pass identically with and without a guard here.
 ///             </item>
 ///             <item>
 ///                 No HTTP/2 stream-exhaustion stress loop. <c>GrpcChannelFactory</c> sets
 ///                 <c>EnableMultipleHttp2Connections</c> on every path, so a leaking client opens a second
 ///                 connection past Kestrel's 100-stream ceiling rather than stalling; such a loop passes
 ///                 with the bug present.
+///             </item>
+///             <item>
+///                 Nothing proves an uncancellable producer is ever <em>reclaimed</em>. Nothing can recall
+///                 a read already issued to the OS. What is asserted is that the caller is released and
+///                 the source's eventual unwind is observed — see
+///                 <see cref="EarlyServerCompletion_UncancellableSource_CompletesWithoutFaulting" />.
 ///             </item>
 ///         </list>
 ///     </para>
@@ -90,7 +115,9 @@ public sealed class ClientStreamingLifecycleTests(GrpcTestFixture fixture)
         var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.DelayMs}: {ServerParkMs}"]);
 
         // The write fails locally on its own merits while the server is parked: no deadline, no caller
-        // cancellation, no server status. Disposing the call is the only thing that can release it.
+        // cancellation, no server status. Two deliberate acts can release the call from here — the
+        // producer's abort after its bounded response window, and the invoker's disposal — and this
+        // case does not distinguish them; it asserts the release happened. See the class doc.
         var exception = await Should.ThrowAsync<RpcException>(
             async () => await invoker.InvokeClientStreamingWithMetadataAsync(
                     methodDescriptor, ToAsyncEnumerable([oversized]), metadata, cancellationToken: token)
@@ -322,6 +349,349 @@ public sealed class ClientStreamingLifecycleTests(GrpcTestFixture fixture)
         invocationException.ResponseHeaders.GetValue("x-cs-header").ShouldBe("early");
     }
 
+    #region Parked-source lifecycle (PRD-004A)
+
+    [Fact]
+    public async Task EarlyServerFailure_ParkedCooperativeSource_SurfacesStatusWithinBound()
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        using var channel = CreateChannel();
+
+        var methodDescriptor = await GetClientStreamingMethod(channel);
+        var invoker = new DynamicInvoker(channel);
+        var source = new BlockingRequestSource(CreateRequestWithPayload(methodDescriptor.InputType, 16));
+
+        var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.FailEarly}: {(int)StatusCode.Internal}"]);
+
+        // The headline case. The server returns a terminal status while the source is still parked;
+        // before the producer existed the invoker was inside `await foreach` and never reached
+        // ResponseAsync, so this status went unseen for as long as the source held on.
+        var exception = await Should.ThrowAsync<RpcException>(
+            async () => await invoker.InvokeClientStreamingWithMetadataAsync(
+                    methodDescriptor, source.Cooperative(), metadata, cancellationToken: token)
+                .WaitAsync(Bounded, token));
+
+        exception.StatusCode.ShouldBe(StatusCode.Internal);
+
+        // Parked on the caller's source, not on anything the caller cancelled: only the invoker's own
+        // writer cancellation can have unwound it.
+        await source.Unwound.Task.WaitAsync(Bounded, token);
+    }
+
+    [Fact]
+    public async Task EarlyServerCompletion_ParkedCooperativeSource_ReturnsResponse()
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        using var channel = CreateChannel();
+
+        var methodDescriptor = await GetClientStreamingMethod(channel);
+        var invoker = new DynamicInvoker(channel);
+        var source = new BlockingRequestSource(CreateRequestWithPayload(methodDescriptor.InputType, 16));
+
+        var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.CompleteAfterRequests}: 1"]);
+
+        // The OK-status variant: the server answers after one message and never drains the rest, so a
+        // successful call has to be reported even though the source is still parked. A source fault
+        // provoked by the teardown must not turn this into an error.
+        using var result = await invoker.InvokeClientStreamingWithMetadataAsync(
+                methodDescriptor, source.Cooperative(), metadata, cancellationToken: token)
+            .WaitAsync(Bounded, token);
+
+        _ = result.Response.ShouldNotBeNull();
+
+        await source.Unwound.Task.WaitAsync(Bounded, token);
+    }
+
+    [Fact]
+    public async Task EarlyServerCompletion_UncancellableSource_CompletesWithoutFaulting()
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        using var channel = CreateChannel();
+
+        var methodDescriptor = await GetClientStreamingMethod(channel);
+        var invoker = new DynamicInvoker(channel);
+        var source = new BlockingRequestSource(CreateRequestWithPayload(methodDescriptor.InputType, 16));
+
+        var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.CompleteAfterRequests}: 1"]);
+
+        try
+        {
+            // A source that ignores cancellation must not hold the caller hostage, and the successful
+            // RPC must not be reported as a failure just because a write could no longer land.
+            using var result = await invoker.InvokeClientStreamingWithMetadataAsync(
+                    methodDescriptor, source.Uncancellable(), metadata, cancellationToken: token)
+                .WaitAsync(Bounded, token);
+
+            _ = result.Response.ShouldNotBeNull();
+        }
+        finally
+        {
+            source.ReleaseUncancellable();
+        }
+
+        // Released only after the call is over, so it cannot have been what ended the call above —
+        // and awaiting it here leaves nothing running.
+        await source.Unwound.Task.WaitAsync(Bounded, token);
+    }
+
+    [Fact]
+    public async Task CallerCancellation_ParkedSource_StaysAnOperationCanceledException()
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        using var probe = new CallCancellationProbe(ClientStreamingPath);
+        using var channel = CreateProbeChannel(probe);
+
+        var methodDescriptor = await GetClientStreamingMethod(channel);
+        var invoker = new DynamicInvoker(channel);
+        var source = new BlockingRequestSource(CreateRequestWithPayload(methodDescriptor.InputType, 16));
+
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(token);
+
+        var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.DelayMs}: {ServerParkMs}"]);
+
+        var invocation = invoker.InvokeClientStreamingWithMetadataAsync(
+            methodDescriptor, source.Cooperative(), metadata, cancellationToken: cancellation.Token);
+
+        // Cancel only once the source is genuinely parked. Cancelling sooner lets the pump's own
+        // WriteAsync observe the token and exit, which ends the call for a reason unrelated to this.
+        await source.Parked.Task.WaitAsync(Bounded, token);
+
+        await cancellation.CancelAsync();
+
+        // Cancellation now reaches the caller through ResponseAsync, which reports RpcException rather
+        // than OperationCanceledException — so the invoker converts it back. Without that the CLI's
+        // exit 130 silently becomes 64 + status.
+        //
+        // This case pins the CONVERSION, not the hang: the source here is cooperative, so the writer
+        // token reaches it and it unwinds either way. The hang it cannot see is the next test's.
+        _ = await Should.ThrowAsync<OperationCanceledException>(async () => await invocation.WaitAsync(Bounded, token));
+
+        await probe.Released.Task.WaitAsync(Bounded, token);
+        await source.Unwound.Task.WaitAsync(Bounded, token);
+    }
+
+    [Fact]
+    public async Task CallerCancellation_UncancellableSource_StillReturnsWithinBound()
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        using var probe = new CallCancellationProbe(ClientStreamingPath);
+        using var channel = CreateProbeChannel(probe);
+
+        var methodDescriptor = await GetClientStreamingMethod(channel);
+        var invoker = new DynamicInvoker(channel);
+        var source = new BlockingRequestSource(CreateRequestWithPayload(methodDescriptor.InputType, 16));
+
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(token);
+
+        var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.DelayMs}: {ServerParkMs}"]);
+
+        try
+        {
+            var invocation = invoker.InvokeClientStreamingWithMetadataAsync(
+                methodDescriptor, source.Uncancellable(), metadata, cancellationToken: cancellation.Token);
+
+            // Load-bearing: the source must already be parked on something the token cannot reach
+            // before the cancel lands. Cancel first and the pump's WriteAsync sees the token, exits,
+            // and the caller is released by the very mechanism this test exists to do without.
+            await source.Parked.Task.WaitAsync(Bounded, token);
+
+            await cancellation.CancelAsync();
+
+            // The acceptance criterion in full: the caller is released even though the source ignores
+            // its token entirely. Nothing can recall the park, so the only way this returns is by
+            // observing the response side concurrently — which is the whole of PRD-004A.
+            _ = await Should.ThrowAsync<OperationCanceledException>(async () => await invocation.WaitAsync(Bounded, token));
+
+            await probe.Released.Task.WaitAsync(Bounded, token);
+        }
+        finally
+        {
+            source.ReleaseUncancellable();
+        }
+
+        // Released after the call is over, so the stranded producer cannot be what ended it. Awaiting
+        // its unwind here is also what proves the fault it may raise on the way out is observed
+        // rather than escaping unobserved.
+        await source.Unwound.Task.WaitAsync(Bounded, token);
+    }
+
+    [Fact]
+    public async Task WriteSideFailure_AbortsRatherThanHalfClosing()
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        using var channel = GrpcChannelFactory.Create(
+            $"http://{fixture.Address}",
+            new GrpcChannelFactory.ChannelOptions { Plaintext = true, MaxSendMessageSize = 64 });
+
+        var methodDescriptor = await GetClientStreamingMethod(channel);
+        var invoker = new DynamicInvoker(channel);
+        var oversized = CreateRequestWithPayload(methodDescriptor.InputType, 64 * 1024);
+
+        var observeId = Guid.NewGuid().ToString("N");
+        var observed = CallAbortObserver.Register(observeId);
+
+        try
+        {
+            var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.ObserveAbortId}: {observeId}"]);
+
+            _ = await Should.ThrowAsync<RpcException>(
+                async () => await invoker.InvokeClientStreamingWithMetadataAsync(
+                        methodDescriptor, ToAsyncEnumerable([oversized]), metadata, cancellationToken: token)
+                    .WaitAsync(Bounded, token));
+
+            // The policy decision on the WRITE half specifically — the source-fault half of it is
+            // covered by ServerObservesTheStreamReset_WhenTheRequestSourceFaults, which drives the same
+            // observer through a different fault origin. Under the duplex half-close-then-grace policy
+            // the server would see a clean EOF, record Drained, and answer with an aggregate over a
+            // request stream the client already knew was truncated.
+            var outcome = await observed.WaitAsync(Bounded, token);
+
+            outcome.ShouldBe(CallAbortObserver.Outcome.Aborted);
+        }
+        finally
+        {
+            CallAbortObserver.Forget(observeId);
+        }
+    }
+
+    [Fact]
+    public async Task GenuineServerCancelled_BeatsTheWriteFaultRacingIt()
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        using var channel = GrpcChannelFactory.Create(
+            $"http://{fixture.Address}",
+            new GrpcChannelFactory.ChannelOptions { Plaintext = true, MaxSendMessageSize = 64 });
+
+        var methodDescriptor = await GetClientStreamingMethod(channel);
+        var invoker = new DynamicInvoker(channel);
+        var oversized = CreateRequestWithPayload(methodDescriptor.InputType, 64 * 1024);
+
+        // CANCELLED is a status a server is allowed to return, and it is the one status whose shape
+        // collides with the artifact our own abort produces. The write fails locally at the same time,
+        // so both a real server status and a merit-based write fault are in play at once.
+        var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.FailEarly}: {(int)StatusCode.Cancelled}"]);
+
+        var exception = await Should.ThrowAsync<RpcException>(
+            async () => await invoker.InvokeClientStreamingWithMetadataAsync(
+                    methodDescriptor, ToAsyncEnumerable([oversized]), metadata, cancellationToken: token)
+                .WaitAsync(Bounded, token));
+
+        // The server's word wins. What this case is actually sensitive to is the producer's bounded
+        // response window: without it the abort destroys the server's status before it arrives, and
+        // RESOURCE_EXHAUSTED — the local shadow — becomes the only error left to report. The provenance
+        // check on IsCancellationArtifact's CANCELLED arm guards the neighbouring case, where we did
+        // abort AND the server also sent CANCELLED; that one is pinned by unit cases, because it could
+        // not be made deterministic against the real transport. Fix-Details §6, ablations F and G.
+        exception.StatusCode.ShouldBe(StatusCode.Cancelled);
+    }
+
+    [Fact]
+    public async Task BlockingCancellationCallback_DoesNotHoldTheCaller()
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        using var channel = CreateChannel();
+
+        var methodDescriptor = await GetClientStreamingMethod(channel);
+        var invoker = new DynamicInvoker(channel);
+        using var source = new CallbackBlockingSource(CreateRequestWithPayload(methodDescriptor.InputType, 16));
+
+        var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.CompleteAfterRequests}: 1"]);
+
+        try
+        {
+            // The server finishes successfully while the source is parked, so teardown starts — and the
+            // source blocks inside its own cancellation callback. CancellationTokenSource.CancelAsync
+            // completes only once every callback returns, so awaiting cancellation ahead of the drain
+            // put caller code on the critical path and reinstated the hang by a route MoveNextAsync no
+            // longer had (PRD-004A review, finding 1).
+            var invocation = invoker.InvokeClientStreamingWithMetadataAsync(
+                methodDescriptor, source.Enumerate(), metadata, cancellationToken: token);
+
+            // Wait for the callback to be in rather than assuming it got there first. The earlier
+            // version asserted this synchronously after the call returned, which read the ordering off
+            // the clock and duly failed on a faster CI runner.
+            await source.CallbackEntered.Task.WaitAsync(Bounded, token);
+
+            using var result = await invocation.WaitAsync(Bounded, token);
+
+            _ = result.Response.ShouldNotBeNull();
+
+            // Load-bearing: the invocation returned while the callback was STILL blocked. Releasing it
+            // first would make this pass whether or not the bound covers cancellation.
+            source.CallbackReleased.ShouldBeFalse();
+        }
+        finally
+        {
+            source.ReleaseCallback();
+        }
+
+        await source.Unwound.Task.WaitAsync(Bounded, token);
+    }
+
+    [Fact]
+    public async Task ThrowingCancellationCallback_DoesNotReplaceASuccessfulResponse()
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        using var channel = CreateChannel();
+
+        var methodDescriptor = await GetClientStreamingMethod(channel);
+        var invoker = new DynamicInvoker(channel);
+        using var source = new CallbackThrowingSource(CreateRequestWithPayload(methodDescriptor.InputType, 16));
+
+        var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.CompleteAfterRequests}: 1"]);
+
+        // The server answered; the RPC succeeded. The callback then throws — but it only ran because
+        // teardown cancelled the writer token, so its failure is cleanup-created and cannot be what
+        // the call reports. Recording it turned an OK call into an AggregateException, the same class
+        // of defect PRD-003 fixed for a source that translates cancellation into its own exception.
+        using var result = await invoker.InvokeClientStreamingWithMetadataAsync(
+                methodDescriptor, source.Enumerate(), metadata, cancellationToken: token)
+            .WaitAsync(Bounded, token);
+
+        _ = result.Response.ShouldNotBeNull();
+
+        // Load-bearing: proves the callback really did run and throw, so the assertion above is about
+        // attribution rather than about a callback that never fired.
+        await source.CallbackThrew.Task.WaitAsync(Bounded, token);
+    }
+
+    [Fact]
+    public async Task SourceThrownRpcException_KeepsItsOwnStatus()
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        using var channel = CreateChannel();
+
+        var methodDescriptor = await GetClientStreamingMethod(channel);
+        var invoker = new DynamicInvoker(channel);
+        var first = CreateRequestWithPayload(methodDescriptor.InputType, 16);
+
+        // A gRPC-backed source carries its own call's status. Normalizing it would rewrite a foreign
+        // status using this call's deadline and cancellation state, so a source fault propagates
+        // untouched however it is typed.
+        var sourceStatus = new Status(StatusCode.FailedPrecondition, "the source's own call failed");
+
+        var exception = await Should.ThrowAsync<RpcException>(
+            async () => await invoker.InvokeClientStreamingWithMetadataAsync(
+                    methodDescriptor, RpcFaultingSource(first, sourceStatus), cancellationToken: token)
+                .WaitAsync(Bounded, token));
+
+        exception.StatusCode.ShouldBe(StatusCode.FailedPrecondition);
+        exception.Status.Detail.ShouldBe("the source's own call failed");
+        exception.ShouldNotBeOfType<RpcInvocationException>();
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private GrpcChannel CreateChannel()
@@ -465,14 +835,96 @@ public sealed class ClientStreamingLifecycleTests(GrpcTestFixture fixture)
     }
 
     /// <summary>
-    ///     Fails during enumerator acquisition, before the request stream is ever touched. Written here
-    ///     rather than borrowed from <c>DuplexLifecycleTests</c>, whose equivalent parks on a wait handle
-    ///     — which this inline write loop would never get past.
+    ///     Fails during enumerator acquisition, before the request stream is ever touched.
+    ///     <para>
+    ///         Throws immediately rather than parking on a wait handle first, as
+    ///         <c>DuplexLifecycleTests</c>'s equivalent does. That was originally forced — the write loop
+    ///         was inline, so a park during acquisition would have hung the caller outright — and PRD-004A
+    ///         removes the constraint. It is kept because the two shapes test different things: parking
+    ///         first covers a source that reports teardown as an ordinary exception, which the duplex
+    ///         suite already pins on the shared producer, while this one covers acquisition failing on
+    ///         its own merits before any teardown exists to blame.
+    ///     </para>
     /// </summary>
     private sealed class AcquisitionFaultingSource : IAsyncEnumerable<IMessage>
     {
         public IAsyncEnumerator<IMessage> GetAsyncEnumerator(CancellationToken cancellationToken = default)
             => throw new RequestSourceFailure();
+    }
+
+    /// <summary>
+    ///     Yields one message and then fails with an <see cref="RpcException" /> of its own — the shape a
+    ///     gRPC-backed source has when <i>its</i> call fails, which must not be rewritten as though it
+    ///     belonged to this one.
+    /// </summary>
+    private static async IAsyncEnumerable<IMessage> RpcFaultingSource(IMessage first, Status status)
+    {
+        yield return first;
+
+        await Task.Yield();
+
+        throw new RpcException(status);
+    }
+
+    /// <summary>
+    ///     Stands in for an interactive request source: it emits one message and then waits for input
+    ///     that never arrives. Copied from <c>DuplexLifecycleTests</c> now that both call shapes drive
+    ///     the same producer; it takes the first message, so it is message-agnostic.
+    /// </summary>
+    private sealed class BlockingRequestSource(IMessage first)
+    {
+        private readonly TaskCompletionSource _released = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        /// <summary>Completes when the source's enumeration actually unwound.</summary>
+        public TaskCompletionSource Unwound { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        /// <summary>
+        ///     Completes once the source has yielded its message and is actually parked. Tests that
+        ///     cancel must wait for this first: cancelling earlier means the pump's own
+        ///     <c>WriteAsync</c> observes the token and exits, which unblocks the caller for a reason
+        ///     that has nothing to do with the fix under test.
+        /// </summary>
+        public TaskCompletionSource Parked { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        /// <summary>Parks on the enumerator's own token, as a well-behaved source does.</summary>
+        public async IAsyncEnumerable<IMessage> Cooperative([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                yield return first;
+
+                _ = Parked.TrySetResult();
+
+                await Task.Delay(Timeout.Infinite, cancellationToken);
+            }
+            finally
+            {
+                _ = Unwound.TrySetResult();
+            }
+        }
+
+        /// <summary>
+        ///     Parks on something with no token at all — the shape of a console read already issued to
+        ///     the OS, which cancellation cannot recall.
+        /// </summary>
+        public async IAsyncEnumerable<IMessage> Uncancellable()
+        {
+            try
+            {
+                yield return first;
+
+                _ = Parked.TrySetResult();
+
+                await _released.Task;
+            }
+            finally
+            {
+                _ = Unwound.TrySetResult();
+            }
+        }
+
+        /// <summary>Lets an uncancellable enumeration finish so the test leaves nothing running.</summary>
+        public void ReleaseUncancellable() => _ = _released.TrySetResult();
     }
 
     /// <summary>
@@ -495,6 +947,104 @@ public sealed class ClientStreamingLifecycleTests(GrpcTestFixture fixture)
             }
 
             return base.SendAsync(request, cancellationToken);
+        }
+    }
+
+    /// <summary>
+    ///     A source that blocks in a <em>cancellation callback</em> rather than in <c>MoveNextAsync</c>.
+    ///     Registering against the enumerator token is ordinary caller code, and
+    ///     <see cref="CancellationTokenSource.CancelAsync" /> does not complete until every callback
+    ///     returns — so this is the second way caller code can sit on the teardown path.
+    /// </summary>
+    private sealed class CallbackBlockingSource(IMessage first) : IDisposable
+    {
+        private readonly ManualResetEventSlim _release = new(false);
+
+        private CancellationTokenRegistration _registration;
+
+        public TaskCompletionSource CallbackEntered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource Unwound { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public bool CallbackReleased => _release.IsSet;
+
+        public void Dispose()
+        {
+            _registration.Dispose();
+
+            _release.Dispose();
+        }
+
+        public void ReleaseCallback() => _release.Set();
+
+        public async IAsyncEnumerable<IMessage> Enumerate([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            // Blocking, not awaiting: a callback runs synchronously on whoever cancels, which is
+            // precisely why it can hold that thread's continuation.
+            //
+            // The registration is owned by the test, NOT scoped to this iterator. A `using` here races
+            // the cancellation trying to invoke it — the iterator unwinds on the same cancel, and if
+            // its unregister wins the callback never fires at all. That is a real race, not a
+            // theoretical one: it passed locally and failed on the first Ubuntu CI run.
+            _registration = cancellationToken.Register(() =>
+            {
+                _ = CallbackEntered.TrySetResult();
+
+                _release.Wait();
+            });
+
+            try
+            {
+                yield return first;
+
+                await Task.Delay(Timeout.Infinite, cancellationToken);
+            }
+            finally
+            {
+                _ = Unwound.TrySetResult();
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Parks, and throws from its cancellation callback rather than blocking in it — the fast
+    ///     counterpart to <see cref="CallbackBlockingSource" />. Timing is what makes this dangerous: a
+    ///     callback that throws promptly does so inside the drain's window, where a naive attribution
+    ///     turns it into the call's reported error, while one that throws late lands after the caller
+    ///     already has its answer and is merely observed. The same cleanup failure must not change the
+    ///     result depending on how quickly it happens.
+    /// </summary>
+    private sealed class CallbackThrowingSource(IMessage first) : IDisposable
+    {
+        private CancellationTokenRegistration _registration;
+
+        public TaskCompletionSource CallbackThrew { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource Unwound { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public void Dispose() => _registration.Dispose();
+
+        public async IAsyncEnumerable<IMessage> Enumerate([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            // Test-owned for the same reason as CallbackBlockingSource: scoping the registration to
+            // the iterator lets its unwind unregister the callback before the cancel invokes it.
+            _registration = cancellationToken.Register(() =>
+            {
+                _ = CallbackThrew.TrySetResult();
+
+                throw new RequestSourceFailure();
+            });
+
+            try
+            {
+                yield return first;
+
+                await Task.Delay(Timeout.Infinite, cancellationToken);
+            }
+            finally
+            {
+                _ = Unwound.TrySetResult();
+            }
         }
     }
 

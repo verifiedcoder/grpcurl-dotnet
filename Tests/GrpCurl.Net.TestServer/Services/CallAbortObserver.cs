@@ -21,6 +21,13 @@ public static class CallAbortObserver
         /// <summary>The handler read the request stream to its end — the client half-closed.</summary>
         Drained,
 
+        /// <summary>
+        ///     The handler answered before draining, because <c>complete-after-requests</c> told it to.
+        ///     Distinct from <see cref="Drained" /> on purpose: the request stream was left unread, so
+        ///     reporting it as drained would assert something that did not happen.
+        /// </summary>
+        CompletedEarly,
+
         /// <summary>The call was cancelled or its stream reset while the handler was still reading.</summary>
         Aborted,
 

@@ -87,7 +87,8 @@ public static class MetadataProcessor
     ///     Reads <see cref="MetadataConstants.CompleteAfterRequests" />, returning
     ///     <see langword="null" /> when absent, unparseable, or negative. Zero is accepted and
     ///     meaningful — see the comment on the parse below. Kept separate from
-    ///     <see cref="ProcessMetadata" /> because only the bidi handler honours it.
+    ///     <see cref="ProcessMetadata" /> because only the streaming handlers that can answer before
+    ///     draining honour it: <c>FullDuplexCall</c> and <c>StreamingInputCall</c>.
     /// </summary>
     public static int? GetCompleteAfterRequests(ServerCallContext context)
     {

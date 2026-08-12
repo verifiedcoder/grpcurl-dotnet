@@ -104,7 +104,9 @@ public sealed class ClientStreamingLifecycleTests(GrpcTestFixture fixture)
         var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.DelayMs}: {ServerParkMs}"]);
 
         // The write fails locally on its own merits while the server is parked: no deadline, no caller
-        // cancellation, no server status. Disposing the call is the only thing that can release it.
+        // cancellation, no server status. Two deliberate acts can release the call from here — the
+        // producer's abort after its bounded response window, and the invoker's disposal — and this
+        // case does not distinguish them; it asserts the release happened. See the class doc.
         var exception = await Should.ThrowAsync<RpcException>(
             async () => await invoker.InvokeClientStreamingWithMetadataAsync(
                     methodDescriptor, ToAsyncEnumerable([oversized]), metadata, cancellationToken: token)
@@ -570,9 +572,12 @@ public sealed class ClientStreamingLifecycleTests(GrpcTestFixture fixture)
                     methodDescriptor, ToAsyncEnumerable([oversized]), metadata, cancellationToken: token)
                 .WaitAsync(Bounded, token));
 
-        // The server's word wins. Preferring the write fault here — which is what happened before the
-        // CANCELLED arm of IsCancellationArtifact required provenance — reports RESOURCE_EXHAUSTED and
-        // loses the only status the call actually finished with.
+        // The server's word wins. What this case is actually sensitive to is the producer's bounded
+        // response window: without it the abort destroys the server's status before it arrives, and
+        // RESOURCE_EXHAUSTED — the local shadow — becomes the only error left to report. The provenance
+        // check on IsCancellationArtifact's CANCELLED arm guards the neighbouring case, where we did
+        // abort AND the server also sent CANCELLED; that one is pinned by unit cases, because it could
+        // not be made deterministic against the real transport. Fix-Details §6, ablations F and G.
         exception.StatusCode.ShouldBe(StatusCode.Cancelled);
     }
 
@@ -613,6 +618,34 @@ public sealed class ClientStreamingLifecycleTests(GrpcTestFixture fixture)
         }
 
         await source.Unwound.Task.WaitAsync(Bounded, token);
+    }
+
+    [Fact]
+    public async Task ThrowingCancellationCallback_DoesNotReplaceASuccessfulResponse()
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        using var channel = CreateChannel();
+
+        var methodDescriptor = await GetClientStreamingMethod(channel);
+        var invoker = new DynamicInvoker(channel);
+        var source = new CallbackThrowingSource(CreateRequestWithPayload(methodDescriptor.InputType, 16));
+
+        var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.CompleteAfterRequests}: 1"]);
+
+        // The server answered; the RPC succeeded. The callback then throws — but it only ran because
+        // teardown cancelled the writer token, so its failure is cleanup-created and cannot be what
+        // the call reports. Recording it turned an OK call into an AggregateException, the same class
+        // of defect PRD-003 fixed for a source that translates cancellation into its own exception.
+        using var result = await invoker.InvokeClientStreamingWithMetadataAsync(
+                methodDescriptor, source.Enumerate(), metadata, cancellationToken: token)
+            .WaitAsync(Bounded, token);
+
+        _ = result.Response.ShouldNotBeNull();
+
+        // Load-bearing: proves the callback really did run and throw, so the assertion above is about
+        // attribution rather than about a callback that never fired.
+        await source.CallbackThrew.Task.WaitAsync(Bounded, token);
     }
 
     [Fact]
@@ -930,6 +963,42 @@ public sealed class ClientStreamingLifecycleTests(GrpcTestFixture fixture)
                 _ = CallbackEntered.TrySetResult();
 
                 _release.Wait();
+            });
+
+            try
+            {
+                yield return first;
+
+                await Task.Delay(Timeout.Infinite, cancellationToken);
+            }
+            finally
+            {
+                _ = Unwound.TrySetResult();
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Parks, and throws from its cancellation callback rather than blocking in it — the fast
+    ///     counterpart to <see cref="CallbackBlockingSource" />. Timing is what makes this dangerous: a
+    ///     callback that throws promptly does so inside the drain's window, where a naive attribution
+    ///     turns it into the call's reported error, while one that throws late lands after the caller
+    ///     already has its answer and is merely observed. The same cleanup failure must not change the
+    ///     result depending on how quickly it happens.
+    /// </summary>
+    private sealed class CallbackThrowingSource(IMessage first)
+    {
+        public TaskCompletionSource CallbackThrew { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource Unwound { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public async IAsyncEnumerable<IMessage> Enumerate([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            using var registration = cancellationToken.Register(() =>
+            {
+                _ = CallbackThrew.TrySetResult();
+
+                throw new RequestSourceFailure();
             });
 
             try

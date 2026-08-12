@@ -126,9 +126,17 @@ internal sealed class RequestStreamProducer
 
     /// <summary>
     ///     Whether this producer aborted the call to release a reader the server was not going to
-    ///     release itself. When true, a <see cref="StatusCode.Cancelled" /> read failure is this
-    ///     producer's own artifact rather than anything the server reported — which is what lets the
-    ///     read side keep a genuine write fault instead of the cancellation that fault caused.
+    ///     release itself. It is a <i>necessary</i> condition for treating a
+    ///     <see cref="StatusCode.Cancelled" /> read failure as this producer's own artifact — which is
+    ///     what lets the read side keep a genuine write fault instead of the cancellation that fault
+    ///     caused — but deliberately not a sufficient one.
+    ///     <para>
+    ///         It proves this producer issued an abort, not that the particular failure the reader saw
+    ///         came from that abort: a server may return CANCELLED on its own account, and one that
+    ///         does can coexist with an abort we issued. Provenance is what separates them, so callers
+    ///         pair this with <see cref="RpcErrorNormalizer.IsCancellationArtifact" /> rather than
+    ///         relying on it alone (PRD-004A review, round 1 finding 2).
+    ///     </para>
     /// </summary>
     public bool AbortedCall => Volatile.Read(ref _abortedCall) != 0;
 
@@ -159,6 +167,15 @@ internal sealed class RequestStreamProducer
     ///     and <c>Dispose</c> is documented as not thread-safe against concurrent calls. <c>CancelAsync</c>
     ///     is used rather than <c>Cancel</c> so a cancellation callback does not run inline on the
     ///     caller's thread.
+    ///     <para>
+    ///         Quiet about <b>callback</b> failures too, and that is the substantive part.
+    ///         <c>CancelAsync</c> faults if any registered callback throws, and the writer token's
+    ///         registrations are the caller's own code — code that only ran because we asked the
+    ///         producer to stop. Letting that surface would make cleanup capable of manufacturing an
+    ///         error, which is exactly what the class invariant forbids: it turned a successful RPC
+    ///         into an <see cref="AggregateException" /> (PRD-004A review, round 2). Observed and
+    ///         dropped here so no path downstream has to remember to.
+    ///     </para>
     /// </summary>
     public static async ValueTask CancelQuietlyAsync(CancellationTokenSource? cts)
     {
@@ -174,6 +191,12 @@ internal sealed class RequestStreamProducer
         catch (ObjectDisposedException)
         {
             // Teardown already ran; whatever this would have stopped is stopping or stopped.
+        }
+        catch (Exception ex)
+        {
+            _ = ex;
+
+            // A registered callback threw. Provoked by this cancellation, so never ours to report.
         }
     }
 
@@ -236,9 +259,22 @@ internal sealed class RequestStreamProducer
         }
         catch (Exception ex)
         {
+            // INVARIANT: attribution comes from the PUMP, never from the cancellation task. The two
+            // are awaited together only so a blocking callback cannot escape the bound — joining them
+            // is a timing device, not an attribution one. A callback runs solely because we asked the
+            // producer to stop, so treating its failure as a producer fault let cleanup replace an
+            // already successful RPC (PRD-004A review, round 2). CancelQuietlyAsync now swallows those
+            // as well; this is the second half of the same guarantee, so neither alone is load-bearing.
+            //
+            // WhenAll only faults once every task has completed, so the pump's state is settled here.
+            if (!Completion.IsFaulted)
+            {
+                return Fault;
+            }
+
             // Fault is the attributed value; fall back to the raw task exception for anything the
             // pump itself failed with outside the recorded paths.
-            return Fault ?? new ProducerFault(ex, FromWrite: false);
+            return Fault ?? new ProducerFault((Completion.Exception as Exception)?.InnerException ?? ex, FromWrite: false);
         }
 
         return Fault;

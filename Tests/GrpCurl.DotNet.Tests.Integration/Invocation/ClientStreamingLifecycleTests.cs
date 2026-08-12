@@ -601,15 +601,20 @@ public sealed class ClientStreamingLifecycleTests(GrpcTestFixture fixture)
             // completes only once every callback returns, so awaiting cancellation ahead of the drain
             // put caller code on the critical path and reinstated the hang by a route MoveNextAsync no
             // longer had (PRD-004A review, finding 1).
-            using var result = await invoker.InvokeClientStreamingWithMetadataAsync(
-                    methodDescriptor, source.Enumerate(), metadata, cancellationToken: token)
-                .WaitAsync(Bounded, token);
+            var invocation = invoker.InvokeClientStreamingWithMetadataAsync(
+                methodDescriptor, source.Enumerate(), metadata, cancellationToken: token);
+
+            // Wait for the callback to be in rather than assuming it got there first. The earlier
+            // version asserted this synchronously after the call returned, which read the ordering off
+            // the clock and duly failed on a faster CI runner.
+            await source.CallbackEntered.Task.WaitAsync(Bounded, token);
+
+            using var result = await invocation.WaitAsync(Bounded, token);
 
             _ = result.Response.ShouldNotBeNull();
 
             // Load-bearing: the invocation returned while the callback was STILL blocked. Releasing it
             // first would make this pass whether or not the bound covers cancellation.
-            source.CallbackEntered.Task.IsCompletedSuccessfully.ShouldBeTrue();
             source.CallbackReleased.ShouldBeFalse();
         }
         finally
@@ -629,7 +634,7 @@ public sealed class ClientStreamingLifecycleTests(GrpcTestFixture fixture)
 
         var methodDescriptor = await GetClientStreamingMethod(channel);
         var invoker = new DynamicInvoker(channel);
-        var source = new CallbackThrowingSource(CreateRequestWithPayload(methodDescriptor.InputType, 16));
+        using var source = new CallbackThrowingSource(CreateRequestWithPayload(methodDescriptor.InputType, 16));
 
         var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.CompleteAfterRequests}: 1"]);
 
@@ -944,13 +949,20 @@ public sealed class ClientStreamingLifecycleTests(GrpcTestFixture fixture)
     {
         private readonly ManualResetEventSlim _release = new(false);
 
+        private CancellationTokenRegistration _registration;
+
         public TaskCompletionSource CallbackEntered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public TaskCompletionSource Unwound { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public bool CallbackReleased => _release.IsSet;
 
-        public void Dispose() => _release.Dispose();
+        public void Dispose()
+        {
+            _registration.Dispose();
+
+            _release.Dispose();
+        }
 
         public void ReleaseCallback() => _release.Set();
 
@@ -958,7 +970,12 @@ public sealed class ClientStreamingLifecycleTests(GrpcTestFixture fixture)
         {
             // Blocking, not awaiting: a callback runs synchronously on whoever cancels, which is
             // precisely why it can hold that thread's continuation.
-            using var registration = cancellationToken.Register(() =>
+            //
+            // The registration is owned by the test, NOT scoped to this iterator. A `using` here races
+            // the cancellation trying to invoke it — the iterator unwinds on the same cancel, and if
+            // its unregister wins the callback never fires at all. That is a real race, not a
+            // theoretical one: it passed locally and failed on the first Ubuntu CI run.
+            _registration = cancellationToken.Register(() =>
             {
                 _ = CallbackEntered.TrySetResult();
 
@@ -986,15 +1003,21 @@ public sealed class ClientStreamingLifecycleTests(GrpcTestFixture fixture)
     ///     already has its answer and is merely observed. The same cleanup failure must not change the
     ///     result depending on how quickly it happens.
     /// </summary>
-    private sealed class CallbackThrowingSource(IMessage first)
+    private sealed class CallbackThrowingSource(IMessage first) : IDisposable
     {
+        private CancellationTokenRegistration _registration;
+
         public TaskCompletionSource CallbackThrew { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public TaskCompletionSource Unwound { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
+        public void Dispose() => _registration.Dispose();
+
         public async IAsyncEnumerable<IMessage> Enumerate([EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            using var registration = cancellationToken.Register(() =>
+            // Test-owned for the same reason as CallbackBlockingSource: scoping the registration to
+            // the iterator lets its unwind unregister the callback before the cancel invokes it.
+            _registration = cancellationToken.Register(() =>
             {
                 _ = CallbackThrew.TrySetResult();
 

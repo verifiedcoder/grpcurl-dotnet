@@ -19,8 +19,10 @@ namespace GrpCurl.Net.Studio.ViewModels.Services;
 ///     problem (PRD-005 review, finding 2).
 ///     <para>
 ///         So writes run inside a gate, and <see cref="Dispose" /> hands the underlying writer over to
-///         whoever leaves the gate last. It never blocks the caller: a tab close returns immediately and
-///         the sink closes when the write in flight finishes.
+///         whoever leaves the gate last. It never waits for an active write: a tab closed mid-stream
+///         returns at once and the sink closes when that write finishes. It is not a no-op though — when
+///         nothing is in flight the closing <c>_writer.Dispose()</c> happens inline, and a file sink's
+///         final flush can block or throw there like any other close.
 ///     </para>
 /// </remarks>
 public sealed class StreamCaptureWriter : IDisposable
@@ -88,7 +90,8 @@ public sealed class StreamCaptureWriter : IDisposable
 
     /// <summary>
     ///     Requests disposal. Idempotent — the owning tab and the capture toggle can both reach it — and
-    ///     non-blocking: if a write holds the gate, that write closes the writer on its way out.
+    ///     it never waits for a write: if one holds the gate, that write closes the writer on its way
+    ///     out; otherwise the writer is closed here, inline.
     /// </summary>
     public void Dispose()
     {

@@ -175,20 +175,93 @@ public sealed class DisposalCancelsLiveWorkTests
 
         // The shutdown path, not the close path: quitting with tabs open reached no disposal at all
         // before this (review finding 4).
-        docs.DisposeOpenDocuments();
+        var shutdown = docs.DisposeOpenDocumentsAsync(Bounded);
 
         callToken.IsCancellationRequested.ShouldBeTrue("shutdown must release what the open tabs own");
+
+        // And it must still be waiting. The runner is parked and will not return until this test says
+        // so, so a shutdown that only cancelled would already be finished — which is exactly what the
+        // previous version of this fix did (re-review finding 1). The delay only gives that version
+        // time to be wrong; the correct one cannot complete early however long we wait.
+        await Task.Delay(250, token);
+
+        shutdown.IsCompleted.ShouldBeFalse("shutdown must wait for the cancelled call to unwind");
+
+        release.SetResult();
+
+        var result = await shutdown.WaitAsync(Bounded, token);
+
+        result.Drained.ShouldBeTrue("the call unwound well inside the timeout");
+        result.Documents.ShouldBe(1);
+
+        // Unwound before shutdown returned — the property the whole two-phase change exists for.
+        invocation.IsCompleted.ShouldBeTrue();
 
         // The tabs stay in the collection on purpose — clearing them would schedule a persist that
         // overwrites the session snapshot taken moments earlier.
         _ = docs.Documents.ShouldHaveSingleItem();
 
+        // Idempotent: a later explicit close of the same tab must not throw.
+        Should.NotThrow(tab.Dispose);
+    }
+
+    /// <summary>
+    ///     The honest half of the bounded policy: work that ignores its token must not keep the process
+    ///     alive, and the result must say the drain did not finish rather than reporting success.
+    /// </summary>
+    [Fact]
+    public async Task Shutdown_gives_up_on_work_that_ignores_cancellation_and_says_so()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var received = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var runner = new FakeInvocationRunner
+        {
+            OnInvoke = async (InvocationRequestModel request, CancellationToken ct) =>
+            {
+                _ = request;
+                _ = ct; // deliberately ignored: this is the uncooperative operation
+                _ = received.TrySetResult();
+
+                await release.Task;
+
+                return new InvocationResultModel(
+                    Ok: true, ResponseJson: "{}", ResponseHeaders: [], ResponseTrailers: [],
+                    Status: new InvocationStatusModel(0, "OK", string.Empty),
+                    Timing: new TimingModel([], 0, 0), ErrorMessage: null);
+            }
+        };
+
+        var docs = new DocumentsViewModel(
+            new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(), runner,
+            new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator(),
+            new InMemorySettingsStore(), new FakeThemeService());
+
+        docs.OpenInvocation(Conn(), "pkg.Svc/Go", "{}");
+
+        var tab = (InvocationDocumentViewModel)docs.Documents[0];
+        var invocation = tab.InvokeCommand.ExecuteAsync(null);
+
+        await received.Task.WaitAsync(Bounded, token);
+
+        // Bounded by the timeout, not by the operation: an implementation that waited unconditionally
+        // would hang here and fail on the outer WaitAsync rather than passing quietly.
+        var result = await docs
+            .DisposeOpenDocumentsAsync(TimeSpan.FromMilliseconds(200))
+            .WaitAsync(Bounded, token);
+
+        result.Drained.ShouldBeFalse("work was still running when shutdown stopped waiting");
+        result.Documents.ShouldBe(1);
+
+        // Idempotence only. That the timed-out path still disposes the tabs is covered on the drained
+        // path by the test above and holds by construction here — both run the same disposal loop —
+        // but this call does not prove it, and is not claimed to.
+        Should.NotThrow(tab.Dispose);
+
         release.SetResult();
 
         await invocation.WaitAsync(Bounded, token);
-
-        // Idempotent: a later explicit close of the same tab must not throw.
-        Should.NotThrow(tab.Dispose);
     }
 
     private static InvocationDocumentViewModel CreateInvocationTab(FakeInvocationRunner runner)

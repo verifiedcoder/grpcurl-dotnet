@@ -20,7 +20,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 ///     marshalled back through <see cref="IUiDispatcher" />. On failure it surfaces the rich
 ///     <see cref="ErrorModel" /> (FR-090..099) with Retry / Copy-as-JSON / Open-help-link.
 /// </summary>
-public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDisposable
+public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDisposable, IDrainableDocument
 {
     private readonly IInvocationRunner _runner;
     private readonly IDescriptorService _descriptors;
@@ -52,7 +52,10 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
     private readonly Func<string, TextWriter> _writerFactory;
     private StreamCaptureWriter? _capture;
     private CancellationTokenSource? _validationCts;
-    private bool _disposed;
+
+    // int rather than bool: shutdown and the close flow can both reach Dispose, so the guard has to be
+    // atomic to be worth anything (PRD-005 re-review, finding 4).
+    private int _disposed;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsInFlight), nameof(IsCompleted), nameof(HasResponse))]
@@ -1088,20 +1091,36 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
     ///         rather than retroactively.
     ///     </para>
     /// </summary>
+    /// <summary>
+    ///     Cancels the RPC this tab started and returns a task that completes when it has unwound
+    ///     (PRD-005 re-review, finding 1). Used at shutdown, where cancelling is not enough: the call
+    ///     must be off the services before the host disposes them.
+    /// </summary>
+    public Task CancelAndDrainAsync()
+    {
+        // Both cancellations before either task is awaited — see IDrainableDocument.
+        InvokeCommand.Cancel();
+        StartStreamCommand.Cancel();
+
+        return DocumentDrain.WhenSettled(InvokeCommand.ExecutionTask, StartStreamCommand.ExecutionTask);
+    }
+
     public void Dispose()
     {
-        if (_disposed)
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
         {
             return;
         }
-
-        _disposed = true;
 
         // FIRST, before anything this tab owns is torn down: stop the work that is still running.
         // Neither token source below owns the token an in-flight RPC is using — those belong to the
         // toolkit-generated commands (IncludeCancelCommand = true). Closing a tab without cancelling
         // them removed the tab and left its call running, still writing history and still reaching for
         // the capture writer this method is about to dispose (PRD-005 review, finding 1).
+        //
+        // Closing a tab does not wait for the call to unwind: the application lives on, so the services
+        // it touches on the way out are all still there. Shutdown is the case that has to wait, and it
+        // does that through CancelAndDrainAsync above before it gets here.
         InvokeCommand.Cancel();
         StartStreamCommand.Cancel();
 

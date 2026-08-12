@@ -1,6 +1,7 @@
 using Avalonia;
 using GrpCurl.Net.Studio.Composition;
 using GrpCurl.Net.Studio.ViewModels.Documents;
+using GrpCurl.Net.Studio.ViewModels.Models.Diagnostics;
 using GrpCurl.Net.Studio.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,6 +10,13 @@ namespace GrpCurl.Net.Studio;
 
 internal static class Program
 {
+    /// <summary>
+    ///     How long shutdown waits for cancelled tab work to unwind before giving up and tearing the
+    ///     host down anyway (PRD-005). Long enough for an RPC to observe its token and unwind, short
+    ///     enough that a wedged operation cannot keep the process alive; exceeding it is logged.
+    /// </summary>
+    private static readonly TimeSpan ShutdownDrainTimeout = TimeSpan.FromSeconds(5);
+
     // Avalonia configuration. Called by the visual designer and by the headless test harness
     // via the parameterless overload; the runtime entry point passes the host's services.
     public static AppBuilder BuildAvaloniaApp() => BuildAvaloniaApp(serviceProvider: null);
@@ -55,7 +63,27 @@ internal static class Program
                 // writers, singleton subscriptions. The close-flow disposal only covers tabs the user
                 // closed, so quitting with tabs open reached none of it. Strictly after the flush above:
                 // this cancels running work, and the snapshot must describe the session as it was.
-                documents.DisposeOpenDocuments();
+                //
+                // Awaited, not fired: host.Dispose() below tears down the history, validation and secret
+                // singletons that a cancelled call still touches while it unwinds, so shutdown has to
+                // know that work has actually stopped rather than merely been asked to (PRD-005
+                // re-review, finding 1). Sync-over-async is safe here — the Avalonia context was
+                // cleared above, so the continuations resume on the thread pool.
+                var shutdown = documents
+                    .DisposeOpenDocumentsAsync(ShutdownDrainTimeout)
+                    .GetAwaiter()
+                    .GetResult();
+
+                if (!shutdown.Drained)
+                {
+                    // Recorded rather than swallowed: the tabs were disposed either way, but work was
+                    // still running when we stopped waiting, and the teardown below is then racing it.
+                    host.Services.GetRequiredService<IDiagnosticsLog>().Log(
+                        DiagnosticsLevel.Warning,
+                        "shutdown",
+                        $"Timed out after {ShutdownDrainTimeout.TotalSeconds:0.#}s waiting for cancelled work "
+                        + $"in {shutdown.Documents} open tab(s) to unwind; disposing services anyway.");
+                }
 
                 host.Services.GetRequiredService<IWorkspaceStore>().ReleaseLock();
                 host.StopAsync().GetAwaiter().GetResult();

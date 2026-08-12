@@ -18,7 +18,9 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 /// </summary>
 public sealed partial class SettingsDocumentViewModel : DocumentViewModel, IDisposable
 {
-    private bool _disposed;
+    // int rather than bool: shutdown and the close flow can both reach Dispose, so the guard has to be
+    // atomic to be worth anything (PRD-005 re-review, finding 4).
+    private int _disposed;
 
     private readonly ISettingsStore _settings;
     private readonly IThemeService _themeService;
@@ -606,12 +608,10 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel, IDisp
     /// </summary>
     public void Dispose()
     {
-        if (_disposed)
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
         {
             return;
         }
-
-        _disposed = true;
 
         _themeService.PropertyChanged -= OnThemeServiceChanged;
     }

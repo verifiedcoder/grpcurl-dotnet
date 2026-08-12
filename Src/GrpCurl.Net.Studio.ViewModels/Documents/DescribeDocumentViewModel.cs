@@ -12,7 +12,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 ///     opens the target in a new tab via the document host. Messages/methods expose the generated
 ///     request template (FR-052) with copy (FR-056).
 /// </summary>
-public sealed partial class DescribeDocumentViewModel : DocumentViewModel, IDisposable
+public sealed partial class DescribeDocumentViewModel : DocumentViewModel, IDisposable, IDrainableDocument
 {
     private readonly IDescriptorService _descriptors;
     private readonly IUiDispatcher _dispatcher;
@@ -22,7 +22,17 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel, IDisp
     private readonly Stack<string> _back = new();
     private readonly Stack<string> _forward = new();
     private CancellationTokenSource? _loadCts;
-    private bool _disposed;
+
+    /// <summary>
+    ///     The load started by the constructor or the most recent navigation. Held only so shutdown can
+    ///     wait for it: the loads are fire-and-forget by design (navigation must not block the UI), and
+    ///     nothing else needs the task.
+    /// </summary>
+    private Task? _load;
+
+    // int rather than bool: shutdown and the close flow can both reach Dispose, so the guard has to be
+    // atomic to be worth anything (PRD-005 re-review, finding 4).
+    private int _disposed;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLoading), nameof(IsLoaded), nameof(HasError))]
@@ -57,7 +67,7 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel, IDisp
         _host = host;
 
         Title = ShortName(symbol);
-        _ = LoadAsync(symbol);
+        StartLoad(symbol);
     }
 
     public SavedConnection Connection { get; }
@@ -89,7 +99,7 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel, IDisp
 
         _back.Push(CurrentSymbol);
         _forward.Clear();
-        _ = LoadAsync(typeRef.FullName);
+        StartLoad(typeRef.FullName);
     }
 
     /// <summary>Ctrl+click: opens a resolvable type reference in a new tab (FR-051).</summary>
@@ -116,14 +126,14 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel, IDisp
     private void Back()
     {
         _forward.Push(CurrentSymbol);
-        _ = LoadAsync(_back.Pop());
+        StartLoad(_back.Pop());
     }
 
     [RelayCommand(CanExecute = nameof(CanGoForward))]
     private void Forward()
     {
         _back.Push(CurrentSymbol);
-        _ = LoadAsync(_forward.Pop());
+        StartLoad(_forward.Pop());
     }
 
     [RelayCommand(CanExecute = nameof(HasTemplate))]
@@ -146,6 +156,12 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel, IDisp
             await _clipboard.SetTextAsync(snippet);
         }
     }
+
+    /// <summary>
+    ///     Starts a load without waiting for it, keeping the task so <see cref="CancelAndDrainAsync" />
+    ///     can. Every navigation path goes through here rather than discarding the task with <c>_ =</c>.
+    /// </summary>
+    private void StartLoad(string symbol) => _load = LoadAsync(symbol);
 
     private async Task LoadAsync(string symbol)
     {
@@ -225,15 +241,25 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel, IDisp
     /// </summary>
     public void Dispose()
     {
-        if (_disposed)
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
         {
             return;
         }
 
-        _disposed = true;
-
         _loadCts?.Cancel();
         _loadCts?.Dispose();
         _loadCts = null;
+    }
+
+    /// <summary>
+    ///     Cancels the in-flight describe load and returns a task that completes when it has unwound
+    ///     (PRD-005 re-review, finding 1). The load is not owned by a command, so its token source is
+    ///     cancelled directly; the task itself is the one <see cref="StartLoad" /> kept.
+    /// </summary>
+    public Task CancelAndDrainAsync()
+    {
+        _loadCts?.Cancel();
+
+        return DocumentDrain.WhenSettled(_load);
     }
 }

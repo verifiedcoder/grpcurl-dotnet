@@ -21,7 +21,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 ///     This PR covers query/mutation execution + the response envelope viewer; subscriptions, the
 ///     mapping designer, and the introspection viewer arrive in later epics.
 /// </summary>
-public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDisposable
+public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDisposable, IDrainableDocument
 {
     /// <summary>The 4 MiB cap the CLI applies to <c>--file</c>/<c>--variables-file</c> (GQL-014/020).</summary>
     internal const long MaxFileBytes = 4L * 1024 * 1024;
@@ -39,7 +39,9 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDispo
     private CancellationTokenSource? _parseCts;
     private CancellationTokenSource? _resolveCts;
     private CancellationTokenSource? _mappingCts;
-    private bool _disposed;
+    // int rather than bool: shutdown and the close flow can both reach Dispose, so the guard has to be
+    // atomic to be worth anything (PRD-005 re-review, finding 4).
+    private int _disposed;
     private string? _responseEnvelope;
     private bool _syncingVars;
 
@@ -1364,19 +1366,36 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDispo
     ///         <c>PropertyChanged</c>) are all to objects it owns, so they die with it.
     ///     </para>
     /// </summary>
+    /// <summary>
+    ///     Cancels the four cancellable operations this tab starts and returns a task that completes
+    ///     when they have unwound (PRD-005 re-review, finding 1).
+    /// </summary>
+    public Task CancelAndDrainAsync()
+    {
+        // All four cancellations before any task is awaited — see IDrainableDocument.
+        ExecuteCommand.Cancel();
+        LoadSchemaCommand.Cancel();
+        LoadTranslationCommand.Cancel();
+        ValidateMappingSchemaCommand.Cancel();
+
+        return DocumentDrain.WhenSettled(
+            ExecuteCommand.ExecutionTask,
+            LoadSchemaCommand.ExecutionTask,
+            LoadTranslationCommand.ExecutionTask,
+            ValidateMappingSchemaCommand.ExecutionTask);
+    }
+
     public void Dispose()
     {
-        if (_disposed)
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
         {
             return;
         }
 
-        _disposed = true;
-
         // The debounce sources below do not own the tokens the running operations use — those belong
         // to the toolkit-generated commands. Cancel them first, or closing the tab leaves the GraphQL
         // execution, schema load and translation still running against a tab nobody can see
-        // (PRD-005 review, finding 1).
+        // (PRD-005 review, finding 1). Waiting for them is shutdown's job, via CancelAndDrainAsync.
         ExecuteCommand.Cancel();
         LoadSchemaCommand.Cancel();
         LoadTranslationCommand.Cancel();

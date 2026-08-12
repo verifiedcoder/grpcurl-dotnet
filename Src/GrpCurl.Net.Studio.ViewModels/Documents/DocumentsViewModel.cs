@@ -596,13 +596,20 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     }
 
     /// <summary>
-    ///     Disposes every open tab at application shutdown, after the final session snapshot has been
-    ///     taken (PRD-005 review, finding 4).
+    ///     Stops and disposes every open tab at application shutdown, after the final session snapshot
+    ///     has been taken (PRD-005 review, finding 4).
     ///     <para>
     ///         The disposal wired into the close flow only runs for a tab the user actually closes, so
     ///         exiting Studio with tabs open bypassed all of it: in-flight calls, debounce work, capture
     ///         writers and singleton subscriptions survived until the forced process exit instead of
     ///         being released deterministically.
+    ///     </para>
+    ///     <para>
+    ///         Two phases, because cancellation is a request and not a completion. Every tab is
+    ///         cancelled first, then all of them are drained together, and only then are they disposed —
+    ///         so the caller can dispose the host afterwards knowing no tab is still reaching for the
+    ///         history, validation or secret singletons it is about to tear down (PRD-005 re-review,
+    ///         finding 1). Cancelling tab-by-tab-then-waiting would serialise the drain instead.
     ///     </para>
     ///     <para>
     ///         Deliberately <b>not</b> <see cref="CloseAll" />. That clears <see cref="Documents" />,
@@ -611,7 +618,12 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     ///         is going away, and the session on disk must keep describing the tabs that were open.
     ///     </para>
     /// </summary>
-    public void DisposeOpenDocuments()
+    /// <param name="drainTimeout">
+    ///     How long to wait for cancelled work to unwind. Bounded because shutdown must terminate even
+    ///     if an operation ignores its token; a timeout is reported rather than hidden, because "we
+    ///     stopped waiting" is not the same claim as "nothing is running".
+    /// </param>
+    public async Task<DocumentShutdownResult> DisposeOpenDocumentsAsync(TimeSpan drainTimeout)
     {
         // Belt and braces against the same overwrite: nothing should schedule a persist from here.
         _suppressPersist = true;
@@ -620,10 +632,42 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         _persistCts?.Dispose();
         _persistCts = null;
 
-        foreach (var document in Documents)
+        // Snapshot: disposal must not observe the collection changing, and the two phases below have to
+        // walk exactly the same set of tabs.
+        var documents = Documents.ToArray();
+
+        var drains = new List<Task>(documents.Length);
+
+        foreach (var document in documents)
+        {
+            if (document is IDrainableDocument drainable)
+            {
+                // Cancels synchronously and hands back the wait — see IDrainableDocument. The loop
+                // therefore cancels every tab before the first await below.
+                drains.Add(drainable.CancelAndDrainAsync());
+            }
+        }
+
+        var drained = true;
+
+        if (drains.Count > 0)
+        {
+            try
+            {
+                await Task.WhenAll(drains).WaitAsync(drainTimeout).ConfigureAwait(false);
+            }
+            catch (TimeoutException)
+            {
+                drained = false;
+            }
+        }
+
+        foreach (var document in documents)
         {
             (document as IDisposable)?.Dispose();
         }
+
+        return new DocumentShutdownResult(documents.Length, drained);
     }
 
     private static RequestPrefill ToPrefill(SessionTab tab) => new(

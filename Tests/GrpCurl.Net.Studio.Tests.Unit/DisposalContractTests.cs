@@ -5,6 +5,7 @@ using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
 
@@ -37,6 +38,8 @@ public sealed class DisposalContractTests : IDisposable
             Directory.Delete(_dir, recursive: true);
         }
     }
+
+    private static readonly TimeSpan Bounded = TimeSpan.FromSeconds(10);
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
@@ -152,6 +155,37 @@ public sealed class DisposalContractTests : IDisposable
             writer.Dispose();
         });
 
+    /// <summary>
+    ///     Shutdown and the close flow can both reach a tab's <c>Dispose</c>, so the guard has to be
+    ///     atomic. A plain Boolean read/write lets two threads both pass it and run the body twice.
+    ///     <para>
+    ///         A smoke test, and described as one: it makes the interleaving likely, not certain, so a
+    ///         pass is not proof of atomicity. The guarantee comes from the <see cref="Interlocked" />
+    ///         guard in each <c>Dispose</c>; this exists so that a regression to a plain Boolean has
+    ///         something that can catch it.
+    ///     </para>
+    /// </summary>
+    [Fact]
+    public async Task Concurrent_disposal_of_a_tab_does_not_throw()
+    {
+        for (var attempt = 0; attempt < 50; attempt++)
+        {
+            var tab = CreateInvocationTab(out _);
+            var start = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var racers = Enumerable.Range(0, 4).Select(_ => Task.Run(async () =>
+            {
+                await start.Task;
+
+                tab.Dispose();
+            }, Ct)).ToArray();
+
+            start.SetResult();
+
+            await Should.NotThrowAsync(async () => await Task.WhenAll(racers).WaitAsync(Bounded, Ct));
+        }
+    }
+
     #endregion
 
     #region The shutdown crash itself
@@ -213,9 +247,178 @@ public sealed class DisposalContractTests : IDisposable
 
         store.Dispose();
 
-        // Pinned rather than incidental: the disposed gate is what rejects the call, and callers can
-        // rely on ObjectDisposedException rather than a NullReferenceException from the zeroed key.
+        // Pinned rather than incidental: the entry-point check is what rejects the call, so callers get
+        // ObjectDisposedException rather than a NullReferenceException from the zeroed key.
         _ = await Should.ThrowAsync<ObjectDisposedException>(async () => await store.SetAsync("studio/v1/test/key2", "v", Ct));
+    }
+
+    /// <summary>
+    ///     PRD-005 re-review, finding 2: the key belongs to whoever owns the gate. Disposal arriving
+    ///     while an operation is inside the critical section must leave the key alone and let that
+    ///     operation destroy it on its way out.
+    ///     <para>
+    ///         The previous implementation waited two seconds for the gate and then zeroed the key
+    ///         regardless, so an operation mid-AES could have its key cleared underneath it. Both
+    ///         assertions below fail against that version — the first because the key is already gone,
+    ///         the second because the admitted write faults instead of completing.
+    ///     </para>
+    /// </summary>
+    [Fact]
+    public async Task Disposal_under_an_owner_leaves_the_key_to_the_owner()
+    {
+        var store = new EncryptedFileSecretStore(_dir);
+
+        await store.SetAsync("studio/v1/test/key", "value", Ct);
+
+        var key = store.KeyForTests.ShouldNotBeNull();
+
+        // Models an operation inside the critical section. Holding the real gate is what makes this a
+        // test of ownership rather than of timing.
+        await store.GateForTests.WaitAsync(Ct);
+
+        // Admitted before disposal: SetAsync runs synchronously as far as its first await — the gate
+        // wait — so this call is past the disposed check and queued behind the owner above.
+        var admitted = store.SetAsync("studio/v1/test/key2", "value2", Ct);
+
+        store.Dispose();
+
+        key.ShouldContain(b => b != 0, "key material must survive while the gate is owned");
+        _ = store.KeyForTests.ShouldNotBeNull();
+
+        _ = store.GateForTests.Release();
+
+        // Drained, not aborted: work admitted before disposal finishes with a valid key.
+        await Should.NotThrowAsync(async () => await admitted.WaitAsync(Bounded, Ct));
+
+        // ...and the last one out still destroys it.
+        key.ShouldAllBe(b => b == 0);
+        store.KeyForTests.ShouldBeNull();
+    }
+
+    #endregion
+
+    #region The router's own lifetime (PRD-005 re-review, finding 3)
+
+    [Fact]
+    public async Task Every_router_operation_is_rejected_after_disposal()
+    {
+        var store = new SecretStore(_dir);
+
+        // A backend that is neither disposable nor disposed-aware — the shape of the macOS Keychain and
+        // Linux Secret Service paths. Without a check of its own on the facade, reads and existence
+        // probes reached straight through it and were served after Dispose() had returned.
+        SubstituteBackend(store, new EchoBackend());
+
+        store.Dispose();
+
+        // ObjectName pins *which* object refused. Asserting only the exception type would pass on the
+        // fallback path for the wrong reason: the encrypted file store rejects post-disposal calls too,
+        // and that says nothing about the router.
+        (await Rejected(() => store.GetAsync("k", Ct))).ShouldBe(typeof(SecretStore).FullName);
+        (await Rejected(() => store.ExistsAsync("k", Ct))).ShouldBe(typeof(SecretStore).FullName);
+        (await Rejected(() => store.SetAsync("k", "v", Ct))).ShouldBe(typeof(SecretStore).FullName);
+        (await Rejected(() => store.DeleteAsync("k", Ct))).ShouldBe(typeof(SecretStore).FullName);
+        (await Rejected(() => store.ListAsync(Ct))).ShouldBe(typeof(SecretStore).FullName);
+
+        static async Task<string?> Rejected(Func<Task> operation)
+            => (await Should.ThrowAsync<ObjectDisposedException>(operation)).ObjectName;
+    }
+
+    /// <summary>
+    ///     An operation the router admitted must finish against a live backend. A public set spans a
+    ///     backend write and a later index update, so disposing the backends on the disposed check alone
+    ///     could tear one down mid-operation.
+    /// </summary>
+    [Fact]
+    public async Task Disposal_waits_for_an_admitted_operation_before_releasing_the_backends()
+    {
+        var store = new SecretStore(_dir);
+        var backend = new BlockingBackend();
+
+        SubstituteBackend(store, backend);
+
+        var admitted = store.SetAsync("studio/v1/test/key", "value", Ct);
+
+        await backend.Entered.Task.WaitAsync(Bounded, Ct);
+
+        store.Dispose();
+
+        backend.DisposeCount.ShouldBe(0, "the backend is still serving an admitted operation");
+
+        backend.Release.SetResult();
+
+        await admitted.WaitAsync(Bounded, Ct);
+
+        // The last operation out is what releases them — and exactly once.
+        backend.DisposeCount.ShouldBe(1);
+
+        store.Dispose();
+
+        backend.DisposeCount.ShouldBe(1);
+    }
+
+    /// <summary>
+    ///     Points the router at a test backend. Reflection rather than a constructor seam: the seam
+    ///     would be a second, untested way to build the store, and the probe-and-commit logic in the
+    ///     real constructor is exactly what a test of disposal should keep.
+    /// </summary>
+    private static void SubstituteBackend(SecretStore store, ISecretBackend backend)
+    {
+        Set("_active", backend);
+        Set("_fallback", backend);
+        Set("_native", null);
+        Set("_activeIsNative", false);
+
+        void Set(string field, object? value)
+            => typeof(SecretStore)
+                .GetField(field, BindingFlags.Instance | BindingFlags.NonPublic)!
+                .SetValue(store, value);
+    }
+
+    private sealed class EchoBackend : ISecretBackend
+    {
+        public SecretStoreInfo Info { get; } = new("Test (not disposable)", IsOsKeychain: true, null);
+
+        public Task SetAsync(string keyRef, string value, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task<string?> GetAsync(string keyRef, CancellationToken cancellationToken = default)
+            => Task.FromResult<string?>("served");
+
+        public Task DeleteAsync(string keyRef, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task<bool> ExistsAsync(string keyRef, CancellationToken cancellationToken = default)
+            => Task.FromResult(true);
+    }
+
+    private sealed class BlockingBackend : ISecretBackend, IDisposable
+    {
+        public TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public int DisposeCount { get; private set; }
+
+        public SecretStoreInfo Info { get; } = new("Test (blocking)", IsOsKeychain: true, null);
+
+        public async Task SetAsync(string keyRef, string value, CancellationToken cancellationToken = default)
+        {
+            _ = Entered.TrySetResult();
+
+            await Release.Task;
+        }
+
+        public Task<string?> GetAsync(string keyRef, CancellationToken cancellationToken = default)
+            => Task.FromResult<string?>(null);
+
+        public Task DeleteAsync(string keyRef, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task<bool> ExistsAsync(string keyRef, CancellationToken cancellationToken = default)
+            => Task.FromResult(false);
+
+        public void Dispose() => DisposeCount++;
     }
 
     #endregion

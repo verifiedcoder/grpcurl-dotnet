@@ -1097,6 +1097,14 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
 
         _disposed = true;
 
+        // FIRST, before anything this tab owns is torn down: stop the work that is still running.
+        // Neither token source below owns the token an in-flight RPC is using — those belong to the
+        // toolkit-generated commands (IncludeCancelCommand = true). Closing a tab without cancelling
+        // them removed the tab and left its call running, still writing history and still reaching for
+        // the capture writer this method is about to dispose (PRD-005 review, finding 1).
+        InvokeCommand.Cancel();
+        StartStreamCommand.Cancel();
+
         PropertyChanged -= OnTrackedPropertyChanged;
         Headers.CollectionChanged -= OnHeadersChanged;
 

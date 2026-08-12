@@ -47,7 +47,16 @@ internal static class Program
             {
                 // FR-146: capture the final open-tab state on the way out (catches edits made after the
                 // last debounced persist). SPEC-040 §8: release the advisory workspace lock on clean close.
-                host.Services.GetRequiredService<DocumentsViewModel>().FlushSessionAsync().GetAwaiter().GetResult();
+                var documents = host.Services.GetRequiredService<DocumentsViewModel>();
+
+                documents.FlushSessionAsync().GetAwaiter().GetResult();
+
+                // PRD-005: release what the open tabs own — in-flight calls, debounce work, capture
+                // writers, singleton subscriptions. The close-flow disposal only covers tabs the user
+                // closed, so quitting with tabs open reached none of it. Strictly after the flush above:
+                // this cancels running work, and the snapshot must describe the session as it was.
+                documents.DisposeOpenDocuments();
+
                 host.Services.GetRequiredService<IWorkspaceStore>().ReleaseLock();
                 host.StopAsync().GetAwaiter().GetResult();
             }

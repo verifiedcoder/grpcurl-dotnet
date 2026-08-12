@@ -85,13 +85,9 @@ public sealed class DisposalContractTests : IDisposable
     [Fact]
     public void Windows_dpapi_secret_store_disposes_twice_without_throwing()
     {
-        // The type is [SupportedOSPlatform("windows")]; construction is plain file-path work but the
-        // analyser (and DPAPI on use) require the guard. Unreachable before PRD-005 in any case:
-        // SecretStore owns it, and SecretStore's own Dispose threw first.
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
+        // Reported as skipped rather than returning normally, so a run on Linux/macOS does not read as
+        // if this were covered — the review caught the earlier version claiming "0 skipped".
+        Assert.SkipWhen(!OperatingSystem.IsWindows(), "Windows DPAPI only.");
 
         Should.NotThrow(() =>
         {
@@ -107,6 +103,40 @@ public sealed class DisposalContractTests : IDisposable
         => Should.NotThrow(() =>
         {
             var tab = CreateInvocationTab(out _);
+
+            tab.Dispose();
+            tab.Dispose();
+        });
+
+    [Fact]
+    public void Graphql_document_disposes_twice_without_throwing()
+        => Should.NotThrow(() =>
+        {
+            var tab = CreateGraphQlTab();
+
+            tab.Dispose();
+            tab.Dispose();
+        });
+
+    [Fact]
+    public void Describe_document_disposes_twice_without_throwing()
+        => Should.NotThrow(() =>
+        {
+            var tab = new DescribeDocumentViewModel(
+                new SavedConnection { Name = "c", Address = "h:1" }, "pkg.Alpha",
+                new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(),
+                new FakeDocumentHost());
+
+            tab.Dispose();
+            tab.Dispose();
+        });
+
+    [Fact]
+    public void Settings_document_disposes_twice_without_throwing()
+        => Should.NotThrow(() =>
+        {
+            var tab = new SettingsDocumentViewModel(
+                new InMemorySettingsStore(), new FakeThemeService(), new FakeDialogService());
 
             tab.Dispose();
             tab.Dispose();
@@ -189,6 +219,11 @@ public sealed class DisposalContractTests : IDisposable
     }
 
     #endregion
+
+    private static GraphQlDocumentViewModel CreateGraphQlTab()
+        => new(
+            new SavedConnection { Name = "c", Address = "h:1" },
+            new FakeGraphQlService(), new ImmediateUiDispatcher(), new FakeClipboardService());
 
     private static InvocationDocumentViewModel CreateInvocationTab(out EnvironmentService environment)
     {

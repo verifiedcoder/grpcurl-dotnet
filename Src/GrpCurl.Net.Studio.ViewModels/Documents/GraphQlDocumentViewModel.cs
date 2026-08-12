@@ -1373,6 +1373,15 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDispo
 
         _disposed = true;
 
+        // The debounce sources below do not own the tokens the running operations use — those belong
+        // to the toolkit-generated commands. Cancel them first, or closing the tab leaves the GraphQL
+        // execution, schema load and translation still running against a tab nobody can see
+        // (PRD-005 review, finding 1).
+        ExecuteCommand.Cancel();
+        LoadSchemaCommand.Cancel();
+        LoadTranslationCommand.Cancel();
+        ValidateMappingSchemaCommand.Cancel();
+
         _parseCts?.Cancel();
         _parseCts?.Dispose();
         _parseCts = null;

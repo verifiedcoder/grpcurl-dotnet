@@ -595,6 +595,37 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         await PersistNowAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>
+    ///     Disposes every open tab at application shutdown, after the final session snapshot has been
+    ///     taken (PRD-005 review, finding 4).
+    ///     <para>
+    ///         The disposal wired into the close flow only runs for a tab the user actually closes, so
+    ///         exiting Studio with tabs open bypassed all of it: in-flight calls, debounce work, capture
+    ///         writers and singleton subscriptions survived until the forced process exit instead of
+    ///         being released deterministically.
+    ///     </para>
+    ///     <para>
+    ///         Deliberately <b>not</b> <see cref="CloseAll" />. That clears <see cref="Documents" />,
+    ///         whose collection-changed handler schedules a persist — which at this point would write an
+    ///         empty session over the snapshot just taken. This leaves the collection alone: the process
+    ///         is going away, and the session on disk must keep describing the tabs that were open.
+    ///     </para>
+    /// </summary>
+    public void DisposeOpenDocuments()
+    {
+        // Belt and braces against the same overwrite: nothing should schedule a persist from here.
+        _suppressPersist = true;
+
+        _persistCts?.Cancel();
+        _persistCts?.Dispose();
+        _persistCts = null;
+
+        foreach (var document in Documents)
+        {
+            (document as IDisposable)?.Dispose();
+        }
+    }
+
     private static RequestPrefill ToPrefill(SessionTab tab) => new(
         tab.Body ?? string.Empty,
         tab.BodyFormat,

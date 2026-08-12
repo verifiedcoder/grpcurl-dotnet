@@ -27,6 +27,8 @@ namespace GrpCurl.Net.Studio.Tests.Unit;
 /// </summary>
 public sealed class DocumentCloseDisposalTests
 {
+    private static readonly TimeSpan Bounded = TimeSpan.FromSeconds(10);
+
     private static SavedConnection Conn() => new() { Name = "c", Address = "h:1" };
 
     [Fact]
@@ -122,19 +124,44 @@ public sealed class DocumentCloseDisposalTests
     }
 
     [Fact]
-    public void Closing_a_describe_tab_does_not_throw()
+    public async Task Closing_a_describe_tab_mid_load_cancels_the_lookup()
     {
-        // DescribeDocumentViewModel became IDisposable in PRD-005 (it owns the in-flight load token
-        // source), so the close flow now disposes it too — including while a load is outstanding.
-        var (docs, _) = Create(resolveMethods: true);
+        var token = TestContext.Current.CancellationToken;
+        var received = new TaskCompletionSource<CancellationToken>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        // Genuinely mid-load. The first version of this test used Task.FromResult, so the describe had
+        // already completed during construction and "closing mid-load" was never exercised — the review
+        // caught the comment claiming otherwise.
+        var descriptors = new FakeDescriptorService
+        {
+            OnDescribe = async (connection, symbol, ct) =>
+            {
+                _ = connection;
+                _ = received.TrySetResult(ct);
+
+                await release.Task;
+
+                return DescribeResult.Success(new MessageDescription(symbol, symbol, "f.proto", [], [], "{}"));
+            }
+        };
+
+        var docs = Create(descriptors);
 
         docs.OpenDescribe(Conn(), "pkg.Alpha");
 
         var tab = docs.Documents[0];
+        var loadToken = await received.Task.WaitAsync(Bounded, token);
+
+        loadToken.IsCancellationRequested.ShouldBeFalse();
 
         Should.NotThrow(() => tab.CloseCommand.Execute(null));
 
+        loadToken.IsCancellationRequested.ShouldBeTrue("closing a describe tab must cancel its lookup");
+
         docs.Documents.ShouldBeEmpty();
+
+        release.SetResult();
     }
 
     /// <param name="resolveMethods">
@@ -142,15 +169,24 @@ public sealed class DocumentCloseDisposalTests
     ///     a successful resolve repopulates <c>Headers</c>, which would discard the row those tests add
     ///     and make them assert against a collection the tab had already replaced.
     /// </param>
-    private static (DocumentsViewModel Docs, EnvironmentService Env) Create(bool resolveMethods = false)
+    private static DocumentsViewModel Create(FakeDescriptorService descriptors)
     {
-        var descriptors = resolveMethods
+        var (docs, _) = CreateWithEnvironment(descriptors);
+
+        return docs;
+    }
+
+    private static (DocumentsViewModel Docs, EnvironmentService Env) Create(bool resolveMethods = false)
+        => CreateWithEnvironment(resolveMethods
             ? new FakeDescriptorService
             {
                 OnDescribe = (_, symbol, _) => Task.FromResult(
                     DescribeResult.Success(new MessageDescription(symbol, symbol, "f.proto", [], [], "{}")))
             }
-            : new FakeDescriptorService();
+            : new FakeDescriptorService());
+
+    private static (DocumentsViewModel Docs, EnvironmentService Env) CreateWithEnvironment(FakeDescriptorService descriptors)
+    {
 
         var workspace = new FakeWorkspaceStore(new WorkspaceModel
         {

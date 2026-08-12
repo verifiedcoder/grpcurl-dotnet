@@ -24,6 +24,13 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
         + "machine id) sit on the same disk as the encrypted data. For stronger protection, install or enable a "
         + "Secret Service provider such as GNOME Keyring or KWallet (with the Secret Service bridge).";
 
+    /// <summary>
+    ///     How long disposal waits for an in-flight operation to leave the critical section before
+    ///     giving up on draining. Bounded on purpose: shutdown must not hang on a stuck operation, and
+    ///     a straggler is rejected by the disposed check rather than by a destroyed gate.
+    /// </summary>
+    private static readonly TimeSpan DisposeDrainTimeout = TimeSpan.FromSeconds(2);
+
     private static readonly byte[] HkdfInfo = "GrpCurl.Net Studio secret store v1"u8.ToArray();
 
     private readonly string _directory;
@@ -33,7 +40,7 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
     private readonly SemaphoreSlim _gate = new(1, 1);
 
     private byte[]? _key;
-    private bool _disposed;
+    private int _disposed;
 
     /// <summary>
     ///     The cached derived key, for the PRD-005 zeroization test only. A test cannot otherwise
@@ -55,6 +62,8 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
 
     public async Task SetAsync(string keyRef, string value, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
+
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -70,6 +79,8 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
 
     public async Task<string?> GetAsync(string keyRef, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
+
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -92,6 +103,8 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
 
     public async Task DeleteAsync(string keyRef, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
+
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -109,6 +122,8 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
 
     public async Task<bool> ExistsAsync(string keyRef, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
+
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -134,12 +149,22 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
 
     // ── SEC-023: HKDF-SHA256(ikm = machineId ∥ uid, salt = per-install random, info = label) ──
 
-    private byte[] Key() => _key ??= HKDF.DeriveKey(
-        HashAlgorithmName.SHA256,
-        ikm: [.. MachineId(), .. UserScope()],
-        outputLength: 32,
-        salt: LoadOrCreateSalt(),
-        info: HkdfInfo);
+    private void ThrowIfDisposed()
+        => ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
+
+    private byte[] Key()
+    {
+        // Also checked here, not only at the entry points: if the drain timed out, an operation that
+        // owned the gate is still running and must not derive or reuse a key that has been zeroed.
+        ThrowIfDisposed();
+
+        return _key ??= HKDF.DeriveKey(
+            HashAlgorithmName.SHA256,
+            ikm: [.. MachineId(), .. UserScope()],
+            outputLength: 32,
+            salt: LoadOrCreateSalt(),
+            info: HkdfInfo);
+    }
 
     private byte[] LoadOrCreateSalt()
     {
@@ -271,20 +296,37 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
     /// </summary>
     public void Dispose()
     {
-        if (_disposed)
+        // Atomic, so two concurrent disposals cannot both pass the check and race the teardown below,
+        // and so every operation entry point sees the rejection at the same instant.
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
         {
             return;
         }
 
-        _disposed = true;
+        // Drain before destroying anything. The previous version zeroed the key and disposed the gate
+        // without ever acquiring it, so an operation already inside the critical section could have the
+        // key cleared underneath its AES call and then throw from its own Release() (PRD-005 review,
+        // finding 3). Bounded, because shutdown must not hang on a stuck operation.
+        var drained = _gate.Wait(DisposeDrainTimeout);
 
-        if (_key is not null)
+        try
         {
-            CryptographicOperations.ZeroMemory(_key);
+            if (_key is not null)
+            {
+                CryptographicOperations.ZeroMemory(_key);
 
-            _key = null;
+                _key = null;
+            }
         }
-
-        _gate.Dispose();
+        finally
+        {
+            // Disposed while still held, so nothing can queue behind it; a caller that arrives later
+            // gets ObjectDisposedException, which is the pinned behaviour. If the drain timed out we
+            // leave the gate alone rather than disposing it under an owner — the undefined case.
+            if (drained)
+            {
+                _gate.Dispose();
+            }
+        }
     }
 }

@@ -19,6 +19,12 @@ internal sealed class SecretStore : ISecretStore, IDisposable
 
     private readonly ISecretBackend _fallback;
     private readonly string _indexPath;
+    /// <summary>
+    ///     How long disposal waits for an in-flight index operation to leave the critical section
+    ///     before giving up on draining. Bounded on purpose: shutdown must not hang.
+    /// </summary>
+    private static readonly TimeSpan DisposeDrainTimeout = TimeSpan.FromSeconds(2);
+
     private readonly SemaphoreSlim _indexGate = new(1, 1);
 
     /// <summary>
@@ -33,7 +39,7 @@ internal sealed class SecretStore : ISecretStore, IDisposable
     private volatile ISecretBackend _active;
     private volatile bool _activeIsNative;
 
-    private bool _disposed;
+    private int _disposed;
 
     public SecretStore(string directory, Action<string>? log = null)
     {
@@ -64,6 +70,8 @@ internal sealed class SecretStore : ISecretStore, IDisposable
 
     public async Task SetAsync(string keyRef, string value, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
+
         await RunAsync(store => store.SetAsync(keyRef, value, cancellationToken)).ConfigureAwait(false);
         await UpdateIndexAsync(keyRef, present: true, cancellationToken).ConfigureAwait(false);
     }
@@ -73,6 +81,8 @@ internal sealed class SecretStore : ISecretStore, IDisposable
 
     public async Task DeleteAsync(string keyRef, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
+
         await RunAsync(store => store.DeleteAsync(keyRef, cancellationToken)).ConfigureAwait(false);
         await UpdateIndexAsync(keyRef, present: false, cancellationToken).ConfigureAwait(false);
     }
@@ -84,6 +94,8 @@ internal sealed class SecretStore : ISecretStore, IDisposable
     // native keychains cannot be portably listed, so the index is the single source of truth across backends.
     public async Task<IReadOnlyList<string>> ListAsync(CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
+
         await _indexGate.WaitAsync(cancellationToken).ConfigureAwait(false);
 
         try
@@ -210,6 +222,9 @@ internal sealed class SecretStore : ISecretStore, IDisposable
         or TypeInitializationException
         or PlatformNotSupportedException;
 
+    private void ThrowIfDisposed()
+        => ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
+
     /// <summary>
     ///     Disposes both backends this store owns, then the index gate. Idempotent and non-throwing:
     ///     this is a container-owned singleton, and before PRD-005 its throw was one of the three that
@@ -226,16 +241,24 @@ internal sealed class SecretStore : ISecretStore, IDisposable
     /// </summary>
     public void Dispose()
     {
-        if (_disposed)
+        // Atomic, so two concurrent disposals cannot both pass the check and race the teardown.
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
         {
             return;
         }
 
-        _disposed = true;
+        // Drain the index gate before touching anything: disposing a SemaphoreSlim under an owner is
+        // undefined, and an index write in flight must finish before its backend goes away
+        // (PRD-005 review, finding 3). Bounded, so shutdown cannot hang on a stuck operation.
+        var drained = _indexGate.Wait(DisposeDrainTimeout);
 
+        // Backends after the drain, so no index operation is still using one. Each drains its own gate.
         (_native as IDisposable)?.Dispose();
         (_fallback as IDisposable)?.Dispose();
 
-        _indexGate.Dispose();
+        if (drained)
+        {
+            _indexGate.Dispose();
+        }
     }
 }

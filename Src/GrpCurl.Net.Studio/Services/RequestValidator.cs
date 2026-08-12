@@ -15,14 +15,22 @@ namespace GrpCurl.Net.Studio.Services;
 /// </summary>
 internal sealed class RequestValidator(IInvocationService invocation, ITlsProfileResolver? tlsResolver = null) : IRequestValidator, IDisposable
 {
+    /// <summary>
+    ///     How long disposal waits for an in-flight operation to leave the critical section before
+    ///     giving up on draining. Bounded on purpose: shutdown must not hang on a stuck operation.
+    /// </summary>
+    private static readonly TimeSpan DisposeDrainTimeout = TimeSpan.FromSeconds(2);
+
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly Dictionary<string, MessageDescriptor> _inputCache = [];
 
-    private bool _disposed;
+    private int _disposed;
 
     public async Task<IReadOnlyList<ValidationProblem>> ValidateAsync(
         SavedConnection connection, string methodSymbol, string requestJson, bool allowUnknownFields, CancellationToken cancellationToken)
     {
+        ThrowIfDisposed();
+
         MessageDescriptor input;
 
         try
@@ -108,6 +116,9 @@ internal sealed class RequestValidator(IInvocationService invocation, ITlsProfil
         return marker >= 0 ? message[..marker] : message;
     }
 
+    private void ThrowIfDisposed()
+        => ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
+
     /// <summary>
     ///     Releases the validation gate. Idempotent and non-throwing: this is a container-owned
     ///     singleton, so it runs from <c>ServiceProvider.Dispose()</c> during shutdown, where a throw
@@ -116,13 +127,23 @@ internal sealed class RequestValidator(IInvocationService invocation, ITlsProfil
     /// </summary>
     public void Dispose()
     {
-        if (_disposed)
+        // Atomic, so two concurrent disposals cannot both pass the check and race the teardown.
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
         {
             return;
         }
 
-        _disposed = true;
+        // Drain before destroying the gate: disposing a SemaphoreSlim while an operation owns it (or is
+        // queued on it) is undefined, and the previous version simply assumed no work was live
+        // (PRD-005 review, finding 3). Bounded, so shutdown cannot hang.
+        var drained = _gate.Wait(DisposeDrainTimeout);
 
-        _gate.Dispose();
+        // Disposed while still held, so nothing can queue behind it; a later caller gets
+        // ObjectDisposedException. If the drain timed out the gate is left alone rather than destroyed
+        // under an owner.
+        if (drained)
+        {
+            _gate.Dispose();
+        }
     }
 }

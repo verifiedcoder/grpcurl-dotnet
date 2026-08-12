@@ -340,6 +340,11 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         foreach (var document in Documents)
         {
             document.CloseRequested -= OnDocumentCloseRequested;
+
+            // PRD-005: a closed tab is finished, and some of them hold resources that outlive it —
+            // debounce token sources, a capture writer, and subscriptions to container singletons that
+            // would otherwise root the tab for the life of the process.
+            (document as IDisposable)?.Dispose();
         }
 
         Documents.Clear();
@@ -364,6 +369,10 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
                 ? null
                 : Documents[Math.Min(index, Documents.Count - 1)];
         }
+
+        // PRD-005. After the removal and the selection move, so nothing observing either touches a
+        // disposed tab: SchedulePersist runs off the Documents collection, which no longer holds it.
+        (document as IDisposable)?.Dispose();
     }
 
     partial void OnSelectedDocumentChanged(DocumentViewModel? value) => SchedulePersist();

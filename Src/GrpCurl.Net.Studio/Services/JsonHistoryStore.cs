@@ -30,6 +30,8 @@ internal sealed class JsonHistoryStore : IHistoryStore, IDisposable
     private List<HistoryEntry>? _cachedEntries;
     private (long Length, long Ticks)? _cacheSignature;
 
+    private bool _disposed;
+
     public JsonHistoryStore(ISettingsStore settings)
         : this(Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -239,8 +241,23 @@ internal sealed class JsonHistoryStore : IHistoryStore, IDisposable
 
     private static readonly UTF8Encoding Utf8NoBom = new(encoderShouldEmitUTF8Identifier: false);
 
+    /// <summary>
+    ///     Releases the write gate and drops the read cache. Idempotent and non-throwing: this is a
+    ///     container-owned singleton disposed during shutdown, where a throw aborts disposal of every
+    ///     singleton after it (PRD-005). Every write is fully awaited by its caller, so there is
+    ///     nothing to flush here; the injected settings store is container-owned and not disposed.
+    /// </summary>
     public void Dispose()
     {
-        throw new NotImplementedException();
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        InvalidateCache();
+
+        _gate.Dispose();
     }
 }

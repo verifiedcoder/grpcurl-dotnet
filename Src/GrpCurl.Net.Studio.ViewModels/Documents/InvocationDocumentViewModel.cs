@@ -52,6 +52,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
     private readonly Func<string, TextWriter> _writerFactory;
     private StreamCaptureWriter? _capture;
     private CancellationTokenSource? _validationCts;
+    private bool _disposed;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsInFlight), nameof(IsCompleted), nameof(HasResponse))]
@@ -1070,8 +1071,51 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
         return last >= 0 && last < trimmed.Length - 1 ? trimmed[(last + 1)..] : trimmed;
     }
 
+    /// <summary>
+    ///     Releases everything this tab owns when it closes (PRD-005). Idempotent and non-throwing.
+    ///     <para>
+    ///         The subscription that matters is <see cref="IEnvironmentService.ActiveChanged" />: the
+    ///         environment service is a container singleton, so until this ran every closed invocation
+    ///         tab stayed reachable from it — a leak per tab, for the life of the process. The other
+    ///         two subscriptions are self-rooted and die with the view model; they are unhooked for
+    ///         symmetry, not because they leak.
+    ///     </para>
+    ///     <para>
+    ///         Both token sources are cancelled before disposal so their pending waiters unwind
+    ///         first. <c>_elapsedCts</c> is also the one the non-<c>InFlight</c> branch of
+    ///         <c>OnStateChanged(RunState)</c> cancelled and nulled without ever disposing — that
+    ///         instance was unreachable by the time this runs, so this closes the leak going forward
+    ///         rather than retroactively.
+    ///     </para>
+    /// </summary>
     public void Dispose()
     {
-        throw new NotImplementedException();
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        PropertyChanged -= OnTrackedPropertyChanged;
+        Headers.CollectionChanged -= OnHeadersChanged;
+
+        if (_environment is not null)
+        {
+            _environment.ActiveChanged -= OnActiveEnvironmentChanged;
+        }
+
+        _elapsedCts?.Cancel();
+        _elapsedCts?.Dispose();
+        _elapsedCts = null;
+
+        _validationCts?.Cancel();
+        _validationCts?.Dispose();
+        _validationCts = null;
+
+        // Safe to dispose under an in-flight stream: StreamCaptureWriter drops writes once disposed
+        // rather than throwing into the pump's fire-and-forget task.
+        _capture?.Dispose();
+        _capture = null;
     }
 }

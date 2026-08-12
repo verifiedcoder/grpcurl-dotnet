@@ -21,23 +21,34 @@ internal sealed class SecretStore : ISecretStore, IDisposable
     private readonly string _indexPath;
     private readonly SemaphoreSlim _indexGate = new(1, 1);
 
+    /// <summary>
+    ///     The native backend this store constructed, or <see langword="null" /> on a platform without
+    ///     one. Held as a field rather than read off <see cref="_active" /> at disposal time because
+    ///     <see cref="DemoteToFallback" /> can reassign <c>_active</c> mid-session, and because a
+    ///     backend whose probe failed is never assigned to <c>_active</c> at all — before PRD-005 that
+    ///     one was simply dropped, leaking the Windows backend's semaphore on every failed probe.
+    /// </summary>
+    private readonly ISecretBackend? _native;
+
     private volatile ISecretBackend _active;
     private volatile bool _activeIsNative;
+
+    private bool _disposed;
 
     public SecretStore(string directory, Action<string>? log = null)
     {
         _fallback = new EncryptedFileSecretStore(directory);
         _indexPath = Path.Combine(directory, IndexFileName);
 
-        var native = OperatingSystem.IsWindows() ? new WindowsDpapiSecretStore(directory)
+        _native = OperatingSystem.IsWindows() ? new WindowsDpapiSecretStore(directory)
             : OperatingSystem.IsMacOS() ? (ISecretBackend?)new MacKeychainSecretStore()
             : OperatingSystem.IsLinux() ? new LinuxLibsecretSecretStore()
             : null;
 
         // SEC-025: probe the native backend once at startup; commit to native or fallback now.
-        if (native is not null && Probe(native))
+        if (_native is not null && Probe(_native))
         {
-            _active = native;
+            _active = _native;
             _activeIsNative = true;
         }
         else
@@ -199,8 +210,32 @@ internal sealed class SecretStore : ISecretStore, IDisposable
         or TypeInitializationException
         or PlatformNotSupportedException;
 
+    /// <summary>
+    ///     Disposes both backends this store owns, then the index gate. Idempotent and non-throwing:
+    ///     this is a container-owned singleton, and before PRD-005 its throw was one of the three that
+    ///     crashed every clean shutdown.
+    ///     <para>
+    ///         The two owned fields are disposed rather than <see cref="_active" /> plus
+    ///         <see cref="_fallback" />, which would double-dispose whenever the probe failed — in that
+    ///         case <c>_active</c> <em>is</em> <c>_fallback</c>. Disposing <see cref="_native" />
+    ///         instead also covers the backend whose probe failed, which nothing released before.
+    ///     </para>
+    ///     Both are pattern-matched rather than cast: <c>MacKeychainSecretStore</c> and
+    ///     <c>LinuxLibsecretSecretStore</c> hold no disposable state and do not implement
+    ///     <see cref="IDisposable" />, so only the Windows and file backends have anything to release.
+    /// </summary>
     public void Dispose()
     {
-        throw new NotImplementedException();
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        (_native as IDisposable)?.Dispose();
+        (_fallback as IDisposable)?.Dispose();
+
+        _indexGate.Dispose();
     }
 }

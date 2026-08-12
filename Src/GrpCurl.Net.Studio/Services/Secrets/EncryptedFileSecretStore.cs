@@ -33,6 +33,15 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
     private readonly SemaphoreSlim _gate = new(1, 1);
 
     private byte[]? _key;
+    private bool _disposed;
+
+    /// <summary>
+    ///     The cached derived key, for the PRD-005 zeroization test only. A test cannot otherwise
+    ///     observe that <see cref="Dispose" /> cleared the buffer rather than merely dropping the
+    ///     reference, and asserting that is the point of the test. Read-only, and on no code path the
+    ///     product takes.
+    /// </summary>
+    internal byte[]? KeyForTests => _key;
 
     public EncryptedFileSecretStore(string directory)
     {
@@ -249,8 +258,33 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
     [DllImport("libc")]
     private static extern uint getuid();
 
+    /// <summary>
+    ///     Zeroes the derived key, then releases the write gate. Idempotent and non-throwing (PRD-005).
+    ///     <para>
+    ///         The key is the reason this one matters beyond shutdown hygiene: it is an HKDF-derived
+    ///         AES-256 key cached for the process lifetime, and without this it stayed readable in the
+    ///         managed heap until exit. <see cref="CryptographicOperations.ZeroMemory" /> is used rather
+    ///         than dropping the reference so the bytes are gone rather than merely unreachable.
+    ///     </para>
+    ///     Ordering: zero before releasing the gate, so a caller that somehow raced this far still
+    ///     serialises against the crypto operations rather than observing a half-cleared key.
+    /// </summary>
     public void Dispose()
     {
-        throw new NotImplementedException();
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        if (_key is not null)
+        {
+            CryptographicOperations.ZeroMemory(_key);
+
+            _key = null;
+        }
+
+        _gate.Dispose();
     }
 }

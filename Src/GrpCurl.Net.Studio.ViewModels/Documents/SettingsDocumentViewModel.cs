@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Diagnostics;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.ComponentModel;
 
 namespace GrpCurl.Net.Studio.ViewModels.Documents;
 
@@ -15,8 +16,10 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 ///     <see cref="ISettingsStore" />. All categories are active: General, Editor, Network, protoc,
 ///     Security, History, Descriptor limits, Updates, and Diagnostics (FR-155 log viewer).
 /// </summary>
-public sealed partial class SettingsDocumentViewModel : DocumentViewModel
+public sealed partial class SettingsDocumentViewModel : DocumentViewModel, IDisposable
 {
+    private bool _disposed;
+
     private readonly ISettingsStore _settings;
     private readonly IThemeService _themeService;
     private readonly IDialogService _dialogs;
@@ -179,14 +182,11 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
 
         LoadFrom(settings.Current, themeService.Current);
 
-        // Keep the theme selector in sync when changed elsewhere (the View menu).
-        themeService.PropertyChanged += (_, e) =>
-        {
-            if (e.PropertyName == nameof(IThemeService.Current))
-            {
-                Theme = _themeService.Current;
-            }
-        };
+        // Keep the theme selector in sync when changed elsewhere (the View menu). A named handler
+        // rather than a lambda so Dispose can unhook it: the theme service is a container singleton,
+        // and an anonymous handler would root every closed Settings tab for the life of the process
+        // with no reference left to remove (PRD-005).
+        themeService.PropertyChanged += OnThemeServiceChanged;
 
         _loaded = true;
     }
@@ -586,5 +586,33 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel
         var settings = _settings.Current;
         mutate(settings);
         _ = _settings.SaveAsync(settings);
+    }
+
+    private void OnThemeServiceChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(IThemeService.Current))
+        {
+            Theme = _themeService.Current;
+        }
+    }
+
+    /// <summary>
+    ///     Unhooks the theme service when the tab closes (PRD-005). Idempotent and non-throwing.
+    ///     <para>
+    ///         <see cref="IThemeService" /> is a container singleton, so this subscription is the one
+    ///         thing here that outlives the tab: without it every closed Settings tab stayed reachable
+    ///         from the singleton for the life of the process.
+    ///     </para>
+    /// </summary>
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        _themeService.PropertyChanged -= OnThemeServiceChanged;
     }
 }

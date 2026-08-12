@@ -17,6 +17,8 @@ internal sealed class WindowsDpapiSecretStore : ISecretBackend, IDisposable
     private readonly string _dataPath;
     private readonly SemaphoreSlim _gate = new(1, 1);
 
+    private bool _disposed;
+
     public WindowsDpapiSecretStore(string directory) => _dataPath = Path.Combine(directory, "secrets.dpapi.json");
 
     public SecretStoreInfo Info { get; } = new("Windows DPAPI", IsOsKeychain: true, LimitationNote: null);
@@ -97,8 +99,20 @@ internal sealed class WindowsDpapiSecretStore : ISecretBackend, IDisposable
         File.WriteAllText(_dataPath, JsonSerializer.Serialize(store));
     }
 
+    /// <summary>
+    ///     Releases the write gate. Idempotent and non-throwing (PRD-005). Reachable only since
+    ///     <see cref="SecretStore" /> started disposing the backend it owns — before that its own
+    ///     <c>Dispose</c> threw first, so this one never ran.
+    /// </summary>
     public void Dispose()
     {
-        throw new NotImplementedException();
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        _gate.Dispose();
     }
 }

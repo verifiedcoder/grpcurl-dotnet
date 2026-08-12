@@ -18,6 +18,8 @@ internal sealed class RequestValidator(IInvocationService invocation, ITlsProfil
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly Dictionary<string, MessageDescriptor> _inputCache = [];
 
+    private bool _disposed;
+
     public async Task<IReadOnlyList<ValidationProblem>> ValidateAsync(
         SavedConnection connection, string methodSymbol, string requestJson, bool allowUnknownFields, CancellationToken cancellationToken)
     {
@@ -106,8 +108,21 @@ internal sealed class RequestValidator(IInvocationService invocation, ITlsProfil
         return marker >= 0 ? message[..marker] : message;
     }
 
+    /// <summary>
+    ///     Releases the validation gate. Idempotent and non-throwing: this is a container-owned
+    ///     singleton, so it runs from <c>ServiceProvider.Dispose()</c> during shutdown, where a throw
+    ///     aborts disposal of every singleton after it (PRD-005). The injected invocation service and
+    ///     TLS resolver are container-owned too and are deliberately not disposed here.
+    /// </summary>
     public void Dispose()
     {
-        throw new NotImplementedException();
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        _gate.Dispose();
     }
 }

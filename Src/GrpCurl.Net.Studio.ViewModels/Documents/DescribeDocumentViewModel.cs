@@ -12,7 +12,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 ///     opens the target in a new tab via the document host. Messages/methods expose the generated
 ///     request template (FR-052) with copy (FR-056).
 /// </summary>
-public sealed partial class DescribeDocumentViewModel : DocumentViewModel
+public sealed partial class DescribeDocumentViewModel : DocumentViewModel, IDisposable
 {
     private readonly IDescriptorService _descriptors;
     private readonly IUiDispatcher _dispatcher;
@@ -22,6 +22,7 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel
     private readonly Stack<string> _back = new();
     private readonly Stack<string> _forward = new();
     private CancellationTokenSource? _loadCts;
+    private bool _disposed;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLoading), nameof(IsLoaded), nameof(HasError))]
@@ -211,5 +212,28 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel
         var trimmed = symbol.TrimEnd('.', '/');
         var lastDot = trimmed.LastIndexOfAny(['.', '/']);
         return lastDot >= 0 && lastDot < trimmed.Length - 1 ? trimmed[(lastDot + 1)..] : trimmed;
+    }
+
+    /// <summary>
+    ///     Cancels and releases the in-flight describe load when the tab closes (PRD-005). Idempotent
+    ///     and non-throwing.
+    ///     <para>
+    ///         <c>LoadAsync</c> cancels the previous token source on each navigation but never disposes
+    ///         one, so closing a tab mid-load left the lookup running against a descriptor service the
+    ///         user had walked away from.
+    ///     </para>
+    /// </summary>
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        _loadCts?.Cancel();
+        _loadCts?.Dispose();
+        _loadCts = null;
     }
 }

@@ -21,7 +21,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 ///     This PR covers query/mutation execution + the response envelope viewer; subscriptions, the
 ///     mapping designer, and the introspection viewer arrive in later epics.
 /// </summary>
-public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
+public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDisposable
 {
     /// <summary>The 4 MiB cap the CLI applies to <c>--file</c>/<c>--variables-file</c> (GQL-014/020).</summary>
     internal const long MaxFileBytes = 4L * 1024 * 1024;
@@ -39,6 +39,7 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     private CancellationTokenSource? _parseCts;
     private CancellationTokenSource? _resolveCts;
     private CancellationTokenSource? _mappingCts;
+    private bool _disposed;
     private string? _responseEnvelope;
     private bool _syncingVars;
 
@@ -1351,4 +1352,37 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     }
 
     private static string? NullIfBlank(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;
+
+    /// <summary>
+    ///     Cancels and releases the three debounce token sources when the tab closes (PRD-005).
+    ///     Idempotent and non-throwing.
+    ///     <para>
+    ///         Each is already cancelled and disposed when <em>replaced</em>, so the leak was only ever
+    ///         the last one alive at close — but a tab closed while a parse, schema resolve or mapping
+    ///         validation is in flight left that work running with nothing able to stop it. The
+    ///         subscriptions this view model makes (<c>Headers.CollectionChanged</c> and per-row
+    ///         <c>PropertyChanged</c>) are all to objects it owns, so they die with it.
+    ///     </para>
+    /// </summary>
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        _parseCts?.Cancel();
+        _parseCts?.Dispose();
+        _parseCts = null;
+
+        _resolveCts?.Cancel();
+        _resolveCts?.Dispose();
+        _resolveCts = null;
+
+        _mappingCts?.Cancel();
+        _mappingCts?.Dispose();
+        _mappingCts = null;
+    }
 }

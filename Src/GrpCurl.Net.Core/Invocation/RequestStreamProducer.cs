@@ -29,12 +29,19 @@ internal enum RequestFaultPolicy
     HalfCloseThenAbort,
 
     /// <summary>
-    ///     Abort at once, without half-closing. Client streaming's policy (PRD-004A): the server's
-    ///     single response is an aggregate over the <i>whole</i> request stream, so a clean EOF would
-    ///     invite it to compute and commit one over a stream the client already knows is truncated.
-    ///     RST_STREAM is the honest signal, and it releases the response side immediately.
+    ///     Skip the half-close, but keep the same bounded window before aborting. Client streaming's
+    ///     policy (PRD-004A): the server's single response is an aggregate over the <i>whole</i>
+    ///     request stream, so a clean EOF would invite it to compute and commit one over a stream the
+    ///     client already knows is truncated.
+    ///     <para>
+    ///         The window is not the same thing as the half-close, and PRD-004A's first attempt lost
+    ///         that distinction by aborting at once. A server that had already failed — and whose
+    ///         status was in flight when the write failed — had that status destroyed by the reset,
+    ///         leaving the local write shadow as the only error left to report. Waiting costs a
+    ///         bounded delay on a call that is failing anyway; not waiting costs the server's word.
+    ///     </para>
     /// </summary>
-    AbortImmediately
+    AbortWithoutHalfClose
 }
 
 /// <summary>
@@ -66,9 +73,8 @@ internal enum RequestFaultPolicy
 internal sealed class RequestStreamProducer
 {
     /// <summary>
-    ///     How long a failed producer waits for the server to end the response stream on its own
-    ///     after the half-close, before aborting the call. Applies only under
-    ///     <see cref="RequestFaultPolicy.HalfCloseThenAbort" />.
+    ///     How long a failed producer waits for the server to end the response side on its own before
+    ///     aborting the call. Applies under both policies — only the half-close preceding it varies.
     ///     <para>
     ///         A half-close is ordinary request EOF; gRPC does not make response completion a
     ///         consequence of it. A duplex server may still be processing, waiting on something
@@ -81,6 +87,10 @@ internal sealed class RequestStreamProducer
     private static readonly TimeSpan ResponseReleaseGrace = TimeSpan.FromMilliseconds(250);
 
     private readonly CancellationTokenSource _callCts;
+
+    /// <summary>Guards <see cref="_writerCancellation" />, which two teardown paths can start.</summary>
+    private readonly Lock _cancelGate = new();
+
     private readonly RequestFaultPolicy _faultPolicy;
     private readonly IClientStreamWriter<IMessage> _requestStream;
 
@@ -90,6 +100,7 @@ internal sealed class RequestStreamProducer
     private int _abortedCall;
     private ProducerFault? _fault;
     private int _released;
+    private Task? _writerCancellation;
 
     private RequestStreamProducer(
         IClientStreamWriter<IMessage> requestStream,
@@ -172,26 +183,51 @@ internal sealed class RequestStreamProducer
     /// </summary>
     public void OnResponseEnded() => _responseEnded.TrySetResult();
 
-    /// <summary>Stops the producer without touching the call itself.</summary>
-    public ValueTask CancelAsync() => CancelQuietlyAsync(_writerCts);
+    /// <summary>
+    ///     Starts stopping the producer and returns at once, handing back the task that completes when
+    ///     cancellation has finished propagating.
+    ///     <para>
+    ///         INVARIANT: callers must not await the returned task outside a bound.
+    ///         <see cref="CancellationTokenSource.CancelAsync" /> completes only once every registered
+    ///         callback has returned, and the writer token is handed to the caller's own
+    ///         <c>GetAsyncEnumerator</c> — so a source may register a callback against it and block
+    ///         there. Awaiting cancellation ahead of the drain reinstated exactly the caller-visible
+    ///         hang this class exists to prevent, by a route <c>MoveNextAsync</c> no longer had
+    ///         (PRD-004A review, finding 1).
+    ///     </para>
+    ///     Idempotent: repeated calls return the first cancellation task rather than starting another.
+    /// </summary>
+    public Task BeginCancel()
+    {
+        lock (_cancelGate)
+        {
+            return _writerCancellation ??= CancelQuietlyAsync(_writerCts).AsTask();
+        }
+    }
 
     /// <summary>
     ///     Stops the producer and waits a bounded grace for it to unwind, returning the fault it
     ///     failed with, if any. Bounded because a source can be parked in an operation that ignores
     ///     cancellation — an already-issued console read cannot be recalled — and blocking on that is
     ///     the filed hang. A producer that merely observed cancellation yields <see langword="null" />.
+    ///     <para>
+    ///         The grace covers cancellation <i>and</i> the pump together, not the pump alone: a
+    ///         blocking cancellation callback is as capable of stranding the caller as a blocking
+    ///         <c>MoveNextAsync</c>, and putting it ahead of the wait would leave it unbounded.
+    ///     </para>
     /// </summary>
     public async ValueTask<ProducerFault?> DrainAsync(TimeSpan grace)
     {
-        await CancelAsync().ConfigureAwait(false);
+        var cancellation = BeginCancel();
 
         try
         {
-            await Completion.WaitAsync(grace, CancellationToken.None).ConfigureAwait(false);
+            await Task.WhenAll(cancellation, Completion).WaitAsync(grace, CancellationToken.None).ConfigureAwait(false);
         }
         catch (TimeoutException)
         {
-            // Still parked. Its fault, if it ever raises one, is observed by ReleaseWhenIdle.
+            // Still parked, in the source or in its cancellation callback. Whatever either eventually
+            // raises is observed by ReleaseWhenIdle.
             return null;
         }
         catch (OperationCanceledException)
@@ -209,22 +245,36 @@ internal sealed class RequestStreamProducer
     }
 
     /// <summary>
-    ///     Releases both token sources, immediately if the pump has finished, otherwise when it
-    ///     eventually does — the only moment it is safe to dispose a source whose token it still
+    ///     Releases both token sources, immediately if the producer is finished, otherwise when it
+    ///     eventually is — the only moment it is safe to dispose a source whose token something still
     ///     holds. Also observes any fault so it cannot escape as an unobserved task exception.
+    ///     <para>
+    ///         "Finished" means the pump has exited <i>and</i> any cancellation has finished
+    ///         propagating. A callback still running holds the writer token just as the pump does, and
+    ///         <see cref="CancellationTokenSource.Dispose()" /> under either is unsafe.
+    ///     </para>
     /// </summary>
     public void ReleaseWhenIdle()
     {
-        if (Completion.IsCompleted)
+        Task pending;
+
+        lock (_cancelGate)
         {
-            _ = Completion.Exception;
+            pending = _writerCancellation is null
+                ? Completion
+                : Task.WhenAll(Completion, _writerCancellation);
+        }
+
+        if (pending.IsCompleted)
+        {
+            _ = pending.Exception;
 
             Release();
 
             return;
         }
 
-        _ = Completion.ContinueWith(
+        _ = pending.ContinueWith(
             static (completed, state) =>
             {
                 _ = completed.Exception;
@@ -388,25 +438,28 @@ internal sealed class RequestStreamProducer
 
         if (_faultPolicy is RequestFaultPolicy.HalfCloseThenAbort)
         {
-            // Graceful first: request EOF is all a server needs if it finishes on it.
+            // Graceful first: request EOF is all a server needs if it finishes on it. Skipped under
+            // AbortWithoutHalfClose, where a clean EOF would tell a client-streaming server that the
+            // stream it is aggregating ended normally, and it would answer — committing whatever it
+            // had. The client already knows the stream is short.
             await HalfCloseAsync(_writerCts.Token).ConfigureAwait(false);
-
-            var released = await Task.WhenAny(_responseEnded.Task, Task.Delay(ResponseReleaseGrace)).ConfigureAwait(false);
-
-            if (released == _responseEnded.Task)
-            {
-                return;
-            }
         }
 
-        // Under AbortImmediately there is deliberately no half-close and no grace: a clean EOF would
-        // tell a client-streaming server that the request stream it is aggregating ended normally,
-        // and it would answer — committing whatever it had. The client already knows the stream is
-        // short, so the only honest signal is a reset.
-        //
-        // The server is under no obligation to finish on request EOF, and the caller is owed this
-        // fault within a bound. Abort so the outstanding read is released. Flag it first, so the
-        // CANCELLED the reader is about to see is already attributable to us by the time it arrives.
+        // Both policies wait, because the wait answers a different question from the half-close: has
+        // the server already said something? A status that was in flight when this fault happened is
+        // the call's real outcome, and resetting the stream destroys it — which is how an abort-at-once
+        // policy turned a server's CANCELLED into the local write shadow (PRD-004A review, finding 2).
+        var released = await Task.WhenAny(_responseEnded.Task, Task.Delay(ResponseReleaseGrace)).ConfigureAwait(false);
+
+        if (released == _responseEnded.Task)
+        {
+            return;
+        }
+
+        // The server is under no obligation to finish on request EOF — and under AbortWithoutHalfClose
+        // it was never told the stream ended at all — so the caller is owed this fault within a bound.
+        // Abort so the outstanding read is released. Flag it first, so the CANCELLED the reader is
+        // about to see is already attributable to us by the time it arrives.
         Volatile.Write(ref _abortedCall, 1);
 
         await CancelQuietlyAsync(_callCts).ConfigureAwait(false);

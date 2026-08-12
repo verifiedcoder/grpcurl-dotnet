@@ -28,9 +28,14 @@ internal sealed class ClientStreamingInvocationResult(
     ///     materialised before this object exists — there is no post-return enumeration during which a
     ///     producer could still be doing anything the caller cares about — so the bounded drain has
     ///     already happened inside
-    ///     <see cref="DynamicInvoker.InvokeClientStreamingWithMetadataAsync" /> and nothing
-    ///     asynchronous remains. What is left is releasing the call and then the producer's token
-    ///     sources, in that order, both of which are synchronous.
+    ///     <see cref="DynamicInvoker.InvokeClientStreamingWithMetadataAsync" />, and both remaining
+    ///     steps are synchronous: release the call, then the producer's token sources.
+    ///     <para>
+    ///         Synchronous from the caller's side is not the same as "the producer is finished". A
+    ///         source that ignores cancellation is deliberately left running, and
+    ///         <c>ReleaseWhenIdle</c> defers the token-source disposal until it eventually exits. What
+    ///         disposal guarantees is that the caller is not made to wait for it.
+    ///     </para>
     ///     <para>
     ///         Idempotence is delegated to <c>GrpcCall.Dispose</c> and to the producer's own
     ///         <c>Interlocked</c> release guard; this type adds no non-idempotent teardown of its own.

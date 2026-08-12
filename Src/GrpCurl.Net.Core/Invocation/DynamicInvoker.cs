@@ -27,10 +27,12 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
     };
 
     /// <summary>
-    ///     How long teardown waits for a cancelled bidi request producer to unwind, so a fault
-    ///     raised by the caller's own request source is still surfaced. Bounded on purpose: a
-    ///     source can be parked in an operation that ignores cancellation — an interactive stdin
-    ///     read is the canonical case — and blocking on that is the hang PRD-003 fixes.
+    ///     How long teardown waits for a cancelled request producer to unwind — client-streaming and
+    ///     bidi alike — so a fault raised by the caller's own request source is still surfaced.
+    ///     Bounded on purpose: a source can be parked in an operation that ignores cancellation (an
+    ///     interactive stdin read is the canonical case) or blocking inside its own cancellation
+    ///     callback, and waiting on either is the hang PRD-003 fixed for bidi and PRD-004A for
+    ///     client streaming.
     /// </summary>
     internal static readonly TimeSpan WriterDrainGrace = TimeSpan.FromMilliseconds(250);
 
@@ -258,11 +260,11 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
             call = callInvoker.AsyncClientStreamingCall(method, null, callOptions);
 
             // The producer takes ownership of callCts, and holds the request stream rather than the
-            // call. AbortImmediately rather than the duplex half-close: this server's single response
-            // aggregates the whole request stream, so a clean EOF after a fault would invite it to
-            // answer over a stream the client already knows is truncated.
+            // call. No half-close on a fault, unlike duplex: this server's single response aggregates
+            // the whole request stream, so a clean EOF would invite it to answer over a stream the
+            // client already knows is truncated.
             producer = RequestStreamProducer.Start(
-                requests, call.RequestStream, callCts, RequestFaultPolicy.AbortImmediately);
+                requests, call.RequestStream, callCts, RequestFaultPolicy.AbortWithoutHalfClose);
 
             IMessage response;
 
@@ -318,9 +320,13 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
                 // The response side is finished — with a value or with an error. Tell the producer to
                 // stop waiting to abort a call that is already over, then stop it: no further write
                 // can reach the server.
+                //
+                // Started, not awaited. Cancellation completes only once the source's own callbacks
+                // return, and a caller may block in one; awaiting here would hold the caller for as
+                // long as it chose (PRD-004A review, finding 1). The bounded drain below covers it.
                 producer.OnResponseEnded();
 
-                await producer.CancelAsync().ConfigureAwait(false);
+                _ = producer.BeginCancel();
             }
 
             // Reached only when the server answered, so the RPC succeeded. The one thing still worth
@@ -592,9 +598,12 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
                 // The response side is finished — cleanly, with an error, or because the consumer
                 // abandoned enumeration. Tell the producer to stop waiting to abort a call that is
                 // already over, then stop it: no further write can reach the server.
+                //
+                // Started, not awaited — see BeginCancel. A source that blocks in a cancellation
+                // callback must not be able to strand the consumer here either.
                 producer.OnResponseEnded();
 
-                await producer.CancelAsync().ConfigureAwait(false);
+                _ = producer.BeginCancel();
             }
 
             // Reached only on clean completion: the server returned OK, so the RPC succeeded and the

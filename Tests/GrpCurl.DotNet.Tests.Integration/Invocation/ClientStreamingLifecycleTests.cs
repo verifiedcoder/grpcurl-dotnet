@@ -19,14 +19,22 @@ namespace GrpCurl.Net.Tests.Integration.Invocation;
 ///     <para>
 ///         Two independent observation mechanisms, each with its own ablation answer.
 ///         <see cref="CallCancellationProbe" /> watches the cancellation token grpc-dotnet hands to the
-///         transport: only <c>call.Dispose()</c> cancels it in these scenarios, and neither
-///         <c>GrpcCall</c> nor <see cref="CancellationTokenSource" /> has a finalizer, so a garbage
-///         collection cannot fire it instead. <c>BlockingRequestSource.Unwound</c> proves the invoker's
-///         own writer cancellation released a source nothing else could reach —
-///         <b>no PRD-004A test cancels the caller's token</b> except the one that says so in its name,
-///         so anything that unblocks a source proves the producer did it.
-///         <see cref="CallerCancellation_WhileWriting_StaysAnOperationCanceledException" /> is the
-///         declared positive control proving the probe is wired up at all.
+///         transport. Nothing in these scenarios fires that token by accident — neither <c>GrpcCall</c>
+///         nor <see cref="CancellationTokenSource" /> has a finalizer, so a garbage collection cannot —
+///         but note it is fired by <i>either</i> of two deliberate acts: <c>call.Dispose()</c>, or the
+///         producer aborting the call after a fault. On the source- and write-fault paths it is the
+///         abort that gets there first, which is why ablating PRD-004's disposal alone no longer fails
+///         anything (Fix-Details §7). The probe proves the call was released, not which act released it.
+///     </para>
+///     <para>
+///         <c>BlockingRequestSource.Unwound</c> proves the invoker's own writer cancellation released a
+///         source nothing else could reach. Three cases cancel the caller's token —
+///         <see cref="CallerCancellation_WhileWriting_StaysAnOperationCanceledException" />,
+///         <see cref="CallerCancellation_ParkedSource_StaysAnOperationCanceledException" /> and
+///         <see cref="CallerCancellation_UncancellableSource_StillReturnsWithinBound" /> — and each says
+///         so in its name; in every other case, anything that unblocks a source proves the producer did
+///         it. The first of those three is also the declared positive control proving the probe is wired
+///         up at all.
 ///     </para>
 ///     <para>
 ///         Deliberately absent, so the omissions are not read as oversights:
@@ -500,15 +508,17 @@ public sealed class ClientStreamingLifecycleTests(GrpcTestFixture fixture)
     }
 
     [Fact]
-    public async Task RequestSourceFault_AbortsRatherThanHalfClosing()
+    public async Task WriteSideFailure_AbortsRatherThanHalfClosing()
     {
         var token = TestContext.Current.CancellationToken;
 
-        using var channel = CreateChannel();
+        using var channel = GrpcChannelFactory.Create(
+            $"http://{fixture.Address}",
+            new GrpcChannelFactory.ChannelOptions { Plaintext = true, MaxSendMessageSize = 64 });
 
         var methodDescriptor = await GetClientStreamingMethod(channel);
         var invoker = new DynamicInvoker(channel);
-        var first = CreateRequestWithPayload(methodDescriptor.InputType, 16);
+        var oversized = CreateRequestWithPayload(methodDescriptor.InputType, 64 * 1024);
 
         var observeId = Guid.NewGuid().ToString("N");
         var observed = CallAbortObserver.Register(observeId);
@@ -517,14 +527,16 @@ public sealed class ClientStreamingLifecycleTests(GrpcTestFixture fixture)
         {
             var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.ObserveAbortId}: {observeId}"]);
 
-            _ = await Should.ThrowAsync<RequestSourceFailure>(
+            _ = await Should.ThrowAsync<RpcException>(
                 async () => await invoker.InvokeClientStreamingWithMetadataAsync(
-                        methodDescriptor, FaultingSource(first), metadata, cancellationToken: token)
+                        methodDescriptor, ToAsyncEnumerable([oversized]), metadata, cancellationToken: token)
                     .WaitAsync(Bounded, token));
 
-            // The policy decision, asserted rather than assumed. Under the duplex half-close-then-grace
-            // policy the server would see a clean EOF, record Drained, and answer with an aggregate
-            // over a request stream the client already knew was truncated.
+            // The policy decision on the WRITE half specifically — the source-fault half of it is
+            // covered by ServerObservesTheStreamReset_WhenTheRequestSourceFaults, which drives the same
+            // observer through a different fault origin. Under the duplex half-close-then-grace policy
+            // the server would see a clean EOF, record Drained, and answer with an aggregate over a
+            // request stream the client already knew was truncated.
             var outcome = await observed.WaitAsync(Bounded, token);
 
             outcome.ShouldBe(CallAbortObserver.Outcome.Aborted);
@@ -533,6 +545,74 @@ public sealed class ClientStreamingLifecycleTests(GrpcTestFixture fixture)
         {
             CallAbortObserver.Forget(observeId);
         }
+    }
+
+    [Fact]
+    public async Task GenuineServerCancelled_BeatsTheWriteFaultRacingIt()
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        using var channel = GrpcChannelFactory.Create(
+            $"http://{fixture.Address}",
+            new GrpcChannelFactory.ChannelOptions { Plaintext = true, MaxSendMessageSize = 64 });
+
+        var methodDescriptor = await GetClientStreamingMethod(channel);
+        var invoker = new DynamicInvoker(channel);
+        var oversized = CreateRequestWithPayload(methodDescriptor.InputType, 64 * 1024);
+
+        // CANCELLED is a status a server is allowed to return, and it is the one status whose shape
+        // collides with the artifact our own abort produces. The write fails locally at the same time,
+        // so both a real server status and a merit-based write fault are in play at once.
+        var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.FailEarly}: {(int)StatusCode.Cancelled}"]);
+
+        var exception = await Should.ThrowAsync<RpcException>(
+            async () => await invoker.InvokeClientStreamingWithMetadataAsync(
+                    methodDescriptor, ToAsyncEnumerable([oversized]), metadata, cancellationToken: token)
+                .WaitAsync(Bounded, token));
+
+        // The server's word wins. Preferring the write fault here — which is what happened before the
+        // CANCELLED arm of IsCancellationArtifact required provenance — reports RESOURCE_EXHAUSTED and
+        // loses the only status the call actually finished with.
+        exception.StatusCode.ShouldBe(StatusCode.Cancelled);
+    }
+
+    [Fact]
+    public async Task BlockingCancellationCallback_DoesNotHoldTheCaller()
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        using var channel = CreateChannel();
+
+        var methodDescriptor = await GetClientStreamingMethod(channel);
+        var invoker = new DynamicInvoker(channel);
+        using var source = new CallbackBlockingSource(CreateRequestWithPayload(methodDescriptor.InputType, 16));
+
+        var metadata = GrpcChannelFactory.CreateMetadata([$"{MetadataConstants.CompleteAfterRequests}: 1"]);
+
+        try
+        {
+            // The server finishes successfully while the source is parked, so teardown starts — and the
+            // source blocks inside its own cancellation callback. CancellationTokenSource.CancelAsync
+            // completes only once every callback returns, so awaiting cancellation ahead of the drain
+            // put caller code on the critical path and reinstated the hang by a route MoveNextAsync no
+            // longer had (PRD-004A review, finding 1).
+            using var result = await invoker.InvokeClientStreamingWithMetadataAsync(
+                    methodDescriptor, source.Enumerate(), metadata, cancellationToken: token)
+                .WaitAsync(Bounded, token);
+
+            _ = result.Response.ShouldNotBeNull();
+
+            // Load-bearing: the invocation returned while the callback was STILL blocked. Releasing it
+            // first would make this pass whether or not the bound covers cancellation.
+            source.CallbackEntered.Task.IsCompletedSuccessfully.ShouldBeTrue();
+            source.CallbackReleased.ShouldBeFalse();
+        }
+        finally
+        {
+            source.ReleaseCallback();
+        }
+
+        await source.Unwound.Task.WaitAsync(Bounded, token);
     }
 
     [Fact]
@@ -818,6 +898,50 @@ public sealed class ClientStreamingLifecycleTests(GrpcTestFixture fixture)
             }
 
             return base.SendAsync(request, cancellationToken);
+        }
+    }
+
+    /// <summary>
+    ///     A source that blocks in a <em>cancellation callback</em> rather than in <c>MoveNextAsync</c>.
+    ///     Registering against the enumerator token is ordinary caller code, and
+    ///     <see cref="CancellationTokenSource.CancelAsync" /> does not complete until every callback
+    ///     returns — so this is the second way caller code can sit on the teardown path.
+    /// </summary>
+    private sealed class CallbackBlockingSource(IMessage first) : IDisposable
+    {
+        private readonly ManualResetEventSlim _release = new(false);
+
+        public TaskCompletionSource CallbackEntered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource Unwound { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public bool CallbackReleased => _release.IsSet;
+
+        public void Dispose() => _release.Dispose();
+
+        public void ReleaseCallback() => _release.Set();
+
+        public async IAsyncEnumerable<IMessage> Enumerate([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            // Blocking, not awaiting: a callback runs synchronously on whoever cancels, which is
+            // precisely why it can hold that thread's continuation.
+            using var registration = cancellationToken.Register(() =>
+            {
+                _ = CallbackEntered.TrySetResult();
+
+                _release.Wait();
+            });
+
+            try
+            {
+                yield return first;
+
+                await Task.Delay(Timeout.Infinite, cancellationToken);
+            }
+            finally
+            {
+                _ = Unwound.TrySetResult();
+            }
         }
     }
 

@@ -20,7 +20,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 ///     marshalled back through <see cref="IUiDispatcher" />. On failure it surfaces the rich
 ///     <see cref="ErrorModel" /> (FR-090..099) with Retry / Copy-as-JSON / Open-help-link.
 /// </summary>
-public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDisposable, IDrainableDocument
+public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDisposable
 {
     private readonly IInvocationRunner _runner;
     private readonly IDescriptorService _descriptors;
@@ -198,7 +198,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
         // FR-067: a header row's -bin validity gates Invoke, so re-evaluate when rows or values change.
         Headers.CollectionChanged += OnHeadersChanged;
 
-        _ = ResolveMethodAsync(initialRequestJson);
+        Track(ResolveMethodAsync(initialRequestJson));
     }
 
     private void OnHeadersChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -313,7 +313,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
 
         var cts = new CancellationTokenSource();
         _validationCts = cts;
-        _ = DebouncedValidateAsync(cts.Token);
+        Track(DebouncedValidateAsync(cts.Token));
     }
 
     private async Task DebouncedValidateAsync(CancellationToken cancellationToken)
@@ -386,12 +386,12 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
     partial void OnBodyFormatChanged(RequestBodyFormat value)
     {
         // Re-run (or clear) validation for the new grammar.
-        _ = RunValidationAsync();
+        Track(RunValidationAsync());
 
         // FR-062: a non-empty body is reinterpreted in the new format on send; offer to clear it.
         if (!string.IsNullOrWhiteSpace(RequestJson))
         {
-            _ = WarnBodyReinterpretAsync();
+            Track(WarnBodyReinterpretAsync());
         }
     }
 
@@ -419,7 +419,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
             _elapsedCts?.Cancel();
             var cts = new CancellationTokenSource();
             _elapsedCts = cts;
-            _ = TickElapsedAsync(cts.Token);
+            Track(TickElapsedAsync(cts.Token));
         }
         else
         {
@@ -1092,17 +1092,36 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
     ///     </para>
     /// </summary>
     /// <summary>
-    ///     Cancels the RPC this tab started and returns a task that completes when it has unwound
-    ///     (PRD-005 re-review, finding 1). Used at shutdown, where cancelling is not enough: the call
-    ///     must be off the services before the host disposes them.
+    ///     Cancels everything this tab can cancel: both RPC commands, the elapsed ticker, and the
+    ///     debounced validation — the composer's too, since its validation runs against the same
+    ///     container-owned <see cref="IRequestValidator" /> as this tab's.
+    ///     <para>
+    ///         The elapsed ticker matters here specifically: it loops until cancelled, so tracking it
+    ///         without cancelling it in this phase would make every shutdown with a call in flight wait
+    ///         out the full drain timeout.
+    ///     </para>
     /// </summary>
-    public Task CancelAndDrainAsync()
+    protected override void CancelOwnedWork()
     {
-        // Both cancellations before either task is awaited — see IDrainableDocument.
         InvokeCommand.Cancel();
         StartStreamCommand.Cancel();
 
-        return DocumentDrain.WhenSettled(InvokeCommand.ExecutionTask, StartStreamCommand.ExecutionTask);
+        _elapsedCts?.Cancel();
+        _validationCts?.Cancel();
+    }
+
+    /// <summary>
+    ///     The stream composer is a child view model with work of its own — a debounced validation that
+    ///     runs against the same container-owned <see cref="IRequestValidator" /> this tab uses, plus
+    ///     its own async commands. This runs synchronously inside <c>CancelAndDrainAsync</c>, so the
+    ///     composer is cancelled in the same phase as everything else.
+    /// </summary>
+    protected override void CollectChildWork(List<Task?> tasks)
+    {
+        if (Composer is not null)
+        {
+            tasks.Add(Composer.CancelAndDrainAsync());
+        }
     }
 
     public void Dispose()

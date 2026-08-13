@@ -264,6 +264,132 @@ public sealed class DisposalCancelsLiveWorkTests
         await invocation.WaitAsync(Bounded, token);
     }
 
+    /// <summary>
+    ///     PRD-005 re-review round 3, finding 2: closing the sink can fail for reasons that have nothing
+    ///     to do with Studio — a full disk, a removed drive — and disposal is contractually non-throwing.
+    ///     <para>
+    ///         The checked-in double-dispose case uses a <see cref="StringWriter" />, whose close cannot
+    ///         fail, so it could never have caught this.
+    ///     </para>
+    /// </summary>
+    [Fact]
+    public void A_failing_capture_sink_does_not_throw_out_of_idle_disposal()
+    {
+        var writer = new StreamCaptureWriter(new ThrowingOnCloseWriter(), _ => "{}");
+
+        Should.NotThrow(writer.Dispose);
+
+        // Contained, not skipped: the close really was attempted.
+        _ = writer.CloseFailure.ShouldBeOfType<IOException>();
+    }
+
+    /// <summary>
+    ///     The same failure on the other path. Here the close runs from the last write's <c>finally</c>,
+    ///     so an escaping exception faults the stream pump's fire-and-forget task — the exact thing the
+    ///     gate hand-off was introduced to prevent.
+    /// </summary>
+    [Fact]
+    public async Task A_failing_capture_sink_does_not_fault_the_pump_on_hand_off()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var inWrite = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var writer = new StreamCaptureWriter(new ThrowingOnCloseWriter(inWrite, release), _ => "{}");
+
+        var write = writer.WriteAsync(new StreamEventModel(StreamEventKind.MessageReceived, 0, DateTimeOffset.UtcNow, 0, "preview"));
+
+        await inWrite.Task.WaitAsync(Bounded, token);
+
+        // Disposal lands mid-write, so the write inherits the close on its way out of the gate.
+        Should.NotThrow(writer.Dispose);
+
+        release.SetResult();
+
+        await Should.NotThrowAsync(async () => await write.WaitAsync(Bounded, token));
+
+        _ = writer.CloseFailure.ShouldBeOfType<IOException>();
+    }
+
+    /// <summary>
+    ///     One tab that fails to dispose must not strand the others — nor stop
+    ///     <c>DisposeOpenDocumentsAsync</c> from returning, because the lock release and
+    ///     <c>StopAsync</c> that follow it in <c>Program</c> sit outside the block the exception would
+    ///     escape into (PRD-005 re-review round 3, finding 2).
+    ///     <para>
+    ///         The failure is injected with a purpose-built tab rather than through a failing capture
+    ///         sink. Containing the sink close is the <em>other</em> half of that finding, so once it is
+    ///         fixed a capture failure can no longer reach a tab's <c>Dispose</c> at all — driving this
+    ///         through capture would make the case unable to fail however the loop was written, which is
+    ///         exactly what ablating it showed.
+    ///     </para>
+    /// </summary>
+    [Fact]
+    public async Task Shutdown_disposes_every_tab_even_when_one_fails()
+    {
+        var token = TestContext.Current.CancellationToken;
+
+        var docs = new DocumentsViewModel(
+            new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(),
+            new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(),
+            new FakeRequestValidator(), new InMemorySettingsStore(), new FakeThemeService());
+
+        var failing = new ThrowingDocument();
+        var second = new ThrowingDocument { Throw = false };
+
+        docs.Documents.Add(failing);
+        docs.Documents.Add(second);
+
+        // Awaited directly: if the failing tab's exception escapes the loop, it surfaces here and the
+        // test fails with it — which is the whole signal.
+        var result = await docs.DisposeOpenDocumentsAsync(Bounded).WaitAsync(Bounded, token);
+
+        result.Documents.ShouldBe(2);
+
+        failing.Disposed.ShouldBeTrue();
+        second.Disposed.ShouldBeTrue("the tab after the failing one must still be disposed");
+    }
+
+    private sealed class ThrowingDocument : DocumentViewModel, IDisposable
+    {
+        public bool Throw { get; init; } = true;
+
+        public bool Disposed { get; private set; }
+
+        public void Dispose()
+        {
+            Disposed = true;
+
+            if (Throw)
+            {
+                throw new IOException("disposal failed");
+            }
+        }
+    }
+
+    private sealed class ThrowingOnCloseWriter(
+        TaskCompletionSource? entered = null,
+        TaskCompletionSource? release = null) : TextWriter
+    {
+        public override System.Text.Encoding Encoding => System.Text.Encoding.UTF8;
+
+        public override async Task WriteLineAsync(string? value)
+        {
+            if (entered is null || release is null)
+            {
+                return;
+            }
+
+            _ = entered.TrySetResult();
+
+            await release.Task;
+        }
+
+        public override Task FlushAsync() => Task.CompletedTask;
+
+        protected override void Dispose(bool disposing) => throw new IOException("sink close failed");
+    }
+
     private static InvocationDocumentViewModel CreateInvocationTab(FakeInvocationRunner runner)
         => new(
             Conn(), "pkg.Svc/Go", "{}", runner, new FakeDescriptorService(), new ImmediateUiDispatcher(),

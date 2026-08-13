@@ -21,7 +21,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 ///     This PR covers query/mutation execution + the response envelope viewer; subscriptions, the
 ///     mapping designer, and the introspection viewer arrive in later epics.
 /// </summary>
-public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDisposable, IDrainableDocument
+public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDisposable
 {
     /// <summary>The 4 MiB cap the CLI applies to <c>--file</c>/<c>--variables-file</c> (GQL-014/020).</summary>
     internal const long MaxFileBytes = 4L * 1024 * 1024;
@@ -291,7 +291,7 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDispo
 
         var cts = new CancellationTokenSource();
         _mappingCts = cts;
-        _ = DebouncedValidateMappingAsync(cts.Token);
+        Track(DebouncedValidateMappingAsync(cts.Token));
     }
 
     private async Task DebouncedValidateMappingAsync(CancellationToken cancellationToken)
@@ -346,7 +346,7 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDispo
 
         var cts = new CancellationTokenSource();
         _resolveCts = cts;
-        _ = DebouncedResolveAsync(cts.Token);
+        Track(DebouncedResolveAsync(cts.Token));
     }
 
     private async Task DebouncedResolveAsync(CancellationToken cancellationToken)
@@ -612,7 +612,7 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDispo
 
         var cts = new CancellationTokenSource();
         _parseCts = cts;
-        _ = DebouncedParseAsync(cts.Token);
+        Track(DebouncedParseAsync(cts.Token));
     }
 
     private async Task DebouncedParseAsync(CancellationToken cancellationToken)
@@ -1367,22 +1367,20 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDispo
     ///     </para>
     /// </summary>
     /// <summary>
-    ///     Cancels the four cancellable operations this tab starts and returns a task that completes
-    ///     when they have unwound (PRD-005 re-review, finding 1).
+    ///     Cancels everything this tab can cancel: the four commands and the three debounce sources.
+    ///     The debounce tasks themselves are tracked at the point they start, so the base class waits
+    ///     for them whether or not this cancellation reaches them in time.
     /// </summary>
-    public Task CancelAndDrainAsync()
+    protected override void CancelOwnedWork()
     {
-        // All four cancellations before any task is awaited — see IDrainableDocument.
         ExecuteCommand.Cancel();
         LoadSchemaCommand.Cancel();
         LoadTranslationCommand.Cancel();
         ValidateMappingSchemaCommand.Cancel();
 
-        return DocumentDrain.WhenSettled(
-            ExecuteCommand.ExecutionTask,
-            LoadSchemaCommand.ExecutionTask,
-            LoadTranslationCommand.ExecutionTask,
-            ValidateMappingSchemaCommand.ExecutionTask);
+        _parseCts?.Cancel();
+        _resolveCts?.Cancel();
+        _mappingCts?.Cancel();
     }
 
     public void Dispose()

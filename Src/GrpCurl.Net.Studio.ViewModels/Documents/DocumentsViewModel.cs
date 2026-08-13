@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using GrpCurl.Net.Studio.ViewModels.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
+using GrpCurl.Net.Studio.ViewModels.Models.Diagnostics;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Models.Session;
 using GrpCurl.Net.Studio.ViewModels.Panes;
@@ -47,6 +48,12 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
 
     private CancellationTokenSource? _persistCts;
     private bool _suppressPersist;
+
+    /// <summary>
+    ///     The debounced session persists this view model has started. Shutdown waits for them with the
+    ///     tabs: they write through the container-owned session store (PRD-005 re-review round 3).
+    /// </summary>
+    private readonly BackgroundWorkSet _work = new();
 
     [ObservableProperty]
     public partial DocumentViewModel? SelectedDocument { get; set; }
@@ -344,7 +351,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
             // PRD-005: a closed tab is finished, and some of them hold resources that outlive it —
             // debounce token sources, a capture writer, and subscriptions to container singletons that
             // would otherwise root the tab for the life of the process.
-            (document as IDisposable)?.Dispose();
+            DisposeQuietly(document);
         }
 
         Documents.Clear();
@@ -372,7 +379,9 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
 
         // PRD-005. After the removal and the selection move, so nothing observing either touches a
         // disposed tab: SchedulePersist runs off the Documents collection, which no longer holds it.
-        (document as IDisposable)?.Dispose();
+        // Quietly, because this runs from a UI event handler: a failing capture sink must not take the
+        // window down when the user closes a tab (round 3, finding 2).
+        DisposeQuietly(document);
     }
 
     partial void OnSelectedDocumentChanged(DocumentViewModel? value) => SchedulePersist();
@@ -612,6 +621,13 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     ///         finding 1). Cancelling tab-by-tab-then-waiting would serialise the drain instead.
     ///     </para>
     ///     <para>
+    ///         <b>Every</b> tab is drained, not only the ones with cancellable work, and this view
+    ///         model's own debounced persist with them. Round 2 drained a hand-picked subset and so
+    ///         could report success while a settings refresh, a history load, a debounced validation or
+    ///         a superseded describe lookup was still running against a singleton (round 3, finding 1).
+    ///         Cancellation is still selective; waiting is not.
+    ///     </para>
+    ///     <para>
     ///         Deliberately <b>not</b> <see cref="CloseAll" />. That clears <see cref="Documents" />,
     ///         whose collection-changed handler schedules a persist — which at this point would write an
     ///         empty session over the snapshot just taken. This leaves the collection alone: the process
@@ -636,38 +652,63 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         // walk exactly the same set of tabs.
         var documents = Documents.ToArray();
 
-        var drains = new List<Task>(documents.Length);
+        var drains = new List<Task>(documents.Length + 1)
+        {
+            // This view model's own debounced persist, cancelled just above. It writes through the
+            // session store — another container singleton — so it belongs in the same wait.
+            _work.WhenSettled()
+        };
 
         foreach (var document in documents)
         {
-            if (document is IDrainableDocument drainable)
-            {
-                // Cancels synchronously and hands back the wait — see IDrainableDocument. The loop
-                // therefore cancels every tab before the first await below.
-                drains.Add(drainable.CancelAndDrainAsync());
-            }
+            // Cancels synchronously and hands back the wait, so this loop cancels every tab before the
+            // first await below.
+            drains.Add(document.CancelAndDrainAsync());
         }
 
         var drained = true;
 
-        if (drains.Count > 0)
+        try
         {
-            try
-            {
-                await Task.WhenAll(drains).WaitAsync(drainTimeout).ConfigureAwait(false);
-            }
-            catch (TimeoutException)
-            {
-                drained = false;
-            }
+            await Task.WhenAll(drains).WaitAsync(drainTimeout).ConfigureAwait(false);
+        }
+        catch (TimeoutException)
+        {
+            drained = false;
         }
 
         foreach (var document in documents)
         {
-            (document as IDisposable)?.Dispose();
+            DisposeQuietly(document);
         }
 
         return new DocumentShutdownResult(documents.Length, drained);
+    }
+
+    /// <summary>
+    ///     Disposes one tab without letting its failure stop the rest (PRD-005 re-review round 3,
+    ///     finding 2).
+    ///     <para>
+    ///         A capture sink's close can fail for reasons that have nothing to do with Studio — a full
+    ///         disk, a removed drive. Letting that propagate out of the shutdown loop left the remaining
+    ///         tabs undisposed and skipped the lock release and <c>StopAsync</c> that follow it, which is
+    ///         the same interrupted-cleanup class of failure this whole PR exists to remove. The failure
+    ///         is recorded rather than silently dropped.
+    ///     </para>
+    /// </summary>
+    private void DisposeQuietly(DocumentViewModel document)
+    {
+        try
+        {
+            (document as IDisposable)?.Dispose();
+        }
+        catch (Exception ex)
+        {
+            _diagnostics?.Log(
+                DiagnosticsLevel.Warning,
+                "shutdown",
+                $"Disposing the '{document.Title}' tab failed: {ex.GetType().Name}: {ex.Message}");
+        }
     }
 
     private static RequestPrefill ToPrefill(SessionTab tab) => new(
@@ -691,7 +732,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         _persistCts?.Cancel();
         var cts = new CancellationTokenSource();
         _persistCts = cts;
-        _ = DelayedPersistAsync(cts.Token);
+        _work.Track(DelayedPersistAsync(cts.Token));
     }
 
     private async Task DelayedPersistAsync(CancellationToken token)

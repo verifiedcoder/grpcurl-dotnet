@@ -174,12 +174,12 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel, IDisp
 
         if (_diagnostics is not null)
         {
-            _ = RefreshDiagnosticsAsync();
+            Track(RefreshDiagnosticsAsync());
         }
 
         if (_secrets is not null)
         {
-            _ = RefreshSecretsAsync(); // SEC-027: populate the audit list
+            Track(RefreshSecretsAsync()); // SEC-027: populate the audit list
         }
 
         LoadFrom(settings.Current, themeService.Current);

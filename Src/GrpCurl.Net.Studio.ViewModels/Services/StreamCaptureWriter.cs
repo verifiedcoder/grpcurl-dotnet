@@ -42,6 +42,12 @@ public sealed class StreamCaptureWriter : IDisposable
     private int _disposeRequested;
     private int _writerReleased;
 
+    /// <summary>
+    ///     The failure from closing the sink, if it failed. Exposed for the PRD-005 regression only —
+    ///     a test cannot otherwise tell "the close was contained" from "the close never happened".
+    /// </summary>
+    internal Exception? CloseFailure { get; private set; }
+
     public StreamCaptureWriter(TextWriter writer, Func<IMessage, string> compactFormat)
     {
         _writer = writer;
@@ -119,12 +125,37 @@ public sealed class StreamCaptureWriter : IDisposable
         {
             if (Interlocked.Exchange(ref _writerReleased, 1) == 0)
             {
-                _writer.Dispose();
+                CloseWriter();
             }
         }
         finally
         {
             _ = _writeGate.Release();
+        }
+    }
+
+    /// <summary>
+    ///     Closes the sink, containing any failure (PRD-005 re-review round 3, finding 2).
+    ///     <para>
+    ///         A capture file's final flush can fail for reasons that have nothing to do with Studio —
+    ///         a full disk, a removed drive. Both callers make that intolerable: from
+    ///         <see cref="Dispose" /> it would break the tab's own non-throwing contract and, at
+    ///         shutdown, stop the remaining tabs from being disposed at all; from a write's
+    ///         <c>finally</c> it would fault the stream pump's fire-and-forget task, which is the very
+    ///         thing the gate hand-off was introduced to prevent.
+    ///     </para>
+    ///     The exception is kept rather than dropped: capture data may be incomplete, and a caller that
+    ///     wants to say so has something to say it with.
+    /// </summary>
+    private void CloseWriter()
+    {
+        try
+        {
+            _writer.Dispose();
+        }
+        catch (Exception ex)
+        {
+            CloseFailure = ex;
         }
     }
 }

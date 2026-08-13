@@ -67,7 +67,7 @@ public sealed partial class HistoryDocumentViewModel : DocumentViewModel
 
         Title = "History";
         ConnectionOptions = [All];
-        _ = LoadAsync();
+        Track(LoadAsync());
     }
 
     public ObservableCollection<HistoryRowViewModel> Rows { get; } = [];

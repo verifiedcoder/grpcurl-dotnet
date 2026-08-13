@@ -12,7 +12,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 ///     opens the target in a new tab via the document host. Messages/methods expose the generated
 ///     request template (FR-052) with copy (FR-056).
 /// </summary>
-public sealed partial class DescribeDocumentViewModel : DocumentViewModel, IDisposable, IDrainableDocument
+public sealed partial class DescribeDocumentViewModel : DocumentViewModel, IDisposable
 {
     private readonly IDescriptorService _descriptors;
     private readonly IUiDispatcher _dispatcher;
@@ -22,13 +22,6 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel, IDisp
     private readonly Stack<string> _back = new();
     private readonly Stack<string> _forward = new();
     private CancellationTokenSource? _loadCts;
-
-    /// <summary>
-    ///     The load started by the constructor or the most recent navigation. Held only so shutdown can
-    ///     wait for it: the loads are fire-and-forget by design (navigation must not block the UI), and
-    ///     nothing else needs the task.
-    /// </summary>
-    private Task? _load;
 
     // int rather than bool: shutdown and the close flow can both reach Dispose, so the guard has to be
     // atomic to be worth anything (PRD-005 re-review, finding 4).
@@ -158,10 +151,15 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel, IDisp
     }
 
     /// <summary>
-    ///     Starts a load without waiting for it, keeping the task so <see cref="CancelAndDrainAsync" />
-    ///     can. Every navigation path goes through here rather than discarding the task with <c>_ =</c>.
+    ///     Starts a load without waiting for it, and registers it so shutdown can. Every navigation path
+    ///     goes through here rather than discarding the task with <c>_ =</c>.
+    ///     <para>
+    ///         Tracking, rather than a single <c>_load</c> field: navigation cancels the previous load
+    ///         but does not wait for it, so a field holding only the newest one hid a superseded lookup
+    ///         that was still running (PRD-005 re-review round 3, finding 1).
+    ///     </para>
     /// </summary>
-    private void StartLoad(string symbol) => _load = LoadAsync(symbol);
+    private void StartLoad(string symbol) => Track(LoadAsync(symbol));
 
     private async Task LoadAsync(string symbol)
     {
@@ -252,14 +250,8 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel, IDisp
     }
 
     /// <summary>
-    ///     Cancels the in-flight describe load and returns a task that completes when it has unwound
-    ///     (PRD-005 re-review, finding 1). The load is not owned by a command, so its token source is
-    ///     cancelled directly; the task itself is the one <see cref="StartLoad" /> kept.
+    ///     Cancels the current load. Superseded ones were already cancelled when they were replaced;
+    ///     the base class waits for all of them, cancelled or not.
     /// </summary>
-    public Task CancelAndDrainAsync()
-    {
-        _loadCts?.Cancel();
-
-        return DocumentDrain.WhenSettled(_load);
-    }
+    protected override void CancelOwnedWork() => _loadCts?.Cancel();
 }

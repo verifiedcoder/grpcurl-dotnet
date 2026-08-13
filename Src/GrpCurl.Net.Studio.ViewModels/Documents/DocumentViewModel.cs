@@ -44,23 +44,20 @@ public abstract partial class DocumentViewModel : ViewModelBase
     }
 
     /// <summary>
-    ///     Adds outstanding work that belongs to a child view model rather than to this tab directly.
-    ///     Called synchronously from <see cref="CancelAndDrainAsync" />, so an implementation may cancel
-    ///     the child here too.
-    /// </summary>
-    protected virtual void CollectChildWork(List<Task?> tasks)
-    {
-    }
-
-    /// <summary>
     ///     Cancels what this tab can cancel and returns a task that completes when <b>all</b> of its
     ///     outstanding work has settled — tracked fire-and-forget tasks, every async command's execution
-    ///     task, and any child view model's work alike.
+    ///     task, and the work of every child view model it owns.
     ///     <para>
     ///         Cancellation is issued synchronously, before the returned task is created, so a caller
     ///         can walk every open tab and be certain all of them have been cancelled before it awaits
     ///         any one of them. Awaiting tab by tab without that guarantee would serialise the drain:
     ///         the last tab would not even be told to stop until the first had finished.
+    ///     </para>
+    ///     <para>
+    ///         The result completes on <em>quiescence</em>, not on the tasks that were live when it was
+    ///         called: everything collected here is enrolled in the same counted set, so work one of
+    ///         them starts before finishing is waited for too. It is therefore also a quiescence probe —
+    ///         a returned task that is already completed means this tab has nothing outstanding.
     ///     </para>
     ///     The returned task never faults.
     /// </summary>
@@ -68,9 +65,9 @@ public abstract partial class DocumentViewModel : ViewModelBase
     {
         CancelOwnedWork();
 
-        var outstanding = AsyncCommandTasks.Of(this);
+        var outstanding = new List<Task?>();
 
-        CollectChildWork(outstanding);
+        WorkGraph.Collect(this, outstanding);
 
         return _work.WhenSettled(outstanding);
     }

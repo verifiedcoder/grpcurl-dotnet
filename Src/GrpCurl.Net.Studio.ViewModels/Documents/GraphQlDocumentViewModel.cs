@@ -21,7 +21,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 ///     This PR covers query/mutation execution + the response envelope viewer; subscriptions, the
 ///     mapping designer, and the introspection viewer arrive in later epics.
 /// </summary>
-public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDisposable
+public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDisposable, IOwnsBackgroundWork
 {
     /// <summary>The 4 MiB cap the CLI applies to <c>--file</c>/<c>--variables-file</c> (GQL-014/020).</summary>
     internal const long MaxFileBytes = 4L * 1024 * 1024;
@@ -1382,6 +1382,9 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDispo
         _resolveCts?.Cancel();
         _mappingCts?.Cancel();
     }
+
+    /// <summary>Header rows are this tab's children; the other collections hold plain records.</summary>
+    void IOwnsBackgroundWork.CollectOwnedWork(List<Task?> tasks) => WorkGraph.CollectAll(Headers, tasks);
 
     public void Dispose()
     {

@@ -9,6 +9,7 @@ using GrpCurl.Net.Studio.ViewModels.Models.Session;
 using GrpCurl.Net.Studio.ViewModels.Panes;
 using GrpCurl.Net.Studio.ViewModels.Services;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
 
 namespace GrpCurl.Net.Studio.ViewModels.Documents;
@@ -351,7 +352,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
             // PRD-005: a closed tab is finished, and some of them hold resources that outlive it —
             // debounce token sources, a capture writer, and subscriptions to container singletons that
             // would otherwise root the tab for the life of the process.
-            DisposeQuietly(document);
+            Retire(document);
         }
 
         Documents.Clear();
@@ -379,9 +380,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
 
         // PRD-005. After the removal and the selection move, so nothing observing either touches a
         // disposed tab: SchedulePersist runs off the Documents collection, which no longer holds it.
-        // Quietly, because this runs from a UI event handler: a failing capture sink must not take the
-        // window down when the user closes a tab (round 3, finding 2).
-        DisposeQuietly(document);
+        Retire(document);
     }
 
     partial void OnSelectedDocumentChanged(DocumentViewModel? value) => SchedulePersist();
@@ -648,34 +647,11 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         _persistCts?.Dispose();
         _persistCts = null;
 
-        // Snapshot: disposal must not observe the collection changing, and the two phases below have to
+        // Snapshot: disposal must not observe the collection changing, and the phases below have to
         // walk exactly the same set of tabs.
         var documents = Documents.ToArray();
 
-        var drains = new List<Task>(documents.Length + 1)
-        {
-            // This view model's own debounced persist, cancelled just above. It writes through the
-            // session store — another container singleton — so it belongs in the same wait.
-            _work.WhenSettled()
-        };
-
-        foreach (var document in documents)
-        {
-            // Cancels synchronously and hands back the wait, so this loop cancels every tab before the
-            // first await below.
-            drains.Add(document.CancelAndDrainAsync());
-        }
-
-        var drained = true;
-
-        try
-        {
-            await Task.WhenAll(drains).WaitAsync(drainTimeout).ConfigureAwait(false);
-        }
-        catch (TimeoutException)
-        {
-            drained = false;
-        }
+        var drained = await DrainToQuiescenceAsync(documents, drainTimeout).ConfigureAwait(false);
 
         foreach (var document in documents)
         {
@@ -683,6 +659,79 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         }
 
         return new DocumentShutdownResult(documents.Length, drained);
+    }
+
+    /// <summary>
+    ///     Cancels and waits until nothing is outstanding anywhere — the open tabs, the tabs the user
+    ///     closed earlier, and this view model's own debounced persist — or until the budget runs out.
+    ///     <para>
+    ///         A single pass is not enough, even though each tab's own drain waits for quiescence
+    ///         <em>within</em> that tab. Work can cross the boundary: a task on one tab can start work on
+    ///         another through <see cref="IDocumentHost" />, and a retired tab's drain can complete
+    ///         before an open tab spawns more. So each round re-asks every participant, and the loop ends
+    ///         only on a round where all of them report nothing outstanding — which
+    ///         <c>CancelAndDrainAsync</c> signals by returning an already-completed task.
+    ///     </para>
+    ///     <para>
+    ///         Cancellation is re-requested every round and is idempotent. The budget is the caller's
+    ///         single timeout, shared across all rounds, so a livelock of work that keeps spawning work
+    ///         ends in a reported timeout rather than a hang.
+    ///     </para>
+    /// </summary>
+    private async Task<bool> DrainToQuiescenceAsync(IReadOnlyList<DocumentViewModel> documents, TimeSpan budget)
+    {
+        var clock = Stopwatch.StartNew();
+
+        while (true)
+        {
+            var round = new List<Task>(documents.Count + 1) { _work.WhenSettled() };
+
+            foreach (var document in documents)
+            {
+                // Cancels synchronously and hands back the wait, so every tab is cancelled before the
+                // first await below.
+                round.Add(document.CancelAndDrainAsync());
+            }
+
+            if (round.TrueForAll(task => task.IsCompleted))
+            {
+                return true;
+            }
+
+            var remaining = budget - clock.Elapsed;
+
+            if (remaining <= TimeSpan.Zero)
+            {
+                return false;
+            }
+
+            try
+            {
+                await Task.WhenAll(round).WaitAsync(remaining).ConfigureAwait(false);
+            }
+            catch (TimeoutException)
+            {
+                return false;
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Retires a tab the user has closed: cancels its work, keeps the wait for it in this view
+    ///     model's own set, then disposes it (PRD-005 re-review round 4, finding 1).
+    ///     <para>
+    ///         Disposal is not completion. Before this, closing a tab removed the only handle on its
+    ///         outstanding work — a Settings refresh mid-flight through the singleton secret store, say —
+    ///         so a shutdown moments later saw no documents, reported <c>Drained: true</c>, and disposed
+    ///         the provider underneath it. The tab goes away; the obligation to wait for its work does
+    ///         not, so it moves to an owner that outlives the tab.
+    ///     </para>
+    /// </summary>
+    private void Retire(DocumentViewModel document)
+    {
+        _work.Track(document.CancelAndDrainAsync());
+
+        DisposeQuietly(document);
     }
 
     /// <summary>

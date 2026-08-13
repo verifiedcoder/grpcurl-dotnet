@@ -308,7 +308,9 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel, IDisp
             return; // initial load / a reset-all batch / an echo of a change the service already applied
         }
 
-        _ = _themeService.SetAsync(value);
+        // Tracked: ThemeService.SetAsync writes through the singleton settings store, so shutdown has
+        // to wait for it like any other work this tab starts (PRD-005 re-review round 4, finding 2).
+        Track(_themeService.SetAsync(value));
     }
 
     partial void OnStartupChanged(StartupBehavior value) => Persist(s => s.General.Startup = value);
@@ -587,7 +589,10 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel, IDisp
 
         var settings = _settings.Current;
         mutate(settings);
-        _ = _settings.SaveAsync(settings);
+
+        // Tracked for the same reason: this is a write to a container singleton, started and forgotten
+        // on every settings edit (PRD-005 re-review round 4, finding 2).
+        Track(_settings.SaveAsync(settings));
     }
 
     private void OnThemeServiceChanged(object? sender, PropertyChangedEventArgs e)

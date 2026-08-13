@@ -1,6 +1,8 @@
 using GrpCurl.Net.Studio.Services;
 using GrpCurl.Net.Studio.TestSupport;
+using GrpCurl.Net.Studio.ViewModels;
 using GrpCurl.Net.Studio.ViewModels.Documents;
+using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Descriptors;
 using GrpCurl.Net.Studio.ViewModels.Models.History;
@@ -192,6 +194,194 @@ public sealed class ShutdownDrainCoverageTests
         result.Drained.ShouldBeTrue("the refresh finished well inside the timeout");
     }
 
+    // ── Round 4: ownership coverage and quiescence ───────────────────────────
+
+    /// <summary>
+    ///     PRD-005 re-review round 4, finding 1: a tab the user closed still owns whatever it started.
+    ///     Disposal is not completion — the tab leaves <c>Documents</c>, but its refresh is still inside
+    ///     the singleton secret store.
+    /// </summary>
+    [Fact]
+    public async Task Work_from_a_closed_tab_still_counts_at_shutdown()
+    {
+        var service = new Blocker();
+        var docs = Docs(secrets: new BlockingSecretStore(service));
+
+        docs.OpenSettings();
+
+        await service.Entered.Task.WaitAsync(Bounded, Ct);
+
+        docs.Documents[0].CloseCommand.Execute(null);
+
+        docs.Documents.ShouldBeEmpty("the tab is gone; the obligation to wait for its work is not");
+
+        var result = await docs.DisposeOpenDocumentsAsync(ShortDrain).WaitAsync(Bounded, Ct);
+
+        try
+        {
+            result.Drained.ShouldBeFalse("a closed tab's work is still work");
+        }
+        finally
+        {
+            service.Release.SetResult();
+        }
+    }
+
+    /// <summary>The same for the bulk path, which takes a different route out of the collection.</summary>
+    [Fact]
+    public async Task Work_from_a_tab_closed_by_close_all_still_counts_at_shutdown()
+    {
+        var service = new Blocker();
+        var docs = Docs(secrets: new BlockingSecretStore(service));
+
+        docs.OpenSettings();
+
+        await service.Entered.Task.WaitAsync(Bounded, Ct);
+
+        docs.CloseAll();
+
+        var result = await docs.DisposeOpenDocumentsAsync(ShortDrain).WaitAsync(Bounded, Ct);
+
+        try
+        {
+            result.Drained.ShouldBeFalse("CloseAll must hand the work on too");
+        }
+        finally
+        {
+            service.Release.SetResult();
+        }
+    }
+
+    /// <summary>
+    ///     Finding 2: a settings edit starts a write to the singleton settings store and forgets it.
+    ///     This is the plain <c>_ = _settings.SaveAsync(...)</c> the enrolment convention missed.
+    /// </summary>
+    [Fact]
+    public async Task Settings_persistence_work_keeps_shutdown_from_reporting_drained()
+    {
+        var service = new Blocker();
+
+        var docs = new DocumentsViewModel(
+            new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(),
+            new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(),
+            new FakeRequestValidator(), new BlockingSettingsStore(service), new FakeThemeService());
+
+        docs.OpenSettings();
+
+        ((SettingsDocumentViewModel)docs.Documents[0]).HistoryMaxEntries = 4242;
+
+        await service.Entered.Task.WaitAsync(Bounded, Ct);
+
+        var result = await docs.DisposeOpenDocumentsAsync(ShortDrain).WaitAsync(Bounded, Ct);
+
+        try
+        {
+            result.Drained.ShouldBeFalse("the settings save was still using the singleton store");
+        }
+        finally
+        {
+            service.Release.SetResult();
+        }
+    }
+
+    /// <summary>
+    ///     Finding 2: a tab is a view-model graph, not one object. A response metadata row's reveal
+    ///     command awaits the singleton <c>IRevealGate</c>, and no reflection over the tab's own
+    ///     properties can see it.
+    /// </summary>
+    [Fact]
+    public async Task A_child_rows_command_keeps_shutdown_from_reporting_drained()
+    {
+        var service = new Blocker();
+        var docs = Docs();
+
+        docs.OpenInvocation(Conn(), "pkg.Svc/Go", "{}");
+
+        var tab = (InvocationDocumentViewModel)docs.Documents[0];
+        var row = new MetadataRowViewModel(
+            new MetadataItem("authorization", "Bearer x", IsBinary: false), new BlockingRevealGate(service));
+
+        tab.ResponseHeaders.Add(row);
+
+        var revealing = row.ToggleRevealCommand.ExecuteAsync(null);
+
+        await service.Entered.Task.WaitAsync(Bounded, Ct);
+
+        var result = await docs.DisposeOpenDocumentsAsync(ShortDrain).WaitAsync(Bounded, Ct);
+
+        try
+        {
+            result.Drained.ShouldBeFalse("a child row's command is work the tab owns");
+        }
+        finally
+        {
+            service.Release.SetResult();
+
+            await revealing.WaitAsync(Bounded, Ct);
+        }
+    }
+
+    /// <summary>
+    ///     Finding 3, on the production path the review identified: work that is <em>already</em> in the
+    ///     drain can start more work before it finishes, and a drain that waited on a snapshot would
+    ///     miss it.
+    ///     <para>
+    ///         Switching the body format back to JSON starts the reinterpret warning, which parks in a
+    ///         dialog. Accepting it clears <c>RequestJson</c> from inside that still-running task, and
+    ///         the generated property callback schedules a validation — so the warning registers a
+    ///         successor and only then completes. Shutdown must not finish on the warning alone.
+    ///     </para>
+    ///     <para>
+    ///         The tab starts in protobuf-text mode on purpose: validation is skipped in that mode
+    ///         (<c>RunValidationAsync</c> returns early), so the only validator call in the whole test
+    ///         is the successor's, and there is nothing else for the drain to be waiting on.
+    ///     </para>
+    /// </summary>
+    [Fact]
+    public async Task Work_started_by_work_already_in_the_drain_is_waited_for()
+    {
+        var dialog = new Blocker();
+        var validation = new Blocker();
+
+        var docs = new DocumentsViewModel(
+            new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(),
+            new FakeInvocationRunner(), new BlockingDialogService(dialog), new FakeLauncherService(),
+            new SecondCallBlocksValidator(validation), new InMemorySettingsStore(), new FakeThemeService());
+
+        // Empty body: switching to text now raises no warning dialog, so the only one is the switch back.
+        docs.OpenInvocation(Conn(), "pkg.Svc/Go", string.Empty);
+
+        var tab = (InvocationDocumentViewModel)docs.Documents[0];
+
+        tab.ValidationDebounce = TimeSpan.Zero;
+        tab.BodyFormat = RequestBodyFormat.Text;
+        tab.RequestJson = "{\"a\":1}";
+
+        // Back to JSON with a non-empty body: validation runs once (returns at once) and the warning
+        // parks in the dialog.
+        tab.BodyFormat = RequestBodyFormat.Json;
+
+        await dialog.Entered.Task.WaitAsync(Bounded, Ct);
+
+        // The drain starts while the warning is parked and the successor does not exist yet.
+        var shutdown = docs.DisposeOpenDocumentsAsync(Bounded);
+
+        dialog.Release.SetResult();
+
+        // Accepting clears the body, which schedules the validation the drain has never seen.
+        await validation.Entered.Task.WaitAsync(Bounded, Ct);
+
+        await Task.Delay(250, Ct);
+
+        shutdown.IsCompleted.ShouldBeFalse("the successor validation is still running");
+
+        validation.Release.SetResult();
+
+        var result = await shutdown.WaitAsync(Bounded, Ct);
+
+        result.Drained.ShouldBeTrue();
+    }
+
     /// <summary>A service that parks its caller until the test lets go, and says when it was reached.</summary>
     private sealed class Blocker
     {
@@ -241,6 +431,68 @@ public sealed class ShutdownDrainCoverageTests
 
             return [];
         }
+    }
+
+    /// <summary>Lets the first validation through and parks every later one.</summary>
+    private sealed class SecondCallBlocksValidator(Blocker blocker) : IRequestValidator
+    {
+        private int _calls;
+
+        public async Task<IReadOnlyList<ValidationProblem>> ValidateAsync(
+            SavedConnection connection, string methodSymbol, string requestJson, bool allowUnknownFields,
+            CancellationToken cancellationToken)
+        {
+            if (Interlocked.Increment(ref _calls) > 1)
+            {
+                await blocker.EnterAsync();
+            }
+
+            return [];
+        }
+    }
+
+    private sealed class BlockingSettingsStore(Blocker blocker) : ISettingsStore
+    {
+        public StudioSettings Current { get; } = new();
+
+        public event EventHandler? Changed;
+
+        public Task<StudioSettings> LoadAsync(CancellationToken cancellationToken = default)
+        {
+            Changed?.Invoke(this, EventArgs.Empty);
+
+            return Task.FromResult(Current);
+        }
+
+        public async Task SaveAsync(StudioSettings settings, CancellationToken cancellationToken = default)
+            => await blocker.EnterAsync();
+    }
+
+    private sealed class BlockingRevealGate(Blocker blocker) : IRevealGate
+    {
+        public async Task<bool> ConfirmRevealAsync()
+        {
+            await blocker.EnterAsync();
+
+            return true;
+        }
+    }
+
+    /// <summary>Parks in the confirmation, then answers "yes" — which is what starts the successor.</summary>
+    private sealed class BlockingDialogService(Blocker blocker) : IDialogService
+    {
+        public Task ShowMessageAsync(string title, string message, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public async Task<bool> ConfirmAsync(string title, string message, CancellationToken cancellationToken = default)
+        {
+            await blocker.EnterAsync();
+
+            return true;
+        }
+
+        public Task<TResult?> ShowDialogAsync<TResult>(DialogViewModel<TResult> dialogViewModel)
+            => Task.FromResult<TResult?>(default);
     }
 
     private sealed class BlockingHistoryStore(Blocker blocker) : IHistoryStore

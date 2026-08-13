@@ -20,7 +20,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 ///     marshalled back through <see cref="IUiDispatcher" />. On failure it surfaces the rich
 ///     <see cref="ErrorModel" /> (FR-090..099) with Retry / Copy-as-JSON / Open-help-link.
 /// </summary>
-public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDisposable
+public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDisposable, IOwnsBackgroundWork
 {
     private readonly IInvocationRunner _runner;
     private readonly IDescriptorService _descriptors;
@@ -1111,17 +1111,25 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
     }
 
     /// <summary>
-    ///     The stream composer is a child view model with work of its own — a debounced validation that
-    ///     runs against the same container-owned <see cref="IRequestValidator" /> this tab uses, plus
-    ///     its own async commands. This runs synchronously inside <c>CancelAndDrainAsync</c>, so the
-    ///     composer is cancelled in the same phase as everything else.
+    ///     Everything this tab owns that runs its own async work. The composer's debounced validation
+    ///     uses the same container-owned <see cref="IRequestValidator" /> this tab does; stream rows
+    ///     have copy commands that await <c>IClipboardService</c>; metadata rows have a reveal command
+    ///     that awaits <c>IRevealGate</c>. All three services are container singletons, so all three
+    ///     kinds of task must be off them before the host is disposed (PRD-005 re-review round 4,
+    ///     finding 2). Runs synchronously inside <c>CancelAndDrainAsync</c>, so the composer is
+    ///     cancelled in the same phase as everything else.
     /// </summary>
-    protected override void CollectChildWork(List<Task?> tasks)
+    void IOwnsBackgroundWork.CollectOwnedWork(List<Task?> tasks)
     {
         if (Composer is not null)
         {
             tasks.Add(Composer.CancelAndDrainAsync());
         }
+
+        WorkGraph.CollectAll(Log.Rows, tasks);
+        WorkGraph.CollectAll(ResponseHeaders, tasks);
+        WorkGraph.CollectAll(ResponseTrailers, tasks);
+        WorkGraph.CollectAll(Headers, tasks);
     }
 
     public void Dispose()

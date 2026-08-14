@@ -647,18 +647,19 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         _persistCts?.Dispose();
         _persistCts = null;
 
-        // Snapshot: disposal must not observe the collection changing, and the phases below have to
-        // walk exactly the same set of tabs.
-        var documents = Documents.ToArray();
+        // Grows as the drain runs: work that is already admitted can open a tab (History's replay does
+        // exactly that), and a fixed snapshot would neither wait for it nor dispose it (PRD-005
+        // re-review round 5, finding 1). Every document ever observed stays a disposal target.
+        var participants = new List<DocumentViewModel>();
 
-        var drained = await DrainToQuiescenceAsync(documents, drainTimeout).ConfigureAwait(false);
+        var drained = await DrainToQuiescenceAsync(participants, drainTimeout).ConfigureAwait(false);
 
-        foreach (var document in documents)
+        foreach (var document in participants)
         {
             DisposeQuietly(document);
         }
 
-        return new DocumentShutdownResult(documents.Length, drained);
+        return new DocumentShutdownResult(participants.Count, drained);
     }
 
     /// <summary>
@@ -666,11 +667,17 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     ///     closed earlier, and this view model's own debounced persist — or until the budget runs out.
     ///     <para>
     ///         A single pass is not enough, even though each tab's own drain waits for quiescence
-    ///         <em>within</em> that tab. Work can cross the boundary: a task on one tab can start work on
-    ///         another through <see cref="IDocumentHost" />, and a retired tab's drain can complete
-    ///         before an open tab spawns more. So each round re-asks every participant, and the loop ends
-    ///         only on a round where all of them report nothing outstanding — which
+    ///         <em>within</em> that tab. Work crosses the boundary: a task on one tab can open another
+    ///         through <see cref="IDocumentHost" />, and a retired tab's drain can complete before an
+    ///         open tab spawns more. So each round re-reads <see cref="Documents" /> as well as
+    ///         re-asking the participants already known, and the loop ends only on a round that both
+    ///         found no new tab and saw every participant report nothing outstanding — which
     ///         <c>CancelAndDrainAsync</c> signals by returning an already-completed task.
+    ///     </para>
+    ///     <para>
+    ///         <paramref name="participants" /> is an out-parameter as much as an input: it accumulates
+    ///         every document observed in any round, and the caller disposes exactly that set. A tab
+    ///         opened mid-drain would otherwise be left both undrained and undisposed.
     ///     </para>
     ///     <para>
     ///         Cancellation is re-requested every round and is idempotent. The budget is the caller's
@@ -678,22 +685,35 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     ///         ends in a reported timeout rather than a hang.
     ///     </para>
     /// </summary>
-    private async Task<bool> DrainToQuiescenceAsync(IReadOnlyList<DocumentViewModel> documents, TimeSpan budget)
+    private async Task<bool> DrainToQuiescenceAsync(List<DocumentViewModel> participants, TimeSpan budget)
     {
         var clock = Stopwatch.StartNew();
 
         while (true)
         {
-            var round = new List<Task>(documents.Count + 1) { _work.WhenSettled() };
+            var discovered = false;
 
-            foreach (var document in documents)
+            foreach (var document in Documents.ToArray())
+            {
+                if (!participants.Contains(document))
+                {
+                    participants.Add(document);
+                    discovered = true;
+                }
+            }
+
+            var round = new List<Task>(participants.Count + 1) { _work.WhenSettled() };
+
+            foreach (var document in participants)
             {
                 // Cancels synchronously and hands back the wait, so every tab is cancelled before the
                 // first await below.
                 round.Add(document.CancelAndDrainAsync());
             }
 
-            if (round.TrueForAll(task => task.IsCompleted))
+            // A round that discovered a tab never terminates the loop, even if everything looks quiet:
+            // the new tab's constructor work may not have reached its work set yet.
+            if (!discovered && round.TrueForAll(task => task.IsCompleted))
             {
                 return true;
             }

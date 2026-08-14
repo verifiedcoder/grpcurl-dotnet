@@ -50,4 +50,37 @@ internal static class WorkGraph
             Collect(child, tasks);
         }
     }
+
+    /// <summary>
+    ///     Moves a departing child's outstanding work into <paramref name="owner" />'s set, so removal
+    ///     does not discard the only handle on it (PRD-005 re-review round 5, finding 2).
+    ///     <para>
+    ///         Collecting children by walking the live collections describes what is <em>reachable</em>,
+    ///         not what is <em>owned</em>. A stream log is a ring buffer: at capacity it evicts its
+    ///         oldest row, and if that row's copy command was still awaiting the singleton clipboard,
+    ///         the task carried on somewhere nothing could see it. This is the same hand-off
+    ///         <c>DocumentsViewModel.Retire</c> performs for a closed tab, one level down.
+    ///     </para>
+    /// </summary>
+    public static void Retain(BackgroundWorkSet owner, object child)
+    {
+        var tasks = new List<Task?>();
+
+        Collect(child, tasks);
+
+        foreach (var task in tasks)
+        {
+            owner.Track(task);
+        }
+    }
+
+    /// <summary>Retains every child about to leave a collection — the <c>Clear</c> case.</summary>
+    public static void RetainAll<T>(BackgroundWorkSet owner, IEnumerable<T> children)
+        where T : notnull
+    {
+        foreach (var child in children)
+        {
+            Retain(owner, child);
+        }
+    }
 }

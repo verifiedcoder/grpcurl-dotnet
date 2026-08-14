@@ -30,6 +30,23 @@ public abstract partial class DocumentViewModel : ViewModelBase
     private protected void Track(Task task) => _work.Track(task);
 
     /// <summary>
+    ///     Moves a child's outstanding work into this tab's set before the child leaves the collection
+    ///     it lives in. Removal must not discard the only handle on a running command (PRD-005
+    ///     re-review round 5, finding 2).
+    /// </summary>
+    private protected void RetainWorkOf(object child) => WorkGraph.Retain(_work, child);
+
+    /// <summary>Same, for every child of a collection that is about to be cleared.</summary>
+    private protected void RetainWorkOfAll<T>(IEnumerable<T> children)
+        where T : notnull
+    {
+        foreach (var child in children)
+        {
+            RetainWorkOf(child);
+        }
+    }
+
+    /// <summary>
     ///     Requests cancellation of whatever this tab <em>can</em> cancel. Called synchronously, before
     ///     anything is awaited.
     ///     <para>

@@ -382,6 +382,170 @@ public sealed class ShutdownDrainCoverageTests
         result.Drained.ShouldBeTrue();
     }
 
+    // ── Round 5: participant discovery and ownership across removal ─────────
+
+    /// <summary>
+    ///     PRD-005 re-review round 5, finding 1: the participant set must follow <c>Documents</c>, not a
+    ///     snapshot taken when shutdown began. Work the drain is already waiting on can add a tab —
+    ///     and a tab missed here is neither drained nor disposed.
+    ///     <para>
+    ///         Driven through <see cref="IDocumentHost" /> from inside blocked tracked work, which is the
+    ///         contract under test. Every production tab-opening path is a synchronous command today, so
+    ///         no current gesture reaches this; the guarantee is about the drain's shape, not about one
+    ///         caller.
+    ///     </para>
+    /// </summary>
+    [Fact]
+    public async Task A_tab_opened_by_admitted_work_is_drained_and_disposed()
+    {
+        var source = new Blocker();
+        var opened = new Blocker();
+
+        DocumentsViewModel? docs = null;
+
+        var descriptors = new FakeDescriptorService
+        {
+            OnDescribe = async (_, symbol, _) =>
+            {
+                if (symbol == "pkg.Source")
+                {
+                    // Parks first, so this load is still admitted when the drain starts; then opens a
+                    // tab from inside that admitted work.
+                    await source.EnterAsync();
+
+                    docs!.OpenInvocation(Conn(), "pkg.Svc/Go", "{}");
+                }
+                else
+                {
+                    await opened.EnterAsync();
+                }
+
+                return DescribeResult.Failure(new DescriptorLoadError("stub", null, false));
+            }
+        };
+
+        docs = new DocumentsViewModel(
+            descriptors, new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner(),
+            new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator(),
+            new InMemorySettingsStore(), new FakeThemeService());
+
+        docs.OpenDescribe(Conn(), "pkg.Source");
+
+        await source.Entered.Task.WaitAsync(Bounded, Ct);
+
+        var shutdown = docs.DisposeOpenDocumentsAsync(ShortDrain);
+
+        source.Release.SetResult();
+
+        var result = await shutdown.WaitAsync(Bounded, Ct);
+
+        try
+        {
+            result.Drained.ShouldBeFalse("the tab opened mid-drain is still resolving its method");
+            result.Documents.ShouldBe(2, "the new tab must also be a disposal target");
+        }
+        finally
+        {
+            opened.Release.SetResult();
+        }
+    }
+
+    /// <summary>
+    ///     The simpler half of the same wiring: a row still in the collection. Together with the
+    ///     eviction case this is what pins <c>WorkGraph.Collect(Log, …)</c> — the ownership tripwire's
+    ///     name list cannot, since it only checks that a type is accounted for, not that a parent
+    ///     collects it.
+    /// </summary>
+    [Fact]
+    public async Task A_live_stream_rows_command_keeps_shutdown_from_reporting_drained()
+    {
+        var service = new Blocker();
+        var clipboard = new BlockingClipboard(service);
+
+        var docs = new DocumentsViewModel(
+            new FakeDescriptorService(), new ImmediateUiDispatcher(), clipboard, new FakeInvocationRunner(),
+            new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator(),
+            new InMemorySettingsStore(), new FakeThemeService());
+
+        var tab = new InvocationDocumentViewModel(
+            Conn(), "pkg.Svc/Go", "{}", new FakeInvocationRunner(), new FakeDescriptorService(),
+            new ImmediateUiDispatcher(), clipboard, new FakeDialogService(), new FakeLauncherService(),
+            new FakeRequestValidator());
+
+        docs.Documents.Add(tab);
+
+        tab.Log.Append(Event(0));
+
+        var copying = tab.Log.Rows[0].CopyAsNdjsonCommand.ExecuteAsync(null);
+
+        await service.Entered.Task.WaitAsync(Bounded, Ct);
+
+        var result = await docs.DisposeOpenDocumentsAsync(ShortDrain).WaitAsync(Bounded, Ct);
+
+        try
+        {
+            result.Drained.ShouldBeFalse("a stream row's command is work the tab owns");
+        }
+        finally
+        {
+            service.Release.SetResult();
+
+            await copying.WaitAsync(Bounded, Ct);
+        }
+    }
+
+    /// <summary>
+    ///     PRD-005 re-review round 5, finding 2: current reachability is not durable ownership. The
+    ///     stream log is a ring buffer; at capacity it evicts its oldest row, and walking the live
+    ///     collection could no longer find a copy command still awaiting the singleton clipboard.
+    /// </summary>
+    [Fact]
+    public async Task An_evicted_stream_rows_command_is_still_drained()
+    {
+        var clipboard = new BlockingClipboard(new Blocker());
+        var blocker = clipboard.Blocker;
+
+        var docs = new DocumentsViewModel(
+            new FakeDescriptorService(), new ImmediateUiDispatcher(), clipboard, new FakeInvocationRunner(),
+            new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator(),
+            new InMemorySettingsStore(), new FakeThemeService());
+
+        var tab = new InvocationDocumentViewModel(
+            Conn(), "pkg.Svc/Go", "{}", new FakeInvocationRunner(), new FakeDescriptorService(),
+            new ImmediateUiDispatcher(), clipboard, new FakeDialogService(), new FakeLauncherService(),
+            new FakeRequestValidator(), ringCapacity: 1);
+
+        docs.Documents.Add(tab);
+
+        tab.Log.Append(Event(0));
+
+        var first = tab.Log.Rows[0];
+        var copying = first.CopyAsNdjsonCommand.ExecuteAsync(null);
+
+        await blocker.Entered.Task.WaitAsync(Bounded, Ct);
+
+        // The ring evicts the row whose command is still awaiting the singleton clipboard.
+        tab.Log.Append(Event(1));
+
+        tab.Log.Rows.ShouldNotContain(first);
+
+        var result = await docs.DisposeOpenDocumentsAsync(ShortDrain).WaitAsync(Bounded, Ct);
+
+        try
+        {
+            result.Drained.ShouldBeFalse("the evicted row's command is still running");
+        }
+        finally
+        {
+            blocker.Release.SetResult();
+
+            await copying.WaitAsync(Bounded, Ct);
+        }
+    }
+
+    private static StreamEventModel Event(int index)
+        => new(StreamEventKind.MessageReceived, index, DateTimeOffset.UtcNow, index, $"preview {index}");
+
     /// <summary>A service that parks its caller until the test lets go, and says when it was reached.</summary>
     private sealed class Blocker
     {
@@ -467,6 +631,18 @@ public sealed class ShutdownDrainCoverageTests
         public async Task SaveAsync(StudioSettings settings, CancellationToken cancellationToken = default)
             => await blocker.EnterAsync();
     }
+
+    private sealed class BlockingClipboard(Blocker blocker) : IClipboardService
+    {
+        public Blocker Blocker { get; } = blocker;
+
+        public async Task SetTextAsync(string text, CancellationToken cancellationToken = default)
+            => await Blocker.EnterAsync();
+
+        public Task<string?> GetTextAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<string?>(null);
+    }
+
 
     private sealed class BlockingRevealGate(Blocker blocker) : IRevealGate
     {

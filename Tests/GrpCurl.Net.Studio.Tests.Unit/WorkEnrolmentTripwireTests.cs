@@ -21,6 +21,14 @@ public sealed class WorkEnrolmentTripwireTests
     ///     Every async command owner in the view-model layer that a document can own must either be a
     ///     document or be listed here as a child that is collected through
     ///     <see cref="IOwnsBackgroundWork" />. Anything else is shell/pane scope — see the note below.
+    ///     <para>
+    ///         <b>This list is an accounting prompt, not proof of wiring.</b> It forces a new
+    ///         async-command owner to be classified; it does <em>not</em> verify that any parent
+    ///         actually collects a listed type — removing a single <c>WorkGraph.Collect</c> call leaves
+    ///         both tests here green (the round-5 review demonstrated exactly that). What pins the
+    ///         wiring is the behaviour suite: <c>ShutdownDrainCoverageTests</c> has a blocked-service
+    ///         case per collected child.
+    ///     </para>
     /// </summary>
     private static readonly HashSet<string> CollectedChildren =
     [

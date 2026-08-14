@@ -1324,6 +1324,8 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDispo
     {
         if (row is not null)
         {
+            RetainWorkOf(row);
+
             _ = Headers.Remove(row);
         }
     }

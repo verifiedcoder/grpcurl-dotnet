@@ -489,6 +489,10 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
             StatusIsError = false;
             Error = null;
             Severity = StatusSeverity.Ok;
+            // A reveal command may still be awaiting the singleton gate on one of these rows.
+            RetainWorkOfAll(ResponseHeaders);
+            RetainWorkOfAll(ResponseTrailers);
+
             ResponseHeaders.Clear();
             ResponseTrailers.Clear();
             Timing.Clear();
@@ -1030,6 +1034,8 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
     {
         if (row is not null)
         {
+            RetainWorkOf(row);
+
             _ = Headers.Remove(row);
         }
     }
@@ -1126,7 +1132,8 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
             tasks.Add(Composer.CancelAndDrainAsync());
         }
 
-        WorkGraph.CollectAll(Log.Rows, tasks);
+        // Log, not Log.Rows: the log owns its evicted rows' work as well as its live rows'.
+        WorkGraph.Collect(Log, tasks);
         WorkGraph.CollectAll(ResponseHeaders, tasks);
         WorkGraph.CollectAll(ResponseTrailers, tasks);
         WorkGraph.CollectAll(Headers, tasks);

@@ -7,6 +7,7 @@ using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Descriptors;
 using GrpCurl.Net.Studio.ViewModels.Models.History;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
+using GrpCurl.Net.Studio.ViewModels.Models.Session;
 using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
@@ -526,6 +527,72 @@ public sealed class ShutdownDrainCoverageTests
     }
 
     /// <summary>
+    ///     PRD-005 re-review round 9, finding 1: session restore constructs documents and awaits the
+    ///     singleton session store, so it is an open operation in everything but its name.
+    ///     <para>
+    ///         <c>App</c> starts it fire-and-forget at launch. Closing the window while it is still
+    ///         loading left the drain with no document, no opener and no tracked task to see, so it could
+    ///         report success while restore was still inside the store — the round-8 ownership error
+    ///         reached through a method not called <c>Open*</c>.
+    ///     </para>
+    ///     <para>
+    ///         The positive wait is the assertion: shutdown stays incomplete until the load is released,
+    ///         and only then reports <c>Drained: true</c>. Proving merely that no late tab appeared would
+    ///         not distinguish this from a shutdown that never waited at all.
+    ///     </para>
+    /// </summary>
+    [Fact]
+    public async Task Shutdown_waits_for_a_session_restore_that_is_still_loading()
+    {
+        var loading = new Blocker();
+
+        var docs = new DocumentsViewModel(
+            new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(),
+            new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(),
+            new FakeRequestValidator(), new InMemorySettingsStore(), new FakeThemeService(),
+            workspace: new FakeWorkspaceStore(new WorkspaceModel()), session: new BlockingSessionStore(loading));
+
+        // Fire-and-forget, exactly as App does at launch.
+        var restoring = docs.RestoreSessionAsync();
+
+        await loading.Entered.Task.WaitAsync(Bounded, Ct);
+
+        var shutdown = docs.DisposeOpenDocumentsAsync(Bounded);
+
+        await Task.Delay(250, Ct);
+
+        shutdown.IsCompleted.ShouldBeFalse("shutdown must wait for a restore that is still loading");
+
+        loading.Release.SetResult();
+
+        var result = await shutdown.WaitAsync(Bounded, Ct);
+
+        await restoring.WaitAsync(Bounded, Ct);
+
+        result.Drained.ShouldBeTrue("the restore finished well inside the budget");
+    }
+
+    /// <summary>A restore started after shutdown must not even reach the session store.</summary>
+    [Fact]
+    public async Task A_session_restore_started_after_shutdown_loads_nothing()
+    {
+        var loading = new Blocker();
+        var store = new BlockingSessionStore(loading);
+
+        var docs = new DocumentsViewModel(
+            new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(),
+            new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(),
+            new FakeRequestValidator(), new InMemorySettingsStore(), new FakeThemeService(),
+            workspace: new FakeWorkspaceStore(new WorkspaceModel()), session: store);
+
+        _ = await docs.DisposeOpenDocumentsAsync(ShortDrain).WaitAsync(Bounded, Ct);
+
+        await docs.RestoreSessionAsync().WaitAsync(Bounded, Ct);
+
+        store.Loads.ShouldBe(0, "admission is closed, so restore must not touch the singleton at all");
+    }
+
+    /// <summary>
     ///     PRD-005 re-review round 8: an opener slower than the bounded drain must not commit a live tab
     ///     after shutdown has given up waiting for it.
     ///     <para>
@@ -1005,6 +1072,23 @@ public sealed class ShutdownDrainCoverageTests
             => Task.FromResult<string?>(null);
     }
 
+
+    private sealed class BlockingSessionStore(Blocker blocker) : ISessionStore
+    {
+        public int Loads { get; private set; }
+
+        public async Task<SessionState> LoadAsync(CancellationToken cancellationToken = default)
+        {
+            Loads++;
+
+            await blocker.EnterAsync();
+
+            return new SessionState();
+        }
+
+        public Task SaveAsync(SessionState state, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+    }
 
     private sealed class BlockingRevealGate(Blocker blocker) : IRevealGate
     {

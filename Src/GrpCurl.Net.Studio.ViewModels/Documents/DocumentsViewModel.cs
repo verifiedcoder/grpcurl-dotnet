@@ -769,9 +769,30 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
             return;
         }
 
-        var state = await _session.LoadAsync(cancellationToken).ConfigureAwait(false);
+        // A lease, exactly as the public Open* methods take: restore constructs documents and awaits the
+        // singleton session store, so it is an open operation in everything but name (PRD-005 re-review
+        // round 9, finding 1). The lease is taken before the first await, so the fire-and-forget call in
+        // App holds it by the time that call returns.
+        if (!BeginOpen())
+        {
+            return; // shutdown started first: load nothing, construct nothing
+        }
 
-        if (state.WorkspaceId is null || state.WorkspaceId != _workspace.Current.Id)
+        try
+        {
+            await RestoreSessionCoreAsync(cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            EndOpen();
+        }
+    }
+
+    private async Task RestoreSessionCoreAsync(CancellationToken cancellationToken)
+    {
+        var state = await _session!.LoadAsync(cancellationToken).ConfigureAwait(false);
+
+        if (state.WorkspaceId is null || state.WorkspaceId != _workspace!.Current.Id)
         {
             return; // a different (or no) workspace than the one whose tabs were saved
         }

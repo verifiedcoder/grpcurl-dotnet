@@ -11,11 +11,11 @@ namespace GrpCurl.Net.Studio;
 internal static class Program
 {
     /// <summary>
-    ///     How long shutdown waits for cancelled tab work to unwind before giving up and tearing the
-    ///     host down anyway (PRD-005). Long enough for an RPC to observe its token and unwind, short
+    ///     The whole document-shutdown budget (PRD-005): settling producers, persisting the session and
+    ///     draining the tabs share it. Long enough for an RPC to observe its token and unwind, short
     ///     enough that a wedged operation cannot keep the process alive; exceeding it is logged.
     /// </summary>
-    private static readonly TimeSpan ShutdownDrainTimeout = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan ShutdownBudget = TimeSpan.FromSeconds(5);
 
     // Avalonia configuration. Called by the visual designer and by the headless test harness
     // via the parameterless overload; the runtime entry point passes the host's services.
@@ -57,32 +57,38 @@ internal static class Program
                 // last debounced persist). SPEC-040 §8: release the advisory workspace lock on clean close.
                 var documents = host.Services.GetRequiredService<DocumentsViewModel>();
 
-                documents.FlushSessionAsync().GetAwaiter().GetResult();
-
-                // PRD-005: release what the open tabs own — in-flight calls, debounce work, capture
-                // writers, singleton subscriptions. The close-flow disposal only covers tabs the user
-                // closed, so quitting with tabs open reached none of it. Strictly after the flush above:
-                // this cancels running work, and the snapshot must describe the session as it was.
+                // PRD-005: one phased operation, because the phases depend on each other. Admission
+                // closes and producers already in flight settle *first*, then the session is snapshotted,
+                // then the documents are drained and disposed. Flushing before that wait — as this code
+                // used to — could snapshot an empty collection while startup restore was still loading
+                // and write it over the very session being restored (round 10, finding 1).
                 //
-                // Awaited, not fired: host.Dispose() below tears down the history, validation and secret
-                // singletons that a cancelled call still touches while it unwinds, so shutdown has to
-                // know that work has actually stopped rather than merely been asked to (PRD-005
-                // re-review, finding 1). Sync-over-async is safe here — the Avalonia context was
-                // cleared above, so the continuations resume on the thread pool.
-                var shutdown = documents
-                    .DisposeOpenDocumentsAsync(ShutdownDrainTimeout)
-                    .GetAwaiter()
-                    .GetResult();
+                // Sync-over-async is safe here: the Avalonia context was cleared above, so continuations
+                // resume on the thread pool.
+                var shutdown = documents.ShutdownAsync(ShutdownBudget).GetAwaiter().GetResult();
 
-                if (!shutdown.Drained)
+                if (!shutdown.Drained || !shutdown.SessionPersisted)
                 {
-                    // Recorded rather than swallowed: the tabs were disposed either way, but work was
-                    // still running when we stopped waiting, and the teardown below is then racing it.
-                    host.Services.GetRequiredService<IDiagnosticsLog>().Log(
-                        DiagnosticsLevel.Warning,
-                        "shutdown",
-                        $"Timed out after {ShutdownDrainTimeout.TotalSeconds:0.#}s waiting for cancelled work "
-                        + $"in {shutdown.Documents} open tab(s) to unwind; disposing services anyway.");
+                    var log = host.Services.GetRequiredService<IDiagnosticsLog>();
+
+                    if (!shutdown.Drained)
+                    {
+                        log.Log(
+                            DiagnosticsLevel.Warning,
+                            "shutdown",
+                            $"Timed out after {ShutdownBudget.TotalSeconds:0.#}s waiting for work in "
+                            + $"{shutdown.Documents} open tab(s) to unwind; disposing services anyway.");
+                    }
+
+                    if (!shutdown.SessionPersisted)
+                    {
+                        // Deliberate: the tabs on disk are the truth when a restore did not finish, and
+                        // overwriting them with a mid-restore snapshot is worse than not writing at all.
+                        log.Log(
+                            DiagnosticsLevel.Information,
+                            "shutdown",
+                            "Final session snapshot skipped; the previously saved session was kept.");
+                    }
                 }
 
                 host.Services.GetRequiredService<IWorkspaceStore>().ReleaseLock();

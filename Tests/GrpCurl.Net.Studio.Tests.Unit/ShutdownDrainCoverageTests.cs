@@ -572,6 +572,114 @@ public sealed class ShutdownDrainCoverageTests
         result.Drained.ShouldBeTrue("the restore finished well inside the budget");
     }
 
+    /// <summary>
+    ///     PRD-005 re-review round 10, finding 1: the final session snapshot must not overtake a startup
+    ///     restore that is still loading.
+    ///     <para>
+    ///         <c>Program</c> used to flush and then drain. Quitting during restore therefore snapshotted
+    ///         an empty <c>Documents</c> — the restore was still parked in the session store — and wrote
+    ///         it over the very file being restored. The user's tabs were destroyed by the shutdown meant
+    ///         to preserve them.
+    ///     </para>
+    ///     <para>
+    ///         This drives <see cref="DocumentsViewModel.ShutdownAsync" />, the coordinator <c>Program</c>
+    ///         now calls, rather than the drain alone: the ordering between the flush and the wait is the
+    ///         thing under test, and a direct drain test cannot see it.
+    ///     </para>
+    ///     <para>
+    ///         Note what "restored" has to mean. Releasing the load lets <c>RestoreSessionAsync</c>
+    ///         <em>return</em>, but its tabs are refused by the admission it is racing — so a completion
+    ///         flag set on return would still persist an empty snapshot. The flag is set only when
+    ///         shutdown had not begun.
+    ///     </para>
+    /// </summary>
+    [Fact]
+    public async Task Shutdown_does_not_overwrite_a_session_it_never_finished_restoring()
+    {
+        var loading = new Blocker();
+
+        var prior = new SessionState
+        {
+            WorkspaceId = "w",
+            Tabs = [new SessionTab(SessionTabKind.Describe, "c1", "pkg.Alpha")]
+        };
+
+        var store = new BlockingSessionStore(loading) { State = prior };
+
+        var docs = new DocumentsViewModel(
+            new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(),
+            new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(),
+            new FakeRequestValidator(), new InMemorySettingsStore(), new FakeThemeService(),
+            workspace: new FakeWorkspaceStore(new WorkspaceModel { Id = "w" }), session: store);
+
+        var restoring = docs.RestoreSessionAsync();
+
+        await loading.Entered.Task.WaitAsync(Bounded, Ct);
+
+        var shutdown = docs.ShutdownAsync(Bounded);
+
+        await Task.Delay(250, Ct);
+
+        store.Saves.ShouldBe(0, "the flush must not overtake the load it depends on");
+        shutdown.IsCompleted.ShouldBeFalse();
+
+        loading.Release.SetResult();
+
+        var result = await shutdown.WaitAsync(Bounded, Ct);
+
+        await restoring.WaitAsync(Bounded, Ct);
+
+        result.Drained.ShouldBeTrue();
+
+        // Releasing the load does not make the restore real: its tabs were refused by closed admission,
+        // so the collection cannot describe the session and the durable file is left exactly as it was.
+        result.SessionPersisted.ShouldBeFalse();
+        store.Saves.ShouldBe(0, "the one-tab session on disk must survive the shutdown that interrupted it");
+    }
+
+    /// <summary>
+    ///     The other half: if the restore never finishes inside the budget, the durable file is left
+    ///     alone rather than replaced by a snapshot known not to describe it.
+    /// </summary>
+    [Fact]
+    public async Task An_unfinished_restore_leaves_the_previous_session_on_disk()
+    {
+        var loading = new Blocker();
+
+        var store = new BlockingSessionStore(loading)
+        {
+            State = new SessionState
+            {
+                WorkspaceId = "w",
+                Tabs = [new SessionTab(SessionTabKind.Describe, "c1", "pkg.Alpha")]
+            }
+        };
+
+        var docs = new DocumentsViewModel(
+            new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(),
+            new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(),
+            new FakeRequestValidator(), new InMemorySettingsStore(), new FakeThemeService(),
+            workspace: new FakeWorkspaceStore(new WorkspaceModel { Id = "w" }), session: store);
+
+        var restoring = docs.RestoreSessionAsync();
+
+        await loading.Entered.Task.WaitAsync(Bounded, Ct);
+
+        var result = await docs.ShutdownAsync(ShortDrain).WaitAsync(Bounded, Ct);
+
+        try
+        {
+            result.SessionPersisted.ShouldBeFalse("a snapshot taken mid-restore cannot describe the session");
+            store.Saves.ShouldBe(0, "the previously saved session must be left exactly as it was");
+        }
+        finally
+        {
+            loading.Release.SetResult();
+
+            await restoring.WaitAsync(Bounded, Ct);
+        }
+    }
+
     /// <summary>A restore started after shutdown must not even reach the session store.</summary>
     [Fact]
     public async Task A_session_restore_started_after_shutdown_loads_nothing()
@@ -1077,17 +1185,28 @@ public sealed class ShutdownDrainCoverageTests
     {
         public int Loads { get; private set; }
 
+        public int Saves { get; private set; }
+
+        public SessionState State { get; init; } = new();
+
+        public SessionState? LastSaved { get; private set; }
+
         public async Task<SessionState> LoadAsync(CancellationToken cancellationToken = default)
         {
             Loads++;
 
             await blocker.EnterAsync();
 
-            return new SessionState();
+            return State;
         }
 
         public Task SaveAsync(SessionState state, CancellationToken cancellationToken = default)
-            => Task.CompletedTask;
+        {
+            Saves++;
+            LastSaved = state;
+
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class BlockingRevealGate(Blocker blocker) : IRevealGate

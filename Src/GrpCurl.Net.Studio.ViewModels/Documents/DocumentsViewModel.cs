@@ -75,6 +75,16 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     private TaskCompletionSource? _openersIdle;
 
     /// <summary>
+    ///     Whether a session restore was started, and whether it finished. Persisting a snapshot taken
+    ///     while a restore has not completed would replace the durable session with one that does not
+    ///     describe it — the tabs are on disk precisely because they have not been re-opened yet
+    ///     (PRD-005 re-review round 10, finding 1). Guarded by <see cref="_admissionGate" />.
+    /// </summary>
+    private bool _restoreAttempted;
+
+    private bool _restoreCompleted;
+
+    /// <summary>
     ///     The debounced session persists this view model has started. Shutdown waits for them with the
     ///     tabs: they write through the container-owned session store (PRD-005 re-review round 3).
     /// </summary>
@@ -773,6 +783,11 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         // singleton session store, so it is an open operation in everything but name (PRD-005 re-review
         // round 9, finding 1). The lease is taken before the first await, so the fire-and-forget call in
         // App holds it by the time that call returns.
+        lock (_admissionGate)
+        {
+            _restoreAttempted = true;
+        }
+
         if (!BeginOpen())
         {
             return; // shutdown started first: load nothing, construct nothing
@@ -781,6 +796,14 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         try
         {
             await RestoreSessionCoreAsync(cancellationToken).ConfigureAwait(false);
+
+            lock (_admissionGate)
+            {
+                // "Returned" is not "restored". If shutdown began at any point during the restore, the
+                // tabs it was re-opening were refused by admission, so the collection does not describe
+                // the session and must not be persisted over it.
+                _restoreCompleted = !_shuttingDown;
+            }
         }
         finally
         {
@@ -877,14 +900,84 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     ///     if an operation ignores its token; a timeout is reported rather than hidden, because "we
     ///     stopped waiting" is not the same claim as "nothing is running".
     /// </param>
-    public async Task<DocumentShutdownResult> DisposeOpenDocumentsAsync(TimeSpan drainTimeout)
+    /// <summary>
+    ///     The whole document half of application shutdown, in the order the phases actually depend on
+    ///     each other (PRD-005 re-review round 10, finding 1).
+    ///     <list type="number">
+    ///         <item>close admission and wait for document producers already in flight;</item>
+    ///         <item>persist the session — but only if it can describe the user's tabs;</item>
+    ///         <item>cancel, drain and dispose the documents.</item>
+    ///     </list>
+    ///     <para>
+    ///         <c>Program</c> used to flush first and drain second. A rapid close during startup restore
+    ///         therefore snapshotted an empty <see cref="Documents" /> — the restore was still parked in
+    ///         the session store — and wrote it over the very file being restored. The tabs were lost by
+    ///         the shutdown that was supposed to preserve them.
+    ///     </para>
+    ///     <para>
+    ///         Persistence is <b>skipped</b> rather than approximated when a restore was attempted and did
+    ///         not finish: the durable file is already the truth, and replacing it with a snapshot known
+    ///         to be incomplete is the one outcome worse than not writing. The caller is told, through
+    ///         <see cref="DocumentShutdownResult.SessionPersisted" />.
+    ///     </para>
+    /// </summary>
+    public async Task<DocumentShutdownResult> ShutdownAsync(TimeSpan budget)
     {
-        // Both set before any await. The flag goes under the admission gate so it linearises against a
-        // commit already in flight: no tab joins Documents after this point, and none is lost either.
+        var clock = Stopwatch.StartNew();
+
+        CloseAdmission();
+
+        // Phase 1: let producers already in flight finish, so the snapshot below describes a settled
+        // collection rather than one mid-restore.
+        var producersSettled = true;
+
+        try
+        {
+            await SnapshotForRound().Settled.WaitAsync(budget).ConfigureAwait(false);
+        }
+        catch (TimeoutException)
+        {
+            producersSettled = false;
+        }
+
+        // Phase 2: persist only what can be described truthfully.
+        bool restoreUsable;
+
+        lock (_admissionGate)
+        {
+            restoreUsable = !_restoreAttempted || _restoreCompleted;
+        }
+
+        var sessionPersisted = producersSettled && restoreUsable;
+
+        if (sessionPersisted)
+        {
+            await FlushSessionAsync().ConfigureAwait(false);
+        }
+
+        // Phase 3: the drain and disposal, with whatever budget is left.
+        var remaining = budget - clock.Elapsed;
+
+        var result = await DisposeOpenDocumentsAsync(remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero)
+            .ConfigureAwait(false);
+
+        return result with { SessionPersisted = sessionPersisted };
+    }
+
+    /// <summary>Closes admission. Idempotent; <see cref="DisposeOpenDocumentsAsync" /> also calls it.</summary>
+    private void CloseAdmission()
+    {
         lock (_admissionGate)
         {
             _shuttingDown = true;
         }
+    }
+
+    public async Task<DocumentShutdownResult> DisposeOpenDocumentsAsync(TimeSpan drainTimeout)
+    {
+        // Both set before any await. The flag goes under the admission gate so it linearises against a
+        // commit already in flight: no tab joins Documents after this point, and none is lost either.
+        CloseAdmission();
 
         _suppressPersist = true;
 

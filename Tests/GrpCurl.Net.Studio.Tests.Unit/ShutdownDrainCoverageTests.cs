@@ -385,26 +385,26 @@ public sealed class ShutdownDrainCoverageTests
     // ── Round 5: participant discovery and ownership across removal ─────────
 
     /// <summary>
-    ///     PRD-005 re-review rounds 5 and 6, finding 1: a tab opened by work the drain is already
+    ///     PRD-005 re-review rounds 5, 6 and 8, finding 1: a tab opened by work the drain is already
     ///     waiting on must never be left running.
     ///     <para>
-    ///         Round 5 grew the participant list, which covered it only when a round <em>completed</em>;
-    ///         a round that ended at the timeout ran no further discovery, so the tab was neither
-    ///         cancelled nor disposed. Admission now closes instead: from the moment shutdown starts, a
-    ///         new tab is retired on the spot rather than joining <c>Documents</c>.
+    ///         Round 5 grew the participant list, which covered it only when a round <em>completed</em>.
+    ///         Round 6 closed admission at the commit, so a losing tab was built and then retired — and
+    ///         that retirement was owned by nobody, so it could outlive the shutdown that refused it.
+    ///         Round 8 moved the decision to an opener lease taken before anything is constructed: a
+    ///         losing opener returns having built nothing at all.
     ///     </para>
     ///     <para>
-    ///         The probe stays blocked through the timeout, which is the case round 6 found. Disposal is
-    ///         observed through the environment singleton's subscriber count — a tab subscribes when it
-    ///         opens and unsubscribes only in <c>Dispose</c>, so the count returning to its baseline is
-    ///         the disposal itself, not a proxy for it.
+    ///         The source load stays blocked through the timeout, which is the case round 6 found. Two
+    ///         observables: the descriptor service is never asked to resolve the probe method (nothing
+    ///         was built), and the environment singleton's subscriber count never moves (nothing
+    ///         subscribed, so nothing is left subscribed).
     ///     </para>
     /// </summary>
     [Fact]
-    public async Task A_tab_opened_by_admitted_work_is_cancelled_and_disposed_even_on_timeout()
+    public async Task A_tab_opened_by_admitted_work_is_refused_before_it_is_built()
     {
         var source = new Blocker();
-        var probe = new Blocker();
 
         DocumentsViewModel? docs = null;
 
@@ -415,22 +415,23 @@ public sealed class ShutdownDrainCoverageTests
             }),
             new FakeSecretStore());
 
+        var probeResolved = false;
+
         var descriptors = new FakeDescriptorService
         {
             OnDescribe = async (_, symbol, _) =>
             {
                 if (symbol == "pkg.Source")
                 {
-                    // Parked when the drain starts, so this load is admitted work; it then opens a tab.
+                    // Parked when the drain starts, so this load is admitted work; it then tries to open
+                    // a tab and stays blocked past the timeout.
                     await source.EnterAsync();
 
                     docs!.OpenInvocation(Conn(), "pkg.Svc/Probe", "{}");
                 }
                 else
                 {
-                    // The probe's own method resolution ignores its token and stays blocked past the
-                    // timeout — the case round 6 found, where no further discovery pass ever runs.
-                    await probe.EnterAsync();
+                    probeResolved = true;
                 }
 
                 return DescribeResult.Failure(new DescriptorLoadError("stub", null, false));
@@ -452,25 +453,124 @@ public sealed class ShutdownDrainCoverageTests
 
         source.Release.SetResult();
 
+        _ = await shutdown.WaitAsync(Bounded, Ct);
+
+        docs.Documents.ShouldNotContain(d => d is InvocationDocumentViewModel,
+            "admission is closed once shutdown starts");
+
+        probeResolved.ShouldBeFalse("a refused opener must not construct a tab at all");
+
+        environment.ActiveChangedSubscribers.ShouldBe(baseline);
+    }
+
+    /// <summary>
+    ///     PRD-005 re-review round 8, finding 1: shutdown must wait for an opener that was <em>already
+    ///     admitted</em> — the whole operation, not just its collection commit.
+    ///     <para>
+    ///         The lease is taken before the tab is constructed, and this test parks the opener inside
+    ///         that construction by blocking the settings store the invocation constructor reads. Round
+    ///         7's gate covered only the commit, so shutdown could declare quiescence while an opener was
+    ///         still building — or, worse, still disposing a tab it had been refused.
+    ///     </para>
+    ///     <para>
+    ///         What the wait buys is cleanup, not admission: the tab is retired rather than committed,
+    ///         because after shutdown begins nothing joins <c>Documents</c>. Shutdown simply must not
+    ///         finish until that retirement has.
+    ///     </para>
+    /// </summary>
+    [Fact]
+    public async Task Shutdown_waits_for_an_opener_that_was_already_admitted()
+    {
+        var construction = new Blocker();
+
+        var environment = new EnvironmentService(
+            new FakeWorkspaceStore(new WorkspaceModel
+            {
+                Environments = [new WorkspaceEnvironment { Id = "e1", Name = "staging" }]
+            }),
+            new FakeSecretStore());
+
+        var docs = new DocumentsViewModel(
+            new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(),
+            new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(),
+            new FakeRequestValidator(), new BlockingReadSettingsStore(construction), new FakeThemeService(),
+            environment: environment);
+
+        var baseline = environment.ActiveChangedSubscribers;
+
+        // Holds a lease and blocks inside the open operation, before the tab reaches Documents.
+        var opening = Task.Run(() => docs.OpenInvocation(Conn(), "pkg.Svc/Go", "{}"), Ct);
+
+        await construction.Entered.Task.WaitAsync(Bounded, Ct);
+
+        var shutdown = docs.DisposeOpenDocumentsAsync(Bounded);
+
+        await Task.Delay(250, Ct);
+
+        shutdown.IsCompleted.ShouldBeFalse("shutdown must wait for an opener it already admitted");
+
+        construction.Release.SetResult();
+
         var result = await shutdown.WaitAsync(Bounded, Ct);
 
-        try
-        {
-            // The probe's own method resolution is still blocked, so the drain genuinely timed out.
-            await probe.Entered.Task.WaitAsync(Bounded, Ct);
+        await opening.WaitAsync(Bounded, Ct);
 
-            result.Drained.ShouldBeFalse("the probe tab's work was still running");
+        result.Drained.ShouldBeTrue("the opener finished well inside the budget");
 
-            docs.Documents.ShouldNotContain(d => d is InvocationDocumentViewModel,
-                "admission is closed once shutdown starts");
+        // Waited for, but not admitted: once shutdown has begun no tab joins the collection, so the
+        // opener retires what it built rather than committing it.
+        docs.Documents.ShouldBeEmpty();
 
-            environment.ActiveChangedSubscribers.ShouldBe(baseline,
-                "the probe tab must have been disposed, not merely refused");
-        }
-        finally
-        {
-            probe.Release.SetResult();
-        }
+        environment.ActiveChangedSubscribers.ShouldBe(baseline,
+            "the tab shutdown waited for must also have been disposed");
+    }
+
+    /// <summary>
+    ///     PRD-005 re-review round 8: an opener slower than the bounded drain must not commit a live tab
+    ///     after shutdown has given up waiting for it.
+    ///     <para>
+    ///         The lease keeps a <em>merely slow</em> opener ahead of shutdown, but the drain has a
+    ///         budget: once it expires, shutdown returns while the lease is still held. The commit
+    ///         therefore re-checks the flag rather than trusting the lease it entered under, and retires
+    ///         instead of adding.
+    ///     </para>
+    /// </summary>
+    [Fact]
+    public async Task An_opener_slower_than_the_drain_budget_retires_instead_of_committing()
+    {
+        var construction = new Blocker();
+
+        var environment = new EnvironmentService(
+            new FakeWorkspaceStore(new WorkspaceModel
+            {
+                Environments = [new WorkspaceEnvironment { Id = "e1", Name = "staging" }]
+            }),
+            new FakeSecretStore());
+
+        var docs = new DocumentsViewModel(
+            new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(),
+            new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(),
+            new FakeRequestValidator(), new BlockingReadSettingsStore(construction), new FakeThemeService(),
+            environment: environment);
+
+        var baseline = environment.ActiveChangedSubscribers;
+
+        var opening = Task.Run(() => docs.OpenInvocation(Conn(), "pkg.Svc/Go", "{}"), Ct);
+
+        await construction.Entered.Task.WaitAsync(Bounded, Ct);
+
+        // The drain gives up while the lease is still held.
+        var result = await docs.DisposeOpenDocumentsAsync(ShortDrain).WaitAsync(Bounded, Ct);
+
+        result.Drained.ShouldBeFalse("the opener was still holding its lease");
+
+        construction.Release.SetResult();
+
+        await opening.WaitAsync(Bounded, Ct);
+
+        docs.Documents.ShouldBeEmpty("a tab must not join the collection after shutdown has returned");
+
+        environment.ActiveChangedSubscribers.ShouldBe(baseline, "the late tab must have been retired");
     }
 
     /// <summary>
@@ -489,13 +589,11 @@ public sealed class ShutdownDrainCoverageTests
     ///         count.
     ///     </para>
     ///     <para>
-    ///         <b>This is a stress test, and its sensitivity was measured rather than assumed.</b>
-    ///         Against the non-atomic version (ablation AH) 200 rounds caught the defect in one run out
-    ///         of three; against the checked-in version five consecutive runs passed. The window it
-    ///         hunts is a handful of instructions wide, so a green run is weak evidence — the guarantee
-    ///         comes from the single critical section in <c>AdmitAndAdd</c>, not from here. A
-    ///         deterministic version is not writable from outside: it would need to pause an opener
-    ///         between its decision and its commit, and that state is exactly what the fix removes.
+    ///         <b>Its sensitivity is measured rather than assumed, and it differs by defect.</b> Against
+    ///         a drain that ignores opener leases (ablation AJ) it fails deterministically. Against the
+    ///         older non-atomic commit (ablation AH) it caught the defect in one run out of three: that
+    ///         window is a handful of instructions wide, so for <em>that</em> defect a green run is weak
+    ///         evidence and the guarantee comes from the critical section in <c>AdmitAndAdd</c> instead.
     ///     </para>
     /// </summary>
     [Fact]
@@ -534,12 +632,16 @@ public sealed class ShutdownDrainCoverageTests
                 return docs.DisposeOpenDocumentsAsync(Bounded);
             }, Ct);
 
-            await opening.WaitAsync(Bounded, Ct);
-
-            _ = await shutdown.WaitAsync(Bounded, Ct);
+            // Shutdown first, and the assertion before the opener is awaited: the claim is about the
+            // instant shutdown returns. Awaiting the opener first would let retirement finish and make
+            // the assertion vacuous for exactly the interleaving it exists to watch (round 8 review).
+            var outcome = await shutdown.WaitAsync(Bounded, Ct);
 
             environment.ActiveChangedSubscribers.ShouldBe(baseline,
-                $"attempt {attempt}: whichever side won the gate, no tab may be left alive once shutdown returned");
+                $"attempt {attempt}: participants={outcome.Documents} drained={outcome.Drained} "
+                + $"docs={docs.Documents.Count}");
+
+            await opening.WaitAsync(Bounded, Ct);
         }
     }
 
@@ -778,6 +880,14 @@ public sealed class ShutdownDrainCoverageTests
 
             await Release.Task;
         }
+
+        /// <summary>For seams reached from synchronous code — a property getter, an event accessor.</summary>
+        public void EnterBlocking()
+        {
+            _ = Entered.TrySetResult();
+
+            Release.Task.GetAwaiter().GetResult();
+        }
     }
 
     private sealed class BlockingValidator(Blocker blocker) : IRequestValidator
@@ -832,6 +942,39 @@ public sealed class ShutdownDrainCoverageTests
 
             return [];
         }
+    }
+
+    /// <summary>Blocks the first read of <c>Current</c> — the invocation constructor's first act.</summary>
+    private sealed class BlockingReadSettingsStore(Blocker blocker) : ISettingsStore
+    {
+        private readonly StudioSettings _settings = new();
+
+        private int _reads;
+
+        public StudioSettings Current
+        {
+            get
+            {
+                if (Interlocked.Increment(ref _reads) == 1)
+                {
+                    blocker.EnterBlocking();
+                }
+
+                return _settings;
+            }
+        }
+
+        public event EventHandler? Changed;
+
+        public Task<StudioSettings> LoadAsync(CancellationToken cancellationToken = default)
+        {
+            Changed?.Invoke(this, EventArgs.Empty);
+
+            return Task.FromResult(_settings);
+        }
+
+        public Task SaveAsync(StudioSettings settings, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
     }
 
     private sealed class BlockingSettingsStore(Blocker blocker) : ISettingsStore

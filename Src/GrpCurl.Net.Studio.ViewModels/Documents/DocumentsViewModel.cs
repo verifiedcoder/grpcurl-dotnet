@@ -65,11 +65,14 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     private bool _shuttingDown;
 
     /// <summary>
-    ///     The admission gate, for the PRD-005 admission-race test only. Holding it is the only way to
-    ///     park an opener and a shutdown on the same boundary and let them race deterministically;
-    ///     nothing in production reaches for this.
+    ///     Open operations that have been admitted and not yet finished. Shutdown waits for these before
+    ///     it snapshots participants: an opener holding a lease may still be constructing a tab, adding
+    ///     it, or — if it lost the race — retiring it, and none of those may outlive the shutdown that
+    ///     let it in (PRD-005 re-review round 8, finding 1). Guarded by <see cref="_admissionGate" />.
     /// </summary>
-    internal System.Threading.Lock AdmissionGateForTests => _admissionGate;
+    private int _openers;
+
+    private TaskCompletionSource? _openersIdle;
 
     /// <summary>
     ///     The debounced session persists this view model has started. Shutdown waits for them with the
@@ -142,61 +145,113 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
 
     public void OpenDescribe(SavedConnection connection, string symbol, bool newTab = false)
     {
-        if (!newTab)
+        // PRD-005: the lease covers the whole operation, so shutdown cannot finish underneath it.
+        if (!BeginOpen())
         {
-            var existing = Documents
-                .OfType<DescribeDocumentViewModel>()
-                .FirstOrDefault(d => d.Connection.Id == connection.Id && d.CurrentSymbol == symbol);
-
-            if (existing is not null)
-            {
-                SelectedDocument = existing;
-                return;
-            }
+            return;
         }
 
-        var document = new DescribeDocumentViewModel(connection, symbol, _descriptors, _dispatcher, _clipboard, this);
+        try
+        {
+            if (!newTab)
+            {
+                var existing = Documents
+                    .OfType<DescribeDocumentViewModel>()
+                    .FirstOrDefault(d => d.Connection.Id == connection.Id && d.CurrentSymbol == symbol);
 
-        _ = AdmitAndAdd(document);
+                if (existing is not null)
+                {
+                    SelectedDocument = existing;
+                    return;
+                }
+            }
+
+            var document = new DescribeDocumentViewModel(connection, symbol, _descriptors, _dispatcher, _clipboard, this);
+
+            AdmitAndAdd(document);
+        }
+        finally
+        {
+            EndOpen();
+        }
     }
 
     public void OpenInvocation(SavedConnection connection, string methodSymbol, string? initialRequestJson = null)
     {
-        var document = CreateInvocationTab(connection, methodSymbol, initialRequestJson);
-
-        // FR-153 / FR-163: seed new tabs from the Network/General defaults (initial values only).
-        var network = _settings.Current.Network;
-
-        if (!string.IsNullOrWhiteSpace(network.DefaultDeadline))
+        // PRD-005: the lease covers the whole operation, so shutdown cannot finish underneath it.
+        if (!BeginOpen())
         {
-            document.Deadline = network.DefaultDeadline;
+            return;
         }
 
-        if (!string.IsNullOrWhiteSpace(network.MaxMessageSize))
+        try
         {
-            document.MaxMessageSize = network.MaxMessageSize;
-        }
+            var document = CreateInvocationTab(connection, methodSymbol, initialRequestJson);
 
-        Finish(document);
+            // FR-153 / FR-163: seed new tabs from the Network/General defaults (initial values only).
+            var network = _settings.Current.Network;
+
+            if (!string.IsNullOrWhiteSpace(network.DefaultDeadline))
+            {
+                document.Deadline = network.DefaultDeadline;
+            }
+
+            if (!string.IsNullOrWhiteSpace(network.MaxMessageSize))
+            {
+                document.MaxMessageSize = network.MaxMessageSize;
+            }
+
+            Finish(document);
+        }
+        finally
+        {
+            EndOpen();
+        }
     }
 
     public void OpenInvocation(SavedConnection connection, string methodSymbol, RequestPrefill prefill)
     {
-        // FR-123 replay: a plain draft pre-filled from the prefill (no saved-request binding).
-        var document = CreateInvocationTab(connection, methodSymbol, prefill.Body);
-        ApplyPrefill(document, prefill);
-        Finish(document);
+        // PRD-005: the lease covers the whole operation, so shutdown cannot finish underneath it.
+        if (!BeginOpen())
+        {
+            return;
+        }
+
+        try
+        {
+            // FR-123 replay: a plain draft pre-filled from the prefill (no saved-request binding).
+            var document = CreateInvocationTab(connection, methodSymbol, prefill.Body);
+            ApplyPrefill(document, prefill);
+            Finish(document);
+        }
+        finally
+        {
+            EndOpen();
+        }
     }
 
     public void OpenSavedRequest(SavedConnection connection, SavedRequest request)
     {
-        var document = CreateInvocationTab(connection, request.Method, request.Body);
-        ApplyPrefill(document, PrefillFrom(request));
+        // PRD-005: the lease covers the whole operation, so shutdown cannot finish underneath it.
+        if (!BeginOpen())
+        {
+            return;
+        }
 
-        // FR-002: bind the tab to the saved request and snapshot the baseline (body settles to request.Body).
-        document.BindSavedRequest(request.Id, request.Name, request.Body);
+        try
+        {
+            var document = CreateInvocationTab(connection, request.Method, request.Body);
+            ApplyPrefill(document, PrefillFrom(request));
 
-        Finish(document);
+            // FR-002: bind the tab to the saved request and snapshot the baseline (body settles to request.Body).
+            document.BindSavedRequest(request.Id, request.Name, request.Body);
+
+            Finish(document);
+        }
+        finally
+        {
+            EndOpen();
+        }
     }
 
     private InvocationDocumentViewModel CreateInvocationTab(SavedConnection connection, string method, string? body)
@@ -266,42 +321,101 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
 
     private void Finish(DocumentViewModel document)
     {
-        _ = AdmitAndAdd(document);
+        AdmitAndAdd(document);
     }
 
     /// <summary>
-    ///     Commits a newly built tab to <see cref="Documents" />, or refuses it because shutdown has
-    ///     started (PRD-005 re-review rounds 6 and 7, finding 1).
+    ///     Takes an opener lease, or refuses because shutdown has closed admission (PRD-005 re-review
+    ///     round 8, finding 1).
     ///     <para>
-    ///         A refused tab is not simply dropped: it already exists, and its constructor has already
-    ///         started work against container singletons. It goes straight to <see cref="Retire" />, so
-    ///         it is cancelled, disposed, and its work joins the drain this view model is already
-    ///         waiting on — the same treatment a tab the user closed receives.
-    ///     </para>
-    ///     <para>
-    ///         The check and the add are <b>one critical section</b>, shared with the assignment of
-    ///         <see cref="_shuttingDown" />. Round 6 checked a plain flag and let each caller add
-    ///         afterwards, which left a gap: an opener could pass the check, shutdown could then set the
-    ///         flag and complete an empty drain, and the opener could commit a live tab after shutdown
-    ///         had returned. Linearising the two leaves exactly two outcomes — committed before shutdown
-    ///         takes the gate and therefore in its snapshot, or refused and retired.
-    ///     </para>
-    ///     <para>
-    ///         Discovery inside the drain loop cannot cover this on its own: a round that ends at the
-    ///         timeout never runs another discovery pass, so a tab opened during that round would be
-    ///         left both undrained and undisposed.
+    ///         The lease covers the <em>whole</em> open operation, not just its collection commit. Round
+    ///         7 linearised the commit, which stopped a tab joining <see cref="Documents" /> late — but a
+    ///         refused opener then constructed a tab and disposed it outside anything shutdown waited
+    ///         for, so shutdown could report success while that cleanup was still touching singletons.
+    ///         Refusing before the tab exists removes the work rather than tidying up after it.
     ///     </para>
     /// </summary>
-    /// <returns><see langword="true" /> when the tab was admitted and added.</returns>
-    private bool AdmitAndAdd(DocumentViewModel document)
+    private bool BeginOpen()
     {
-        bool admitted;
+        lock (_admissionGate)
+        {
+            if (_shuttingDown)
+            {
+                return false;
+            }
+
+            _openers++;
+
+            return true;
+        }
+    }
+
+    /// <summary>Releases an opener lease, waking a shutdown that is waiting for the last one.</summary>
+    private void EndOpen()
+    {
+        TaskCompletionSource? idle = null;
 
         lock (_admissionGate)
         {
-            admitted = !_shuttingDown;
+            if (--_openers == 0)
+            {
+                idle = _openersIdle;
+                _openersIdle = null;
+            }
+        }
 
-            if (admitted)
+        _ = idle?.TrySetResult();
+    }
+
+    /// <summary>
+    ///     One consistent view of what a drain round has to wait for: the documents present, whether any
+    ///     opener holds a lease, and the task that completes when the last one lets go.
+    ///     <para>
+    ///         Taken together under <see cref="_admissionGate" /> because reading them separately is what
+    ///         made a round lie. A round would snapshot zero documents while an opener was pending, build
+    ///         its wait list, and then evaluate <c>TrueForAll(IsCompleted)</c> a moment later — by which
+    ///         time the opener had added its tab and completed its lease. The now-completed lease task
+    ///         was read as proof that the <em>earlier</em> empty snapshot had been quiescent, and the
+    ///         drain returned without ever rediscovering the tab (PRD-005 re-review round 8).
+    ///     </para>
+    /// </summary>
+    private (DocumentViewModel[] Present, bool OpenersPending, Task Settled) SnapshotForRound()
+    {
+        lock (_admissionGate)
+        {
+            var settled = _openers == 0
+                ? Task.CompletedTask
+                : (_openersIdle ??= new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously)).Task;
+
+            return ([.. Documents], _openers > 0, settled);
+        }
+    }
+
+    /// <summary>
+    ///     Commits a newly built tab to <see cref="Documents" />, or retires it if shutdown won the race
+    ///     after all. Reached only while its caller holds an opener lease, which is where admission is
+    ///     normally decided (see <see cref="BeginOpen" />) — the re-check here covers the one case the
+    ///     lease cannot, an opener slower than the bounded drain.
+    ///     <para>
+    ///         The add still happens under <see cref="_admissionGate" />, shared with the assignment of
+    ///         <see cref="_shuttingDown" />: shutdown must not be able to snapshot participants halfway
+    ///         through this. Round 6 checked a plain flag and let each caller add afterwards, which let
+    ///         a tab join the collection after shutdown had returned; round 7 linearised the two; round 8
+    ///         moved the decision itself out to the lease, so a tab that would lose is never built.
+    ///     </para>
+    /// </summary>
+    private void AdmitAndAdd(DocumentViewModel document)
+    {
+        bool refused;
+
+        lock (_admissionGate)
+        {
+            // Re-checked, not assumed. The lease normally keeps shutdown waiting, but the drain is
+            // bounded: an opener slower than the timeout can still arrive here after shutdown has given
+            // up and returned, and adding a live tab then is the very thing this all exists to prevent.
+            refused = _shuttingDown;
+
+            if (!refused)
             {
                 document.CloseRequested += OnDocumentCloseRequested;
 
@@ -309,34 +423,46 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
             }
         }
 
-        if (!admitted)
+        if (refused)
         {
-            // Outside the gate: Retire drains and disposes, which must not run under it.
+            // Still inside the lease, so a shutdown that is merely slow — rather than timed out — waits
+            // for this. Retire is outside the gate because it drains and disposes.
             Retire(document);
 
-            return false;
+            return;
         }
 
         // Selection is outside the critical section on purpose: it only drives the UI, and the property
         // change it raises reaches enough of the view model that holding a lock across it is a hazard.
         SelectedDocument = document;
-
-        return true;
     }
 
     public void OpenGraphQl(SavedConnection connection)
     {
-        if (_graphql is null)
+        // PRD-005: the lease covers the whole operation, so shutdown cannot finish underneath it.
+        if (!BeginOpen())
         {
-            return; // GraphQL service not wired (bare unit construction)
+            return;
         }
 
-        var document = new GraphQlDocumentViewModel(
-            connection, _graphql, _dispatcher, _clipboard, _recorder, _environment, _filePicker, ResolveTlsProfile(connection), this)
+        try
         {
-            CliDialect = _settings.Current.General.CliShellDialect
-        };
-        Finish(document);
+            if (_graphql is null)
+            {
+                return; // GraphQL service not wired (bare unit construction)
+            }
+
+            var document = new GraphQlDocumentViewModel(
+                connection, _graphql, _dispatcher, _clipboard, _recorder, _environment, _filePicker, ResolveTlsProfile(connection), this)
+            {
+                CliDialect = _settings.Current.General.CliShellDialect
+            };
+            Finish(document);
+        }
+        finally
+        {
+            EndOpen();
+        }
     }
 
     /// <summary>FR-146: restores a GraphQL tab from its session draft (document, variables, options, headers).</summary>
@@ -376,36 +502,62 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
 
     public void OpenSettings()
     {
-        var existing = Documents.OfType<SettingsDocumentViewModel>().FirstOrDefault();
-
-        if (existing is not null)
+        // PRD-005: the lease covers the whole operation, so shutdown cannot finish underneath it.
+        if (!BeginOpen())
         {
-            SelectedDocument = existing;
             return;
         }
 
-        var document = new SettingsDocumentViewModel(
-            _settings, _theme, _dialogs, _protoc, _secrets, _updates, _launcher, _diagnostics, _clipboard);
-        _ = AdmitAndAdd(document);
+        try
+        {
+            var existing = Documents.OfType<SettingsDocumentViewModel>().FirstOrDefault();
+
+            if (existing is not null)
+            {
+                SelectedDocument = existing;
+                return;
+            }
+
+            var document = new SettingsDocumentViewModel(
+                _settings, _theme, _dialogs, _protoc, _secrets, _updates, _launcher, _diagnostics, _clipboard);
+            AdmitAndAdd(document);
+        }
+        finally
+        {
+            EndOpen();
+        }
     }
 
     public void OpenHistory()
     {
-        if (_history is null || _workspace is null)
+        // PRD-005: the lease covers the whole operation, so shutdown cannot finish underneath it.
+        if (!BeginOpen())
         {
-            return; // history services not wired (bare unit construction)
-        }
-
-        var existing = Documents.OfType<HistoryDocumentViewModel>().FirstOrDefault();
-
-        if (existing is not null)
-        {
-            SelectedDocument = existing;
             return;
         }
 
-        var document = new HistoryDocumentViewModel(_history, _settings, _workspace, this, _dialogs, _dispatcher, _filePicker, _console);
-        _ = AdmitAndAdd(document);
+        try
+        {
+            if (_history is null || _workspace is null)
+            {
+                return; // history services not wired (bare unit construction)
+            }
+
+            var existing = Documents.OfType<HistoryDocumentViewModel>().FirstOrDefault();
+
+            if (existing is not null)
+            {
+                SelectedDocument = existing;
+                return;
+            }
+
+            var document = new HistoryDocumentViewModel(_history, _settings, _workspace, this, _dialogs, _dispatcher, _filePicker, _console);
+            AdmitAndAdd(document);
+        }
+        finally
+        {
+            EndOpen();
+        }
     }
 
     /// <summary>E3.1: closes every open tab (e.g. when switching to a different workspace).</summary>
@@ -765,7 +917,10 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         {
             var discovered = false;
 
-            foreach (var document in Documents.ToArray())
+            // One gated read: the documents, whether an opener is mid-flight, and the wait for it.
+            var (present, openersPending, settled) = SnapshotForRound();
+
+            foreach (var document in present)
             {
                 if (!participants.Contains(document))
                 {
@@ -774,7 +929,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
                 }
             }
 
-            var round = new List<Task>(participants.Count + 1) { _work.WhenSettled() };
+            var round = new List<Task>(participants.Count + 2) { _work.WhenSettled(), settled };
 
             foreach (var document in participants)
             {
@@ -783,9 +938,13 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
                 round.Add(document.CancelAndDrainAsync());
             }
 
-            // A round that discovered a tab never terminates the loop, even if everything looks quiet:
-            // the new tab's constructor work may not have reached its work set yet.
-            if (!discovered && round.TrueForAll(task => task.IsCompleted))
+            // Three separate reasons to go round again, and only the first two are about tasks:
+            //   - a tab was discovered, whose constructor work may not have reached its set yet;
+            //   - an opener was pending *when the snapshot was taken*, so this round's view of the
+            //     documents is already known to be incomplete — its lease completing before the check
+            //     below proves nothing about the snapshot that preceded it;
+            //   - something is still running.
+            if (!discovered && !openersPending && round.TrueForAll(task => task.IsCompleted))
             {
                 return true;
             }

@@ -43,12 +43,15 @@ public sealed class ShutdownDrainCoverageTests
         IDescriptorService? descriptors = null,
         IRequestValidator? validator = null,
         ISecretStore? secrets = null,
-        IHistoryStore? history = null)
+        IHistoryStore? history = null,
+        ISessionStore? session = null)
         => new(
             descriptors ?? new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(),
             new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(),
             validator ?? new FakeRequestValidator(), new InMemorySettingsStore(), new FakeThemeService(),
-            history: history, secrets: secrets, workspace: new FakeWorkspaceStore(new WorkspaceModel()));
+            history: history, secrets: secrets, session: session,
+            workspace: new FakeWorkspaceStore(new WorkspaceModel { Id = "w" }),
+            sessionDebounce: TimeSpan.FromMilliseconds(1));
 
     [Fact]
     public async Task Debounced_validation_work_keeps_shutdown_from_reporting_drained()
@@ -610,7 +613,14 @@ public sealed class ShutdownDrainCoverageTests
             new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(),
             new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(),
             new FakeRequestValidator(), new InMemorySettingsStore(), new FakeThemeService(),
-            workspace: new FakeWorkspaceStore(new WorkspaceModel { Id = "w" }), session: store);
+            workspace: new FakeWorkspaceStore(new WorkspaceModel
+            {
+                Id = "w",
+                // The saved tab references c1; without it the restore skips the tab before it can reach
+                // the admission refusal this test is about (round 11, finding 3).
+                Connections = [new SavedConnection { Id = "c1", Name = "c", Address = "h:1" }]
+            }),
+            session: store);
 
         var restoring = docs.RestoreSessionAsync();
 
@@ -659,7 +669,14 @@ public sealed class ShutdownDrainCoverageTests
             new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(),
             new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(),
             new FakeRequestValidator(), new InMemorySettingsStore(), new FakeThemeService(),
-            workspace: new FakeWorkspaceStore(new WorkspaceModel { Id = "w" }), session: store);
+            workspace: new FakeWorkspaceStore(new WorkspaceModel
+            {
+                Id = "w",
+                // The saved tab references c1; without it the restore skips the tab before it can reach
+                // the admission refusal this test is about (round 11, finding 3).
+                Connections = [new SavedConnection { Id = "c1", Name = "c", Address = "h:1" }]
+            }),
+            session: store);
 
         var restoring = docs.RestoreSessionAsync();
 
@@ -678,6 +695,116 @@ public sealed class ShutdownDrainCoverageTests
 
             await restoring.WaitAsync(Bounded, Ct);
         }
+    }
+
+    /// <summary>
+    ///     PRD-005 re-review round 11, finding 1: a debounced save that has already passed its delay is
+    ///     admitted — cancelling its token does not unwind it — so the final snapshot must wait for it.
+    ///     <para>
+    ///         Otherwise the older writer lands last and replaces the final session, while shutdown
+    ///         reports <c>SessionPersisted: true</c>. Both writers also share one temp path, so racing
+    ///         them risks an I/O failure as well as a lost update. The assertion inspects the durable
+    ///         state after the older writer is released, not merely that the final save was called.
+    ///     </para>
+    /// </summary>
+    [Fact]
+    public async Task An_older_debounced_save_cannot_overwrite_the_final_session()
+    {
+        var firstSave = new Blocker();
+        var store = new OverlappingSessionStore(firstSave);
+
+        var docs = Docs(session: store);
+
+        docs.OpenInvocation(Conn(), "pkg.Svc/Go", "{}");
+
+        var tab = (InvocationDocumentViewModel)docs.Documents[0];
+
+        // A debounced persist that snapshots the old draft and then parks inside the store.
+        tab.RequestJson = "old";
+
+        await store.FirstSaveEntered.Task.WaitAsync(Bounded, Ct);
+
+        tab.RequestJson = "new";
+
+        var shutdown = docs.ShutdownAsync(Bounded);
+
+        await Task.Delay(150, Ct);
+
+        store.Saves.ShouldBe(1, "the final write must not start while the older one is still going");
+
+        firstSave.Release.SetResult();
+
+        var result = await shutdown.WaitAsync(Bounded, Ct);
+
+        result.SessionPersisted.ShouldBeTrue();
+        store.LastSaved.ShouldNotBeNull().Tabs[0].Body.ShouldBe("new", "the final snapshot must be the durable one");
+    }
+
+    /// <summary>
+    ///     Round 11, finding 2: a failing session write must not cost the tabs their disposal — the same
+    ///     interrupted-cleanup class already handled for capture writers and individual tabs.
+    /// </summary>
+    [Fact]
+    public async Task A_failing_session_write_is_reported_and_the_tabs_are_still_disposed()
+    {
+        var environment = new EnvironmentService(
+            new FakeWorkspaceStore(new WorkspaceModel
+            {
+                Environments = [new WorkspaceEnvironment { Id = "e1", Name = "staging" }]
+            }),
+            new FakeSecretStore());
+
+        var docs = new DocumentsViewModel(
+            new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(),
+            new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(),
+            new FakeRequestValidator(), new InMemorySettingsStore(), new FakeThemeService(),
+            workspace: new FakeWorkspaceStore(new WorkspaceModel { Id = "w" }),
+            session: new ThrowingSessionStore(), environment: environment);
+
+        docs.OpenInvocation(Conn(), "pkg.Svc/Go", "{}");
+
+        var baseline = environment.ActiveChangedSubscribers;
+
+        baseline.ShouldBeGreaterThan(0, "the tab must actually be subscribed for this to prove anything");
+
+        var result = await docs.ShutdownAsync(Bounded).WaitAsync(Bounded, Ct);
+
+        result.SessionPersisted.ShouldBeFalse("the write failed");
+        result.Documents.ShouldBe(1);
+
+        environment.ActiveChangedSubscribers.ShouldBe(0, "a failed save must not skip disposal");
+    }
+
+    /// <summary>
+    ///     Round 11, finding 3: nothing proved the coordinator ever persists a <em>successful</em> final
+    ///     session. Disabling that branch left both interrupted-restore tests green.
+    /// </summary>
+    [Fact]
+    public async Task Shutdown_persists_the_final_session_exactly_once()
+    {
+        var store = new RecordingSessionStore();
+
+        var docs = Docs(session: store);
+
+        docs.OpenInvocation(Conn(), "pkg.Svc/Go", "{}");
+
+        var tab = (InvocationDocumentViewModel)docs.Documents[0];
+
+        tab.RequestJson = "the live draft";
+
+        var result = await docs.ShutdownAsync(Bounded).WaitAsync(Bounded, Ct);
+
+        result.SessionPersisted.ShouldBeTrue();
+        result.Drained.ShouldBeTrue();
+        result.Documents.ShouldBe(1);
+
+        store.Saves.ShouldBe(1, "exactly one final write, after the debounce settled");
+
+        var saved = store.LastSaved.ShouldNotBeNull();
+
+        saved.WorkspaceId.ShouldBe("w");
+        saved.ActiveTabIndex.ShouldBe(0);
+        saved.Tabs.ShouldHaveSingleItem().Body.ShouldBe("the live draft");
     }
 
     /// <summary>A restore started after shutdown must not even reach the session store.</summary>
@@ -1180,6 +1307,60 @@ public sealed class ShutdownDrainCoverageTests
             => Task.FromResult<string?>(null);
     }
 
+
+    /// <summary>Parks inside the first save, ignoring cancellation, and lets later ones through.</summary>
+    private sealed class OverlappingSessionStore(Blocker firstSave) : ISessionStore
+    {
+        private int _saves;
+
+        public TaskCompletionSource FirstSaveEntered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public int Saves => _saves;
+
+        public SessionState? LastSaved { get; private set; }
+
+        public Task<SessionState> LoadAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(new SessionState());
+
+        public async Task SaveAsync(SessionState state, CancellationToken cancellationToken = default)
+        {
+            if (Interlocked.Increment(ref _saves) == 1)
+            {
+                _ = FirstSaveEntered.TrySetResult();
+
+                await firstSave.Release.Task; // deliberately not observing the token
+            }
+
+            LastSaved = state;
+        }
+    }
+
+    private sealed class ThrowingSessionStore : ISessionStore
+    {
+        public Task<SessionState> LoadAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(new SessionState());
+
+        public Task SaveAsync(SessionState state, CancellationToken cancellationToken = default)
+            => throw new IOException("the session file is unwritable");
+    }
+
+    private sealed class RecordingSessionStore : ISessionStore
+    {
+        public int Saves { get; private set; }
+
+        public SessionState? LastSaved { get; private set; }
+
+        public Task<SessionState> LoadAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(new SessionState());
+
+        public Task SaveAsync(SessionState state, CancellationToken cancellationToken = default)
+        {
+            Saves++;
+            LastSaved = state;
+
+            return Task.CompletedTask;
+        }
+    }
 
     private sealed class BlockingSessionStore(Blocker blocker) : ISessionStore
     {

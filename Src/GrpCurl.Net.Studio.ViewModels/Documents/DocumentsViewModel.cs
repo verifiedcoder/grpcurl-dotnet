@@ -90,6 +90,15 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     /// </summary>
     private readonly BackgroundWorkSet _work = new();
 
+    /// <summary>
+    ///     Session writes specifically. They need ordering of their own: a debounced save that has already
+    ///     passed its delay is <em>admitted</em> — cancelling its token does not unwind it — so the final
+    ///     snapshot must wait for it or it can be overwritten by an older one landing afterwards
+    ///     (PRD-005 re-review round 11, finding 1). Both writers target the same temp path, so overlapping
+    ///     them is not merely a lost update but an I/O race.
+    /// </summary>
+    private readonly BackgroundWorkSet _sessionWork = new();
+
     [ObservableProperty]
     public partial DocumentViewModel? SelectedDocument { get; set; }
 
@@ -866,6 +875,140 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     }
 
     /// <summary>
+    ///     The whole document half of application shutdown, in the order the phases actually depend on
+    ///     each other (PRD-005 re-review round 10, finding 1).
+    ///     <list type="number">
+    ///         <item>close admission and wait for document producers already in flight;</item>
+    ///         <item>persist the session — but only if it can describe the user's tabs;</item>
+    ///         <item>cancel, drain and dispose the documents.</item>
+    ///     </list>
+    ///     <para>
+    ///         <c>Program</c> used to flush first and drain second. A rapid close during startup restore
+    ///         therefore snapshotted an empty <see cref="Documents" /> — the restore was still parked in
+    ///         the session store — and wrote it over the very file being restored. The tabs were lost by
+    ///         the shutdown that was supposed to preserve them.
+    ///     </para>
+    ///     <para>
+    ///         Persistence is <b>skipped</b> rather than approximated when a restore was attempted and did
+    ///         not finish: the durable file is already the truth, and replacing it with a snapshot known
+    ///         to be incomplete is the one outcome worse than not writing. The caller is told, through
+    ///         <see cref="DocumentShutdownResult.SessionPersisted" />.
+    ///     </para>
+    /// </summary>
+    /// <param name="budget">
+    ///     The whole document-shutdown budget, shared by all three phases: settling producers, persisting
+    ///     the session, and draining the tabs. It is a ceiling on the coordinator, not on each phase — a
+    ///     stalled session write cannot extend it, and a persistence timeout or failure is reported through
+    ///     <see cref="DocumentShutdownResult.SessionPersisted" /> rather than thrown, so the disposal phase
+    ///     still runs.
+    /// </param>
+    public async Task<DocumentShutdownResult> ShutdownAsync(TimeSpan budget)
+    {
+        var clock = Stopwatch.StartNew();
+
+        CloseAdmission();
+
+        // Phase 1: let producers already in flight finish, so the snapshot below describes a settled
+        // collection rather than one mid-restore.
+        var producersSettled = true;
+
+        try
+        {
+            await SnapshotForRound().Settled.WaitAsync(budget).ConfigureAwait(false);
+        }
+        catch (TimeoutException)
+        {
+            producersSettled = false;
+        }
+
+        // Phase 2: persist only what can be described truthfully, and only once the writes already in
+        // flight have landed.
+        bool restoreUsable;
+
+        lock (_admissionGate)
+        {
+            restoreUsable = !_restoreAttempted || _restoreCompleted;
+        }
+
+        var sessionPersisted = producersSettled
+            && restoreUsable
+            && await PersistFinalSessionAsync(Remaining(budget, clock)).ConfigureAwait(false);
+
+        // Phase 3 runs whatever happened above: a persistence failure must not cost the tabs their
+        // disposal, the workspace its lock release, or the host its StopAsync.
+        var result = await DisposeOpenDocumentsAsync(Remaining(budget, clock)).ConfigureAwait(false);
+
+        return result with { SessionPersisted = sessionPersisted };
+    }
+
+    private static TimeSpan Remaining(TimeSpan budget, Stopwatch clock)
+    {
+        var left = budget - clock.Elapsed;
+
+        return left > TimeSpan.Zero ? left : TimeSpan.Zero;
+    }
+
+    /// <summary>
+    ///     Writes the final session snapshot, after every session write already admitted has finished.
+    ///     Returns whether the durable session now describes this shutdown.
+    ///     <para>
+    ///         The wait is the point. Cancelling a debounce's token does not unwind a save that has passed
+    ///         its delay and is already inside the store, so starting the final write immediately let the
+    ///         older one land afterwards and replace it — with <c>SessionPersisted: true</c> reported
+    ///         either way (round 11, finding 1). Both writers use the same temp path, so overlapping them
+    ///         risks an I/O failure as much as a lost update.
+    ///     </para>
+    ///     <para>
+    ///         Bounded and contained (round 11, finding 2). If an earlier writer does not settle in time,
+    ///         no second writer is started at all; if the final write stalls or throws, that is reported
+    ///         rather than propagated, because the phase after this one is what disposes the tabs.
+    ///     </para>
+    /// </summary>
+    private async Task<bool> PersistFinalSessionAsync(TimeSpan budget)
+    {
+        if (_session is null)
+        {
+            return false; // nothing to persist through; see DocumentShutdownResult.SessionPersisted
+        }
+
+        _persistCts?.Cancel();
+
+        try
+        {
+            await _sessionWork.WhenSettled().WaitAsync(budget).ConfigureAwait(false);
+        }
+        catch (TimeoutException)
+        {
+            return false; // an earlier writer is still going: do not race it for the same file
+        }
+
+        try
+        {
+            await PersistNowAsync(CancellationToken.None).WaitAsync(budget).ConfigureAwait(false);
+
+            return true;
+        }
+        catch (TimeoutException)
+        {
+            return false;
+        }
+        catch (Exception)
+        {
+            // A failed session write is not worth abandoning the rest of shutdown for.
+            return false;
+        }
+    }
+
+    /// <summary>Closes admission. Idempotent; <see cref="DisposeOpenDocumentsAsync" /> also calls it.</summary>
+    private void CloseAdmission()
+    {
+        lock (_admissionGate)
+        {
+            _shuttingDown = true;
+        }
+    }
+
+    /// <summary>
     ///     Stops and disposes every open tab at application shutdown, after the final session snapshot
     ///     has been taken (PRD-005 review, finding 4).
     ///     <para>
@@ -900,79 +1043,6 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     ///     if an operation ignores its token; a timeout is reported rather than hidden, because "we
     ///     stopped waiting" is not the same claim as "nothing is running".
     /// </param>
-    /// <summary>
-    ///     The whole document half of application shutdown, in the order the phases actually depend on
-    ///     each other (PRD-005 re-review round 10, finding 1).
-    ///     <list type="number">
-    ///         <item>close admission and wait for document producers already in flight;</item>
-    ///         <item>persist the session — but only if it can describe the user's tabs;</item>
-    ///         <item>cancel, drain and dispose the documents.</item>
-    ///     </list>
-    ///     <para>
-    ///         <c>Program</c> used to flush first and drain second. A rapid close during startup restore
-    ///         therefore snapshotted an empty <see cref="Documents" /> — the restore was still parked in
-    ///         the session store — and wrote it over the very file being restored. The tabs were lost by
-    ///         the shutdown that was supposed to preserve them.
-    ///     </para>
-    ///     <para>
-    ///         Persistence is <b>skipped</b> rather than approximated when a restore was attempted and did
-    ///         not finish: the durable file is already the truth, and replacing it with a snapshot known
-    ///         to be incomplete is the one outcome worse than not writing. The caller is told, through
-    ///         <see cref="DocumentShutdownResult.SessionPersisted" />.
-    ///     </para>
-    /// </summary>
-    public async Task<DocumentShutdownResult> ShutdownAsync(TimeSpan budget)
-    {
-        var clock = Stopwatch.StartNew();
-
-        CloseAdmission();
-
-        // Phase 1: let producers already in flight finish, so the snapshot below describes a settled
-        // collection rather than one mid-restore.
-        var producersSettled = true;
-
-        try
-        {
-            await SnapshotForRound().Settled.WaitAsync(budget).ConfigureAwait(false);
-        }
-        catch (TimeoutException)
-        {
-            producersSettled = false;
-        }
-
-        // Phase 2: persist only what can be described truthfully.
-        bool restoreUsable;
-
-        lock (_admissionGate)
-        {
-            restoreUsable = !_restoreAttempted || _restoreCompleted;
-        }
-
-        var sessionPersisted = producersSettled && restoreUsable;
-
-        if (sessionPersisted)
-        {
-            await FlushSessionAsync().ConfigureAwait(false);
-        }
-
-        // Phase 3: the drain and disposal, with whatever budget is left.
-        var remaining = budget - clock.Elapsed;
-
-        var result = await DisposeOpenDocumentsAsync(remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero)
-            .ConfigureAwait(false);
-
-        return result with { SessionPersisted = sessionPersisted };
-    }
-
-    /// <summary>Closes admission. Idempotent; <see cref="DisposeOpenDocumentsAsync" /> also calls it.</summary>
-    private void CloseAdmission()
-    {
-        lock (_admissionGate)
-        {
-            _shuttingDown = true;
-        }
-    }
-
     public async Task<DocumentShutdownResult> DisposeOpenDocumentsAsync(TimeSpan drainTimeout)
     {
         // Both set before any await. The flag goes under the admission gate so it linearises against a
@@ -1146,7 +1216,10 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         _persistCts?.Cancel();
         var cts = new CancellationTokenSource();
         _persistCts = cts;
-        _work.Track(DelayedPersistAsync(cts.Token));
+        var persist = DelayedPersistAsync(cts.Token);
+
+        _work.Track(persist);
+        _sessionWork.Track(persist);
     }
 
     private async Task DelayedPersistAsync(CancellationToken token)

@@ -385,23 +385,35 @@ public sealed class ShutdownDrainCoverageTests
     // ── Round 5: participant discovery and ownership across removal ─────────
 
     /// <summary>
-    ///     PRD-005 re-review round 5, finding 1: the participant set must follow <c>Documents</c>, not a
-    ///     snapshot taken when shutdown began. Work the drain is already waiting on can add a tab —
-    ///     and a tab missed here is neither drained nor disposed.
+    ///     PRD-005 re-review rounds 5 and 6, finding 1: a tab opened by work the drain is already
+    ///     waiting on must never be left running.
     ///     <para>
-    ///         Driven through <see cref="IDocumentHost" /> from inside blocked tracked work, which is the
-    ///         contract under test. Every production tab-opening path is a synchronous command today, so
-    ///         no current gesture reaches this; the guarantee is about the drain's shape, not about one
-    ///         caller.
+    ///         Round 5 grew the participant list, which covered it only when a round <em>completed</em>;
+    ///         a round that ended at the timeout ran no further discovery, so the tab was neither
+    ///         cancelled nor disposed. Admission now closes instead: from the moment shutdown starts, a
+    ///         new tab is retired on the spot rather than joining <c>Documents</c>.
+    ///     </para>
+    ///     <para>
+    ///         The probe stays blocked through the timeout, which is the case round 6 found. Disposal is
+    ///         observed through the environment singleton's subscriber count — a tab subscribes when it
+    ///         opens and unsubscribes only in <c>Dispose</c>, so the count returning to its baseline is
+    ///         the disposal itself, not a proxy for it.
     ///     </para>
     /// </summary>
     [Fact]
-    public async Task A_tab_opened_by_admitted_work_is_drained_and_disposed()
+    public async Task A_tab_opened_by_admitted_work_is_cancelled_and_disposed_even_on_timeout()
     {
         var source = new Blocker();
-        var opened = new Blocker();
+        var probe = new Blocker();
 
         DocumentsViewModel? docs = null;
+
+        var environment = new EnvironmentService(
+            new FakeWorkspaceStore(new WorkspaceModel
+            {
+                Environments = [new WorkspaceEnvironment { Id = "e1", Name = "staging" }]
+            }),
+            new FakeSecretStore());
 
         var descriptors = new FakeDescriptorService
         {
@@ -409,15 +421,16 @@ public sealed class ShutdownDrainCoverageTests
             {
                 if (symbol == "pkg.Source")
                 {
-                    // Parks first, so this load is still admitted when the drain starts; then opens a
-                    // tab from inside that admitted work.
+                    // Parked when the drain starts, so this load is admitted work; it then opens a tab.
                     await source.EnterAsync();
 
-                    docs!.OpenInvocation(Conn(), "pkg.Svc/Go", "{}");
+                    docs!.OpenInvocation(Conn(), "pkg.Svc/Probe", "{}");
                 }
                 else
                 {
-                    await opened.EnterAsync();
+                    // The probe's own method resolution ignores its token and stays blocked past the
+                    // timeout — the case round 6 found, where no further discovery pass ever runs.
+                    await probe.EnterAsync();
                 }
 
                 return DescribeResult.Failure(new DescriptorLoadError("stub", null, false));
@@ -427,9 +440,11 @@ public sealed class ShutdownDrainCoverageTests
         docs = new DocumentsViewModel(
             descriptors, new ImmediateUiDispatcher(), new FakeClipboardService(), new FakeInvocationRunner(),
             new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator(),
-            new InMemorySettingsStore(), new FakeThemeService());
+            new InMemorySettingsStore(), new FakeThemeService(), environment: environment);
 
         docs.OpenDescribe(Conn(), "pkg.Source");
+
+        var baseline = environment.ActiveChangedSubscribers;
 
         await source.Entered.Task.WaitAsync(Bounded, Ct);
 
@@ -441,12 +456,146 @@ public sealed class ShutdownDrainCoverageTests
 
         try
         {
-            result.Drained.ShouldBeFalse("the tab opened mid-drain is still resolving its method");
-            result.Documents.ShouldBe(2, "the new tab must also be a disposal target");
+            // The probe's own method resolution is still blocked, so the drain genuinely timed out.
+            await probe.Entered.Task.WaitAsync(Bounded, Ct);
+
+            result.Drained.ShouldBeFalse("the probe tab's work was still running");
+
+            docs.Documents.ShouldNotContain(d => d is InvocationDocumentViewModel,
+                "admission is closed once shutdown starts");
+
+            environment.ActiveChangedSubscribers.ShouldBe(baseline,
+                "the probe tab must have been disposed, not merely refused");
         }
         finally
         {
-            opened.Release.SetResult();
+            probe.Release.SetResult();
+        }
+    }
+
+    /// <summary>
+    ///     Round 6, finding 2: the composer is listed as a collected child, but nothing pinned the link.
+    ///     Its debounced validation runs against the same singleton validator the tab uses.
+    /// </summary>
+    [Fact]
+    public async Task The_composers_validation_keeps_shutdown_from_reporting_drained()
+    {
+        var service = new Blocker();
+
+        var descriptors = new FakeDescriptorService
+        {
+            OnDescribe = (_, symbol, _) => Task.FromResult(DescribeResult.Success(
+                new MethodDescription(symbol, "Go", "f.proto", StreamingShape.ClientStreaming,
+                    new TypeRef("pkg.In", true), new TypeRef("pkg.Out", true), new TypeRef("pkg.Svc", true), "{}")))
+        };
+
+        var docs = Docs(descriptors: descriptors, validator: new BlockingValidator(service));
+
+        docs.OpenInvocation(Conn(), "pkg.Svc/Go", "{}");
+
+        var tab = (InvocationDocumentViewModel)docs.Documents[0];
+        var composer = tab.Composer.ShouldNotBeNull("a client-streaming method must have a composer");
+
+        composer.ValidationDebounce = TimeSpan.Zero;
+        composer.MessageJson = "{\"a\":1}";
+
+        await service.Entered.Task.WaitAsync(Bounded, Ct);
+
+        var result = await docs.DisposeOpenDocumentsAsync(ShortDrain).WaitAsync(Bounded, Ct);
+
+        try
+        {
+            result.Drained.ShouldBeFalse("the composer's validation is work the tab owns");
+        }
+        finally
+        {
+            service.Release.SetResult();
+        }
+    }
+
+    /// <summary>
+    ///     Round 6, finding 2: the response-metadata hand-off was implemented but unpinned — the earlier
+    ///     metadata case leaves its row in the collection, so it never exercises removal. Starting a new
+    ///     invocation clears both metadata collections, which is the production path that drops the row.
+    /// </summary>
+    [Fact]
+    public async Task A_reveal_command_survives_the_metadata_clear_that_removes_its_row()
+    {
+        var service = new Blocker();
+        var docs = Docs();
+
+        docs.OpenInvocation(Conn(), "pkg.Svc/Go", "{}");
+
+        var tab = (InvocationDocumentViewModel)docs.Documents[0];
+
+        var row = new MetadataRowViewModel(
+            new MetadataItem("authorization", "Bearer x", IsBinary: false), new BlockingRevealGate(service));
+
+        tab.ResponseHeaders.Add(row);
+
+        var revealing = row.ToggleRevealCommand.ExecuteAsync(null);
+
+        await service.Entered.Task.WaitAsync(Bounded, Ct);
+
+        // Invoking clears ResponseHeaders/ResponseTrailers — the row leaves while its command runs.
+        await tab.InvokeCommand.ExecuteAsync(null);
+
+        tab.ResponseHeaders.ShouldNotContain(row);
+
+        var result = await docs.DisposeOpenDocumentsAsync(ShortDrain).WaitAsync(Bounded, Ct);
+
+        try
+        {
+            result.Drained.ShouldBeFalse("the cleared row's command is still running");
+        }
+        finally
+        {
+            service.Release.SetResult();
+
+            await revealing.WaitAsync(Bounded, Ct);
+        }
+    }
+
+    /// <summary>Round 6, finding 2: the same for <c>Log.Reset()</c>, the other stream-log removal path.</summary>
+    [Fact]
+    public async Task A_stream_rows_command_survives_a_log_reset()
+    {
+        var service = new Blocker();
+        var clipboard = new BlockingClipboard(service);
+
+        var docs = new DocumentsViewModel(
+            new FakeDescriptorService(), new ImmediateUiDispatcher(), clipboard, new FakeInvocationRunner(),
+            new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator(),
+            new InMemorySettingsStore(), new FakeThemeService());
+
+        var tab = new InvocationDocumentViewModel(
+            Conn(), "pkg.Svc/Go", "{}", new FakeInvocationRunner(), new FakeDescriptorService(),
+            new ImmediateUiDispatcher(), clipboard, new FakeDialogService(), new FakeLauncherService(),
+            new FakeRequestValidator());
+
+        docs.Documents.Add(tab);
+
+        tab.Log.Append(Event(0));
+
+        var copying = tab.Log.Rows[0].CopyAsNdjsonCommand.ExecuteAsync(null);
+
+        await service.Entered.Task.WaitAsync(Bounded, Ct);
+
+        tab.Log.Reset();
+
+        tab.Log.Rows.ShouldBeEmpty();
+
+        var result = await docs.DisposeOpenDocumentsAsync(ShortDrain).WaitAsync(Bounded, Ct);
+
+        try
+        {
+            result.Drained.ShouldBeFalse("the reset row's command is still running");
+        }
+        finally
+        {
+            service.Release.SetResult();
+
+            await copying.WaitAsync(Bounded, Ct);
         }
     }
 

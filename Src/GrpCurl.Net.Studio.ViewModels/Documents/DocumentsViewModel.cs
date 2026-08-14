@@ -51,6 +51,13 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     private bool _suppressPersist;
 
     /// <summary>
+    ///     Set synchronously when shutdown begins, and never cleared: the process is going away.
+    ///     Admission closes with it — a tab opened from here on is retired immediately instead of
+    ///     joining <see cref="Documents" /> (PRD-005 re-review round 6, finding 1).
+    /// </summary>
+    private bool _shuttingDown;
+
+    /// <summary>
     ///     The debounced session persists this view model has started. Shutdown waits for them with the
     ///     tabs: they write through the container-owned session store (PRD-005 re-review round 3).
     /// </summary>
@@ -135,7 +142,11 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         }
 
         var document = new DescribeDocumentViewModel(connection, symbol, _descriptors, _dispatcher, _clipboard, this);
-        document.CloseRequested += OnDocumentCloseRequested;
+
+        if (!Admit(document))
+        {
+            return;
+        }
 
         Documents.Add(document);
         SelectedDocument = document;
@@ -247,9 +258,45 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
 
     private void Finish(DocumentViewModel document)
     {
-        document.CloseRequested += OnDocumentCloseRequested;
+        if (!Admit(document))
+        {
+            return;
+        }
+
         Documents.Add(document);
         SelectedDocument = document;
+    }
+
+    /// <summary>
+    ///     Wires a newly built tab up, or refuses it because shutdown has started (PRD-005 re-review
+    ///     round 6, finding 1).
+    ///     <para>
+    ///         A refused tab is not simply dropped: it already exists, and its constructor has already
+    ///         started work against container singletons. It goes straight to <see cref="Retire" />, so
+    ///         it is cancelled, disposed, and its work joins the drain this view model is already
+    ///         waiting on — the same treatment a tab the user closed receives.
+    ///     </para>
+    ///     <para>
+    ///         Discovery inside the drain loop cannot cover this on its own: a round that ends at the
+    ///         timeout never runs another discovery pass, so a tab opened during that round would be
+    ///         left both undrained and undisposed. Closing admission removes the window rather than
+    ///         narrowing it, and also contains a tab opened by abandoned work <em>after</em> shutdown
+    ///         has returned.
+    ///     </para>
+    /// </summary>
+    /// <returns><see langword="true" /> when the caller should add the tab to <see cref="Documents" />.</returns>
+    private bool Admit(DocumentViewModel document)
+    {
+        if (_shuttingDown)
+        {
+            Retire(document);
+
+            return false;
+        }
+
+        document.CloseRequested += OnDocumentCloseRequested;
+
+        return true;
     }
 
     public void OpenGraphQl(SavedConnection connection)
@@ -314,7 +361,10 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
 
         var document = new SettingsDocumentViewModel(
             _settings, _theme, _dialogs, _protoc, _secrets, _updates, _launcher, _diagnostics, _clipboard);
-        document.CloseRequested += OnDocumentCloseRequested;
+        if (!Admit(document))
+        {
+            return;
+        }
 
         Documents.Add(document);
         SelectedDocument = document;
@@ -336,7 +386,10 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         }
 
         var document = new HistoryDocumentViewModel(_history, _settings, _workspace, this, _dialogs, _dispatcher, _filePicker, _console);
-        document.CloseRequested += OnDocumentCloseRequested;
+        if (!Admit(document))
+        {
+            return;
+        }
 
         Documents.Add(document);
         SelectedDocument = document;
@@ -640,7 +693,9 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     /// </param>
     public async Task<DocumentShutdownResult> DisposeOpenDocumentsAsync(TimeSpan drainTimeout)
     {
-        // Belt and braces against the same overwrite: nothing should schedule a persist from here.
+        // Both set synchronously, before any await: no tab opened from here on joins Documents, and
+        // nothing schedules a persist.
+        _shuttingDown = true;
         _suppressPersist = true;
 
         _persistCts?.Cancel();

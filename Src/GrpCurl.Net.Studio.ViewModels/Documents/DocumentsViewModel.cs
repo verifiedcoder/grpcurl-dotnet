@@ -51,11 +51,25 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     private bool _suppressPersist;
 
     /// <summary>
-    ///     Set synchronously when shutdown begins, and never cleared: the process is going away.
-    ///     Admission closes with it — a tab opened from here on is retired immediately instead of
-    ///     joining <see cref="Documents" /> (PRD-005 re-review round 6, finding 1).
+    ///     Linearises the shutdown transition against the collection commit. Both the flag below and the
+    ///     add in <see cref="AdmitAndAdd" /> happen inside it, so an opener has exactly two outcomes and
+    ///     no third (PRD-005 re-review round 7).
+    /// </summary>
+    private readonly System.Threading.Lock _admissionGate = new();
+
+    /// <summary>
+    ///     Set when shutdown begins, and never cleared: the process is going away. Admission closes with
+    ///     it — a tab opened from here on is retired instead of joining <see cref="Documents" />
+    ///     (PRD-005 re-review round 6, finding 1). Guarded by <see cref="_admissionGate" />.
     /// </summary>
     private bool _shuttingDown;
+
+    /// <summary>
+    ///     The admission gate, for the PRD-005 admission-race test only. Holding it is the only way to
+    ///     park an opener and a shutdown on the same boundary and let them race deterministically;
+    ///     nothing in production reaches for this.
+    /// </summary>
+    internal System.Threading.Lock AdmissionGateForTests => _admissionGate;
 
     /// <summary>
     ///     The debounced session persists this view model has started. Shutdown waits for them with the
@@ -143,13 +157,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
 
         var document = new DescribeDocumentViewModel(connection, symbol, _descriptors, _dispatcher, _clipboard, this);
 
-        if (!Admit(document))
-        {
-            return;
-        }
-
-        Documents.Add(document);
-        SelectedDocument = document;
+        _ = AdmitAndAdd(document);
     }
 
     public void OpenInvocation(SavedConnection connection, string methodSymbol, string? initialRequestJson = null)
@@ -258,18 +266,12 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
 
     private void Finish(DocumentViewModel document)
     {
-        if (!Admit(document))
-        {
-            return;
-        }
-
-        Documents.Add(document);
-        SelectedDocument = document;
+        _ = AdmitAndAdd(document);
     }
 
     /// <summary>
-    ///     Wires a newly built tab up, or refuses it because shutdown has started (PRD-005 re-review
-    ///     round 6, finding 1).
+    ///     Commits a newly built tab to <see cref="Documents" />, or refuses it because shutdown has
+    ///     started (PRD-005 re-review rounds 6 and 7, finding 1).
     ///     <para>
     ///         A refused tab is not simply dropped: it already exists, and its constructor has already
     ///         started work against container singletons. It goes straight to <see cref="Retire" />, so
@@ -277,24 +279,47 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     ///         waiting on — the same treatment a tab the user closed receives.
     ///     </para>
     ///     <para>
+    ///         The check and the add are <b>one critical section</b>, shared with the assignment of
+    ///         <see cref="_shuttingDown" />. Round 6 checked a plain flag and let each caller add
+    ///         afterwards, which left a gap: an opener could pass the check, shutdown could then set the
+    ///         flag and complete an empty drain, and the opener could commit a live tab after shutdown
+    ///         had returned. Linearising the two leaves exactly two outcomes — committed before shutdown
+    ///         takes the gate and therefore in its snapshot, or refused and retired.
+    ///     </para>
+    ///     <para>
     ///         Discovery inside the drain loop cannot cover this on its own: a round that ends at the
     ///         timeout never runs another discovery pass, so a tab opened during that round would be
-    ///         left both undrained and undisposed. Closing admission removes the window rather than
-    ///         narrowing it, and also contains a tab opened by abandoned work <em>after</em> shutdown
-    ///         has returned.
+    ///         left both undrained and undisposed.
     ///     </para>
     /// </summary>
-    /// <returns><see langword="true" /> when the caller should add the tab to <see cref="Documents" />.</returns>
-    private bool Admit(DocumentViewModel document)
+    /// <returns><see langword="true" /> when the tab was admitted and added.</returns>
+    private bool AdmitAndAdd(DocumentViewModel document)
     {
-        if (_shuttingDown)
+        bool admitted;
+
+        lock (_admissionGate)
         {
+            admitted = !_shuttingDown;
+
+            if (admitted)
+            {
+                document.CloseRequested += OnDocumentCloseRequested;
+
+                Documents.Add(document);
+            }
+        }
+
+        if (!admitted)
+        {
+            // Outside the gate: Retire drains and disposes, which must not run under it.
             Retire(document);
 
             return false;
         }
 
-        document.CloseRequested += OnDocumentCloseRequested;
+        // Selection is outside the critical section on purpose: it only drives the UI, and the property
+        // change it raises reaches enough of the view model that holding a lock across it is a hazard.
+        SelectedDocument = document;
 
         return true;
     }
@@ -361,13 +386,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
 
         var document = new SettingsDocumentViewModel(
             _settings, _theme, _dialogs, _protoc, _secrets, _updates, _launcher, _diagnostics, _clipboard);
-        if (!Admit(document))
-        {
-            return;
-        }
-
-        Documents.Add(document);
-        SelectedDocument = document;
+        _ = AdmitAndAdd(document);
     }
 
     public void OpenHistory()
@@ -386,13 +405,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         }
 
         var document = new HistoryDocumentViewModel(_history, _settings, _workspace, this, _dialogs, _dispatcher, _filePicker, _console);
-        if (!Admit(document))
-        {
-            return;
-        }
-
-        Documents.Add(document);
-        SelectedDocument = document;
+        _ = AdmitAndAdd(document);
     }
 
     /// <summary>E3.1: closes every open tab (e.g. when switching to a different workspace).</summary>
@@ -693,9 +706,13 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     /// </param>
     public async Task<DocumentShutdownResult> DisposeOpenDocumentsAsync(TimeSpan drainTimeout)
     {
-        // Both set synchronously, before any await: no tab opened from here on joins Documents, and
-        // nothing schedules a persist.
-        _shuttingDown = true;
+        // Both set before any await. The flag goes under the admission gate so it linearises against a
+        // commit already in flight: no tab joins Documents after this point, and none is lost either.
+        lock (_admissionGate)
+        {
+            _shuttingDown = true;
+        }
+
         _suppressPersist = true;
 
         _persistCts?.Cancel();

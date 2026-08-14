@@ -474,6 +474,76 @@ public sealed class ShutdownDrainCoverageTests
     }
 
     /// <summary>
+    ///     PRD-005 re-review round 7: the shutdown transition and the collection commit must be one
+    ///     critical section, not a check followed by an add.
+    ///     <para>
+    ///         Round 6 read a plain flag and let each caller add afterwards. An opener could pass the
+    ///         check, shutdown could then set the flag and complete an empty drain, and the opener could
+    ///         commit a live tab <em>after</em> shutdown had returned — a tab nothing would ever dispose.
+    ///     </para>
+    ///     <para>
+    ///         Contention, repeated: each round starts an opener and a shutdown on a barrier so they
+    ///         reach the boundary together. Emptiness is <em>not</em> the invariant — shutdown leaves
+    ///         <c>Documents</c> alone on purpose so the session snapshot survives — so what is asserted
+    ///         is that nothing is left <b>undisposed</b>, via the environment singleton's subscriber
+    ///         count.
+    ///     </para>
+    ///     <para>
+    ///         <b>This is a stress test, and its sensitivity was measured rather than assumed.</b>
+    ///         Against the non-atomic version (ablation AH) 200 rounds caught the defect in one run out
+    ///         of three; against the checked-in version five consecutive runs passed. The window it
+    ///         hunts is a handful of instructions wide, so a green run is weak evidence — the guarantee
+    ///         comes from the single critical section in <c>AdmitAndAdd</c>, not from here. A
+    ///         deterministic version is not writable from outside: it would need to pause an opener
+    ///         between its decision and its commit, and that state is exactly what the fix removes.
+    ///     </para>
+    /// </summary>
+    [Fact]
+    public async Task An_opener_racing_shutdown_is_either_disposed_with_it_or_retired()
+    {
+        for (var attempt = 0; attempt < 200; attempt++)
+        {
+            var environment = new EnvironmentService(
+                new FakeWorkspaceStore(new WorkspaceModel
+                {
+                    Environments = [new WorkspaceEnvironment { Id = "e1", Name = "staging" }]
+                }),
+                new FakeSecretStore());
+
+            var docs = new DocumentsViewModel(
+                new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(),
+                new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(),
+                new FakeRequestValidator(), new InMemorySettingsStore(), new FakeThemeService(),
+                environment: environment);
+
+            var baseline = environment.ActiveChangedSubscribers;
+
+            using var barrier = new Barrier(2);
+
+            var opening = Task.Run(() =>
+            {
+                barrier.SignalAndWait();
+
+                docs.OpenInvocation(Conn(), "pkg.Svc/Probe", "{}");
+            }, Ct);
+
+            var shutdown = Task.Run(() =>
+            {
+                barrier.SignalAndWait();
+
+                return docs.DisposeOpenDocumentsAsync(Bounded);
+            }, Ct);
+
+            await opening.WaitAsync(Bounded, Ct);
+
+            _ = await shutdown.WaitAsync(Bounded, Ct);
+
+            environment.ActiveChangedSubscribers.ShouldBe(baseline,
+                $"attempt {attempt}: whichever side won the gate, no tab may be left alive once shutdown returned");
+        }
+    }
+
+    /// <summary>
     ///     Round 6, finding 2: the composer is listed as a collected child, but nothing pinned the link.
     ///     Its debounced validation runs against the same singleton validator the tab uses.
     /// </summary>

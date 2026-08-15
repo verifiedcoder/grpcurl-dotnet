@@ -955,6 +955,12 @@ public sealed class ShutdownDrainCoverageTests
 
         result.SessionPersisted.ShouldBeFalse();
         environment.ActiveChangedSubscribers.ShouldBe(0, "phase 3 must still dispose the tabs");
+
+        // Cleanup observed rather than assumed: the save honoured the token it was asked to stop on, so
+        // a fresh drain settles instead of the test passing with work rooted for the process's life.
+        var afterwards = await docs.DisposeOpenDocumentsAsync(Bounded).WaitAsync(Bounded, Ct);
+
+        afterwards.Drained.ShouldBeTrue("the cancelled final save settled");
     }
 
     /// <summary>
@@ -1412,6 +1418,206 @@ public sealed class ShutdownDrainCoverageTests
         }
     }
 
+    /// <summary>
+    ///     PRD-005 re-review round 14, finding 1: the session-writer lease must be part of <b>every</b>
+    ///     drain round, not only the coordinator's persistence phase.
+    ///     <para>
+    ///         Round 13 gave session writes a lease so admission and ownership were one critical section,
+    ///         and taught <c>PersistFinalSessionAsync</c> to wait for it. The general drain still built its
+    ///         round from the work sets and the opener lease alone, so a caller who went straight to
+    ///         <see cref="DocumentsViewModel.DisposeOpenDocumentsAsync" /> — or a coordinator run that
+    ///         skipped persistence — saw no participants, no enrolled work, and reported
+    ///         <c>Drained: true</c> over a writer sitting in the store's synchronous prefix.
+    ///     </para>
+    /// </summary>
+    [Fact]
+    public async Task A_direct_drain_waits_for_an_admitted_session_writer()
+    {
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var store = new SynchronouslyBlockingStore(entered, release);
+        var docs = Docs(session: store);
+
+        // Blocks its thread inside SaveAsync before any task exists to enrol: the lease is the only
+        // thing that can know about this writer.
+        var flushing = Task.Run(() => docs.FlushSessionAsync().GetAwaiter().GetResult(), Ct);
+
+        await entered.Task.WaitAsync(Bounded, Ct);
+
+        var result = await docs.DisposeOpenDocumentsAsync(ShortDrain).WaitAsync(Bounded, Ct);
+
+        try
+        {
+            result.Drained.ShouldBeFalse("an admitted session writer is still inside the store");
+        }
+        finally
+        {
+            release.SetResult();
+
+            await flushing.WaitAsync(Bounded, Ct);
+        }
+
+        // And the same drain tells the truth in the other direction once the writer has left, so the
+        // assertion above cannot be satisfied by a drain that simply never succeeds.
+        var afterwards = await docs.DisposeOpenDocumentsAsync(Bounded).WaitAsync(Bounded, Ct);
+
+        afterwards.Drained.ShouldBeTrue("the writer released its lease");
+    }
+
+    /// <summary>
+    ///     Round 14, finding 1, second half: a coordinator run that deliberately skips persistence must
+    ///     still report an admitted writer, because phase 3 is then the only drain there is.
+    ///     <para>
+    ///         An interrupted restore skips phase 2 to protect the session on disk. The phase-2 lease wait
+    ///         is skipped with it, so if the general drain does not own the lease, nothing does.
+    ///     </para>
+    /// </summary>
+    [Fact]
+    public async Task A_shutdown_that_skips_persistence_still_waits_for_an_admitted_writer()
+    {
+        var loading = new Blocker();
+
+        var savedEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var savedRelease = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var store = new BlockingLoadBlockingSaveStore(loading, savedEntered, savedRelease);
+
+        var docs = new DocumentsViewModel(
+            new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(),
+            new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(),
+            new FakeRequestValidator(), new InMemorySettingsStore(), new FakeThemeService(),
+            workspace: new FakeWorkspaceStore(new WorkspaceModel { Id = "w" }),
+            session: store, sessionDebounce: TimeSpan.FromSeconds(10));
+
+        // A restore in flight, so the run reaches the skip-persistence branch.
+        var restoring = docs.RestoreSessionAsync();
+
+        await loading.Entered.Task.WaitAsync(Bounded, Ct);
+
+        // Admitted before shutdown closes admission, and still in the store's synchronous prefix.
+        var flushing = Task.Run(() => docs.FlushSessionAsync().GetAwaiter().GetResult(), Ct);
+
+        await savedEntered.Task.WaitAsync(Bounded, Ct);
+
+        var shutdown = docs.ShutdownAsync(ShortDrain);
+
+        // Let the restore return: it was refused by admission, so persistence is skipped.
+        loading.Release.SetResult();
+
+        await restoring.WaitAsync(Bounded, Ct);
+
+        var result = await shutdown.WaitAsync(Bounded, Ct);
+
+        try
+        {
+            result.SessionPersisted.ShouldBeFalse("the restore did not finish, so phase 2 was skipped");
+            result.Drained.ShouldBeFalse("the admitted writer is still inside the store");
+        }
+        finally
+        {
+            savedRelease.SetResult();
+
+            await flushing.WaitAsync(Bounded, Ct);
+        }
+    }
+
+    /// <summary>
+    ///     Round 14, finding 2: the cancellation request that shutdown makes <em>before</em> the final
+    ///     writer exists must be contained too.
+    ///     <para>
+    ///         Round 13 contained the timeout's request against the final save's own source. The first
+    ///         thing <c>PersistFinalSessionAsync</c> does, though, is cancel the pending debounce's
+    ///         source — and a throwing callback there escaped before either lease wait, so shutdown never
+    ///         reached phase 3. AY cannot see this: its default ten-second debounce means no earlier
+    ///         source is ever in play.
+    ///     </para>
+    ///     <para>
+    ///         Only the admitted debounce's cancellation throws here. The final write then succeeds, which
+    ///         is what proves the containment let the coordinator carry on rather than merely survive.
+    ///     </para>
+    /// </summary>
+    [Fact]
+    public async Task A_throwing_callback_on_an_admitted_debounce_does_not_abort_teardown()
+    {
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var environment = new EnvironmentService(
+            new FakeWorkspaceStore(new WorkspaceModel
+            {
+                Environments = [new WorkspaceEnvironment { Id = "e1", Name = "staging" }]
+            }),
+            new FakeSecretStore());
+
+        var store = new ThrowingCallbackOnFirstSaveStore(entered);
+
+        var docs = new DocumentsViewModel(
+            new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(),
+            new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(),
+            new FakeRequestValidator(), new InMemorySettingsStore(), new FakeThemeService(),
+            session: store,
+            workspace: new FakeWorkspaceStore(new WorkspaceModel { Id = "w" }),
+            sessionDebounce: TimeSpan.FromMilliseconds(1), environment: environment);
+
+        docs.OpenInvocation(Conn(), "pkg.Svc/Go", "{}");
+
+        environment.ActiveChangedSubscribers.ShouldBeGreaterThan(0);
+
+        // The debounce has passed its delay and is inside the store, holding its lease, with a callback
+        // registered on the source shutdown is about to cancel.
+        await entered.Task.WaitAsync(Bounded, Ct);
+
+        var result = await docs.ShutdownAsync(Bounded).WaitAsync(Bounded, Ct);
+
+        result.SessionPersisted.ShouldBeTrue("the coordinator must carry on to its own write");
+        result.Drained.ShouldBeTrue("the cancelled debounce settled and was waited for");
+        store.Saves.ShouldBe(2, "the debounce and the final write, in that order");
+        environment.ActiveChangedSubscribers.ShouldBe(0, "phase 3 must still dispose the tabs");
+    }
+
+    /// <summary>
+    ///     Round 14, finding 2, second half: the debounce source must not be disposed while the write it
+    ///     cancelled is still holding its token.
+    ///     <para>
+    ///         <c>DisposeOpenDocumentsAsync</c> cancelled and immediately disposed the shared source, so an
+    ///         admitted write that outlived the request held a token whose source was gone.
+    ///     </para>
+    ///     <para>
+    ///         Which API is touched decides whether this is observable, and the first version of this test
+    ///         was blind because of it. <c>Register</c> on an <em>already-cancelled</em> token runs the
+    ///         callback inline without consulting the source, so it succeeds against the disposed source
+    ///         and proves nothing — and cancellation always precedes disposal here.
+    ///         <c>WaitHandle</c> does consult it and throws <c>ObjectDisposedException</c>, so that is the
+    ///         observable this test uses.
+    ///     </para>
+    /// </summary>
+    [Fact]
+    public async Task An_admitted_debounce_keeps_a_usable_token_after_shutdown_cancels_it()
+    {
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var store = new TokenTouchingStore(entered, release);
+
+        var docs = Docs(session: store, sessionDebounce: TimeSpan.FromMilliseconds(1));
+
+        docs.OpenInvocation(Conn(), "pkg.Svc/Go", "{}");
+
+        await entered.Task.WaitAsync(Bounded, Ct);
+
+        var shutdown = docs.ShutdownAsync(ShortDrain);
+
+        // Shutdown has asked the debounce to stop and given up waiting; the write only now reaches for
+        // the token it was handed.
+        _ = await shutdown.WaitAsync(Bounded, Ct);
+
+        release.SetResult();
+
+        await store.Finished.Task.WaitAsync(Bounded, Ct);
+
+        store.TokenFailure.ShouldBeNull("the source must outlive the write that holds its token");
+    }
+
     private static StreamEventModel Event(int index)
         => new(StreamEventKind.MessageReceived, index, DateTimeOffset.UtcNow, index, $"preview {index}");
 
@@ -1663,7 +1869,18 @@ public sealed class ShutdownDrainCoverageTests
         {
             using var registration = cancellationToken.Register(static () => throw new IOException("callback"));
 
-            await Task.Delay(Timeout.InfiniteTimeSpan, CancellationToken.None);
+            // On the supplied token, not None (round 14, finding 3). Cancel() runs every registered
+            // callback and aggregates their failures, so the deliberate IOException still exercises
+            // containment — while an infinite delay on None left this save, its enrolment in both work
+            // sets and the final token source rooted for the life of the test process.
+            try
+            {
+                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                // Asked to stop, and did.
+            }
         }
     }
     private sealed class ThrowingSessionStore : ISessionStore
@@ -1690,6 +1907,108 @@ public sealed class ShutdownDrainCoverageTests
             LastSaved = state;
 
             return Task.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    ///     Blocks the load, then blocks the first save on the calling thread — the two halves round 14's
+    ///     skipped-persistence case needs from one store.
+    /// </summary>
+    private sealed class BlockingLoadBlockingSaveStore(
+        Blocker loading,
+        TaskCompletionSource savedEntered,
+        TaskCompletionSource savedRelease) : ISessionStore
+    {
+        private int _saves;
+
+        public int Saves => _saves;
+
+        public async Task<SessionState> LoadAsync(CancellationToken cancellationToken = default)
+        {
+            await loading.EnterAsync();
+
+            return new SessionState();
+        }
+
+        public Task SaveAsync(SessionState state, CancellationToken cancellationToken = default)
+        {
+            if (Interlocked.Increment(ref _saves) == 1)
+            {
+                _ = savedEntered.TrySetResult();
+
+                savedRelease.Task.GetAwaiter().GetResult(); // synchronous, before any task is returned
+            }
+
+            return Task.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    ///     Registers a throwing cancellation callback on the <b>first</b> save only, and honours its token.
+    ///     Later saves complete normally, so the test can tell "shutdown survived" from "shutdown carried
+    ///     on".
+    /// </summary>
+    private sealed class ThrowingCallbackOnFirstSaveStore(TaskCompletionSource entered) : ISessionStore
+    {
+        private int _saves;
+
+        public int Saves => _saves;
+
+        public Task<SessionState> LoadAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(new SessionState());
+
+        public async Task SaveAsync(SessionState state, CancellationToken cancellationToken = default)
+        {
+            if (Interlocked.Increment(ref _saves) > 1)
+            {
+                return;
+            }
+
+            using var registration = cancellationToken.Register(static () => throw new IOException("callback"));
+
+            _ = entered.TrySetResult();
+
+            try
+            {
+                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                // The request landed: this writer is done, which is all shutdown asked for.
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Touches its token's wait handle after the test releases it, and records whatever that throws.
+    /// </summary>
+    private sealed class TokenTouchingStore(TaskCompletionSource entered, TaskCompletionSource release) : ISessionStore
+    {
+        public TaskCompletionSource Finished { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Exception? TokenFailure { get; private set; }
+
+        public Task<SessionState> LoadAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(new SessionState());
+
+        public async Task SaveAsync(SessionState state, CancellationToken cancellationToken = default)
+        {
+            _ = entered.TrySetResult();
+
+            await release.Task;
+
+            try
+            {
+                // Not Register: on an already-cancelled token that runs inline and never consults the
+                // source, so it cannot tell a live source from a disposed one.
+                _ = cancellationToken.WaitHandle;
+            }
+            catch (Exception ex)
+            {
+                TokenFailure = ex;
+            }
+
+            _ = Finished.TrySetResult();
         }
     }
 

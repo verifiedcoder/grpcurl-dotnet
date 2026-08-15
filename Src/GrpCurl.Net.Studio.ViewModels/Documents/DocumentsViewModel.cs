@@ -905,7 +905,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
 
         try
         {
-            _persistCts?.Cancel();
+            CancelPendingPersist();
 
             var save = PersistNowAsync(cancellationToken);
 
@@ -1005,6 +1005,20 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         }
     }
 
+    /// <summary>
+    ///     Asks the pending debounced write to stop. Every internal cancellation request goes through
+    ///     here so none of them can break its caller: the source may already have been disposed by the
+    ///     write that owned it, and a store's registered callback may throw.
+    /// </summary>
+    private void CancelPendingPersist()
+    {
+        // Read once: the field is replaced by SchedulePersist and cleared by shutdown.
+        if (_persistCts is { } pending)
+        {
+            RequestCancelQuietly(pending);
+        }
+    }
+
     private static TimeSpan Remaining(TimeSpan budget, Stopwatch clock)
     {
         var left = budget - clock.Elapsed;
@@ -1035,7 +1049,11 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
             return false; // nothing to persist through; see DocumentShutdownResult.SessionPersisted
         }
 
-        _persistCts?.Cancel();
+        // Contained, and for the same reason the timeout's request below is: this runs the pending
+        // debounce's registered callbacks on the shutdown thread, and round 13 fixed that only for the
+        // final save's own source. A throwing callback here escaped before either wait, so shutdown
+        // never reached the lease waits, the final write, or phase 3 (round 14, finding 2).
+        CancelPendingPersist();
 
         // Both waits measure against the coordinator's one clock. Giving each the whole remaining
         // interval let persistence spend the budget twice and the coordinator overrun the ceiling its
@@ -1200,8 +1218,12 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
 
         _suppressPersist = true;
 
-        _persistCts?.Cancel();
-        _persistCts?.Dispose();
+        // Cancelled, but not disposed here: an admitted debounce can still be inside the store holding
+        // this token, and destroying the source underneath it is the same ownership error as abandoning
+        // a task (round 14, finding 2). The source is released by the continuation that SchedulePersist
+        // registers, once the write it belongs to has actually finished with it.
+        CancelPendingPersist();
+
         _persistCts = null;
 
         // Grows as the drain runs: work that is already admitted can open a tab (History's replay does
@@ -1262,7 +1284,16 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
                 }
             }
 
-            var round = new List<Task>(participants.Count + 2) { _work.WhenSettled(), settled };
+            // The session-writer lease belongs in *every* round, not only the coordinator's persistence
+            // phase (round 14, finding 1). A writer inside the store's synchronous prefix exists in no
+            // task set, so without the lease a direct drain — or a coordinator run that skipped phase 2
+            // to protect an unfinished restore — reported success straight over it. Unlike the opener
+            // lease it needs no rediscovery loop: a session write cannot add a tab, so a lease that
+            // completes before the check below leaves nothing undiscovered behind it.
+            var round = new List<Task>(participants.Count + 3)
+            {
+                _work.WhenSettled(), settled, SessionWritersSettled()
+            };
 
             foreach (var document in participants)
             {
@@ -1364,13 +1395,23 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
             return;
         }
 
-        _persistCts?.Cancel();
+        CancelPendingPersist();
+
         var cts = new CancellationTokenSource();
         _persistCts = cts;
         var persist = DelayedPersistAsync(cts.Token);
 
         _work.Track(persist);
         _sessionWork.Track(persist);
+
+        // The write owns the source for as long as it holds the token, so the write's completion is what
+        // releases it — no caller has to guess whether cancelling means finished.
+        _ = persist.ContinueWith(
+            static (_, state) => ((CancellationTokenSource)state!).Dispose(),
+            cts,
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
     }
 
     private async Task DelayedPersistAsync(CancellationToken token)

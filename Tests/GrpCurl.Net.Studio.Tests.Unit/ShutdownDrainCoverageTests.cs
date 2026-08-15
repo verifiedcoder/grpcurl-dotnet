@@ -1618,6 +1618,55 @@ public sealed class ShutdownDrainCoverageTests
         store.TokenFailure.ShouldBeNull("the source must outlive the write that holds its token");
     }
 
+    /// <summary>
+    ///     PRD-005 re-review round 15, finding 1: the debounce's token source has <b>two</b> owners, and
+    ///     the write is only one of them.
+    ///     <para>
+    ///         Round 14 gave the source to the write, disposing it from a continuation when the write
+    ///         finished. But a cancellation callback may complete the operation's task on its own stack, and
+    ///         that continuation runs <c>ExecuteSynchronously</c> — so the source was disposed while the
+    ///         <c>Cancel()</c> that triggered it was still running its callbacks, and a callback that then
+    ///         touched its token got <c>ObjectDisposedException</c> from a source destroyed underneath it.
+    ///         This is the inverse of the ordering BC pins: there the write outlives the request, here the
+    ///         request outlives the write.
+    ///     </para>
+    ///     <para>
+    ///         The fake completes the save from inside its single callback and then reads
+    ///         <c>WaitHandle</c> — the API that consults the source, as round 14 established — before
+    ///         returning. Containment would only hide this: swallowing the aggregate does not make the
+    ///         disposal safe, and the callback's remaining cleanup is lost either way.
+    ///     </para>
+    /// </summary>
+    [Fact]
+    public async Task Completing_the_write_inside_a_cancellation_callback_keeps_the_source_alive()
+    {
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var store = new CompletesFromCancellationCallbackStore(entered);
+
+        var docs = Docs(session: store, sessionDebounce: TimeSpan.FromMilliseconds(1));
+
+        docs.OpenInvocation(Conn(), "pkg.Svc/Go", "{}");
+
+        // The debounced write is admitted, inside the store, with its callback registered on the source
+        // shutdown is about to cancel.
+        await entered.Task.WaitAsync(Bounded, Ct);
+
+        var result = await docs.ShutdownAsync(Bounded).WaitAsync(Bounded, Ct);
+
+        store.TokenFailure.ShouldBeNull(
+            "the source must outlive the cancellation request that is still running its callbacks");
+
+        store.CompletedInsideCallback.ShouldBeTrue(
+            "the fake must actually drive the synchronous-completion ordering, or it proves nothing");
+
+        result.Drained.ShouldBeTrue("the write completed, so nothing is left running");
+
+        var afterwards = await docs.DisposeOpenDocumentsAsync(Bounded).WaitAsync(Bounded, Ct);
+
+        afterwards.Drained.ShouldBeTrue("and a fresh drain agrees");
+    }
+
     private static StreamEventModel Event(int index)
         => new(StreamEventKind.MessageReceived, index, DateTimeOffset.UtcNow, index, $"preview {index}");
 
@@ -2009,6 +2058,54 @@ public sealed class ShutdownDrainCoverageTests
             }
 
             _ = Finished.TrySetResult();
+        }
+    }
+
+    /// <summary>
+    ///     Completes its save from inside its own cancellation callback, then touches the token before the
+    ///     enclosing <c>Cancel()</c> returns. The completion source deliberately does <b>not</b> use
+    ///     <c>RunContinuationsAsynchronously</c>: the whole point is that the production await chain — and
+    ///     therefore the source-releasing continuation — resumes on the callback's stack.
+    /// </summary>
+    private sealed class CompletesFromCancellationCallbackStore(TaskCompletionSource entered) : ISessionStore
+    {
+        private readonly TaskCompletionSource _save = new();
+
+        private int _saves;
+
+        public Exception? TokenFailure { get; private set; }
+
+        public bool CompletedInsideCallback { get; private set; }
+
+        public Task<SessionState> LoadAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(new SessionState());
+
+        public Task SaveAsync(SessionState state, CancellationToken cancellationToken = default)
+        {
+            if (Interlocked.Increment(ref _saves) > 1)
+            {
+                return Task.CompletedTask; // the coordinator's own final write
+            }
+
+            // Not disposed: doing so from inside the callback below is legal but pointless here, and the
+            // registration dies with the source either way.
+            _ = cancellationToken.Register(() =>
+            {
+                CompletedInsideCallback = _save.TrySetResult();
+
+                try
+                {
+                    _ = cancellationToken.WaitHandle;
+                }
+                catch (Exception ex)
+                {
+                    TokenFailure = ex;
+                }
+            });
+
+            _ = entered.TrySetResult();
+
+            return _save.Task;
         }
     }
 

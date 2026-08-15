@@ -47,7 +47,11 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     private readonly ISessionStore? _session;
     private readonly TimeSpan _sessionDebounce;
 
-    private CancellationTokenSource? _persistCts;
+    /// <summary>
+    ///     The pending debounced write's cancellation, and the two-owner lifetime its source needs
+    ///     (PRD-005 re-review round 15, finding 1). See <see cref="PersistCancellation" />.
+    /// </summary>
+    private PersistCancellation? _persistCancellation;
     private bool _suppressPersist;
 
     /// <summary>
@@ -1006,17 +1010,14 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     }
 
     /// <summary>
-    ///     Asks the pending debounced write to stop. Every internal cancellation request goes through
-    ///     here so none of them can break its caller: the source may already have been disposed by the
-    ///     write that owned it, and a store's registered callback may throw.
+    ///     Asks the pending debounced write to stop. Every internal cancellation request goes through here,
+    ///     so none of them can break its caller — a store's registered callback may throw — and so each one
+    ///     is counted as an owner of the source for as long as it is running.
     /// </summary>
     private void CancelPendingPersist()
     {
         // Read once: the field is replaced by SchedulePersist and cleared by shutdown.
-        if (_persistCts is { } pending)
-        {
-            RequestCancelQuietly(pending);
-        }
+        _persistCancellation?.RequestCancel();
     }
 
     private static TimeSpan Remaining(TimeSpan budget, Stopwatch clock)
@@ -1220,11 +1221,11 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
 
         // Cancelled, but not disposed here: an admitted debounce can still be inside the store holding
         // this token, and destroying the source underneath it is the same ownership error as abandoning
-        // a task (round 14, finding 2). The source is released by the continuation that SchedulePersist
-        // registers, once the write it belongs to has actually finished with it.
+        // a task (round 14, finding 2). Whichever of the write and the cancellation request finishes last
+        // releases it.
         CancelPendingPersist();
 
-        _persistCts = null;
+        _persistCancellation = null;
 
         // Grows as the drain runs: work that is already admitted can open a tab (History's replay does
         // exactly that), and a fixed snapshot would neither wait for it nor dispose it (PRD-005
@@ -1397,18 +1398,19 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
 
         CancelPendingPersist();
 
-        var cts = new CancellationTokenSource();
-        _persistCts = cts;
-        var persist = DelayedPersistAsync(cts.Token);
+        var cancellation = new PersistCancellation();
+        _persistCancellation = cancellation;
+        var persist = DelayedPersistAsync(cancellation.Token);
 
         _work.Track(persist);
         _sessionWork.Track(persist);
 
-        // The write owns the source for as long as it holds the token, so the write's completion is what
-        // releases it — no caller has to guess whether cancelling means finished.
+        // The write is one owner of the source, not the only one, so its completion is reported rather
+        // than acted on: PersistCancellation disposes only when the cancellation requests have returned
+        // too (round 15, finding 1).
         _ = persist.ContinueWith(
-            static (_, state) => ((CancellationTokenSource)state!).Dispose(),
-            cts,
+            static (_, state) => ((PersistCancellation)state!).WriteCompleted(),
+            cancellation,
             CancellationToken.None,
             TaskContinuationOptions.ExecuteSynchronously,
             TaskScheduler.Default);
@@ -1450,5 +1452,112 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         }
 
         await _session.SaveAsync(BuildSession(), cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    ///     One debounced write's cancellation, with the source released only when <b>both</b> its owners
+    ///     have finished with it: the write that holds the token, and every cancellation request that is
+    ///     still running its callbacks (PRD-005 re-review round 15, finding 1).
+    ///     <para>
+    ///         Round 14 gave the source to the write alone. A registered callback is allowed to complete
+    ///         the operation's task synchronously, and the release continuation runs
+    ///         <see cref="TaskContinuationOptions.ExecuteSynchronously" /> — so completing the write from
+    ///         inside a callback disposed the source on that callback's own stack, while the
+    ///         <see cref="CancellationTokenSource.Cancel()" /> call that invoked it was still working through
+    ///         its registrations. Containing the resulting exception would only hide it; the remaining
+    ///         callbacks still lose their cleanup.
+    ///     </para>
+    ///     <para>
+    ///         The lock is deliberately <b>not</b> held across the cancellation call.
+    ///         A callback completing the write on the cancelling thread re-enters this type through
+    ///         <see cref="WriteCompleted" />, and <see cref="System.Threading.Lock" /> is recursive — so
+    ///         holding it across the call would admit exactly the disposal it is meant to prevent, just
+    ///         without the exception to show for it. The counter is what makes the request an owner, not
+    ///         the lock.
+    ///     </para>
+    /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Microsoft.Design",
+        "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable",
+        Justification = "The source's lifetime is exactly what this type exists to arbitrate: it is released "
+                        + "when the write and every cancellation request have finished with it, and by no one "
+                        + "else. A public Dispose would offer callers the third-party disposal that round 15's "
+                        + "finding is about.")]
+    private sealed class PersistCancellation
+    {
+        private readonly CancellationTokenSource _source = new();
+
+        private readonly System.Threading.Lock _gate = new();
+
+        /// <summary>Cancellation requests that have not yet returned. Guarded by <see cref="_gate" />.</summary>
+        private int _requests;
+
+        private bool _writeCompleted;
+
+        private bool _released;
+
+        /// <summary>
+        ///     Captured once, at construction: reading <see cref="CancellationTokenSource.Token" /> after
+        ///     the source is released would throw, and the token itself stays usable afterwards.
+        /// </summary>
+        public CancellationToken Token { get; }
+
+        public PersistCancellation() => Token = _source.Token;
+
+        /// <summary>
+        ///     Requests cancellation, owning the source for the duration. Never throws: a store's callback
+        ///     may, and this runs on the shutdown thread inside a <c>catch</c>, where an escape skips the
+        ///     disposal phase (round 13, finding 2).
+        /// </summary>
+        public void RequestCancel()
+        {
+            lock (_gate)
+            {
+                if (_released)
+                {
+                    return; // the write finished and no request was outstanding: nothing left to cancel
+                }
+
+                _requests++;
+            }
+
+            try
+            {
+                RequestCancelQuietly(_source);
+            }
+            finally
+            {
+                ReleaseIfDone(requestReturned: true);
+            }
+        }
+
+        /// <summary>The write has finished with the token. It may be the last owner, or it may not.</summary>
+        public void WriteCompleted() => ReleaseIfDone(writeFinished: true);
+
+        private void ReleaseIfDone(bool requestReturned = false, bool writeFinished = false)
+        {
+            lock (_gate)
+            {
+                if (requestReturned)
+                {
+                    _requests--;
+                }
+
+                if (writeFinished)
+                {
+                    _writeCompleted = true;
+                }
+
+                if (_released || !_writeCompleted || _requests > 0)
+                {
+                    return;
+                }
+
+                _released = true;
+            }
+
+            // Outside the lock: nothing else can reach the source now that _released is set.
+            _source.Dispose();
+        }
     }
 }

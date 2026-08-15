@@ -9,6 +9,7 @@ using GrpCurl.Net.Studio.ViewModels.Models.History;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Models.Session;
 using GrpCurl.Net.Studio.ViewModels.Services;
+using System.Diagnostics;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
 
@@ -44,14 +45,18 @@ public sealed class ShutdownDrainCoverageTests
         IRequestValidator? validator = null,
         ISecretStore? secrets = null,
         IHistoryStore? history = null,
-        ISessionStore? session = null)
+        ISessionStore? session = null,
+        TimeSpan? sessionDebounce = null)
         => new(
             descriptors ?? new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(),
             new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(),
             validator ?? new FakeRequestValidator(), new InMemorySettingsStore(), new FakeThemeService(),
             history: history, secrets: secrets, session: session,
             workspace: new FakeWorkspaceStore(new WorkspaceModel { Id = "w" }),
-            sessionDebounce: TimeSpan.FromMilliseconds(1));
+            // Long by default: a debounce short enough to fire on its own turns "exactly one final write"
+            // into a scheduler race, which is what round 12's finding 3 caught. Cases that need the
+            // debounce to actually reach the store ask for a short one and gate on it (round 12).
+            sessionDebounce: sessionDebounce ?? TimeSpan.FromSeconds(10));
 
     [Fact]
     public async Task Debounced_validation_work_keeps_shutdown_from_reporting_drained()
@@ -713,7 +718,9 @@ public sealed class ShutdownDrainCoverageTests
         var firstSave = new Blocker();
         var store = new OverlappingSessionStore(firstSave);
 
-        var docs = Docs(session: store);
+        // Short on purpose: this case needs the debounced write to reach the store, and it gates on
+        // FirstSaveEntered rather than on timing.
+        var docs = Docs(session: store, sessionDebounce: TimeSpan.FromMilliseconds(1));
 
         docs.OpenInvocation(Conn(), "pkg.Svc/Go", "{}");
 
@@ -798,13 +805,161 @@ public sealed class ShutdownDrainCoverageTests
         result.Drained.ShouldBeTrue();
         result.Documents.ShouldBe(1);
 
-        store.Saves.ShouldBe(1, "exactly one final write, after the debounce settled");
+        store.Saves.ShouldBe(1,
+            "exactly one final write: the debounce is long enough that only shutdown's write can reach "
+            + "the store, so this counts the coordinator rather than the scheduler");
 
         var saved = store.LastSaved.ShouldNotBeNull();
 
         saved.WorkspaceId.ShouldBe("w");
         saved.ActiveTabIndex.ShouldBe(0);
         saved.Tabs.ShouldHaveSingleItem().Body.ShouldBe("the live draft");
+    }
+
+    /// <summary>
+    ///     PRD-005 re-review round 12, finding 1: a final save that outlives its wait is still work.
+    ///     <para>
+    ///         Round 11 wrapped the write in <c>WaitAsync</c> and enrolled the task in nothing, and passed
+    ///         <c>CancellationToken.None</c> — so a timeout neither stopped the save nor made it visible.
+    ///         The drain saw no outstanding work and reported <c>Drained: true</c> while
+    ///         <c>SaveAsync</c> was mid temp-file protocol, after which <c>Program</c> is entitled to
+    ///         release the lock, dispose the host and call <c>Environment.Exit(0)</c> through it.
+    ///     </para>
+    ///     <para>
+    ///         Both halves are asserted: persistence did not finish, <b>and</b> the outstanding save
+    ///         prevents a claim of full drain. The second half needs a fresh drain to be worth anything —
+    ///         see the comment at the assertion.
+    ///     </para>
+    /// </summary>
+    [Fact]
+    public async Task A_final_save_that_outlives_its_wait_keeps_shutdown_from_claiming_a_drain()
+    {
+        var save = new Blocker();
+        var store = new BlockingFinalSaveStore(save);
+
+        var docs = Docs(session: store);
+
+        docs.OpenInvocation(Conn(), "pkg.Svc/Go", "{}");
+
+        var result = await docs.ShutdownAsync(ShortDrain).WaitAsync(Bounded, Ct);
+
+        try
+        {
+            await save.Entered.Task.WaitAsync(Bounded, Ct);
+
+            result.SessionPersisted.ShouldBeFalse("the write never finished");
+            result.Drained.ShouldBeFalse("a save still inside the store is outstanding work");
+
+            // The assertion above is true even if the save is untracked, because the stalled write
+            // consumes the whole budget and the drain then reports false for want of time. Ablating the
+            // enrolment showed exactly that, so the discriminating check is a *fresh* drain with a real
+            // budget: only a tracked save keeps it from reporting quiescence.
+            var afterwards = await docs
+                .DisposeOpenDocumentsAsync(ShortDrain)
+                .WaitAsync(Bounded, Ct);
+
+            afterwards.Drained.ShouldBeFalse("the running save must be visible to the drain, not merely outlast it");
+        }
+        finally
+        {
+            save.Release.SetResult();
+        }
+    }
+
+    /// <summary>
+    ///     Round 12, finding 1, second half: the timeout must actually <em>ask</em> the save to stop.
+    ///     A store that honours its token ends when cancellation is requested, so the drain settles
+    ///     afterwards; with <c>CancellationToken.None</c> — what round 11 passed — it never would.
+    /// </summary>
+    [Fact]
+    public async Task A_timed_out_final_save_is_asked_to_cancel()
+    {
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var store = new CooperativeSessionStore(entered);
+
+        var docs = Docs(session: store);
+
+        docs.OpenInvocation(Conn(), "pkg.Svc/Go", "{}");
+
+        var result = await docs.ShutdownAsync(ShortDrain).WaitAsync(Bounded, Ct);
+
+        await entered.Task.WaitAsync(Bounded, Ct);
+
+        result.SessionPersisted.ShouldBeFalse("the write did not finish inside the budget");
+
+        // Cancellation was requested at the timeout, so a store that observes its token has stopped and
+        // a later drain can settle. Passing None leaves it running for ever.
+        var afterwards = await docs.DisposeOpenDocumentsAsync(Bounded).WaitAsync(Bounded, Ct);
+
+        afterwards.Drained.ShouldBeTrue("the cancelled save must have unwound");
+    }
+
+    /// <summary>
+    ///     Round 12, finding 1, third half: session-write admission closes with document admission, so a
+    ///     direct <c>FlushSessionAsync</c> cannot start a second writer against the same file.
+    /// </summary>
+    [Fact]
+    public async Task A_flush_after_shutdown_does_not_write()
+    {
+        var store = new RecordingSessionStore();
+
+        var docs = Docs(session: store);
+
+        docs.OpenInvocation(Conn(), "pkg.Svc/Go", "{}");
+
+        _ = await docs.ShutdownAsync(Bounded).WaitAsync(Bounded, Ct);
+
+        store.Saves.ShouldBe(1, "the coordinator's own final write");
+
+        await docs.FlushSessionAsync(Ct);
+
+        store.Saves.ShouldBe(1, "a flush after shutdown must be refused, not raced against the final write");
+    }
+
+    /// <summary>
+    ///     Round 12, finding 2: the coordinator's budget is one ceiling, not one per wait.
+    ///     <para>
+    ///         An earlier writer consumes most of the budget and the final writer never returns. Correct
+    ///         behaviour finishes at about the budget; giving each wait its own copy took 1902ms against
+    ///         a 1000ms budget when this was measured against the unfixed code. The bound below sits
+    ///         between the two with room for scheduling on a loaded machine — it is a wall-clock
+    ///         assertion by necessity, since the defect is entirely about elapsed time.
+    ///     </para>
+    /// </summary>
+    [Fact]
+    public async Task The_coordinator_stays_within_one_budget_across_both_persistence_waits()
+    {
+        var budget = TimeSpan.FromSeconds(1);
+
+        var firstEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var finalRelease = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var store = new SlowThenStalledSessionStore(firstEntered, finalRelease, TimeSpan.FromMilliseconds(900));
+
+        var docs = Docs(session: store, sessionDebounce: TimeSpan.FromMilliseconds(1));
+
+        docs.OpenInvocation(Conn(), "pkg.Svc/Go", "{}");
+
+        ((InvocationDocumentViewModel)docs.Documents[0]).RequestJson = "old";
+
+        await firstEntered.Task.WaitAsync(Bounded, Ct);
+
+        var clock = Stopwatch.StartNew();
+
+        _ = await docs.ShutdownAsync(budget).WaitAsync(Bounded, Ct);
+
+        clock.Stop();
+
+        try
+        {
+            clock.Elapsed.ShouldBeLessThan(
+                TimeSpan.FromMilliseconds(1500),
+                $"the whole coordinator must fit in its budget; took {clock.ElapsedMilliseconds}ms");
+        }
+        finally
+        {
+            finalRelease.SetResult();
+        }
     }
 
     /// <summary>A restore started after shutdown must not even reach the session store.</summary>
@@ -1332,6 +1487,56 @@ public sealed class ShutdownDrainCoverageTests
             }
 
             LastSaved = state;
+        }
+    }
+
+    /// <summary>Signals entry to the final save and then stays inside it, ignoring the token.</summary>
+    private sealed class BlockingFinalSaveStore(Blocker save) : ISessionStore
+    {
+        public Task<SessionState> LoadAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(new SessionState());
+
+        public async Task SaveAsync(SessionState state, CancellationToken cancellationToken = default)
+            => await save.EnterAsync();
+    }
+
+    /// <summary>The debounced write takes most of the budget; the final one never returns.</summary>
+    private sealed class SlowThenStalledSessionStore(
+        TaskCompletionSource firstEntered,
+        TaskCompletionSource finalRelease,
+        TimeSpan firstDuration) : ISessionStore
+    {
+        private int _saves;
+
+        public Task<SessionState> LoadAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(new SessionState());
+
+        public async Task SaveAsync(SessionState state, CancellationToken cancellationToken = default)
+        {
+            if (Interlocked.Increment(ref _saves) == 1)
+            {
+                _ = firstEntered.TrySetResult();
+
+                await Task.Delay(firstDuration, CancellationToken.None);
+
+                return;
+            }
+
+            await finalRelease.Task;
+        }
+    }
+
+    /// <summary>Stays inside the save until its token is cancelled, then ends.</summary>
+    private sealed class CooperativeSessionStore(TaskCompletionSource entered) : ISessionStore
+    {
+        public Task<SessionState> LoadAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(new SessionState());
+
+        public async Task SaveAsync(SessionState state, CancellationToken cancellationToken = default)
+        {
+            _ = entered.TrySetResult();
+
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
         }
     }
 

@@ -85,6 +85,14 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     private bool _restoreCompleted;
 
     /// <summary>
+    ///     Closed at the same moment as document admission. A new debounce or a direct
+    ///     <see cref="FlushSessionAsync" /> must not be able to join between the coordinator observing
+    ///     session writes as quiescent and starting the final one (PRD-005 re-review round 12,
+    ///     finding 1). Guarded by <see cref="_admissionGate" />.
+    /// </summary>
+    private bool _sessionWritesClosed;
+
+    /// <summary>
     ///     The debounced session persists this view model has started. Shutdown waits for them with the
     ///     tabs: they write through the container-owned session store (PRD-005 re-review round 3).
     /// </summary>
@@ -867,11 +875,30 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         }
     }
 
-    /// <summary>Writes the current session immediately (cancelling any pending debounce); used on shutdown.</summary>
+    /// <summary>
+    ///     Writes the current session immediately, cancelling any pending debounce.
+    ///     <para>
+    ///         Enrolled in the same sets as every other session write, and refused once shutdown has
+    ///         closed session-write admission: this is a public entry point straight to
+    ///         <see cref="PersistNowAsync" />, and one that joined mid-shutdown would race the
+    ///         coordinator's final write for the same temp path (PRD-005 re-review round 12, finding 1).
+    ///     </para>
+    /// </summary>
     public async Task FlushSessionAsync(CancellationToken cancellationToken = default)
     {
+        if (SessionWritesClosed())
+        {
+            return;
+        }
+
         _persistCts?.Cancel();
-        await PersistNowAsync(cancellationToken).ConfigureAwait(false);
+
+        var save = PersistNowAsync(cancellationToken);
+
+        _sessionWork.Track(save);
+        _work.Track(save);
+
+        await save.ConfigureAwait(false);
     }
 
     /// <summary>
@@ -932,7 +959,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
 
         var sessionPersisted = producersSettled
             && restoreUsable
-            && await PersistFinalSessionAsync(Remaining(budget, clock)).ConfigureAwait(false);
+            && await PersistFinalSessionAsync(budget, clock).ConfigureAwait(false);
 
         // Phase 3 runs whatever happened above: a persistence failure must not cost the tabs their
         // disposal, the workspace its lock release, or the host its StopAsync.
@@ -964,7 +991,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     ///         rather than propagated, because the phase after this one is what disposes the tabs.
     ///     </para>
     /// </summary>
-    private async Task<bool> PersistFinalSessionAsync(TimeSpan budget)
+    private async Task<bool> PersistFinalSessionAsync(TimeSpan budget, Stopwatch clock)
     {
         if (_session is null)
         {
@@ -973,23 +1000,48 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
 
         _persistCts?.Cancel();
 
+        // Both waits measure against the coordinator's one clock. Giving each the whole remaining
+        // interval let persistence spend the budget twice and the coordinator overrun the ceiling its
+        // documentation promises (round 12, finding 2).
         try
         {
-            await _sessionWork.WhenSettled().WaitAsync(budget).ConfigureAwait(false);
+            await _sessionWork.WhenSettled().WaitAsync(Remaining(budget, clock)).ConfigureAwait(false);
         }
         catch (TimeoutException)
         {
             return false; // an earlier writer is still going: do not race it for the same file
         }
 
+        // Started as a tracked task with a real token. Round 11 wrapped the call in WaitAsync and left it
+        // enrolled in nothing, so a timed-out save kept writing where no drain could see it and shutdown
+        // reported Drained: true over it — then Program released the lock and called Environment.Exit(0)
+        // part-way through the temp-file protocol (round 12, finding 1). Stopping the wait is not
+        // completing the work.
+        var cancellation = new CancellationTokenSource();
+        var save = PersistNowAsync(cancellation.Token);
+
+        _sessionWork.Track(save);
+        _work.Track(save);
+
+        // Disposed when the save actually ends, not when this method stops waiting for it.
+        _ = save.ContinueWith(
+            static (_, state) => ((CancellationTokenSource)state!).Dispose(),
+            cancellation,
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
+
         try
         {
-            await PersistNowAsync(CancellationToken.None).WaitAsync(budget).ConfigureAwait(false);
+            await save.WaitAsync(Remaining(budget, clock)).ConfigureAwait(false);
 
             return true;
         }
         catch (TimeoutException)
         {
+            // Ask it to stop, but keep it tracked: the drain must be able to say it is still running.
+            cancellation.Cancel();
+
             return false;
         }
         catch (Exception)
@@ -1005,6 +1057,15 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         lock (_admissionGate)
         {
             _shuttingDown = true;
+            _sessionWritesClosed = true;
+        }
+    }
+
+    private bool SessionWritesClosed()
+    {
+        lock (_admissionGate)
+        {
+            return _sessionWritesClosed;
         }
     }
 
@@ -1208,7 +1269,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
 
     private void SchedulePersist()
     {
-        if (_session is null || _suppressPersist)
+        if (_session is null || _suppressPersist || SessionWritesClosed())
         {
             return;
         }

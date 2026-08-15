@@ -867,6 +867,97 @@ public sealed class ShutdownDrainCoverageTests
     }
 
     /// <summary>
+    ///     PRD-005 re-review round 13, finding 1: session-write admission and ownership must be one
+    ///     critical section.
+    ///     <para>
+    ///         Round 12 checked a closed flag and started the write afterwards. An async method runs its
+    ///         synchronous prefix before handing back a task, and the production <c>JsonSessionStore</c>
+    ///         creates its directory and temp file in exactly that prefix — so an admitted flush was
+    ///         already inside the store while absent from both work sets, and the coordinator started a
+    ///         second writer against the same path.
+    ///     </para>
+    ///     <para>
+    ///         The fake blocks its thread inside that prefix to model it. This is the same check-then-act
+    ///         defect as round 7's document commit, one subsystem over.
+    ///     </para>
+    /// </summary>
+    [Fact]
+    public async Task An_admitted_flush_is_waited_for_before_the_final_save()
+    {
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var store = new SynchronouslyBlockingStore(entered, release);
+        var docs = Docs(session: store);
+
+        docs.OpenInvocation(Conn(), "pkg.Svc/Go", "{}");
+
+        // Blocks its thread inside SaveAsync's synchronous prefix, exactly as JsonSessionStore does its
+        // directory/temp-file work before the first suspension.
+        var flushing = Task.Run(() => docs.FlushSessionAsync().GetAwaiter().GetResult(), Ct);
+
+        await entered.Task.WaitAsync(Bounded, Ct);
+
+        var shutdown = docs.ShutdownAsync(Bounded);
+
+        await Task.Delay(200, Ct);
+
+        try
+        {
+            store.Saves.ShouldBe(1, "the coordinator must not start a second writer against the same store");
+            shutdown.IsCompleted.ShouldBeFalse("an admitted writer is still inside the store");
+        }
+        finally
+        {
+            release.SetResult();
+
+            await flushing.WaitAsync(Bounded, Ct);
+            _ = await shutdown.WaitAsync(Bounded, Ct);
+        }
+    }
+
+    /// <summary>
+    ///     PRD-005 re-review round 13, finding 2: asking the save to stop must not itself break shutdown.
+    ///     <para>
+    ///         <c>CancellationTokenSource.Cancel()</c> runs registered callbacks on the calling thread and
+    ///         surfaces an <c>AggregateException</c> if one throws — and a sibling <c>catch</c> cannot
+    ///         catch what is thrown from another <c>catch</c> block. The result was the round-11
+    ///         interrupted-cleanup outcome again: no disposal, no lock release, no <c>StopAsync</c>.
+    ///     </para>
+    ///     <para>
+    ///         Disposal is observed through the environment singleton's subscriber count, as in the
+    ///         throwing-save case, rather than inferred from the absence of an exception.
+    ///     </para>
+    /// </summary>
+    [Fact]
+    public async Task A_throwing_cancellation_callback_does_not_abort_teardown()
+    {
+        var environment = new EnvironmentService(
+            new FakeWorkspaceStore(new WorkspaceModel
+            {
+                Environments = [new WorkspaceEnvironment { Id = "e1", Name = "staging" }]
+            }),
+            new FakeSecretStore());
+
+        var docs = new DocumentsViewModel(
+            new FakeDescriptorService(), new ImmediateUiDispatcher(), new FakeClipboardService(),
+            new FakeInvocationRunner(), new FakeDialogService(), new FakeLauncherService(),
+            new FakeRequestValidator(), new InMemorySettingsStore(), new FakeThemeService(),
+            session: new ThrowingCancellationCallbackStore(),
+            workspace: new FakeWorkspaceStore(new WorkspaceModel { Id = "w" }),
+            sessionDebounce: TimeSpan.FromSeconds(10), environment: environment);
+
+        docs.OpenInvocation(Conn(), "pkg.Svc/Go", "{}");
+
+        environment.ActiveChangedSubscribers.ShouldBeGreaterThan(0);
+
+        var result = await docs.ShutdownAsync(TimeSpan.FromMilliseconds(200)).WaitAsync(Bounded, Ct);
+
+        result.SessionPersisted.ShouldBeFalse();
+        environment.ActiveChangedSubscribers.ShouldBe(0, "phase 3 must still dispose the tabs");
+    }
+
+    /// <summary>
     ///     Round 12, finding 1, second half: the timeout must actually <em>ask</em> the save to stop.
     ///     A store that honours its token ends when cancellation is requested, so the drain settles
     ///     afterwards; with <c>CancellationToken.None</c> — what round 11 passed — it never would.
@@ -1540,6 +1631,41 @@ public sealed class ShutdownDrainCoverageTests
         }
     }
 
+    /// <summary>Blocks the calling thread inside the save's synchronous prefix.</summary>
+    private sealed class SynchronouslyBlockingStore(TaskCompletionSource entered, TaskCompletionSource release) : ISessionStore
+    {
+        private int _saves;
+
+        public int Saves => _saves;
+
+        public Task<SessionState> LoadAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(new SessionState());
+
+        public Task SaveAsync(SessionState state, CancellationToken cancellationToken = default)
+        {
+            if (Interlocked.Increment(ref _saves) == 1)
+            {
+                _ = entered.TrySetResult();
+
+                release.Task.GetAwaiter().GetResult(); // synchronous, before any task is returned
+            }
+
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class ThrowingCancellationCallbackStore : ISessionStore
+    {
+        public Task<SessionState> LoadAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(new SessionState());
+
+        public async Task SaveAsync(SessionState state, CancellationToken cancellationToken = default)
+        {
+            using var registration = cancellationToken.Register(static () => throw new IOException("callback"));
+
+            await Task.Delay(Timeout.InfiniteTimeSpan, CancellationToken.None);
+        }
+    }
     private sealed class ThrowingSessionStore : ISessionStore
     {
         public Task<SessionState> LoadAsync(CancellationToken cancellationToken = default)

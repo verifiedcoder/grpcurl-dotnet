@@ -93,6 +93,18 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     private bool _sessionWritesClosed;
 
     /// <summary>
+    ///     Session writes admitted and not yet finished. The closed flag alone is a check followed by an
+    ///     unowned start: an admitted caller is already inside <c>ISessionStore.SaveAsync</c> —
+    ///     `JsonSessionStore` creates its directory and temp file before the first suspension — while its
+    ///     task does not yet exist to enrol, so the coordinator could observe `_sessionWork` as quiescent
+    ///     and start a second writer against the same path (PRD-005 re-review round 13, finding 1).
+    ///     Guarded by <see cref="_admissionGate" />.
+    /// </summary>
+    private int _sessionWriters;
+
+    private TaskCompletionSource? _sessionWritersIdle;
+
+    /// <summary>
     ///     The debounced session persists this view model has started. Shutdown waits for them with the
     ///     tabs: they write through the container-owned session store (PRD-005 re-review round 3).
     /// </summary>
@@ -886,19 +898,26 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     /// </summary>
     public async Task FlushSessionAsync(CancellationToken cancellationToken = default)
     {
-        if (SessionWritesClosed())
+        if (!BeginSessionWrite())
         {
             return;
         }
 
-        _persistCts?.Cancel();
+        try
+        {
+            _persistCts?.Cancel();
 
-        var save = PersistNowAsync(cancellationToken);
+            var save = PersistNowAsync(cancellationToken);
 
-        _sessionWork.Track(save);
-        _work.Track(save);
+            _sessionWork.Track(save);
+            _work.Track(save);
 
-        await save.ConfigureAwait(false);
+            await save.ConfigureAwait(false);
+        }
+        finally
+        {
+            EndSessionWrite();
+        }
     }
 
     /// <summary>
@@ -968,6 +987,24 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         return result with { SessionPersisted = sessionPersisted };
     }
 
+    /// <summary>
+    ///     Requests cancellation without letting the request itself break shutdown. A registered callback
+    ///     may throw — <see cref="CancellationTokenSource.Cancel()" /> then surfaces an
+    ///     <see cref="AggregateException" /> — and a source disposed by a save completing at the same
+    ///     instant yields <see cref="ObjectDisposedException" />. Neither is worth the disposal phase.
+    /// </summary>
+    private static void RequestCancelQuietly(CancellationTokenSource source)
+    {
+        try
+        {
+            source.Cancel();
+        }
+        catch (Exception)
+        {
+            // Best effort: the task stays tracked either way, so the drain still reports it.
+        }
+    }
+
     private static TimeSpan Remaining(TimeSpan budget, Stopwatch clock)
     {
         var left = budget - clock.Elapsed;
@@ -1005,6 +1042,9 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         // documentation promises (round 12, finding 2).
         try
         {
+            // Both: the lease covers a writer inside the store whose task is not yet enrolled, and the
+            // work set covers one whose task exists.
+            await SessionWritersSettled().WaitAsync(Remaining(budget, clock)).ConfigureAwait(false);
             await _sessionWork.WhenSettled().WaitAsync(Remaining(budget, clock)).ConfigureAwait(false);
         }
         catch (TimeoutException)
@@ -1023,30 +1063,40 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         _sessionWork.Track(save);
         _work.Track(save);
 
-        // Disposed when the save actually ends, not when this method stops waiting for it.
-        _ = save.ContinueWith(
-            static (_, state) => ((CancellationTokenSource)state!).Dispose(),
-            cancellation,
-            CancellationToken.None,
-            TaskContinuationOptions.ExecuteSynchronously,
-            TaskScheduler.Default);
-
         try
         {
             await save.WaitAsync(Remaining(budget, clock)).ConfigureAwait(false);
+
+            // Completed: nothing else can touch the source, so dispose it here rather than racing a
+            // continuation against the timeout path (round 13, finding 2).
+            cancellation.Dispose();
 
             return true;
         }
         catch (TimeoutException)
         {
             // Ask it to stop, but keep it tracked: the drain must be able to say it is still running.
-            cancellation.Cancel();
+            // Contained, because Cancel() runs the store's registered callbacks on this thread and an
+            // AggregateException from one of them would skip phase 3 entirely — the interrupted-cleanup
+            // class this PR exists to remove.
+            RequestCancelQuietly(cancellation);
+
+            // Disposed only once the save actually settles, so Dispose cannot race the Cancel above.
+            _ = save.ContinueWith(
+                static (_, state) => ((CancellationTokenSource)state!).Dispose(),
+                cancellation,
+                CancellationToken.None,
+                TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
 
             return false;
         }
         catch (Exception)
         {
-            // A failed session write is not worth abandoning the rest of shutdown for.
+            // A failed session write is not worth abandoning the rest of shutdown for. The save is done,
+            // so the source is safe to release here.
+            cancellation.Dispose();
+
             return false;
         }
     }
@@ -1061,11 +1111,49 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         }
     }
 
-    private bool SessionWritesClosed()
+    /// <summary>
+    ///     Takes a session-writer lease, or refuses because shutdown has closed session-write admission.
+    ///     Taken <b>before</b> any store code runs, so admission and ownership are one critical section.
+    /// </summary>
+    private bool BeginSessionWrite()
     {
         lock (_admissionGate)
         {
-            return _sessionWritesClosed;
+            if (_sessionWritesClosed)
+            {
+                return false;
+            }
+
+            _sessionWriters++;
+
+            return true;
+        }
+    }
+
+    private void EndSessionWrite()
+    {
+        TaskCompletionSource? idle = null;
+
+        lock (_admissionGate)
+        {
+            if (--_sessionWriters == 0)
+            {
+                idle = _sessionWritersIdle;
+                _sessionWritersIdle = null;
+            }
+        }
+
+        _ = idle?.TrySetResult();
+    }
+
+    /// <summary>Completes when no admitted session writer is still inside the store.</summary>
+    private Task SessionWritersSettled()
+    {
+        lock (_admissionGate)
+        {
+            return _sessionWriters == 0
+                ? Task.CompletedTask
+                : (_sessionWritersIdle ??= new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously)).Task;
         }
     }
 
@@ -1269,7 +1357,9 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
 
     private void SchedulePersist()
     {
-        if (_session is null || _suppressPersist || SessionWritesClosed())
+        // A cheap early-out only: the write itself is admitted under a lease in DelayedPersistAsync,
+        // which is where the boundary that matters lives.
+        if (_session is null || _suppressPersist)
         {
             return;
         }
@@ -1288,7 +1378,22 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         try
         {
             await Task.Delay(_sessionDebounce, token).ConfigureAwait(false);
-            await PersistNowAsync(token).ConfigureAwait(false);
+
+            // The lease is taken here, not when the debounce was scheduled: what must be owned is the
+            // interval the write is inside the store (round 13, finding 1).
+            if (!BeginSessionWrite())
+            {
+                return;
+            }
+
+            try
+            {
+                await PersistNowAsync(token).ConfigureAwait(false);
+            }
+            finally
+            {
+                EndSessionWrite();
+            }
         }
         catch (OperationCanceledException)
         {

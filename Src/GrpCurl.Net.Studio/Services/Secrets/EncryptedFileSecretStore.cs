@@ -30,9 +30,32 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
     private readonly string _dataPath;
     private readonly string _saltPath;
     private readonly string _machineIdPath;
+
+    /// <summary>
+    ///     Serialises the file operations, and — since PRD-005 — also decides when the derived key may
+    ///     be destroyed: the key belongs to whoever holds this, so it is only zeroed by a thread that
+    ///     owns the gate. Deliberately never disposed. It is only ever awaited (no wait handle is
+    ///     allocated, so there is nothing to release), and disposing it is what would make an already
+    ///     admitted waiter undefined — reintroducing the very finding this pattern exists to close.
+    /// </summary>
     private readonly SemaphoreSlim _gate = new(1, 1);
 
     private byte[]? _key;
+    private int _disposed;
+
+    /// <summary>
+    ///     The cached derived key, for the PRD-005 zeroization tests only. A test cannot otherwise
+    ///     observe that disposal cleared the buffer rather than merely dropping the reference, and
+    ///     asserting that is the point of the test. Read-only, and on no code path the product takes.
+    /// </summary>
+    internal byte[]? KeyForTests => _key;
+
+    /// <summary>
+    ///     The write gate, for the PRD-005 deferred-destruction tests only. A test needs to hold the
+    ///     critical section to model an operation that is inside it when disposal lands; nothing in
+    ///     production reaches for this.
+    /// </summary>
+    internal SemaphoreSlim GateForTests => _gate;
 
     public EncryptedFileSecretStore(string directory)
     {
@@ -46,6 +69,8 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
 
     public async Task SetAsync(string keyRef, string value, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
+
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -56,11 +81,15 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
         finally
         {
             _ = _gate.Release();
+
+            DestroyKeyIfIdle();
         }
     }
 
     public async Task<string?> GetAsync(string keyRef, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
+
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -78,11 +107,15 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
         finally
         {
             _ = _gate.Release();
+
+            DestroyKeyIfIdle();
         }
     }
 
     public async Task DeleteAsync(string keyRef, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
+
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -95,11 +128,15 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
         finally
         {
             _ = _gate.Release();
+
+            DestroyKeyIfIdle();
         }
     }
 
     public async Task<bool> ExistsAsync(string keyRef, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
+
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -108,6 +145,8 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
         finally
         {
             _ = _gate.Release();
+
+            DestroyKeyIfIdle();
         }
     }
 
@@ -125,12 +164,25 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
 
     // ── SEC-023: HKDF-SHA256(ikm = machineId ∥ uid, salt = per-install random, info = label) ──
 
-    private byte[] Key() => _key ??= HKDF.DeriveKey(
-        HashAlgorithmName.SHA256,
-        ikm: [.. MachineId(), .. UserScope()],
-        outputLength: 32,
-        salt: LoadOrCreateSalt(),
-        info: HkdfInfo);
+    private void ThrowIfDisposed()
+        => ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
+
+    /// <summary>
+    ///     The derived key. Callers must hold <see cref="_gate" />, which is what keeps the buffer
+    ///     alive: disposal only destroys the key when no one owns the gate, so an operation admitted
+    ///     before disposal can always finish with a valid key rather than faulting half-way through an
+    ///     AES call (PRD-005 re-review, finding 2). Deliberately no disposed check here — new callers
+    ///     are already rejected at the entry points, and admitted ones are drained, not aborted.
+    /// </summary>
+    private byte[] Key()
+    {
+        return _key ??= HKDF.DeriveKey(
+            HashAlgorithmName.SHA256,
+            ikm: [.. MachineId(), .. UserScope()],
+            outputLength: 32,
+            salt: LoadOrCreateSalt(),
+            info: HkdfInfo);
+    }
 
     private byte[] LoadOrCreateSalt()
     {
@@ -249,8 +301,69 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
     [DllImport("libc")]
     private static extern uint getuid();
 
+    /// <summary>
+    ///     Rejects new operations and destroys the derived key. Idempotent, non-throwing, and it never
+    ///     blocks: a store with nothing in flight is cleared here and now, and one with an operation
+    ///     inside the critical section is cleared by that operation on its way out (PRD-005).
+    ///     <para>
+    ///         The key is the reason this one matters beyond shutdown hygiene: it is an HKDF-derived
+    ///         AES-256 key cached for the process lifetime, and without this it stayed readable in the
+    ///         managed heap until exit. <see cref="CryptographicOperations.ZeroMemory" /> is used rather
+    ///         than dropping the reference so the bytes are gone rather than merely unreachable.
+    ///     </para>
+    ///     <para>
+    ///         Two earlier shapes were wrong in the same direction. The first zeroed the key without
+    ///         acquiring the gate at all; the second waited two seconds and then zeroed it anyway when
+    ///         the wait timed out, so an operation still inside its AES call could have the key cleared
+    ///         underneath it (PRD-005 re-review, finding 2). Ownership, not a timeout, is what decides:
+    ///         the key is destroyed only by a thread that holds the gate.
+    ///     </para>
+    /// </summary>
     public void Dispose()
     {
-        throw new NotImplementedException();
+        // Atomic, so two concurrent disposals cannot both pass the check and race the teardown below,
+        // and so every operation entry point sees the rejection at the same instant.
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
+        DestroyKeyIfIdle();
+    }
+
+    /// <summary>
+    ///     Zeroes the derived key once disposal has been requested and no operation owns the gate.
+    ///     Called from both sides of the race — disposal, and every operation's <c>finally</c> — so
+    ///     whichever arrives last does the work. <see cref="SemaphoreSlim.Wait(int)" /> with a zero
+    ///     timeout never blocks, so shutdown cannot hang here and a straggling operation is drained
+    ///     rather than aborted.
+    ///     <para>
+    ///         The gate is the whole guard, and no separate "already destroyed" flag is used on
+    ///         purpose. A drained operation that barged ahead of this can re-derive the key through
+    ///         <see cref="Key" /> to finish its work; a one-shot flag would then leave that second
+    ///         buffer in the heap, which is the leak this method exists to prevent. Zeroing whatever
+    ///         <see cref="_key" /> currently holds is both idempotent and complete.
+    ///     </para>
+    /// </summary>
+    private void DestroyKeyIfIdle()
+    {
+        if (Volatile.Read(ref _disposed) == 0 || !_gate.Wait(0))
+        {
+            return;
+        }
+
+        try
+        {
+            if (_key is not null)
+            {
+                CryptographicOperations.ZeroMemory(_key);
+
+                _key = null;
+            }
+        }
+        finally
+        {
+            _ = _gate.Release();
+        }
     }
 }

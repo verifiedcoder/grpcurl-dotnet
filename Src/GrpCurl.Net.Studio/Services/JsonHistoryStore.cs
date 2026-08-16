@@ -22,6 +22,12 @@ internal sealed class JsonHistoryStore : IHistoryStore, IDisposable
     private readonly int _maxEntries;
     private readonly long _maxBytes;
     private readonly ISettingsStore? _settings;
+    /// <summary>
+    ///     How long disposal waits for an in-flight operation to leave the critical section before
+    ///     giving up on draining. Bounded on purpose: shutdown must not hang on a stuck operation.
+    /// </summary>
+    private static readonly TimeSpan DisposeDrainTimeout = TimeSpan.FromSeconds(2);
+
     private readonly SemaphoreSlim _gate = new(1, 1);
 
     // SPEC-040 §5 (#5): an in-memory parse cache keyed on the file's (length, last-write) signature — a cheap
@@ -29,6 +35,8 @@ internal sealed class JsonHistoryStore : IHistoryStore, IDisposable
     // ours or another instance's, changes the signature and forces a re-read, so the file stays the source of truth.
     private List<HistoryEntry>? _cachedEntries;
     private (long Length, long Ticks)? _cacheSignature;
+
+    private int _disposed;
 
     public JsonHistoryStore(ISettingsStore settings)
         : this(Path.Combine(
@@ -57,6 +65,8 @@ internal sealed class JsonHistoryStore : IHistoryStore, IDisposable
 
     public async Task AppendAsync(HistoryEntry entry, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
+
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
 
         try
@@ -75,6 +85,8 @@ internal sealed class JsonHistoryStore : IHistoryStore, IDisposable
 
     public async Task<IReadOnlyList<HistoryEntry>> ReadAllAsync(CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
+
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
 
         try
@@ -239,8 +251,37 @@ internal sealed class JsonHistoryStore : IHistoryStore, IDisposable
 
     private static readonly UTF8Encoding Utf8NoBom = new(encoderShouldEmitUTF8Identifier: false);
 
+
+    private void ThrowIfDisposed()
+        => ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
+
+    /// <summary>
+    ///     Releases the write gate and drops the read cache. Idempotent and non-throwing: this is a
+    ///     container-owned singleton disposed during shutdown, where a throw aborts disposal of every
+    ///     singleton after it (PRD-005). Every write is fully awaited by its caller, so there is
+    ///     nothing to flush here; the injected settings store is container-owned and not disposed.
+    /// </summary>
     public void Dispose()
     {
-        throw new NotImplementedException();
+        // Atomic, so two concurrent disposals cannot both pass the check and race the teardown.
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
+        // Drain before destroying the gate: disposing a SemaphoreSlim while an operation owns it (or is
+        // queued on it) is undefined, and the previous version simply assumed no work was live
+        // (PRD-005 review, finding 3). Bounded, so shutdown cannot hang.
+        var drained = _gate.Wait(DisposeDrainTimeout);
+
+        InvalidateCache();
+
+        // Disposed while still held, so nothing can queue behind it; a later caller gets
+        // ObjectDisposedException. If the drain timed out the gate is left alone rather than destroyed
+        // under an owner.
+        if (drained)
+        {
+            _gate.Dispose();
+        }
     }
 }

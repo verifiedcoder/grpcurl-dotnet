@@ -24,6 +24,14 @@ internal sealed partial class EnvironmentService(IWorkspaceStore workspace, ISec
 
     public event EventHandler? ActiveChanged;
 
+    /// <summary>
+    ///     How many handlers are attached, for the PRD-005 disposal tests only. A tab subscribes here
+    ///     when it opens and unsubscribes in <c>Dispose</c> — and nothing else observes that unsubscribe,
+    ///     so without this a test cannot tell "the tab was disposed" from "the tab is still alive but
+    ///     quiet". Read-only, and on no code path the product takes.
+    /// </summary>
+    internal int ActiveChangedSubscribers => ActiveChanged?.GetInvocationList().Length ?? 0;
+
     public void SetActive(string? environmentId)
     {
         if (_activeId == environmentId)

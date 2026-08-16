@@ -1,6 +1,7 @@
 using Avalonia;
 using GrpCurl.Net.Studio.Composition;
 using GrpCurl.Net.Studio.ViewModels.Documents;
+using GrpCurl.Net.Studio.ViewModels.Models.Diagnostics;
 using GrpCurl.Net.Studio.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,6 +10,13 @@ namespace GrpCurl.Net.Studio;
 
 internal static class Program
 {
+    /// <summary>
+    ///     The whole document-shutdown budget (PRD-005): settling producers, persisting the session and
+    ///     draining the tabs share it. Long enough for an RPC to observe its token and unwind, short
+    ///     enough that a wedged operation cannot keep the process alive; exceeding it is logged.
+    /// </summary>
+    private static readonly TimeSpan ShutdownBudget = TimeSpan.FromSeconds(5);
+
     // Avalonia configuration. Called by the visual designer and by the headless test harness
     // via the parameterless overload; the runtime entry point passes the host's services.
     public static AppBuilder BuildAvaloniaApp() => BuildAvaloniaApp(serviceProvider: null);
@@ -47,7 +55,42 @@ internal static class Program
             {
                 // FR-146: capture the final open-tab state on the way out (catches edits made after the
                 // last debounced persist). SPEC-040 §8: release the advisory workspace lock on clean close.
-                host.Services.GetRequiredService<DocumentsViewModel>().FlushSessionAsync().GetAwaiter().GetResult();
+                var documents = host.Services.GetRequiredService<DocumentsViewModel>();
+
+                // PRD-005: one phased operation, because the phases depend on each other. Admission
+                // closes and producers already in flight settle *first*, then the session is snapshotted,
+                // then the documents are drained and disposed. Flushing before that wait — as this code
+                // used to — could snapshot an empty collection while startup restore was still loading
+                // and write it over the very session being restored (round 10, finding 1).
+                //
+                // Sync-over-async is safe here: the Avalonia context was cleared above, so continuations
+                // resume on the thread pool.
+                var shutdown = documents.ShutdownAsync(ShutdownBudget).GetAwaiter().GetResult();
+
+                if (!shutdown.Drained || !shutdown.SessionPersisted)
+                {
+                    var log = host.Services.GetRequiredService<IDiagnosticsLog>();
+
+                    if (!shutdown.Drained)
+                    {
+                        log.Log(
+                            DiagnosticsLevel.Warning,
+                            "shutdown",
+                            $"Timed out after {ShutdownBudget.TotalSeconds:0.#}s waiting for work in "
+                            + $"{shutdown.Documents} open tab(s) to unwind; disposing services anyway.");
+                    }
+
+                    if (!shutdown.SessionPersisted)
+                    {
+                        // Deliberate: the tabs on disk are the truth when a restore did not finish, and
+                        // overwriting them with a mid-restore snapshot is worse than not writing at all.
+                        log.Log(
+                            DiagnosticsLevel.Information,
+                            "shutdown",
+                            "Final session snapshot skipped; the previously saved session was kept.");
+                    }
+                }
+
                 host.Services.GetRequiredService<IWorkspaceStore>().ReleaseLock();
                 host.StopAsync().GetAwaiter().GetResult();
             }

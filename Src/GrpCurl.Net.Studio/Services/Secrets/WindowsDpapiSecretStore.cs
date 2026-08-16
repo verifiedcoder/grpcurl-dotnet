@@ -14,8 +14,16 @@ namespace GrpCurl.Net.Studio.Services.Secrets;
 [SupportedOSPlatform("windows")]
 internal sealed class WindowsDpapiSecretStore : ISecretBackend, IDisposable
 {
+    /// <summary>
+    ///     How long disposal waits for an in-flight operation to leave the critical section before
+    ///     giving up on draining. Bounded on purpose: shutdown must not hang on a stuck operation.
+    /// </summary>
+    private static readonly TimeSpan DisposeDrainTimeout = TimeSpan.FromSeconds(2);
+
     private readonly string _dataPath;
     private readonly SemaphoreSlim _gate = new(1, 1);
+
+    private int _disposed;
 
     public WindowsDpapiSecretStore(string directory) => _dataPath = Path.Combine(directory, "secrets.dpapi.json");
 
@@ -23,6 +31,8 @@ internal sealed class WindowsDpapiSecretStore : ISecretBackend, IDisposable
 
     public async Task<bool> ExistsAsync(string keyRef, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
+
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -36,6 +46,8 @@ internal sealed class WindowsDpapiSecretStore : ISecretBackend, IDisposable
 
     public async Task SetAsync(string keyRef, string value, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
+
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -52,6 +64,8 @@ internal sealed class WindowsDpapiSecretStore : ISecretBackend, IDisposable
 
     public async Task<string?> GetAsync(string keyRef, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
+
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -71,6 +85,8 @@ internal sealed class WindowsDpapiSecretStore : ISecretBackend, IDisposable
 
     public async Task DeleteAsync(string keyRef, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
+
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -97,8 +113,33 @@ internal sealed class WindowsDpapiSecretStore : ISecretBackend, IDisposable
         File.WriteAllText(_dataPath, JsonSerializer.Serialize(store));
     }
 
+    private void ThrowIfDisposed()
+        => ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
+
+    /// <summary>
+    ///     Releases the write gate. Idempotent and non-throwing (PRD-005). Reachable only since
+    ///     <see cref="SecretStore" /> started disposing the backend it owns — before that its own
+    ///     <c>Dispose</c> threw first, so this one never ran.
+    /// </summary>
     public void Dispose()
     {
-        throw new NotImplementedException();
+        // Atomic, so two concurrent disposals cannot both pass the check and race the teardown.
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
+        // Drain before destroying the gate: disposing a SemaphoreSlim while an operation owns it (or is
+        // queued on it) is undefined, and the previous version simply assumed no work was live
+        // (PRD-005 review, finding 3). Bounded, so shutdown cannot hang.
+        var drained = _gate.Wait(DisposeDrainTimeout);
+
+        // Disposed while still held, so nothing can queue behind it; a later caller gets
+        // ObjectDisposedException. If the drain timed out the gate is left alone rather than destroyed
+        // under an owner.
+        if (drained)
+        {
+            _gate.Dispose();
+        }
     }
 }

@@ -21,7 +21,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 ///     This PR covers query/mutation execution + the response envelope viewer; subscriptions, the
 ///     mapping designer, and the introspection viewer arrive in later epics.
 /// </summary>
-public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
+public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDisposable, IOwnsBackgroundWork
 {
     /// <summary>The 4 MiB cap the CLI applies to <c>--file</c>/<c>--variables-file</c> (GQL-014/020).</summary>
     internal const long MaxFileBytes = 4L * 1024 * 1024;
@@ -39,6 +39,9 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     private CancellationTokenSource? _parseCts;
     private CancellationTokenSource? _resolveCts;
     private CancellationTokenSource? _mappingCts;
+    // int rather than bool: shutdown and the close flow can both reach Dispose, so the guard has to be
+    // atomic to be worth anything (PRD-005 re-review, finding 4).
+    private int _disposed;
     private string? _responseEnvelope;
     private bool _syncingVars;
 
@@ -288,7 +291,7 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
 
         var cts = new CancellationTokenSource();
         _mappingCts = cts;
-        _ = DebouncedValidateMappingAsync(cts.Token);
+        Track(DebouncedValidateMappingAsync(cts.Token));
     }
 
     private async Task DebouncedValidateMappingAsync(CancellationToken cancellationToken)
@@ -343,7 +346,7 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
 
         var cts = new CancellationTokenSource();
         _resolveCts = cts;
-        _ = DebouncedResolveAsync(cts.Token);
+        Track(DebouncedResolveAsync(cts.Token));
     }
 
     private async Task DebouncedResolveAsync(CancellationToken cancellationToken)
@@ -609,7 +612,7 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
 
         var cts = new CancellationTokenSource();
         _parseCts = cts;
-        _ = DebouncedParseAsync(cts.Token);
+        Track(DebouncedParseAsync(cts.Token));
     }
 
     private async Task DebouncedParseAsync(CancellationToken cancellationToken)
@@ -1321,6 +1324,8 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     {
         if (row is not null)
         {
+            RetainWorkOf(row);
+
             _ = Headers.Remove(row);
         }
     }
@@ -1351,4 +1356,64 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel
     }
 
     private static string? NullIfBlank(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;
+
+    /// <summary>
+    ///     Cancels and releases the three debounce token sources when the tab closes (PRD-005).
+    ///     Idempotent and non-throwing.
+    ///     <para>
+    ///         Each is already cancelled and disposed when <em>replaced</em>, so the leak was only ever
+    ///         the last one alive at close — but a tab closed while a parse, schema resolve or mapping
+    ///         validation is in flight left that work running with nothing able to stop it. The
+    ///         subscriptions this view model makes (<c>Headers.CollectionChanged</c> and per-row
+    ///         <c>PropertyChanged</c>) are all to objects it owns, so they die with it.
+    ///     </para>
+    /// </summary>
+    /// <summary>
+    ///     Cancels everything this tab can cancel: the four commands and the three debounce sources.
+    ///     The debounce tasks themselves are tracked at the point they start, so the base class waits
+    ///     for them whether or not this cancellation reaches them in time.
+    /// </summary>
+    protected override void CancelOwnedWork()
+    {
+        ExecuteCommand.Cancel();
+        LoadSchemaCommand.Cancel();
+        LoadTranslationCommand.Cancel();
+        ValidateMappingSchemaCommand.Cancel();
+
+        _parseCts?.Cancel();
+        _resolveCts?.Cancel();
+        _mappingCts?.Cancel();
+    }
+
+    /// <summary>Header rows are this tab's children; the other collections hold plain records.</summary>
+    void IOwnsBackgroundWork.CollectOwnedWork(List<Task?> tasks) => WorkGraph.CollectAll(Headers, tasks);
+
+    public void Dispose()
+    {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
+        // The debounce sources below do not own the tokens the running operations use — those belong
+        // to the toolkit-generated commands. Cancel them first, or closing the tab leaves the GraphQL
+        // execution, schema load and translation still running against a tab nobody can see
+        // (PRD-005 review, finding 1). Waiting for them is shutdown's job, via CancelAndDrainAsync.
+        ExecuteCommand.Cancel();
+        LoadSchemaCommand.Cancel();
+        LoadTranslationCommand.Cancel();
+        ValidateMappingSchemaCommand.Cancel();
+
+        _parseCts?.Cancel();
+        _parseCts?.Dispose();
+        _parseCts = null;
+
+        _resolveCts?.Cancel();
+        _resolveCts?.Dispose();
+        _resolveCts = null;
+
+        _mappingCts?.Cancel();
+        _mappingCts?.Dispose();
+        _mappingCts = null;
+    }
 }

@@ -30,6 +30,14 @@ public sealed partial class StreamComposerViewModel : ViewModelBase
     private Channel<string>? _channel;
     private CancellationTokenSource? _validationCts;
 
+    /// <summary>
+    ///     This composer's own fire-and-forget work. The parent tab drains it at shutdown — its
+    ///     validation uses the container-owned <see cref="IRequestValidator" />, so it is exactly the
+    ///     kind of task that must not still be running when the host disposes its singletons
+    ///     (PRD-005 re-review round 3, finding 1).
+    /// </summary>
+    private readonly BackgroundWorkSet _work = new();
+
     [ObservableProperty]
     public partial string MessageJson { get; set; } = "{}";
 
@@ -171,7 +179,19 @@ public sealed partial class StreamComposerViewModel : ViewModelBase
         _validationCts?.Dispose();
         var cts = new CancellationTokenSource();
         _validationCts = cts;
-        _ = DebouncedValidateAsync(cts.Token);
+        _work.Track(DebouncedValidateAsync(cts.Token));
+    }
+
+    /// <summary>
+    ///     Cancels the debounced validation and returns a task that completes when this composer's
+    ///     outstanding work — that validation plus any running async command — has settled. Called by
+    ///     the owning tab during shutdown's cancel phase.
+    /// </summary>
+    internal Task CancelAndDrainAsync()
+    {
+        _validationCts?.Cancel();
+
+        return _work.WhenSettled(AsyncCommandTasks.Of(this));
     }
 
     private async Task DebouncedValidateAsync(CancellationToken cancellationToken)

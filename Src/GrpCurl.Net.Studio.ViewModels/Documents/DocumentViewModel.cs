@@ -4,31 +4,88 @@ using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 
 namespace GrpCurl.Net.Studio.ViewModels.Documents;
 
-/// <summary>
-///     Base for a centre-zone document tab (SPEC-020 §1.2). E1.3 ships the describe document;
-///     E1.4 invocation tabs reuse this host. The tab header binds <see cref="Title" /> and the
-///     close button binds <see cref="CloseCommand" />; closing raises <see cref="CloseRequested" />
-///     for the owning <c>DocumentsViewModel</c> to remove it.
-/// </summary>
 public abstract partial class DocumentViewModel : ViewModelBase
 {
+    /// <summary>Fire-and-forget work this tab has started. See <see cref="BackgroundWorkSet" />.</summary>
+    private readonly BackgroundWorkSet _work = new();
+
     [ObservableProperty]
     public partial string Title { get; set; } = string.Empty;
 
-    /// <summary>The tab-header text; a derived tab may append a dirty marker (e.g. saved-request divergence, FR-002).</summary>
     public virtual string DisplayTitle => Title;
 
-    /// <summary>
-    ///     The connection this tab targets, or null for connection-less tabs (e.g. settings). Used by the
-    ///     shell to detect when an open tab uses an insecure TLS profile (SEC-014).
-    /// </summary>
     public virtual SavedConnection? TabConnection => null;
 
     partial void OnTitleChanged(string value) => OnPropertyChanged(nameof(DisplayTitle));
 
-    /// <summary>Raised when the document asks to be closed (its tab's × button).</summary>
     public event EventHandler? CloseRequested;
 
     [RelayCommand]
     private void Close() => CloseRequested?.Invoke(this, EventArgs.Empty);
+
+    /// <summary>
+    ///     Remembers a task this tab started without awaiting, so shutdown can wait for it. Every
+    ///     <c>_ = SomethingAsync()</c> in a document goes through here.
+    /// </summary>
+    private protected void Track(Task task) => _work.Track(task);
+
+    /// <summary>
+    ///     Moves a child's outstanding work into this tab's set before the child leaves the collection
+    ///     it lives in. Removal must not discard the only handle on a running command (PRD-005
+    ///     re-review round 5, finding 2).
+    /// </summary>
+    private protected void RetainWorkOf(object child) => WorkGraph.Retain(_work, child);
+
+    /// <summary>Same, for every child of a collection that is about to be cleared.</summary>
+    private protected void RetainWorkOfAll<T>(IEnumerable<T> children)
+        where T : notnull
+    {
+        foreach (var child in children)
+        {
+            RetainWorkOf(child);
+        }
+    }
+
+    /// <summary>
+    ///     Requests cancellation of whatever this tab <em>can</em> cancel. Called synchronously, before
+    ///     anything is awaited.
+    ///     <para>
+    ///         Cancellation stays selective — some work (a settings refresh, a history load) has no
+    ///         token to cancel — but draining does not: uncancellable work is still awaited, under the
+    ///         caller's single global timeout. Excluding it is what made the previous round's
+    ///         <c>Drained</c> flag factually wrong.
+    ///     </para>
+    /// </summary>
+    protected virtual void CancelOwnedWork()
+    {
+    }
+
+    /// <summary>
+    ///     Cancels what this tab can cancel and returns a task that completes when <b>all</b> of its
+    ///     outstanding work has settled — tracked fire-and-forget tasks, every async command's execution
+    ///     task, and the work of every child view model it owns.
+    ///     <para>
+    ///         Cancellation is issued synchronously, before the returned task is created, so a caller
+    ///         can walk every open tab and be certain all of them have been cancelled before it awaits
+    ///         any one of them. Awaiting tab by tab without that guarantee would serialise the drain:
+    ///         the last tab would not even be told to stop until the first had finished.
+    ///     </para>
+    ///     <para>
+    ///         The result completes on <em>quiescence</em>, not on the tasks that were live when it was
+    ///         called: everything collected here is enrolled in the same counted set, so work one of
+    ///         them starts before finishing is waited for too. It is therefore also a quiescence probe —
+    ///         a returned task that is already completed means this tab has nothing outstanding.
+    ///     </para>
+    ///     The returned task never faults.
+    /// </summary>
+    public Task CancelAndDrainAsync()
+    {
+        CancelOwnedWork();
+
+        var outstanding = new List<Task?>();
+
+        WorkGraph.Collect(this, outstanding);
+
+        return _work.WhenSettled(outstanding);
+    }
 }

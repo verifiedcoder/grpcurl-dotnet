@@ -12,7 +12,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 ///     opens the target in a new tab via the document host. Messages/methods expose the generated
 ///     request template (FR-052) with copy (FR-056).
 /// </summary>
-public sealed partial class DescribeDocumentViewModel : DocumentViewModel
+public sealed partial class DescribeDocumentViewModel : DocumentViewModel, IDisposable
 {
     private readonly IDescriptorService _descriptors;
     private readonly IUiDispatcher _dispatcher;
@@ -22,6 +22,10 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel
     private readonly Stack<string> _back = new();
     private readonly Stack<string> _forward = new();
     private CancellationTokenSource? _loadCts;
+
+    // int rather than bool: shutdown and the close flow can both reach Dispose, so the guard has to be
+    // atomic to be worth anything (PRD-005 re-review, finding 4).
+    private int _disposed;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLoading), nameof(IsLoaded), nameof(HasError))]
@@ -56,7 +60,7 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel
         _host = host;
 
         Title = ShortName(symbol);
-        _ = LoadAsync(symbol);
+        StartLoad(symbol);
     }
 
     public SavedConnection Connection { get; }
@@ -88,7 +92,7 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel
 
         _back.Push(CurrentSymbol);
         _forward.Clear();
-        _ = LoadAsync(typeRef.FullName);
+        StartLoad(typeRef.FullName);
     }
 
     /// <summary>Ctrl+click: opens a resolvable type reference in a new tab (FR-051).</summary>
@@ -115,14 +119,14 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel
     private void Back()
     {
         _forward.Push(CurrentSymbol);
-        _ = LoadAsync(_back.Pop());
+        StartLoad(_back.Pop());
     }
 
     [RelayCommand(CanExecute = nameof(CanGoForward))]
     private void Forward()
     {
         _back.Push(CurrentSymbol);
-        _ = LoadAsync(_forward.Pop());
+        StartLoad(_forward.Pop());
     }
 
     [RelayCommand(CanExecute = nameof(HasTemplate))]
@@ -145,6 +149,17 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel
             await _clipboard.SetTextAsync(snippet);
         }
     }
+
+    /// <summary>
+    ///     Starts a load without waiting for it, and registers it so shutdown can. Every navigation path
+    ///     goes through here rather than discarding the task with <c>_ =</c>.
+    ///     <para>
+    ///         Tracking, rather than a single <c>_load</c> field: navigation cancels the previous load
+    ///         but does not wait for it, so a field holding only the newest one hid a superseded lookup
+    ///         that was still running (PRD-005 re-review round 3, finding 1).
+    ///     </para>
+    /// </summary>
+    private void StartLoad(string symbol) => Track(LoadAsync(symbol));
 
     private async Task LoadAsync(string symbol)
     {
@@ -212,4 +227,31 @@ public sealed partial class DescribeDocumentViewModel : DocumentViewModel
         var lastDot = trimmed.LastIndexOfAny(['.', '/']);
         return lastDot >= 0 && lastDot < trimmed.Length - 1 ? trimmed[(lastDot + 1)..] : trimmed;
     }
+
+    /// <summary>
+    ///     Cancels and releases the in-flight describe load when the tab closes (PRD-005). Idempotent
+    ///     and non-throwing.
+    ///     <para>
+    ///         <c>LoadAsync</c> cancels the previous token source on each navigation but never disposes
+    ///         one, so closing a tab mid-load left the lookup running against a descriptor service the
+    ///         user had walked away from.
+    ///     </para>
+    /// </summary>
+    public void Dispose()
+    {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
+        _loadCts?.Cancel();
+        _loadCts?.Dispose();
+        _loadCts = null;
+    }
+
+    /// <summary>
+    ///     Cancels the current load. Superseded ones were already cancelled when they were replaced;
+    ///     the base class waits for all of them, cancelled or not.
+    /// </summary>
+    protected override void CancelOwnedWork() => _loadCts?.Cancel();
 }

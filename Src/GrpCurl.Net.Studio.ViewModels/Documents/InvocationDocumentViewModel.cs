@@ -20,7 +20,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 ///     marshalled back through <see cref="IUiDispatcher" />. On failure it surfaces the rich
 ///     <see cref="ErrorModel" /> (FR-090..099) with Retry / Copy-as-JSON / Open-help-link.
 /// </summary>
-public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDisposable
+public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDisposable, IOwnsBackgroundWork
 {
     private readonly IInvocationRunner _runner;
     private readonly IDescriptorService _descriptors;
@@ -52,6 +52,10 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
     private readonly Func<string, TextWriter> _writerFactory;
     private StreamCaptureWriter? _capture;
     private CancellationTokenSource? _validationCts;
+
+    // int rather than bool: shutdown and the close flow can both reach Dispose, so the guard has to be
+    // atomic to be worth anything (PRD-005 re-review, finding 4).
+    private int _disposed;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsInFlight), nameof(IsCompleted), nameof(HasResponse))]
@@ -194,7 +198,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
         // FR-067: a header row's -bin validity gates Invoke, so re-evaluate when rows or values change.
         Headers.CollectionChanged += OnHeadersChanged;
 
-        _ = ResolveMethodAsync(initialRequestJson);
+        Track(ResolveMethodAsync(initialRequestJson));
     }
 
     private void OnHeadersChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -309,7 +313,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
 
         var cts = new CancellationTokenSource();
         _validationCts = cts;
-        _ = DebouncedValidateAsync(cts.Token);
+        Track(DebouncedValidateAsync(cts.Token));
     }
 
     private async Task DebouncedValidateAsync(CancellationToken cancellationToken)
@@ -382,12 +386,12 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
     partial void OnBodyFormatChanged(RequestBodyFormat value)
     {
         // Re-run (or clear) validation for the new grammar.
-        _ = RunValidationAsync();
+        Track(RunValidationAsync());
 
         // FR-062: a non-empty body is reinterpreted in the new format on send; offer to clear it.
         if (!string.IsNullOrWhiteSpace(RequestJson))
         {
-            _ = WarnBodyReinterpretAsync();
+            Track(WarnBodyReinterpretAsync());
         }
     }
 
@@ -415,7 +419,7 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
             _elapsedCts?.Cancel();
             var cts = new CancellationTokenSource();
             _elapsedCts = cts;
-            _ = TickElapsedAsync(cts.Token);
+            Track(TickElapsedAsync(cts.Token));
         }
         else
         {
@@ -485,6 +489,10 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
             StatusIsError = false;
             Error = null;
             Severity = StatusSeverity.Ok;
+            // A reveal command may still be awaiting the singleton gate on one of these rows.
+            RetainWorkOfAll(ResponseHeaders);
+            RetainWorkOfAll(ResponseTrailers);
+
             ResponseHeaders.Clear();
             ResponseTrailers.Clear();
             Timing.Clear();
@@ -1026,6 +1034,8 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
     {
         if (row is not null)
         {
+            RetainWorkOf(row);
+
             _ = Headers.Remove(row);
         }
     }
@@ -1070,8 +1080,103 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
         return last >= 0 && last < trimmed.Length - 1 ? trimmed[(last + 1)..] : trimmed;
     }
 
+    /// <summary>
+    ///     Releases everything this tab owns when it closes (PRD-005). Idempotent and non-throwing.
+    ///     <para>
+    ///         The subscription that matters is <see cref="IEnvironmentService.ActiveChanged" />: the
+    ///         environment service is a container singleton, so until this ran every closed invocation
+    ///         tab stayed reachable from it — a leak per tab, for the life of the process. The other
+    ///         two subscriptions are self-rooted and die with the view model; they are unhooked for
+    ///         symmetry, not because they leak.
+    ///     </para>
+    ///     <para>
+    ///         Both token sources are cancelled before disposal so their pending waiters unwind
+    ///         first. <c>_elapsedCts</c> is also the one the non-<c>InFlight</c> branch of
+    ///         <c>OnStateChanged(RunState)</c> cancelled and nulled without ever disposing — that
+    ///         instance was unreachable by the time this runs, so this closes the leak going forward
+    ///         rather than retroactively.
+    ///     </para>
+    /// </summary>
+    /// <summary>
+    ///     Cancels everything this tab can cancel: both RPC commands, the elapsed ticker, and the
+    ///     debounced validation — the composer's too, since its validation runs against the same
+    ///     container-owned <see cref="IRequestValidator" /> as this tab's.
+    ///     <para>
+    ///         The elapsed ticker matters here specifically: it loops until cancelled, so tracking it
+    ///         without cancelling it in this phase would make every shutdown with a call in flight wait
+    ///         out the full drain timeout.
+    ///     </para>
+    /// </summary>
+    protected override void CancelOwnedWork()
+    {
+        InvokeCommand.Cancel();
+        StartStreamCommand.Cancel();
+
+        _elapsedCts?.Cancel();
+        _validationCts?.Cancel();
+    }
+
+    /// <summary>
+    ///     Everything this tab owns that runs its own async work. The composer's debounced validation
+    ///     uses the same container-owned <see cref="IRequestValidator" /> this tab does; stream rows
+    ///     have copy commands that await <c>IClipboardService</c>; metadata rows have a reveal command
+    ///     that awaits <c>IRevealGate</c>. All three services are container singletons, so all three
+    ///     kinds of task must be off them before the host is disposed (PRD-005 re-review round 4,
+    ///     finding 2). Runs synchronously inside <c>CancelAndDrainAsync</c>, so the composer is
+    ///     cancelled in the same phase as everything else.
+    /// </summary>
+    void IOwnsBackgroundWork.CollectOwnedWork(List<Task?> tasks)
+    {
+        if (Composer is not null)
+        {
+            tasks.Add(Composer.CancelAndDrainAsync());
+        }
+
+        // Log, not Log.Rows: the log owns its evicted rows' work as well as its live rows'.
+        WorkGraph.Collect(Log, tasks);
+        WorkGraph.CollectAll(ResponseHeaders, tasks);
+        WorkGraph.CollectAll(ResponseTrailers, tasks);
+        WorkGraph.CollectAll(Headers, tasks);
+    }
+
     public void Dispose()
     {
-        throw new NotImplementedException();
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
+        // FIRST, before anything this tab owns is torn down: stop the work that is still running.
+        // Neither token source below owns the token an in-flight RPC is using — those belong to the
+        // toolkit-generated commands (IncludeCancelCommand = true). Closing a tab without cancelling
+        // them removed the tab and left its call running, still writing history and still reaching for
+        // the capture writer this method is about to dispose (PRD-005 review, finding 1).
+        //
+        // Closing a tab does not wait for the call to unwind: the application lives on, so the services
+        // it touches on the way out are all still there. Shutdown is the case that has to wait, and it
+        // does that through CancelAndDrainAsync above before it gets here.
+        InvokeCommand.Cancel();
+        StartStreamCommand.Cancel();
+
+        PropertyChanged -= OnTrackedPropertyChanged;
+        Headers.CollectionChanged -= OnHeadersChanged;
+
+        if (_environment is not null)
+        {
+            _environment.ActiveChanged -= OnActiveEnvironmentChanged;
+        }
+
+        _elapsedCts?.Cancel();
+        _elapsedCts?.Dispose();
+        _elapsedCts = null;
+
+        _validationCts?.Cancel();
+        _validationCts?.Dispose();
+        _validationCts = null;
+
+        // Safe to dispose under an in-flight stream: StreamCaptureWriter drops writes once disposed
+        // rather than throwing into the pump's fire-and-forget task.
+        _capture?.Dispose();
+        _capture = null;
     }
 }

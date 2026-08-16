@@ -12,7 +12,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 ///     pin, clear, NDJSON export, and replay-to-tab. Entries are already redacted on disk; this view only
 ///     reads + manages them. When capture is disabled (FR-129) a banner is shown.
 /// </summary>
-public sealed partial class HistoryDocumentViewModel : DocumentViewModel
+public sealed partial class HistoryDocumentViewModel : DocumentViewModel, IOwnsBackgroundWork
 {
     private const string All = "All";
 
@@ -67,8 +67,11 @@ public sealed partial class HistoryDocumentViewModel : DocumentViewModel
 
         Title = "History";
         ConnectionOptions = [All];
-        _ = LoadAsync();
+        Track(LoadAsync());
     }
+
+    /// <summary>History rows are this tab's children (PRD-005).</summary>
+    void IOwnsBackgroundWork.CollectOwnedWork(List<Task?> tasks) => WorkGraph.CollectAll(Rows, tasks);
 
     public ObservableCollection<HistoryRowViewModel> Rows { get; } = [];
 

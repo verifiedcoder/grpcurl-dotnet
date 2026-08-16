@@ -10,7 +10,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 ///     the buffer overflows, the oldest rows leave the view and a permanent truncation notice appears;
 ///     the true counters (received/sent/total) always reflect everything that arrived — no silent caps.
 /// </summary>
-public sealed partial class StreamLogViewModel : ViewModelBase
+public sealed partial class StreamLogViewModel : ViewModelBase, IOwnsBackgroundWork
 {
     private readonly int _capacity;
     private readonly Func<IMessage, string> _formatter;
@@ -33,6 +33,13 @@ public sealed partial class StreamLogViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(ElapsedText), nameof(RateText))]
     public partial long ElapsedMs { get; set; }
 
+    /// <summary>
+    ///     The work of rows this log has evicted. The ring drops its oldest row at capacity, and a row's
+    ///     copy commands await the singleton clipboard — so the row leaving the collection must not take
+    ///     the only handle on a running command with it (PRD-005 re-review round 5, finding 2).
+    /// </summary>
+    private readonly BackgroundWorkSet _evicted = new();
+
     public StreamLogViewModel(int ringCapacity, Func<IMessage, string> formatter, StreamRowServices? rowServices = null)
     {
         _capacity = Math.Max(1, ringCapacity);
@@ -41,6 +48,14 @@ public sealed partial class StreamLogViewModel : ViewModelBase
     }
 
     public ObservableCollection<StreamRowViewModel> Rows { get; } = [];
+
+    /// <summary>The live rows plus anything the ring has evicted that is still running (PRD-005).</summary>
+    void IOwnsBackgroundWork.CollectOwnedWork(List<Task?> tasks)
+    {
+        WorkGraph.CollectAll(Rows, tasks);
+
+        tasks.Add(_evicted.WhenSettled());
+    }
 
     public bool IsTruncated => TotalRows > Rows.Count;
 
@@ -84,6 +99,9 @@ public sealed partial class StreamLogViewModel : ViewModelBase
 
         if (Rows.Count >= _capacity)
         {
+            // Hand the departing row's outstanding work over before it leaves the collection.
+            WorkGraph.Retain(_evicted, Rows[0]);
+
             Rows.RemoveAt(0); // drop oldest from the view (ring buffer)
         }
 
@@ -92,6 +110,8 @@ public sealed partial class StreamLogViewModel : ViewModelBase
 
     public void Reset()
     {
+        WorkGraph.RetainAll(_evicted, Rows);
+
         Rows.Clear();
         TotalRows = 0;
         TotalReceived = 0;

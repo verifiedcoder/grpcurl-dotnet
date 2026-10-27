@@ -32,6 +32,13 @@ internal sealed class EnvironmentStore(IWorkspaceStore workspace, ISecretStore s
             return;
         }
 
+        // Reject unavailable storage before changing the reference-bearing workspace. Keep secret
+        // deletion after a successful workspace save so a failed save cannot destroy referenced values.
+        foreach (var keyRef in environment.Variables.Select(v => v.Value.SecretRef).Where(r => !string.IsNullOrWhiteSpace(r)))
+        {
+            _ = await secrets.ExistsAsync(keyRef!, cancellationToken).ConfigureAwait(false);
+        }
+
         var next = current.Copy();
         next.Environments = next.Environments.Where(e => e.Id != environmentId).ToList();
 

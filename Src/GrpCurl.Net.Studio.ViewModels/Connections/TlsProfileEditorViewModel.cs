@@ -213,23 +213,30 @@ public sealed partial class TlsProfileEditorViewModel : DialogViewModel<TlsProfi
     [RelayCommand(CanExecute = nameof(CanSave))]
     private async Task Save()
     {
-        var passwordRef = await ResolvePasswordRefAsync();
-
-        var profile = new TlsProfile
+        try
         {
-            Id = _id,
-            Name = Name.Trim(),
-            InsecureSkipVerify = SelectedValidationMode == TlsValidationMode.SkipVerification,
-            CaCertPath = IsCustomCa ? NullIfBlank(CaCertPath) : null,
-            RevocationMode = IsCustomCa ? SelectedRevocationMode : null,
-            ClientCertPath = NullIfBlank(ClientCertPath),
-            // PKCS12 carries its own key; only a PEM pair has a separate key file.
-            ClientKeyPath = IsPkcs12 ? null : NullIfBlank(ClientKeyPath),
-            ClientCertPasswordSecretRef = passwordRef,
-            ExportableClientKey = IsPkcs12 && ExportableClientKey
-        };
+            var passwordRef = await ResolvePasswordRefAsync();
 
-        Close(profile);
+            var profile = new TlsProfile
+            {
+                Id = _id,
+                Name = Name.Trim(),
+                InsecureSkipVerify = SelectedValidationMode == TlsValidationMode.SkipVerification,
+                CaCertPath = IsCustomCa ? NullIfBlank(CaCertPath) : null,
+                RevocationMode = IsCustomCa ? SelectedRevocationMode : null,
+                ClientCertPath = NullIfBlank(ClientCertPath),
+                // PKCS12 carries its own key; only a PEM pair has a separate key file.
+                ClientKeyPath = IsPkcs12 ? null : NullIfBlank(ClientKeyPath),
+                ClientCertPasswordSecretRef = passwordRef,
+                ExportableClientKey = IsPkcs12 && ExportableClientKey
+            };
+
+            Close(profile);
+        }
+        catch (SecretBackendUnavailableException ex)
+        {
+            await _dialogService.ShowMessageAsync("Secret storage unavailable", ex.Message);
+        }
     }
 
     [RelayCommand]

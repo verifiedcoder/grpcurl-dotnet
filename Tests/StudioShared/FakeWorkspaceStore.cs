@@ -123,8 +123,14 @@ public sealed class FakeWorkspaceStore : IWorkspaceStore
         return Task.FromResult(Current);
     }
 
+    public Exception? SaveError { get; set; }
+
     public Task SaveAsync(WorkspaceModel workspace, CancellationToken cancellationToken = default)
     {
+        if (SaveError is not null)
+        {
+            throw SaveError;
+        }
         Current = workspace;
         SaveCount++;
         SetDirty(false);

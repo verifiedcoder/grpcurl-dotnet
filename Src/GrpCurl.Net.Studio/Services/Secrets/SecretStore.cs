@@ -1,203 +1,379 @@
+using GrpCurl.Net.Studio.ViewModels.Models;
 using GrpCurl.Net.Studio.ViewModels.Services;
 using System.ComponentModel;
+using System.Security.Cryptography;
 using System.Text.Json;
 
 namespace GrpCurl.Net.Studio.Services.Secrets;
 
 /// <summary>
-///     Default <see cref="ISecretStore" /> (SEC-020..025): selects a backend once at startup — the per-OS
-///     native keystore (Windows DPAPI, macOS Keychain, Linux Secret Service) if a probe shows it is
-///     available, otherwise the encrypted-file fallback. The selection is logged (backend name only) and
-///     surfaced via <see cref="Info" /> for Settings → Security. If the native backend later fails mid-session
-///     it transparently switches to the fallback (defence in depth); migration of already-stored secrets
-///     between backends is out of scope for v1 (SEC-025) — a missed keyref means the user re-enters the value.
+///     Native storage is preferred. An unavailable native backend never causes an operation to be
+///     retried against file storage. Fallback needs explicit user/admin authorization (PRD-006).
+///     Once selected, a backend remains selected for the session; no implicit migration occurs.
 /// </summary>
-internal sealed class SecretStore : ISecretStore, IDisposable
+internal sealed class SecretStore : ISecretStore, ISecretStoreControl, IDisposable
 {
     private const string ProbeKeyRef = "studio/v1/app/probe";
-    private const string IndexFileName = "secret-keyrefs.json";
-
+    private const string RecoveryHint = "Unlock your keychain or start a Secret Service provider, then retry. See Settings → Security.";
     private readonly ISecretBackend _fallback;
-    private readonly string _indexPath;
-
-    /// <summary>
-    ///     Serialises index reads and writes. Never disposed, for the reason given on
-    ///     <c>EncryptedFileSecretStore._gate</c>: it is only ever awaited, so there is nothing to
-    ///     release, and disposing it is what would make an admitted waiter undefined.
-    /// </summary>
-    private readonly SemaphoreSlim _indexGate = new(1, 1);
-
-    /// <summary>
-    ///     The native backend this store constructed, or <see langword="null" /> on a platform without
-    ///     one. Held as a field rather than read off <see cref="_active" /> at disposal time because
-    ///     <see cref="DemoteToFallback" /> can reassign <c>_active</c> mid-session, and because a
-    ///     backend whose probe failed is never assigned to <c>_active</c> at all — before PRD-005 that
-    ///     one was simply dropped, leaking the Windows backend's semaphore on every failed probe.
-    /// </summary>
     private readonly ISecretBackend? _native;
+    private readonly string _indexPath;
+    private readonly ISettingsStore? _settings;
+    private readonly SecretFallbackPolicy _policy;
+    private readonly SecretFallbackMode _mode;
+    private readonly Action<string>? _log;
+    private readonly Action<string>? _warning;
 
-    private volatile ISecretBackend _active;
-    private volatile bool _activeIsNative;
-
+    // These gates are only awaited (no native wait handle). Do not dispose them under admitted work.
+    private readonly SemaphoreSlim _indexGate = new(1, 1);
+    private readonly SemaphoreSlim _selectionGate = new(1, 1);
+    private volatile ISecretBackend? _active;
+    private volatile SecretStoreState _state = new(new("Unavailable", false, null), string.Empty, false, false,
+        EncryptedFileSecretStore.FallbackLimitation);
     private int _disposed;
-
-    /// <summary>
-    ///     How many public operations have been admitted and not yet finished. Disposal is only allowed
-    ///     to destroy the backends when this reaches zero, so a set that has written to the keychain but
-    ///     not yet updated the index — or any read still in the backend — completes against a live
-    ///     backend rather than a torn-down one (PRD-005 re-review, finding 3).
-    /// </summary>
     private int _operations;
-
     private int _backendsReleased;
 
-    public SecretStore(string directory, Action<string>? log = null)
+    public SecretStore(string directory, Action<string>? log = null, ISettingsStore? settings = null,
+        Action<string>? warning = null)
+        : this(directory, CreateNative(directory), new EncryptedFileSecretStore(directory),
+            SecretFallbackPolicy.Load(SecretFallbackPolicy.DefaultPath), settings, log, warning)
     {
-        _fallback = new EncryptedFileSecretStore(directory);
-        _indexPath = Path.Combine(directory, IndexFileName);
+    }
 
-        _native = OperatingSystem.IsWindows() ? new WindowsDpapiSecretStore(directory)
-            : OperatingSystem.IsMacOS() ? (ISecretBackend?)new MacKeychainSecretStore()
+    // The real constructor delegates to this same selection/ownership path. Tests supply deterministic
+    // backends and a machine policy without changing private fields or touching the user's keychain.
+    internal SecretStore(string directory, ISecretBackend? native, ISecretBackend fallback,
+        SecretFallbackPolicy? policy = null, ISettingsStore? settings = null,
+        Action<string>? log = null, Action<string>? warning = null)
+    {
+        _native = native;
+        _fallback = fallback;
+        _indexPath = Path.Combine(directory, "secret-keyrefs.json");
+        _settings = settings;
+        _policy = policy ?? new(SecretFallbackMode.RequireConsent);
+        _log = log;
+        _warning = warning ?? log;
+        var userMode = settings?.Current.Security?.SecretFallback ?? SecretFallbackMode.RequireConsent;
+        _mode = !Enum.IsDefined(userMode) || !Enum.IsDefined(_policy.Mode)
+            || userMode == SecretFallbackMode.Block || _policy.Mode == SecretFallbackMode.Block
+            ? SecretFallbackMode.Block
+            : userMode == SecretFallbackMode.Allow || _policy.Mode == SecretFallbackMode.Allow
+                ? SecretFallbackMode.Allow
+                : SecretFallbackMode.RequireConsent;
+
+        SelectNativeOrUnavailable();
+        if (_active is null && State.CanEnableFallback && _mode == SecretFallbackMode.Allow)
+        {
+            SelectFallback(_policy.Mode == SecretFallbackMode.Allow ? "administrator policy" : "saved user consent");
+        }
+        _log?.Invoke($"Secret store backend: {Info.BackendName}");
+    }
+
+    private static ISecretBackend? CreateNative(string directory)
+        => OperatingSystem.IsWindows() ? new WindowsDpapiSecretStore(directory)
+            : OperatingSystem.IsMacOS() ? new MacKeychainSecretStore()
             : OperatingSystem.IsLinux() ? new LinuxLibsecretSecretStore()
             : null;
 
-        // SEC-025: probe the native backend once at startup; commit to native or fallback now.
-        if (_native is not null && Probe(_native))
-        {
-            _active = _native;
-            _activeIsNative = true;
-        }
-        else
-        {
-            _active = _fallback;
-            _activeIsNative = false;
-        }
+    public SecretStoreInfo Info => State.Info;
+    public SecretStoreState State => _state;
+    public event EventHandler? StateChanged;
 
-        log?.Invoke($"Secret store backend: {_active.Info.BackendName}");
+    private void Publish(SecretStoreState state)
+    {
+        if (_state == state)
+        {
+            return;
+        }
+        _state = state;
+        StateChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    public SecretStoreInfo Info => _active.Info;
-
-    public async Task SetAsync(string keyRef, string value, CancellationToken cancellationToken = default)
+    private void SelectNativeOrUnavailable()
     {
-        Enter();
-
+        var knownUnavailable = _native is null;
         try
         {
-            await RunAsync(store => store.SetAsync(keyRef, value, cancellationToken)).ConfigureAwait(false);
-            await UpdateIndexAsync(keyRef, present: true, cancellationToken).ConfigureAwait(false);
+            if (_native is not null)
+            {
+                _ = _native.ExistsAsync(ProbeKeyRef).GetAwaiter().GetResult();
+                _active = _native;
+                Publish(new(_native.Info, "Secrets use the native keystore.", false, false,
+                    EncryptedFileSecretStore.FallbackLimitation));
+                return;
+            }
+        }
+        catch (Exception ex) when (IsUnavailable(ex))
+        {
+            knownUnavailable = true;
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or Win32Exception
+            or TypeInitializationException or PlatformNotSupportedException or CryptographicException
+            or IOException or UnauthorizedAccessException)
+        {
+            // A functional/unknown error is not consent to downgrade. Keep Studio usable, but require
+            // native recovery. Never include the exception text, which may carry sensitive native data.
+            knownUnavailable = false;
+        }
+
+        var message = _policy.Problem ?? (_mode == SecretFallbackMode.Block
+            ? "Encrypted-file fallback is blocked by policy or security settings. " + RecoveryHint
+            : knownUnavailable
+                ? "Native secret storage is unavailable. " + RecoveryHint + " File storage requires explicit consent."
+                : "The native secret store failed unexpectedly. Fallback has not been enabled. " + RecoveryHint);
+        Publish(new(new("Unavailable (native keystore offline)", false, message), message,
+            knownUnavailable && _mode != SecretFallbackMode.Block, _native is not null,
+            EncryptedFileSecretStore.FallbackLimitation));
+        _warning?.Invoke(message);
+    }
+
+    private void SelectFallback(string authorization)
+    {
+        _active = _fallback;
+        var message = $"Encrypted-file fallback authorized by {authorization} for this session. Native secrets are not migrated.";
+        Publish(new(_fallback.Info, message, false, false, EncryptedFileSecretStore.FallbackLimitation));
+        _warning?.Invoke(message);
+    }
+
+    public async Task EnableFallbackAsync(CancellationToken cancellationToken = default)
+    {
+        Enter();
+        try
+        {
+            await _selectionGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                if (ReferenceEquals(_active, _fallback))
+                {
+                    return;
+                }
+                if (!State.CanEnableFallback)
+                {
+                    throw new SecretBackendUnavailableException(State.Message);
+                }
+
+                if (_settings is not null)
+                {
+                    // Do not mutate Current before persistence succeeds: a failed save must not grant
+                    // consent in memory or incidentally persist it during a later unrelated edit.
+                    var copy = JsonSerializer.Deserialize(
+                        JsonSerializer.Serialize(_settings.Current, StudioSettingsJsonContext.Default.StudioSettings),
+                        StudioSettingsJsonContext.Default.StudioSettings)!;
+                    copy.Security = new() { SecretFallback = SecretFallbackMode.Allow };
+                    await _settings.SaveAsync(copy, cancellationToken).ConfigureAwait(false);
+                }
+                cancellationToken.ThrowIfCancellationRequested();
+                SelectFallback("explicit user consent");
+            }
+            finally
+            {
+                _ = _selectionGate.Release();
+            }
         }
         finally
         {
             Leave();
         }
+    }
+
+    public async Task RetryNativeAsync(CancellationToken cancellationToken = default)
+    {
+        Enter();
+        try
+        {
+            await _selectionGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                // Never silently switch away from a session's selected backend.
+                if (_active is null)
+                {
+                    await Task.Run(SelectNativeOrUnavailable, cancellationToken).ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                _ = _selectionGate.Release();
+            }
+        }
+        finally
+        {
+            Leave();
+        }
+    }
+
+    public async Task SetAsync(string keyRef, string value, CancellationToken cancellationToken = default)
+    {
+        Enter();
+        try
+        {
+            _ = await RunAsync(async store =>
+            {
+                await GuardFallbackReferenceAsync(store, keyRef, cancellationToken).ConfigureAwait(false);
+                await store.SetAsync(keyRef, value, cancellationToken).ConfigureAwait(false);
+                return true;
+            }).ConfigureAwait(false);
+            await UpdateIndexAsync(keyRef, true, cancellationToken).ConfigureAwait(false);
+        }
+        finally { Leave(); }
     }
 
     public async Task<string?> GetAsync(string keyRef, CancellationToken cancellationToken = default)
     {
         Enter();
-
         try
         {
-            return await RunAsync(store => store.GetAsync(keyRef, cancellationToken)).ConfigureAwait(false);
+            return await RunAsync(async store =>
+            {
+                var value = await store.GetAsync(keyRef, cancellationToken).ConfigureAwait(false);
+                if (value is null)
+                {
+                    await GuardKnownMissingAsync(store, keyRef, cancellationToken).ConfigureAwait(false);
+                }
+                return value;
+            }).ConfigureAwait(false);
         }
-        finally
-        {
-            Leave();
-        }
-    }
-
-    public async Task DeleteAsync(string keyRef, CancellationToken cancellationToken = default)
-    {
-        Enter();
-
-        try
-        {
-            await RunAsync(store => store.DeleteAsync(keyRef, cancellationToken)).ConfigureAwait(false);
-            await UpdateIndexAsync(keyRef, present: false, cancellationToken).ConfigureAwait(false);
-        }
-        finally
-        {
-            Leave();
-        }
+        finally { Leave(); }
     }
 
     public async Task<bool> ExistsAsync(string keyRef, CancellationToken cancellationToken = default)
     {
         Enter();
-
         try
         {
-            return await RunAsync(store => store.ExistsAsync(keyRef, cancellationToken)).ConfigureAwait(false);
+            return await RunAsync(async store =>
+            {
+                var exists = await store.ExistsAsync(keyRef, cancellationToken).ConfigureAwait(false);
+                if (!exists)
+                {
+                    await GuardKnownMissingAsync(store, keyRef, cancellationToken).ConfigureAwait(false);
+                }
+                return exists;
+            }).ConfigureAwait(false);
         }
-        finally
-        {
-            Leave();
-        }
+        finally { Leave(); }
     }
 
-    // SEC-027: enumeration is served from the router's keyref index, kept in sync on every set/delete — the
-    // native keychains cannot be portably listed, so the index is the single source of truth across backends.
+    public async Task DeleteAsync(string keyRef, CancellationToken cancellationToken = default)
+    {
+        Enter();
+        try
+        {
+            _ = await RunAsync(async store =>
+            {
+                await GuardFallbackReferenceAsync(store, keyRef, cancellationToken).ConfigureAwait(false);
+                await store.DeleteAsync(keyRef, cancellationToken).ConfigureAwait(false);
+                return true;
+            }).ConfigureAwait(false);
+            await UpdateIndexAsync(keyRef, false, cancellationToken).ConfigureAwait(false);
+        }
+        finally { Leave(); }
+    }
+
     public async Task<IReadOnlyList<string>> ListAsync(CancellationToken cancellationToken = default)
     {
         Enter();
-
         try
         {
             await _indexGate.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                return ReadIndex();
-            }
-            finally
-            {
-                _ = _indexGate.Release();
-            }
+            try { return ReadIndex(); }
+            finally { _ = _indexGate.Release(); }
         }
-        finally
+        finally { Leave(); }
+    }
+
+    private async Task GuardFallbackReferenceAsync(ISecretBackend store, string keyRef, CancellationToken token)
+    {
+        if (ReferenceEquals(store, _fallback) && !await store.ExistsAsync(keyRef, token).ConfigureAwait(false))
         {
-            Leave();
+            await GuardKnownMissingAsync(store, keyRef, token).ConfigureAwait(false);
         }
     }
 
-    private async Task UpdateIndexAsync(string keyRef, bool present, CancellationToken cancellationToken)
+    private async Task GuardKnownMissingAsync(ISecretBackend store, string keyRef, CancellationToken token)
     {
-        await _indexGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        if (!ReferenceEquals(store, _fallback))
+        {
+            return;
+        }
+        await _indexGate.WaitAsync(token).ConfigureAwait(false);
+        try
+        {
+            if (ReadIndex(requireReadable: true).Contains(keyRef))
+            {
+                throw new SecretBackendUnavailableException(
+                    "This stored reference is not available in the selected file backend. Restore native keystore access and restart Studio. The reference has been retained.");
+            }
+        }
+        finally { _ = _indexGate.Release(); }
+    }
 
+    private async Task<T> RunAsync<T>(Func<ISecretBackend, Task<T>> operation)
+    {
+        // One operation, one backend. State changes cannot redirect an admitted operation.
+        var store = _active ?? throw new SecretBackendUnavailableException(State.Message);
+        try
+        {
+            var result = await operation(store).ConfigureAwait(false);
+            if (ReferenceEquals(store, _native))
+            {
+                Publish(new(store.Info, "Secrets use the native keystore.", false, false, EncryptedFileSecretStore.FallbackLimitation));
+            }
+            return result;
+        }
+        catch (Exception ex) when (ReferenceEquals(store, _native) && IsUnavailable(ex))
+        {
+            var message = "Native secret storage is unavailable; no fallback was used. " + RecoveryHint;
+            Publish(new(store.Info, message, false, false, EncryptedFileSecretStore.FallbackLimitation));
+            _warning?.Invoke(message);
+            throw new SecretBackendUnavailableException(message);
+        }
+    }
+
+    private static bool IsUnavailable(Exception ex)
+        => ex is SecretBackendUnavailableException or DllNotFoundException or EntryPointNotFoundException;
+
+    private async Task UpdateIndexAsync(string keyRef, bool present, CancellationToken token)
+    {
+        await _indexGate.WaitAsync(token).ConfigureAwait(false);
         try
         {
             var keys = ReadIndex();
-            var changed = present ? (!keys.Contains(keyRef) && Add(keys, keyRef)) : keys.Remove(keyRef);
-
-            if (changed)
+            if (present && !keys.Contains(keyRef))
+            {
+                keys.Add(keyRef);
+                WriteIndex(keys);
+            }
+            else if (!present && keys.Remove(keyRef))
             {
                 WriteIndex(keys);
             }
         }
-        finally
-        {
-            _ = _indexGate.Release();
-        }
-
-        static bool Add(List<string> keys, string keyRef)
-        {
-            keys.Add(keyRef);
-            return true;
-        }
+        finally { _ = _indexGate.Release(); }
     }
 
-    private List<string> ReadIndex()
+    private List<string> ReadIndex(bool requireReadable = false)
     {
         try
         {
-            return File.Exists(_indexPath)
-                ? JsonSerializer.Deserialize<List<string>>(File.ReadAllText(_indexPath)) ?? []
-                : [];
+            var keys = JsonSerializer.Deserialize<List<string>>(File.ReadAllText(_indexPath));
+            if (requireReadable && (keys is null || keys.Any(string.IsNullOrWhiteSpace)))
+            {
+                throw new JsonException("Invalid secret-reference index.");
+            }
+            return keys ?? [];
         }
-        catch (Exception ex) when (ex is JsonException or IOException)
+        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
         {
-            return []; // a corrupt index reads as empty; the next set/delete rewrites it
+            return [];
+        }
+        catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
+        {
+            if (requireReadable)
+            {
+                throw new SecretBackendUnavailableException("The secret-reference index cannot be read. File storage cannot determine reference ownership; repair the index before retrying.");
+            }
+            return [];
         }
     }
 
@@ -208,72 +384,6 @@ internal sealed class SecretStore : ISecretStore, IDisposable
         File.WriteAllText(tempPath, JsonSerializer.Serialize(keys));
         File.Move(tempPath, _indexPath, overwrite: true);
     }
-
-    private static bool Probe(ISecretBackend native)
-    {
-        try
-        {
-            // A lookup of an absent sentinel is non-interactive: it returns false on a working backend and
-            // throws only when the backend itself is unavailable (no library, no D-Bus, locked).
-            _ = native.ExistsAsync(ProbeKeyRef).GetAwaiter().GetResult();
-            return true;
-        }
-        catch (Exception ex) when (IsNativeFailure(ex))
-        {
-            return false;
-        }
-    }
-
-    private async Task RunAsync(Func<ISecretBackend, Task> operation)
-    {
-        if (!_activeIsNative)
-        {
-            await operation(_active).ConfigureAwait(false);
-            return;
-        }
-
-        try
-        {
-            await operation(_active).ConfigureAwait(false);
-        }
-        catch (Exception ex) when (IsNativeFailure(ex))
-        {
-            DemoteToFallback();
-            await operation(_fallback).ConfigureAwait(false);
-        }
-    }
-
-    private async Task<T> RunAsync<T>(Func<ISecretBackend, Task<T>> operation)
-    {
-        if (!_activeIsNative)
-        {
-            return await operation(_active).ConfigureAwait(false);
-        }
-
-        try
-        {
-            return await operation(_active).ConfigureAwait(false);
-        }
-        catch (Exception ex) when (IsNativeFailure(ex))
-        {
-            DemoteToFallback();
-            return await operation(_fallback).ConfigureAwait(false);
-        }
-    }
-
-    private void DemoteToFallback()
-    {
-        _active = _fallback;
-        _activeIsNative = false;
-    }
-
-    private static bool IsNativeFailure(Exception ex) => ex
-        is DllNotFoundException
-        or EntryPointNotFoundException
-        or InvalidOperationException
-        or Win32Exception
-        or TypeInitializationException
-        or PlatformNotSupportedException;
 
     /// <summary>
     ///     Admits one public operation, or rejects it because the store is disposed. The count is

@@ -21,10 +21,19 @@ external tools.
 
 ## Secrets aren't being remembered
 
-Studio stores secret values in the OS secret store when one is available. If the platform store can't be
-reached, it falls back to a less-durable backend and surfaces that in **Settings**. Imported workspaces
-keep secret *references* but not the values — Studio prompts you to supply missing secrets on import, or
-you can re-enter them per environment variable.
+Studio prefers the OS keystore. If it is locked or unavailable, secret operations fail with an actionable
+message; Studio does not silently retry against file storage. Unlock the keychain or start a Secret Service
+provider, then retry the operation. For an unavailable startup backend, use **Settings → Security → Retry
+native keystore**.
+
+If no native backend can be used, **Enable encrypted-file fallback…** offers an explicit confirmation of
+its weaker protection. The choice is saved locally and the fallback remains visible in Settings for the
+session. An administrator can forbid fallback. Existing installations that previously used automatic
+fallback must now consent once; existing files are retained. Native references absent from the selected
+file backend remain unavailable rather than being treated as deleted or overwritten. No secrets migrate
+between backends automatically; restore native access and restart Studio to use those references.
+
+See [secret storage policy](secret-storage-policy.md) for managed configuration and recovery details.
 
 ## The INSECURE banner won't go away
 

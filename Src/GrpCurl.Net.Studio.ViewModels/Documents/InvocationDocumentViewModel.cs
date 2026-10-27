@@ -508,6 +508,15 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
             await _dispatcher.InvokeAsync(() => Apply(result));
             await RecordHistoryAsync(r => r.RecordUnaryAsync(request, result, CancellationToken.None));
         }
+        catch (SecretBackendUnavailableException ex)
+        {
+            await _dispatcher.InvokeAsync(() =>
+            {
+                State = RunState.Failed;
+                StatusText = ex.Message;
+                StatusIsError = true;
+            });
+        }
         catch (OperationCanceledException)
         {
             await _dispatcher.InvokeAsync(() =>
@@ -570,6 +579,15 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
                 {
                     State = RunState.Completed;
                 }
+            });
+        }
+        catch (SecretBackendUnavailableException ex)
+        {
+            await _dispatcher.InvokeAsync(() =>
+            {
+                State = RunState.Failed;
+                StatusText = ex.Message;
+                StatusIsError = true;
             });
         }
         catch (OperationCanceledException)

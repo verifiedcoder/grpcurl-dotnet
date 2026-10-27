@@ -32,7 +32,9 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel, IDisp
     private readonly IClipboardService? _clipboard;
     private readonly List<DiagnosticsLogEntry> _allDiagnostics = [];
     private readonly ISecretStore? _secrets;
-    private readonly SecretStoreInfo? _secretInfo;
+    private readonly ISecretStoreControl? _secretControl;
+    private readonly IUiDispatcher? _dispatcher;
+    private SecretStoreInfo? SecretInfo => _secrets?.Info;
     private readonly bool _loaded;
     private bool _applying;
 
@@ -158,7 +160,8 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel, IDisp
         IUpdateService? updates = null,
         ILauncherService? launcher = null,
         IDiagnosticsLog? diagnostics = null,
-        IClipboardService? clipboard = null)
+        IClipboardService? clipboard = null,
+        IUiDispatcher? dispatcher = null)
     {
         _settings = settings;
         _themeService = themeService;
@@ -169,7 +172,12 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel, IDisp
         _diagnostics = diagnostics;
         _clipboard = clipboard;
         _secrets = secrets;
-        _secretInfo = secrets?.Info;
+        _secretControl = secrets as ISecretStoreControl;
+        _dispatcher = dispatcher;
+        if (_secretControl is not null)
+        {
+            _secretControl.StateChanged += OnSecretStateChanged;
+        }
         Title = "Settings";
 
         if (_diagnostics is not null)
@@ -193,22 +201,106 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel, IDisp
         _loaded = true;
     }
 
-    // ── Security (SEC-024): read-only view of the live secret-store backend ──────
+    // ── Security (SEC-024 / PRD-006): live backend and explicit fallback consent ──
 
     /// <summary>Whether the secret-store backend is known (wired in the real app; null in bare constructions).</summary>
-    public bool HasSecretBackend => _secretInfo is not null;
+    public bool HasSecretBackend => SecretInfo is not null;
 
     /// <summary>The live backend name, e.g. "macOS Keychain" or "Encrypted file (fallback)".</summary>
-    public string SecretBackendName => _secretInfo?.BackendName ?? "Unknown";
+    public string SecretBackendName => SecretInfo?.BackendName ?? "Unknown";
 
     /// <summary>True when secrets are held in an OS keychain; false for the encrypted-file fallback.</summary>
-    public bool SecretBackendIsOsKeychain => _secretInfo?.IsOsKeychain ?? false;
+    public bool SecretBackendIsOsKeychain => SecretInfo?.IsOsKeychain ?? false;
 
     /// <summary>True for the degraded encrypted-file fallback, which carries a limitation note.</summary>
-    public bool SecretBackendHasLimitation => _secretInfo?.LimitationNote is not null;
+    public bool SecretBackendHasLimitation => SecretInfo?.LimitationNote is not null;
 
     /// <summary>The verbatim honest-limitation text for the fallback backend (SEC-024), or null.</summary>
-    public string? SecretBackendLimitation => _secretInfo?.LimitationNote;
+    public string? SecretBackendLimitation => SecretInfo?.LimitationNote;
+
+    public string? SecretPolicyMessage => _secretControl?.State.Message == SecretInfo?.LimitationNote
+        ? null : _secretControl?.State.Message;
+    public bool CanEnableSecretFallback => _secretControl?.State.CanEnableFallback ?? false;
+    public bool CanRetryNativeSecrets => _secretControl?.State.CanRetryNative ?? false;
+
+    [ObservableProperty]
+    public partial string? SecurityStatus { get; set; }
+
+    [RelayCommand(CanExecute = nameof(CanEnableSecretFallback))]
+    private async Task EnableSecretFallback(CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (_secretControl is null || !await _dialogs.ConfirmAsync(
+                    "Enable encrypted-file fallback?",
+                    _secretControl.State.FallbackLimitation
+                    + "\n\nThis choice will be saved for future sessions unless administrator policy blocks it. "
+                    + "Existing native secrets are not migrated. Enable file storage?", cancellationToken))
+            {
+                return;
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+            await _secretControl.EnableFallbackAsync(cancellationToken);
+            SecurityStatus = null;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or SecretBackendUnavailableException)
+        {
+            SecurityStatus = ex is SecretBackendUnavailableException ? ex.Message
+                : "Consent could not be saved. File storage has not been enabled. Check settings-file access and retry.";
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Closing the tab cancels pending consent; the backend retains its admission/disposal rules.
+        }
+        RefreshSecretState();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanRetryNativeSecrets))]
+    private async Task RetryNativeSecrets(CancellationToken cancellationToken)
+    {
+        if (_secretControl is null)
+        {
+            return;
+        }
+        try
+        {
+            await _secretControl.RetryNativeAsync(cancellationToken);
+            SecurityStatus = null;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+        RefreshSecretState();
+    }
+
+    private void OnSecretStateChanged(object? sender, EventArgs e)
+    {
+        if (_dispatcher is not null)
+        {
+            _dispatcher.Post(RefreshSecretState);
+        }
+        else
+        {
+            RefreshSecretState();
+        }
+    }
+
+    private void RefreshSecretState()
+    {
+        if (Volatile.Read(ref _disposed) != 0)
+        {
+            return;
+        }
+        OnPropertyChanged(nameof(SecretBackendName));
+        OnPropertyChanged(nameof(SecretBackendIsOsKeychain));
+        OnPropertyChanged(nameof(SecretBackendHasLimitation));
+        OnPropertyChanged(nameof(SecretBackendLimitation));
+        OnPropertyChanged(nameof(SecretPolicyMessage));
+        OnPropertyChanged(nameof(CanEnableSecretFallback));
+        OnPropertyChanged(nameof(CanRetryNativeSecrets));
+        EnableSecretFallbackCommand.NotifyCanExecuteChanged();
+        RetryNativeSecretsCommand.NotifyCanExecuteChanged();
+    }
 
     /// <summary>SEC-027: the keyrefs the secret store holds (names only, never values), for audit + cleanup.</summary>
     public System.Collections.ObjectModel.ObservableCollection<string> SecretKeyRefs { get; } = [];
@@ -253,8 +345,15 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel, IDisp
             return;
         }
 
-        await _secrets.DeleteAsync(keyRef);
-        await RefreshSecretsAsync();
+        try
+        {
+            await _secrets.DeleteAsync(keyRef);
+            await RefreshSecretsAsync();
+        }
+        catch (SecretBackendUnavailableException ex)
+        {
+            SecurityStatus = ex.Message;
+        }
     }
 
     public IReadOnlyList<AppTheme> ThemeOptions { get; } = Enum.GetValues<AppTheme>();
@@ -603,13 +702,15 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel, IDisp
         }
     }
 
+    protected override void CancelOwnedWork()
+    {
+        EnableSecretFallbackCommand.Cancel();
+        RetryNativeSecretsCommand.Cancel();
+    }
+
     /// <summary>
-    ///     Unhooks the theme service when the tab closes (PRD-005). Idempotent and non-throwing.
-    ///     <para>
-    ///         <see cref="IThemeService" /> is a container singleton, so this subscription is the one
-    ///         thing here that outlives the tab: without it every closed Settings tab stayed reachable
-    ///         from the singleton for the life of the process.
-    ///     </para>
+    ///     Cancels pending security commands and unhooks singleton services when the tab closes
+    ///     (PRD-005). Admitted work is drained by the document owner before service disposal.
     /// </summary>
     public void Dispose()
     {
@@ -618,6 +719,11 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel, IDisp
             return;
         }
 
+        CancelOwnedWork();
         _themeService.PropertyChanged -= OnThemeServiceChanged;
+        if (_secretControl is not null)
+        {
+            _secretControl.StateChanged -= OnSecretStateChanged;
+        }
     }
 }

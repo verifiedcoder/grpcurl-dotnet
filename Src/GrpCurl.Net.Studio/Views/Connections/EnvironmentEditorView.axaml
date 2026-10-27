@@ -57,6 +57,7 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
+                <TextBlock Text="{Binding SaveError}" TextWrapping="Wrap" Foreground="{DynamicResource Status.Server}" FontSize="12" />
                 <TextBlock Text="{Binding VariableError}" Foreground="{DynamicResource Status.Server}" FontSize="12" />
                 <TextBlock FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                            TextWrapping="Wrap"

@@ -33,6 +33,13 @@ internal sealed class TlsProfileStore(IWorkspaceStore workspace, ISecretStore se
             return;
         }
 
+        // Check availability before changing connections, but do not destroy the password before
+        // the workspace save has succeeded. These stores do not provide a cross-store transaction.
+        if (!string.IsNullOrWhiteSpace(profile.ClientCertPasswordSecretRef))
+        {
+            _ = await secrets.ExistsAsync(profile.ClientCertPasswordSecretRef, cancellationToken).ConfigureAwait(false);
+        }
+
         // Referencing connections fall back to system-default validation.
         foreach (var connection in current.Connections.Where(c => c.TlsProfileId == profileId))
         {

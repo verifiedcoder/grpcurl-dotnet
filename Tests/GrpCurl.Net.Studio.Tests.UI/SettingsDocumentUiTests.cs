@@ -1,3 +1,6 @@
+using GrpCurl.Net.Studio.Services.Secrets;
+using GrpCurl.Net.Studio.ViewModels.Models;
+using Avalonia.Input;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -13,6 +16,43 @@ namespace GrpCurl.Net.Studio.Tests.UI;
 /// <summary>L3 headless E2E for the Settings tab (FR-150..152): the categories render and edits persist.</summary>
 public sealed class SettingsDocumentUiTests(HeadlessSessionFixture fixture) : HeadlessTestBase(fixture)
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task Security_consent_button_requires_confirmation_and_updates_the_rendered_backend(bool confirm) => RunOnUiThread(() =>
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "grpcn-policy-ui-" + Guid.NewGuid().ToString("N"));
+        var settings = new InMemorySettingsStore();
+        using var secrets = new SecretStore(directory, null, new EncryptedFileSecretStore(directory), settings: settings);
+        var dialogs = new FakeDialogService { ConfirmResult = confirm };
+        using var vm = new SettingsDocumentViewModel(settings, new FakeThemeService(), dialogs, secrets: secrets,
+            dispatcher: new AvaloniaUiDispatcher());
+        var window = new Window { Content = new SettingsDocumentView { DataContext = vm }, Width = 900, Height = 800 };
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            var button = window.GetVisualDescendants().OfType<Button>().Single(b =>
+                Equals(b.GetValue(Avalonia.Automation.AutomationProperties.NameProperty), "Enable encrypted-file fallback"));
+            button.IsVisible.ShouldBeTrue();
+            button.IsEnabled.ShouldBeTrue();
+            button.BringIntoView();
+            _ = button.Focus();
+            button.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Enter });
+            Dispatcher.UIThread.RunJobs();
+            dialogs.ConfirmCount.ShouldBe(1);
+            settings.Current.Security.SecretFallback.ShouldBe(confirm ? SecretFallbackMode.Allow : SecretFallbackMode.RequireConsent);
+            var texts = window.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text).ToList();
+            texts.ShouldContain(confirm ? "Encrypted file (fallback)" : "Unavailable (native keystore offline)");
+            button.IsVisible.ShouldBe(!confirm);
+            Directory.Exists(directory).ShouldBeFalse("consent alone must not create secret files");
+        }
+        finally
+        {
+            window.Close();
+        }
+    });
+
     [Fact]
     public Task Settings_tab_renders_general_and_editor_sections() => RunOnUiThread(() =>
     {

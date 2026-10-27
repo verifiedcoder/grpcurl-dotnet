@@ -116,7 +116,7 @@ public sealed class SecretStoreTests : IDisposable
     [Fact]
     public async Task Facade_round_trips_via_native_or_fallback()
     {
-        var store = new SecretStore(_dir);
+        var store = new SecretStore(_dir, settings: AuthorizedSettings());
         var key = Guid.NewGuid().ToString("N");
 
         try
@@ -151,7 +151,7 @@ public sealed class SecretStoreTests : IDisposable
     public async Task Facade_lists_and_forgets_keyrefs_through_its_index(/* SEC-027 */)
     {
         var ct = TestContext.Current.CancellationToken;
-        var store = new SecretStore(_dir);
+        var store = new SecretStore(_dir, settings: AuthorizedSettings());
         var a = Guid.NewGuid().ToString("N");
         var b = Guid.NewGuid().ToString("N");
 
@@ -164,4 +164,11 @@ public sealed class SecretStoreTests : IDisposable
         await store.DeleteAsync(a, ct);
         (await store.ListAsync(ct)).ShouldBe([b]);
     }
+    private static GrpCurl.Net.Studio.Services.InMemorySettingsStore AuthorizedSettings()
+    {
+        var settings = new GrpCurl.Net.Studio.Services.InMemorySettingsStore();
+        settings.Current.Security.SecretFallback = GrpCurl.Net.Studio.ViewModels.Models.SecretFallbackMode.Allow;
+        return settings;
+    }
+
 }

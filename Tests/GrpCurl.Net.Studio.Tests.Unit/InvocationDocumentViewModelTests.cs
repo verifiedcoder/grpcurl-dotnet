@@ -38,7 +38,7 @@ public sealed class InvocationDocumentViewModelTests
             Conn(), "pkg.Svc/Go", initialJson, runner, descriptors, new ImmediateUiDispatcher(), clipboard, dialogs, launcher, validator);
     }
 
-    private static InvocationDocumentViewModel CreateStreaming(StreamingShape shape, out FakeInvocationRunner runner)
+    private static InvocationDocumentViewModel CreateStreaming(StreamingShape shape, out FakeInvocationRunner runner, IHistoryRecorder? recorder = null)
     {
         var captured = new FakeInvocationRunner();
         runner = captured;
@@ -51,7 +51,7 @@ public sealed class InvocationDocumentViewModelTests
 
         return new InvocationDocumentViewModel(
             Conn(), "pkg.Svc/Go", initialRequestJson: "{}", captured, descriptors, new ImmediateUiDispatcher(),
-            new FakeClipboardService(), new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator());
+            new FakeClipboardService(), new FakeDialogService(), new FakeLauncherService(), new FakeRequestValidator(), recorder: recorder);
     }
 
     private static StreamEventModel Ev(StreamEventKind kind, long index = -1, InvocationStatusModel? status = null)
@@ -797,6 +797,25 @@ public sealed class InvocationDocumentViewModelTests
         await Should.NotThrowAsync(async () => await streaming);
         doc.State.ShouldBe(RunState.Cancelled);
         recorder.StreamCount.ShouldBe(1); // the cancelled stream is still recorded
+    }
+
+    [Fact]
+    public async Task Unavailable_stream_secret_does_not_record_success_and_composer_can_retry()
+    {
+        var recorder = new FakeHistoryRecorder();
+        using var doc = CreateStreaming(StreamingShape.ClientStreaming, out var runner, recorder);
+        runner.OnStream = (_, _, _) => throw new SecretBackendUnavailableException("Secret storage unavailable");
+
+        await doc.StartStreamCommand.ExecuteAsync(null);
+
+        doc.State.ShouldBe(RunState.Failed);
+        doc.StatusText.ShouldBe("Secret storage unavailable");
+        doc.StatusIsError.ShouldBeTrue();
+        recorder.StreamCount.ShouldBe(0);
+        runner.OnStream = null;
+        await doc.StartStreamCommand.ExecuteAsync(null);
+        doc.State.ShouldBe(RunState.Completed);
+        recorder.StreamCount.ShouldBe(1);
     }
 
     private static async IAsyncEnumerable<StreamEventModel> StreamUntilCancelled(

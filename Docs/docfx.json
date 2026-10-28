@@ -38,6 +38,13 @@
       "_appTitle": "GrpCurl.Net",
       "_enableSearch": true,
       "pdf": true
-    }
+    },
+    "resource": [
+      {
+        "files": [
+          "assets/**"
+        ]
+      }
+    ]
   }
 }

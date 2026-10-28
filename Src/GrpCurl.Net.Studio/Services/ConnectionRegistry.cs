@@ -24,18 +24,18 @@ internal sealed class ConnectionRegistry(ITlsProfileResolver? tlsResolver = null
             return TestConnectionResult.Failure(addressError);
         }
 
-        var (profile, password) = tlsResolver is null
-            ? default
-            : await tlsResolver.ResolveAsync(connection, cancellationToken).ConfigureAwait(false);
-        var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password);
-        var metadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
-        var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
-
         using var deadlineCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         deadlineCts.CancelAfter(ProbeDeadline);
 
         try
         {
+            var (profile, password) = tlsResolver is null
+                ? default
+                : await tlsResolver.ResolveAsync(connection, cancellationToken).ConfigureAwait(false);
+            var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password);
+            var metadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
+            var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
+
             await using var session = await DescriptorSourceFactory.CreateAsync(
                 connection.Address,
                 protosetPaths: protosets,

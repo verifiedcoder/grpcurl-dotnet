@@ -7,8 +7,8 @@ namespace GrpCurl.Net.Studio.Services.Secrets;
 /// <summary>
 ///     Linux secret backend over <c>libsecret</c> (the Secret Service / GNOME Keyring). Secrets are
 ///     keyed by a single <c>keyref</c> attribute under a private schema. Any native failure (library
-///     absent, no keyring/D-Bus session — e.g. on a headless box) throws so the facade falls back to
-///     the encrypted-file store.
+///     absent, no keyring/D-Bus session — e.g. on a headless box) fails the operation. Only documented
+///     availability errors carry the typed signal used by the consent policy; unknown failures do not.
 /// </summary>
 [SupportedOSPlatform("linux")]
 internal sealed class LinuxLibsecretSecretStore : ISecretBackend
@@ -95,13 +95,44 @@ internal sealed class LinuxLibsecretSecretStore : ISecretBackend
             return;
         }
 
-        if (error != IntPtr.Zero)
+        try
         {
-            g_error_free(error);
+            if (error != IntPtr.Zero)
+            {
+                var native = Marshal.PtrToStructure<NativeError>(error);
+                if (LibsecretErrorMapping.IsUnavailable(native.Domain, native.Code, secret_error_get_quark(), g_dbus_error_quark(), g_io_error_quark()))
+                {
+                    throw new SecretBackendUnavailableException("Secret Service is locked or unavailable. Unlock the keyring or start a Secret Service provider.");
+                }
+            }
+        }
+        finally
+        {
+            if (error != IntPtr.Zero)
+            {
+                g_error_free(error);
+            }
         }
 
         throw new InvalidOperationException($"libsecret {op} failed.");
     }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeError
+    {
+        public uint Domain;
+        public int Code;
+        public IntPtr Message; // deliberately never decoded: native text can contain sensitive context
+    }
+
+    [DllImport(Lib)]
+    private static extern uint secret_error_get_quark();
+
+    [DllImport("libgio-2.0.so.0")]
+    private static extern uint g_dbus_error_quark();
+
+    [DllImport("libgio-2.0.so.0")]
+    private static extern uint g_io_error_quark();
 
     [StructLayout(LayoutKind.Sequential)]
     private struct SecretSchemaAttribute
@@ -137,4 +168,18 @@ internal sealed class LinuxLibsecretSecretStore : ISecretBackend
 
     [DllImport("libglib-2.0.so.0")]
     private static extern void g_error_free(IntPtr error);
+}
+
+// Pure mapping, testable on every OS. Native error text is deliberately never classified or logged.
+internal static class LibsecretErrorMapping
+{
+    // https://gnome.pages.gitlab.gnome.org/libsecret/enum.Error.html: IS_LOCKED.
+    // https://docs.gtk.org/gio/error.DBusError.html: bus transport, access and SPAWN_* failures.
+    // https://docs.gtk.org/gio/error.IOErrorEnum.html: session-bus address/socket failures. In particular,
+    // GIO reports FAILED for no headless session bus and INVALID_ARGUMENT for an empty bus address.
+    // Protocol/schema errors, cancellation and unknown codes/domains remain operation failures.
+    internal static bool IsUnavailable(uint domain, int code, uint secretDomain, uint dbusDomain, uint ioDomain)
+        => domain == secretDomain && code == 2
+           || domain == dbusDomain && code is 2 or 3 or 4 or 5 or 6 or 7 or 9 or 10 or 11 or 12 or 15 or 20 or >= 23 and <= 34
+           || domain == ioDomain && code is 0 or 1 or 13 or 14 or 15 or 18 or 24 or 39 or 44 or 45;
 }

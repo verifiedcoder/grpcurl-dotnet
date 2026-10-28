@@ -677,30 +677,41 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     // proceeding (autosave can't prompt, so the guard runs only on explicit writes). Returns true to proceed.
     private async Task<bool> PassesSecretGuardAsync()
     {
-        if (_workspaceStore is null)
+        try
         {
-            return true;
+            if (_workspaceStore is null)
+            {
+                return true;
+            }
+
+            var workspace = _workspaceStore.Current;
+            var leaks = WorkspaceSecretScanner.Scan(workspace, await ResolveSecretValuesAsync(workspace));
+
+            if (leaks.Count == 0 || _dialogs is null)
+            {
+                return true;
+            }
+
+            var detail = string.Join("\n", leaks.Take(10).Select(Describe));
+
+            return await _dialogs.ConfirmAsync(
+                "Possible secret in workspace",
+                "This workspace may hold secret values as plain text, which would be written to the file:\n\n"
+                + detail
+                + "\n\nUse a ${VAR} reference or a secret-typed variable instead to keep them out of the file. Save anyway?");
+
+            static string Describe(SecretLeak leak) => leak.Kind == SecretLeakKind.SensitiveHeaderLiteral
+                ? $"• {leak.Location} has a literal value (use a ${{VAR}} reference)"
+                : $"• {leak.Location} matches a stored secret value";
         }
-
-        var workspace = _workspaceStore.Current;
-        var leaks = WorkspaceSecretScanner.Scan(workspace, await ResolveSecretValuesAsync(workspace));
-
-        if (leaks.Count == 0 || _dialogs is null)
+        catch (SecretBackendUnavailableException ex)
         {
-            return true;
+            if (_dialogs is not null)
+            {
+                await _dialogs.ShowMessageAsync("Workspace was not saved", ex.Message);
+            }
+            return false;
         }
-
-        var detail = string.Join("\n", leaks.Take(10).Select(Describe));
-
-        return await _dialogs.ConfirmAsync(
-            "Possible secret in workspace",
-            "This workspace may hold secret values as plain text, which would be written to the file:\n\n"
-            + detail
-            + "\n\nUse a ${VAR} reference or a secret-typed variable instead to keep them out of the file. Save anyway?");
-
-        static string Describe(SecretLeak leak) => leak.Kind == SecretLeakKind.SensitiveHeaderLiteral
-            ? $"• {leak.Location} has a literal value (use a ${{VAR}} reference)"
-            : $"• {leak.Location} matches a stored secret value";
     }
 
     private async Task<IReadOnlyCollection<string>> ResolveSecretValuesAsync(WorkspaceModel workspace)
@@ -735,57 +746,67 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanManageWorkspaces))]
     private async Task ImportWorkspace()
     {
-        if (_workspaceStore is null || _filePicker is null || _dialogs is null)
-        {
-            return;
-        }
-
-        var path = await _filePicker.OpenFileAsync("Import workspace", ["gcnws.json", "json"]);
-
-        if (path is null)
-        {
-            return;
-        }
-
-        WorkspaceModel incoming;
-
         try
         {
-            incoming = await _workspaceStore.ReadAsync(path);
-        }
-        catch (WorkspaceSchemaException ex)
-        {
-            await _dialogs.ShowMessageAsync("Could not import workspace", ex.Message);
-            return;
-        }
-
-        var (merged, summary) = WorkspaceMerger.Merge(_workspaceStore.Current, incoming);
-
-        if (summary.IsEmpty)
-        {
-            await _dialogs.ShowMessageAsync("Nothing to import", summary.Describe());
-            return;
-        }
-
-        if (!await _dialogs.ConfirmAsync(
-                $"Import {summary.TotalAdded} item(s) from '{Path.GetFileName(path)}'?", summary.Describe()))
-        {
-            return;
-        }
-
-        // SEC-041: offer to supply the dangling secrets inline (masked). The imported keyrefs are preserved by
-        // the merge, so storing a value under the same keyref makes the imported item resolve locally.
-        if (summary.MissingSecrets.Count > 0 && _secrets is not null
-            && await _dialogs.ShowDialogAsync(new ImportSecretsDialogViewModel(summary.MissingSecrets)) is { } supplied)
-        {
-            foreach (var (keyRef, value) in supplied)
+            if (_workspaceStore is null || _filePicker is null || _dialogs is null)
             {
-                await _secrets.SetAsync(keyRef, value);
+                return;
+            }
+
+            var path = await _filePicker.OpenFileAsync("Import workspace", ["gcnws.json", "json"]);
+
+            if (path is null)
+            {
+                return;
+            }
+
+            WorkspaceModel incoming;
+
+            try
+            {
+                incoming = await _workspaceStore.ReadAsync(path);
+            }
+            catch (WorkspaceSchemaException ex)
+            {
+                await _dialogs.ShowMessageAsync("Could not import workspace", ex.Message);
+                return;
+            }
+
+            var (merged, summary) = WorkspaceMerger.Merge(_workspaceStore.Current, incoming);
+
+            if (summary.IsEmpty)
+            {
+                await _dialogs.ShowMessageAsync("Nothing to import", summary.Describe());
+                return;
+            }
+
+            if (!await _dialogs.ConfirmAsync(
+                    $"Import {summary.TotalAdded} item(s) from '{Path.GetFileName(path)}'?", summary.Describe()))
+            {
+                return;
+            }
+
+            // SEC-041: offer to supply the dangling secrets inline (masked). The imported keyrefs are preserved by
+            // the merge, so storing a value under the same keyref makes the imported item resolve locally.
+            if (summary.MissingSecrets.Count > 0 && _secrets is not null
+                && await _dialogs.ShowDialogAsync(new ImportSecretsDialogViewModel(summary.MissingSecrets)) is { } supplied)
+            {
+                foreach (var (keyRef, value) in supplied)
+                {
+                    await _secrets.SetAsync(keyRef, value);
+                }
+            }
+
+            await _workspaceStore.SaveAsync(merged);
+            OnWorkspaceSwitched();
+        }
+        catch (SecretBackendUnavailableException ex)
+        {
+            if (_dialogs is not null)
+            {
+                await _dialogs.ShowMessageAsync("Workspace was not imported", ex.Message);
             }
         }
-
-        await _workspaceStore.SaveAsync(merged);
-        OnWorkspaceSwitched();
     }
 
     private async Task OpenPathAsync(string path)

@@ -22,15 +22,15 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null,
 {
     public async Task<DescriptorLoadResult> LoadAsync(SavedConnection connection, CancellationToken cancellationToken = default)
     {
-        var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
-        var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password);
-        var metadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
-        var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
-        var warnings = new CollectingWarningSink();
-        var stopwatch = Stopwatch.StartNew();
-
         try
         {
+            var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
+            var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password);
+            var metadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
+            var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
+            var warnings = new CollectingWarningSink();
+            var stopwatch = Stopwatch.StartNew();
+
             await using var session = await DescriptorSourceFactory.CreateAsync(
                 connection.Address,
                 protosetPaths: protosets,
@@ -84,14 +84,14 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null,
 
     public async Task<DescribeResult> DescribeAsync(SavedConnection connection, string symbol, CancellationToken cancellationToken = default)
     {
-        var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
-        var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password);
-        var metadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
-        var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
-        var warnings = new CollectingWarningSink();
-
         try
         {
+            var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
+            var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password);
+            var metadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
+            var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
+            var warnings = new CollectingWarningSink();
+
             await using var session = await DescriptorSourceFactory.CreateAsync(
                 connection.Address,
                 protosetPaths: protosets,

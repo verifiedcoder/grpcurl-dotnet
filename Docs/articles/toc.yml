@@ -36,6 +36,8 @@
       href: studio/workflows.md
     - name: Troubleshooting
       href: studio/troubleshooting.md
+    - name: Secret storage policy
+      href: studio/secret-storage-policy.md
     - name: Accessibility charter
       href: studio/accessibility-charter.md
 - name: Learn Protobuf

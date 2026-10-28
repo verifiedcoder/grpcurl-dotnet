@@ -5,7 +5,6 @@ using GrpCurl.Net.Studio.ViewModels.Documents;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
 namespace GrpCurl.Net.Studio.Tests.Unit;
 
@@ -302,12 +301,10 @@ public sealed class DisposalContractTests : IDisposable
     [Fact]
     public async Task Every_router_operation_is_rejected_after_disposal()
     {
-        var store = new SecretStore(_dir);
-
         // A backend that is neither disposable nor disposed-aware — the shape of the macOS Keychain and
         // Linux Secret Service paths. Without a check of its own on the facade, reads and existence
         // probes reached straight through it and were served after Dispose() had returned.
-        SubstituteBackend(store, new EchoBackend());
+        var store = new SecretStore(_dir, new EchoBackend(), new EncryptedFileSecretStore(_dir));
 
         store.Dispose();
 
@@ -332,10 +329,8 @@ public sealed class DisposalContractTests : IDisposable
     [Fact]
     public async Task Disposal_waits_for_an_admitted_operation_before_releasing_the_backends()
     {
-        var store = new SecretStore(_dir);
         var backend = new BlockingBackend();
-
-        SubstituteBackend(store, backend);
+        var store = new SecretStore(_dir, backend, new EncryptedFileSecretStore(_dir));
 
         var admitted = store.SetAsync("studio/v1/test/key", "value", Ct);
 
@@ -355,24 +350,6 @@ public sealed class DisposalContractTests : IDisposable
         store.Dispose();
 
         backend.DisposeCount.ShouldBe(1);
-    }
-
-    /// <summary>
-    ///     Points the router at a test backend. Reflection rather than a constructor seam: the seam
-    ///     would be a second, untested way to build the store, and the probe-and-commit logic in the
-    ///     real constructor is exactly what a test of disposal should keep.
-    /// </summary>
-    private static void SubstituteBackend(SecretStore store, ISecretBackend backend)
-    {
-        Set("_active", backend);
-        Set("_fallback", backend);
-        Set("_native", null);
-        Set("_activeIsNative", false);
-
-        void Set(string field, object? value)
-            => typeof(SecretStore)
-                .GetField(field, BindingFlags.Instance | BindingFlags.NonPublic)!
-                .SetValue(store, value);
     }
 
     private sealed class EchoBackend : ISecretBackend

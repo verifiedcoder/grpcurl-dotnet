@@ -42,7 +42,10 @@ internal static class ServiceRegistration
         _ = services.AddSingleton<ISecretStore>(sp => new SecretStore(
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GrpCurlNet.Studio"),
             log: message => sp.GetRequiredService<IDiagnosticsLog>()
-                .Log(ViewModels.Models.Diagnostics.DiagnosticsLevel.Information, "SecretStore", message)));
+                .Log(ViewModels.Models.Diagnostics.DiagnosticsLevel.Information, "SecretStore", message),
+            settings: sp.GetRequiredService<ISettingsStore>(),
+            warning: message => sp.GetRequiredService<IDiagnosticsLog>()
+                .Log(ViewModels.Models.Diagnostics.DiagnosticsLevel.Warning, "SecretStore", message)));
 
         _ = services.AddSingleton<IWorkspaceStore, JsonWorkspaceStore>();
 

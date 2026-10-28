@@ -5,7 +5,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Services;
 ///     opaque namespaced keyref (<c>studio/v1/{scope}/...</c>, SPEC-040 §4 / SEC-020). The workspace, history,
 ///     and settings files only ever carry the keyref as <c>{"$secret":"&lt;keyRef&gt;"}</c>, never the value.
 ///     Backed by the OS keychain where available (Windows DPAPI, macOS Keychain, Linux Secret Service) with an
-///     encrypted-file fallback (SEC-021..025); the live backend is reported via <see cref="Info" />.
+///     explicitly authorized encrypted-file fallback (SEC-021..025, PRD-006); the live backend is reported via <see cref="Info" />.
 /// </summary>
 public interface ISecretStore : ISecretBackend
 {
@@ -40,7 +40,7 @@ public interface ISecretBackend
 /// <summary>
 ///     Describes the active <see cref="ISecretStore" /> backend (SPEC-050 §3.1) for display in
 ///     Settings → Security. <see cref="IsOsKeychain" /> is <see langword="false" /> only for the
-///     encrypted-file fallback, which additionally carries the verbatim honest-limitation
+///     encrypted-file fallback or unavailable storage. Both carry an explanatory
 ///     <see cref="LimitationNote" /> (SEC-024).
 /// </summary>
 public sealed record SecretStoreInfo(string BackendName, bool IsOsKeychain, string? LimitationNote);

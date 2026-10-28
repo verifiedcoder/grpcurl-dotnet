@@ -85,52 +85,68 @@ public sealed partial class EnvironmentManagerViewModel : DialogViewModel<bool>
     [RelayCommand]
     private async Task DuplicateEnvironment(EnvironmentRow? row)
     {
-        if (row is null)
+        try
         {
-            return;
-        }
-
-        var source = row.Environment;
-        var copy = new WorkspaceEnvironment { Id = Guid.NewGuid().ToString("N"), Name = $"{source.Name} (copy)" };
-
-        foreach (var variable in source.Variables)
-        {
-            StringOrSecret value;
-
-            if (variable.Value.SecretRef is { } sourceRef)
+            if (row is null)
             {
-                // Give the copy its own secret entry so deleting either environment leaves the other intact.
-                var newRef = Guid.NewGuid().ToString("N");
-                var secret = await _secrets.GetAsync(sourceRef);
-                await _secrets.SetAsync(newRef, secret ?? string.Empty);
-                value = StringOrSecret.Secret(newRef);
-            }
-            else
-            {
-                value = variable.Value; // plain values are immutable, safe to share
+                return;
             }
 
-            copy.Variables.Add(new EnvironmentVariable { Name = variable.Name, Value = value });
-        }
+            var source = row.Environment;
+            var copy = new WorkspaceEnvironment { Id = Guid.NewGuid().ToString("N"), Name = $"{source.Name} (copy)" };
 
-        await _store.SaveAsync(copy);
-        MarkChangedAndReload();
+            foreach (var variable in source.Variables)
+            {
+                StringOrSecret value;
+
+                if (variable.Value.SecretRef is { } sourceRef)
+                {
+                    // Give the copy its own secret entry so deleting either environment leaves the other intact.
+                    var newRef = Guid.NewGuid().ToString("N");
+                    var secret = await _secrets.GetAsync(sourceRef);
+                    await _secrets.SetAsync(newRef, secret ?? string.Empty);
+                    value = StringOrSecret.Secret(newRef);
+                }
+                else
+                {
+                    value = variable.Value; // plain values are immutable, safe to share
+                }
+
+                copy.Variables.Add(new EnvironmentVariable { Name = variable.Name, Value = value });
+            }
+
+            await _store.SaveAsync(copy);
+            MarkChangedAndReload();
+        }
+        catch (SecretBackendUnavailableException ex)
+        {
+            await _dialogs.ShowMessageAsync("Secret storage unavailable", ex.Message);
+            Reload();
+        }
     }
 
     [RelayCommand]
     private async Task DeleteEnvironment(EnvironmentRow? row)
     {
-        if (row is null)
+        try
         {
-            return;
-        }
+            if (row is null)
+            {
+                return;
+            }
 
-        if (await _dialogs.ConfirmAsync(
-                "Delete environment",
-                $"Delete environment '{row.Environment.Name}'? This cannot be undone."))
+            if (await _dialogs.ConfirmAsync(
+                    "Delete environment",
+                    $"Delete environment '{row.Environment.Name}'? This cannot be undone."))
+            {
+                await _store.DeleteAsync(row.Environment.Id);
+                MarkChangedAndReload();
+            }
+        }
+        catch (SecretBackendUnavailableException ex)
         {
-            await _store.DeleteAsync(row.Environment.Id);
-            MarkChangedAndReload();
+            await _dialogs.ShowMessageAsync("Secret storage unavailable", ex.Message);
+            Reload();
         }
     }
 

@@ -367,6 +367,10 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDispo
 
             await _dispatcher.InvokeAsync(() => ApplyResolution(result)).ConfigureAwait(false);
         }
+        catch (SecretBackendUnavailableException ex)
+        {
+            await ReportSecretStorageErrorAsync(ex);
+        }
         catch (OperationCanceledException)
         {
             // Superseded by a newer edit; drop silently.
@@ -672,6 +676,16 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDispo
     public Task<GraphQlCompletions> GetCompletionsAsync(CancellationToken cancellationToken)
         => _graphql.GetCompletionsAsync(BuildRequest(), cancellationToken);
 
+    private Task ReportSecretStorageErrorAsync(SecretBackendUnavailableException ex)
+        => _dispatcher.InvokeAsync(() =>
+        {
+            Problems.Add(new GraphQlProblem(ex.Message, GraphQlProblemKind.Configuration));
+            OnPropertyChanged(nameof(HasProblems));
+            State = RunState.Failed;
+            StatusText = "Secret storage unavailable";
+            StatusIsError = true;
+        });
+
     /// <summary>
     ///     Session-restore seam (FR-146): parse the current document synchronously and re-select the named
     ///     operation if it still exists, so a restored tab shows its picker + gating immediately rather than
@@ -726,6 +740,10 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDispo
         {
             result = await _graphql.ExecuteAsync(request, new FieldProgressSink(this), cancellationToken);
             await _dispatcher.InvokeAsync(() => Apply(result));
+        }
+        catch (SecretBackendUnavailableException ex)
+        {
+            await ReportSecretStorageErrorAsync(ex);
         }
         catch (OperationCanceledException)
         {
@@ -798,6 +816,10 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDispo
                 StatusText = $"Completed — {StreamLog.TotalReceived} messages";
             });
         }
+        catch (SecretBackendUnavailableException ex)
+        {
+            await ReportSecretStorageErrorAsync(ex);
+        }
         catch (OperationCanceledException)
         {
             await _dispatcher.InvokeAsync(() =>
@@ -851,6 +873,11 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDispo
         try
         {
             translation = await _graphql.TranslateAsync(BuildRequest(), cancellationToken);
+        }
+        catch (SecretBackendUnavailableException ex)
+        {
+            await ReportSecretStorageErrorAsync(ex);
+            return true;
         }
         catch (OperationCanceledException)
         {
@@ -1103,47 +1130,61 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDispo
     [RelayCommand(IncludeCancelCommand = true)]
     private async Task ValidateMappingSchema(CancellationToken cancellationToken)
     {
-        var problems = await _graphql.ValidateMappingSchemaAsync(BuildRequest(), cancellationToken);
-
-        await _dispatcher.InvokeAsync(() =>
+        try
         {
-            MappingSchemaProblems.Clear();
+            var problems = await _graphql.ValidateMappingSchemaAsync(BuildRequest(), cancellationToken);
 
-            foreach (var problem in problems)
+            await _dispatcher.InvokeAsync(() =>
             {
-                MappingSchemaProblems.Add(problem);
-            }
+                MappingSchemaProblems.Clear();
 
-            OnPropertyChanged(nameof(HasMappingSchemaProblems));
-        });
+                foreach (var problem in problems)
+                {
+                    MappingSchemaProblems.Add(problem);
+                }
+
+                OnPropertyChanged(nameof(HasMappingSchemaProblems));
+            });
+        }
+        catch (SecretBackendUnavailableException ex)
+        {
+            await ReportSecretStorageErrorAsync(ex);
+        }
     }
 
     /// <summary>GQL-050: load the pre-flight translation inspector (request JSON per field, no RPC).</summary>
     [RelayCommand(IncludeCancelCommand = true)]
     private async Task LoadTranslation(CancellationToken cancellationToken)
     {
-        var result = await _graphql.TranslateAsync(BuildRequest(), cancellationToken);
-
-        await _dispatcher.InvokeAsync(() =>
+        try
         {
-            TranslationFields.Clear();
+            var result = await _graphql.TranslateAsync(BuildRequest(), cancellationToken);
 
-            // GQL-047 (AC-2): an argument the translator would silently drop is flagged before execution.
-            foreach (var field in result.Fields)
+            await _dispatcher.InvokeAsync(() =>
             {
-                TranslationFields.Add(field);
+                TranslationFields.Clear();
 
-                foreach (var dropped in field.DroppedArguments)
+                // GQL-047 (AC-2): an argument the translator would silently drop is flagged before execution.
+                foreach (var field in result.Fields)
                 {
-                    Problems.Add(new GraphQlProblem(
-                        $"argument `{dropped.Name}` on `{field.FieldName}` matches no request field and would be silently dropped.",
-                        GraphQlProblemKind.Configuration, dropped.Line, dropped.Column));
-                }
-            }
+                    TranslationFields.Add(field);
 
-            OnPropertyChanged(nameof(HasTranslation));
-            OnPropertyChanged(nameof(HasProblems));
-        });
+                    foreach (var dropped in field.DroppedArguments)
+                    {
+                        Problems.Add(new GraphQlProblem(
+                            $"argument `{dropped.Name}` on `{field.FieldName}` matches no request field and would be silently dropped.",
+                            GraphQlProblemKind.Configuration, dropped.Line, dropped.Column));
+                    }
+                }
+
+                OnPropertyChanged(nameof(HasTranslation));
+                OnPropertyChanged(nameof(HasProblems));
+            });
+        }
+        catch (SecretBackendUnavailableException ex)
+        {
+            await ReportSecretStorageErrorAsync(ex);
+        }
     }
 
     /// <summary>GQL-052: copy a field's pre-flight request JSON.</summary>
@@ -1170,38 +1211,45 @@ public sealed partial class GraphQlDocumentViewModel : DocumentViewModel, IDispo
     [RelayCommand(IncludeCancelCommand = true)]
     private async Task LoadSchema(CancellationToken cancellationToken)
     {
-        var request = BuildRequest();
-        var result = await _graphql.IntrospectAsync(request, cancellationToken);
-
-        await _dispatcher.InvokeAsync(() =>
+        try
         {
-            SchemaTypes.Clear();
+            var request = BuildRequest();
+            var result = await _graphql.IntrospectAsync(request, cancellationToken);
 
-            if (!result.Ok)
+            await _dispatcher.InvokeAsync(() =>
             {
-                if (result.Error is { } error)
+                SchemaTypes.Clear();
+
+                if (!result.Ok)
                 {
-                    Problems.Add(error);
-                    OnPropertyChanged(nameof(HasProblems));
+                    if (result.Error is { } error)
+                    {
+                        Problems.Add(error);
+                        OnPropertyChanged(nameof(HasProblems));
+                    }
+
+                    SchemaJson = null;
+                    SchemaName = null;
+                    SchemaSdl = null;
+                    OnPropertyChanged(nameof(HasSchema));
+                    return;
                 }
 
-                SchemaJson = null;
-                SchemaName = null;
-                SchemaSdl = null;
+                foreach (var type in result.Types)
+                {
+                    SchemaTypes.Add(type);
+                }
+
+                SchemaName = result.SchemaName;
+                SchemaJson = result.Json;
+                SchemaSdl = result.Sdl;
                 OnPropertyChanged(nameof(HasSchema));
-                return;
-            }
-
-            foreach (var type in result.Types)
-            {
-                SchemaTypes.Add(type);
-            }
-
-            SchemaName = result.SchemaName;
-            SchemaJson = result.Json;
-            SchemaSdl = result.Sdl;
-            OnPropertyChanged(nameof(HasSchema));
-        });
+            });
+        }
+        catch (SecretBackendUnavailableException ex)
+        {
+            await ReportSecretStorageErrorAsync(ex);
+        }
     }
 
     public bool CanCopySchemaJson => !string.IsNullOrEmpty(SchemaJson);

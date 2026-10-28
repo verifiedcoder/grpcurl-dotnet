@@ -48,6 +48,13 @@ jobs:
           version: "28.3"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
+      # Exercise the real GIO error path, rather than skipping on a missing shared library.
+      - name: Install Linux secret-store test dependency
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsecret-1-0
+
       - name: Verify SDK
         run: dotnet --info
 
@@ -127,6 +134,13 @@ jobs:
         with:
           version: "28.3"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Exercise the real GIO error path, rather than skipping on a missing shared library.
+      - name: Install Linux secret-store test dependency
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsecret-1-0
 
       - name: Restore (locked mode)
         run: dotnet restore --locked-mode GrpCurl.Net.slnx

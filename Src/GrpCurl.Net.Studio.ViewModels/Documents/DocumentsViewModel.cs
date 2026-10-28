@@ -562,7 +562,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
             }
 
             var document = new SettingsDocumentViewModel(
-                _settings, _theme, _dialogs, _protoc, _secrets, _updates, _launcher, _diagnostics, _clipboard);
+                _settings, _theme, _dialogs, _protoc, _secrets, _updates, _launcher, _diagnostics, _clipboard, _dispatcher);
             AdmitAndAdd(document);
         }
         finally

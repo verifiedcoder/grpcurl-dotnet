@@ -72,6 +72,9 @@ public sealed partial class EnvironmentEditorViewModel : DialogViewModel<Workspa
         }
     }
 
+    [ObservableProperty]
+    public partial string? SaveError { get; set; }
+
     private bool CanSave => NameError is null && VariableError is null;
 
     [RelayCommand]
@@ -89,41 +92,49 @@ public sealed partial class EnvironmentEditorViewModel : DialogViewModel<Workspa
     [RelayCommand(CanExecute = nameof(CanSave))]
     private async Task Save()
     {
-        var result = new WorkspaceEnvironment { Id = _id, Name = Name.Trim() };
-        var usedRefs = new HashSet<string>(StringComparer.Ordinal);
-
-        foreach (var row in Variables)
+        SaveError = null;
+        try
         {
-            var name = row.Name.Trim();
+            var result = new WorkspaceEnvironment { Id = _id, Name = Name.Trim() };
+            var usedRefs = new HashSet<string>(StringComparer.Ordinal);
 
-            if (name.Length == 0)
+            foreach (var row in Variables)
             {
-                continue; // skip incomplete rows rather than persist a nameless variable
+                var name = row.Name.Trim();
+
+                if (name.Length == 0)
+                {
+                    continue; // skip incomplete rows rather than persist a nameless variable
+                }
+
+                StringOrSecret value;
+
+                if (row.IsSecret)
+                {
+                    var keyRef = await ResolveSecretRefAsync(row);
+                    value = StringOrSecret.Secret(keyRef);
+                    _ = usedRefs.Add(keyRef);
+                }
+                else
+                {
+                    value = StringOrSecret.Plain(row.Value);
+                }
+
+                result.Variables.Add(new EnvironmentVariable { Name = name, Value = value });
             }
 
-            StringOrSecret value;
-
-            if (row.IsSecret)
+            // Purge secrets this edit orphaned (rows removed, or flipped secret → plain).
+            foreach (var orphan in _originalSecretRefs.Where(r => !usedRefs.Contains(r)))
             {
-                var keyRef = await ResolveSecretRefAsync(row).ConfigureAwait(false);
-                value = StringOrSecret.Secret(keyRef);
-                _ = usedRefs.Add(keyRef);
-            }
-            else
-            {
-                value = StringOrSecret.Plain(row.Value);
+                await _secrets.DeleteAsync(orphan);
             }
 
-            result.Variables.Add(new EnvironmentVariable { Name = name, Value = value });
+            Close(result);
         }
-
-        // Purge secrets this edit orphaned (rows removed, or flipped secret → plain).
-        foreach (var orphan in _originalSecretRefs.Where(r => !usedRefs.Contains(r)))
+        catch (SecretBackendUnavailableException ex)
         {
-            await _secrets.DeleteAsync(orphan).ConfigureAwait(false);
+            SaveError = ex.Message;
         }
-
-        Close(result);
     }
 
     [RelayCommand]

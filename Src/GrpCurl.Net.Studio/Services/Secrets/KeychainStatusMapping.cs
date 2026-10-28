@@ -17,8 +17,7 @@ internal static class KeychainStatusMapping
     internal const int ErrSecAuthFailed = -25293;
     internal const int ErrSecInteractionNotAllowed = -25308; // keychain locked / UI not allowed
 
-    // Locked/denied → a typed KeychainUnavailableException (still an InvalidOperationException, so the
-    // facade fallback is unchanged); every other non-success status → a plain InvalidOperationException.
+    // Locked/denied → typed unavailability; every other non-success status → a plain InvalidOperationException.
     // The split lets callers distinguish "keychain unavailable" from "operation genuinely failed" without
     // masking real interop regressions as mere unavailability.
     internal static InvalidOperationException ToException(int status, string operation) => status switch

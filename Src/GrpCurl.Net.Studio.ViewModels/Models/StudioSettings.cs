@@ -29,6 +29,8 @@ public sealed class StudioSettings
 
     public UpdatesSettings Updates { get; set; } = new();
 
+    public SecuritySettings Security { get; set; } = new();
+
     /// <summary>Unknown/forward-compatible keys, preserved on save (SPEC-040 §6).</summary>
     [JsonExtensionData]
     public Dictionary<string, JsonElement>? Overflow { get; set; }
@@ -162,4 +164,17 @@ public enum UpdateChannel
 {
     Stable,
     Preview
+}
+
+/// <summary>PRD-006: fallback requires informed consent unless explicitly authorized by an administrator.</summary>
+public sealed class SecuritySettings
+{
+    public SecretFallbackMode SecretFallback { get; set; } = SecretFallbackMode.RequireConsent;
+}
+
+public enum SecretFallbackMode
+{
+    RequireConsent,
+    Allow,
+    Block
 }

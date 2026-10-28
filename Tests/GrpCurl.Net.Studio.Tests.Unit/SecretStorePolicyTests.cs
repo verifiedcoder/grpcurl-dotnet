@@ -293,12 +293,80 @@ public sealed class SecretStorePolicyTests : IDisposable
     [InlineData(1u, 3, false)]
     [InlineData(2u, 2, true)]
     [InlineData(2u, 3, true)]
+    [InlineData(2u, 4, true)]
+    [InlineData(2u, 5, true)]
+    [InlineData(2u, 6, true)]
+    [InlineData(2u, 7, true)]
+    [InlineData(2u, 9, true)]
+    [InlineData(2u, 10, true)]
     [InlineData(2u, 11, true)]
+    [InlineData(2u, 12, true)]
     [InlineData(2u, 15, true)]
+    [InlineData(2u, 20, true)]
+    [InlineData(2u, 23, true)]
+    [InlineData(2u, 24, true)]
+    [InlineData(2u, 25, true)]
+    [InlineData(2u, 26, true)]
+    [InlineData(2u, 27, true)]
+    [InlineData(2u, 28, true)]
+    [InlineData(2u, 29, true)]
+    [InlineData(2u, 30, true)]
+    [InlineData(2u, 31, true)]
+    [InlineData(2u, 32, true)]
+    [InlineData(2u, 33, true)]
+    [InlineData(2u, 34, true)]
+    [InlineData(2u, 0, false)]
     [InlineData(2u, 16, false)]
+    [InlineData(2u, 19, false)]
+    [InlineData(2u, 21, false)]
+    [InlineData(2u, 22, false)]
+    [InlineData(2u, 35, false)]
+    [InlineData(2u, 36, false)]
+    [InlineData(2u, 41, false)]
+    [InlineData(2u, 99, false)]
+    [InlineData(3u, 0, true)]
+    [InlineData(3u, 1, true)]
+    [InlineData(3u, 13, true)]
+    [InlineData(3u, 14, true)]
+    [InlineData(3u, 15, true)]
+    [InlineData(3u, 18, true)]
+    [InlineData(3u, 24, true)]
+    [InlineData(3u, 39, true)]
+    [InlineData(3u, 44, true)]
+    [InlineData(3u, 45, true)]
     [InlineData(3u, 2, false)]
+    [InlineData(3u, 19, false)]
+    [InlineData(3u, 20, false)]
+    [InlineData(3u, 34, false)]
+    [InlineData(3u, 35, false)]
+    [InlineData(3u, 36, false)]
+    [InlineData(3u, 46, false)]
+    [InlineData(3u, 99, false)]
+    [InlineData(0u, 2, false)]
+    [InlineData(4u, 0, false)]
+    [InlineData(4u, 2, false)]
+    [InlineData(4u, 25, false)]
     public void Linux_error_mapping_is_domain_and_code_specific(uint domain, int code, bool expected)
-        => LibsecretErrorMapping.IsUnavailable(domain, code, 1, 2).ShouldBe(expected);
+        => LibsecretErrorMapping.IsUnavailable(domain, code, 1, 2, 3).ShouldBe(expected);
+
+    [Fact]
+    public async Task Test_connection_reports_unavailable_pkcs12_secret_as_a_failure()
+    {
+        var profile = new TlsProfile { Name = "pfx", ClientCertPath = "client.pfx", ClientCertPasswordSecretRef = "password" };
+        var workspace = new FakeWorkspaceStore(new WorkspaceModel { TlsProfiles = [profile] });
+        using var secrets = new SecretStore(_directory, null, new Backend(), new(SecretFallbackMode.Block));
+        var registry = new ConnectionRegistry(new TlsProfileResolver(workspace, secrets));
+        var result = await registry.TestConnectionAsync(new SavedConnection
+        {
+            Name = "secure",
+            Address = "localhost:1",
+            Transport = TransportMode.Tls,
+            TlsProfileId = profile.Id
+        }, Ct);
+        result.Ok.ShouldBeFalse();
+        result.Message.ShouldContain("blocked");
+        result.ServiceCount.ShouldBeNull();
+    }
 
     [Fact]
     public async Task Settings_disposal_removes_its_backend_state_subscription()

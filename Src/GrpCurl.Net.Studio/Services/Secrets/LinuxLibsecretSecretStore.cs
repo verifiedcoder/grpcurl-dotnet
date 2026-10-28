@@ -100,7 +100,7 @@ internal sealed class LinuxLibsecretSecretStore : ISecretBackend
             if (error != IntPtr.Zero)
             {
                 var native = Marshal.PtrToStructure<NativeError>(error);
-                if (LibsecretErrorMapping.IsUnavailable(native.Domain, native.Code, secret_error_get_quark(), g_dbus_error_quark()))
+                if (LibsecretErrorMapping.IsUnavailable(native.Domain, native.Code, secret_error_get_quark(), g_dbus_error_quark(), g_io_error_quark()))
                 {
                     throw new SecretBackendUnavailableException("Secret Service is locked or unavailable. Unlock the keyring or start a Secret Service provider.");
                 }
@@ -130,6 +130,9 @@ internal sealed class LinuxLibsecretSecretStore : ISecretBackend
 
     [DllImport("libgio-2.0.so.0")]
     private static extern uint g_dbus_error_quark();
+
+    [DllImport("libgio-2.0.so.0")]
+    private static extern uint g_io_error_quark();
 
     [StructLayout(LayoutKind.Sequential)]
     private struct SecretSchemaAttribute
@@ -170,9 +173,13 @@ internal sealed class LinuxLibsecretSecretStore : ISecretBackend
 // Pure mapping, testable on every OS. Native error text is deliberately never classified or logged.
 internal static class LibsecretErrorMapping
 {
-    // https://gnome.pages.gitlab.gnome.org/libsecret/enum.Error.html: SECRET_ERROR_IS_LOCKED.
-    // https://docs.gtk.org/gio/error.DBusError.html: SERVICE_UNKNOWN, NAME_HAS_NO_OWNER,
-    // NO_SERVER and DISCONNECTED. Unknown/protocol/argument errors remain operation failures.
-    internal static bool IsUnavailable(uint domain, int code, uint secretDomain, uint dbusDomain)
-        => domain == secretDomain && code == 2 || domain == dbusDomain && code is 2 or 3 or 11 or 15;
+    // https://gnome.pages.gitlab.gnome.org/libsecret/enum.Error.html: IS_LOCKED.
+    // https://docs.gtk.org/gio/error.DBusError.html: bus transport, access and SPAWN_* failures.
+    // https://docs.gtk.org/gio/error.IOErrorEnum.html: session-bus address/socket failures. In particular,
+    // GIO reports FAILED for no headless session bus and INVALID_ARGUMENT for an empty bus address.
+    // Protocol/schema errors, cancellation and unknown codes/domains remain operation failures.
+    internal static bool IsUnavailable(uint domain, int code, uint secretDomain, uint dbusDomain, uint ioDomain)
+        => domain == secretDomain && code == 2
+           || domain == dbusDomain && code is 2 or 3 or 4 or 5 or 6 or 7 or 9 or 10 or 11 or 12 or 15 or 20 or >= 23 and <= 34
+           || domain == ioDomain && code is 0 or 1 or 13 or 14 or 15 or 18 or 24 or 39 or 44 or 45;
 }

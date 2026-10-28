@@ -60,5 +60,8 @@ operation/probe errors are not classified as availability and never authorize a 
 Diagnostics record backend selection, unavailability and the authorization source without secret values
 or raw native error text. OS-specific availability classification follows the documented
 [Keychain status handling](https://developer.apple.com/documentation/security/keychain_services),
-[Secret Service errors](https://gnome.pages.gitlab.gnome.org/libsecret/enum.Error.html), and
-[Gio D-Bus errors](https://docs.gtk.org/gio/error.DBusError.html).
+[Secret Service errors](https://gnome.pages.gitlab.gnome.org/libsecret/enum.Error.html),
+[Gio D-Bus errors](https://docs.gtk.org/gio/error.DBusError.html), and
+[Gio I/O errors](https://docs.gtk.org/gio/error.IOErrorEnum.html). Missing/unreachable Linux session buses
+and failed Secret Service activation are availability failures; consent and administrator policy still
+control whether fallback may be enabled.

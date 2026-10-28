@@ -589,6 +589,9 @@ public sealed partial class InvocationDocumentViewModel : DocumentViewModel, IDi
                 StatusText = ex.Message;
                 StatusIsError = true;
             });
+            // No RPC ran: match unary pre-flight failures instead of inventing an OK history entry.
+            // The finally below still ends the composer so the user can retry after recovery.
+            return;
         }
         catch (OperationCanceledException)
         {

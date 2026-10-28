@@ -82,6 +82,15 @@ jobs:
           --report-xunit-trx
           --results-directory=${{ github.workspace }}/TestResults
 
+      # PRD-013: run the creation-time mode checks in a separate permissive-umask process.
+      - name: Secret file permissions with permissive umask (POSIX)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          umask 000
+          dotnet test --project Tests/GrpCurl.Net.Studio.Tests.Unit/GrpCurl.Net.Studio.Tests.Unit.csproj \
+            --configuration Release --no-build --no-restore -- --filter-class '*SecureSecretFileTests'
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4

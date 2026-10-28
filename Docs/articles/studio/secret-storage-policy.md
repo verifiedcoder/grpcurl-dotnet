@@ -65,3 +65,28 @@ or raw native error text. OS-specific availability classification follows the do
 [Gio I/O errors](https://docs.gtk.org/gio/error.IOErrorEnum.html). Missing/unreachable Linux session buses
 and failed Secret Service activation are availability failures; consent and administrator policy still
 control whether fallback may be enabled.
+
+## Private, atomic files
+
+Studio keeps its existing application-data directory and file formats. Before accessing file-backed
+secrets it protects that shared directory with Unix mode `0700`, or a protected Windows ACL granting
+only the current user and SYSTEM. Secret files use `0600` or explicit ACLs for those same Windows
+identities, including at creation. Existing secret files are tightened and verified; unrelated files
+are not recursively rewritten. Linked directories and secret-file symlinks/reparse points are rejected.
+
+Fallback ciphertext (`secrets.json`), DPAPI ciphertext (`secrets.dpapi.json`), and the reference index
+(`secret-keyrefs.json`) are saved through exclusive, randomly named temporary files in that directory.
+Studio flushes file contents and closes the file before atomic replacement. A failure before replacement
+retains the old file; after replacement the complete new file is authoritative. Abandoned temporary
+files are ignored. This does not promise directory-entry durability across power loss on every filesystem.
+
+The fallback salt (`secrets.salt`) and generated `machine.id` are published without overwriting existing
+inputs. Concurrent initialization loads the winning value. System machine-ID sources remain read-only.
+Missing or invalid inputs alongside ciphertext cause a recovery error; Studio does not generate a new
+key that would orphan the existing secrets. Back up and restore the fallback files together on the same
+machine and user account.
+
+Permission, link, and persistence errors are reported without raw filesystem error text or secret
+values. They never authorize fallback. Secret data and its reference index are independent commits;
+if the secret changed but the index update failed, the error says so. There is no cross-process
+transaction coordination. See [troubleshooting](troubleshooting.md#secret-storage-could-not-protect-or-access-its-files).

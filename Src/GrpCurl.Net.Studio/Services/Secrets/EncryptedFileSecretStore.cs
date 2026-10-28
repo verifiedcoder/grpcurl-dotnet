@@ -26,7 +26,8 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
 
     private static readonly byte[] HkdfInfo = "GrpCurl.Net Studio secret store v1"u8.ToArray();
 
-    private readonly string _directory;
+    private readonly SecureSecretFile _files;
+    private readonly Func<string?> _systemMachineId;
     private readonly string _dataPath;
     private readonly string _saltPath;
     private readonly string _machineIdPath;
@@ -57,9 +58,10 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
     /// </summary>
     internal SemaphoreSlim GateForTests => _gate;
 
-    public EncryptedFileSecretStore(string directory)
+    public EncryptedFileSecretStore(string directory, SecureSecretFile? files = null, Func<string?>? systemMachineId = null)
     {
-        _directory = directory;
+        _files = files ?? new();
+        _systemMachineId = systemMachineId ?? ReadSystemMachineId;
         _dataPath = Path.Combine(directory, "secrets.json");
         _saltPath = Path.Combine(directory, "secrets.salt");
         _machineIdPath = Path.Combine(directory, "machine.id");
@@ -151,16 +153,21 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
     }
 
     private Dictionary<string, string> Load()
-        => File.Exists(_dataPath)
-            ? JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(_dataPath)) ?? []
-            : [];
+    {
+        var json = _files.Read(_dataPath);
+        if (json is null)
+        {
+            return [];
+        }
+        // Check inputs even when a key is cached or the operation only queries/deletes a reference.
+        // Never create new inputs alongside existing ciphertext.
+        _ = LoadOrCreateSalt();
+        _ = MachineId();
+        return JsonSerializer.Deserialize<Dictionary<string, string>>(json) ?? [];
+    }
 
     private void Save(Dictionary<string, string> store)
-    {
-        _ = Directory.CreateDirectory(_directory);
-        File.WriteAllText(_dataPath, JsonSerializer.Serialize(store));
-        Harden(_dataPath);
-    }
+        => _files.Write(_dataPath, JsonSerializer.Serialize(store));
 
     // ── SEC-023: HKDF-SHA256(ikm = machineId ∥ uid, salt = per-install random, info = label) ──
 
@@ -186,20 +193,28 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
 
     private byte[] LoadOrCreateSalt()
     {
-        if (File.Exists(_saltPath))
+        var text = _files.Read(_saltPath);
+        if (text is null)
         {
-            return Convert.FromBase64String(File.ReadAllText(_saltPath));
+            if (_files.Exists(_dataPath))
+            {
+                throw SecureSecretFile.InvalidInput();
+            }
+            text = _files.PublishNew(_saltPath, Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)));
         }
-
-        _ = Directory.CreateDirectory(_directory);
-        var salt = RandomNumberGenerator.GetBytes(32);
-        File.WriteAllText(_saltPath, Convert.ToBase64String(salt));
-        Harden(_saltPath);
-        return salt;
+        try
+        {
+            var salt = Convert.FromBase64String(text);
+            return salt.Length == 32 ? salt : throw SecureSecretFile.InvalidInput();
+        }
+        catch (FormatException)
+        {
+            throw SecureSecretFile.InvalidInput();
+        }
     }
 
-    /// <summary>The host machine id: <c>/etc/machine-id</c> (or the dbus copy) on Linux, else a persisted random id.</summary>
-    private byte[] MachineId()
+    /// <summary>Keep system sources read-only and preserve the original machine-id precedence.</summary>
+    private static string? ReadSystemMachineId()
     {
         foreach (var path in (ReadOnlySpan<string>)["/etc/machine-id", "/var/lib/dbus/machine-id"])
         {
@@ -208,21 +223,41 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
                 var id = File.ReadAllText(path).Trim();
                 if (id.Length > 0)
                 {
-                    return Encoding.UTF8.GetBytes(id);
+                    return id;
                 }
             }
         }
+        return null;
+    }
 
-        if (File.Exists(_machineIdPath))
+    private byte[] MachineId()
+    {
+        // Check a local artifact even on systems currently using a system id; never follow a link.
+        var persisted = _files.Read(_machineIdPath);
+        string? systemId;
+        try { systemId = _systemMachineId(); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            return Encoding.UTF8.GetBytes(File.ReadAllText(_machineIdPath).Trim());
+            throw SecureSecretFile.InvalidInput();
         }
-
-        _ = Directory.CreateDirectory(_directory);
-        var generated = Guid.NewGuid().ToString("N");
-        File.WriteAllText(_machineIdPath, generated);
-        Harden(_machineIdPath);
-        return Encoding.UTF8.GetBytes(generated);
+        if (systemId is not null)
+        {
+            return Encoding.UTF8.GetBytes(systemId);
+        }
+        if (persisted is null)
+        {
+            if (_files.Exists(_dataPath))
+            {
+                throw SecureSecretFile.InvalidInput();
+            }
+            persisted = _files.PublishNew(_machineIdPath, Guid.NewGuid().ToString("N"));
+        }
+        var id = persisted.Trim();
+        if (!Guid.TryParseExact(id, "N", out _))
+        {
+            throw SecureSecretFile.InvalidInput();
+        }
+        return Encoding.UTF8.GetBytes(id);
     }
 
     /// <summary>The user scope: the POSIX uid where available, else the user name.</summary>
@@ -244,26 +279,6 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
         }
 
         return Encoding.UTF8.GetBytes(Environment.UserName);
-    }
-
-    private static void Harden(string path)
-    {
-        if (OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
-        try
-        {
-            File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite);
-        }
-        catch (IOException)
-        {
-            // Best-effort hardening.
-        }
-        catch (UnauthorizedAccessException)
-        {
-        }
     }
 
     private static string Encrypt(string value, byte[] key)

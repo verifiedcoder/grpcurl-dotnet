@@ -21,11 +21,16 @@ internal sealed class WindowsDpapiSecretStore : ISecretBackend, IDisposable
     private static readonly TimeSpan DisposeDrainTimeout = TimeSpan.FromSeconds(2);
 
     private readonly string _dataPath;
+    private readonly SecureSecretFile _files;
     private readonly SemaphoreSlim _gate = new(1, 1);
 
     private int _disposed;
 
-    public WindowsDpapiSecretStore(string directory) => _dataPath = Path.Combine(directory, "secrets.dpapi.json");
+    public WindowsDpapiSecretStore(string directory, SecureSecretFile? files = null)
+    {
+        _dataPath = Path.Combine(directory, "secrets.dpapi.json");
+        _files = files ?? new();
+    }
 
     public SecretStoreInfo Info { get; } = new("Windows DPAPI", IsOsKeychain: true, LimitationNote: null);
 
@@ -103,15 +108,12 @@ internal sealed class WindowsDpapiSecretStore : ISecretBackend, IDisposable
     }
 
     private Dictionary<string, string> Load()
-        => File.Exists(_dataPath)
-            ? JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(_dataPath)) ?? []
+        => _files.Read(_dataPath) is { } json
+            ? JsonSerializer.Deserialize<Dictionary<string, string>>(json) ?? []
             : [];
 
     private void Save(Dictionary<string, string> store)
-    {
-        _ = Directory.CreateDirectory(Path.GetDirectoryName(_dataPath)!);
-        File.WriteAllText(_dataPath, JsonSerializer.Serialize(store));
-    }
+        => _files.Write(_dataPath, JsonSerializer.Serialize(store));
 
     private void ThrowIfDisposed()
         => ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);

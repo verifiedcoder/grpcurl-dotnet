@@ -35,6 +35,35 @@ between backends automatically; restore native access and restart Studio to use 
 
 See [secret storage policy](secret-storage-policy.md) for managed configuration and recovery details.
 
+## "Secret storage could not protect or access its files"
+
+Check ownership, permissions, available disk space, and filesystem support for private files in the
+Studio application-data directory (`GrpCurlNet.Studio` under the current user's application-data folder).
+Studio requires a private directory (`0700`) and secret files (`0600`) on Unix; on Windows it requires a
+protected ACL with only the current user and SYSTEM. Filesystems or redirected profiles that cannot
+establish and retain these protections cause a visible storage error. Repair access, then retry the
+operation, or **Retry native keystore** if the startup DPAPI probe failed. Storage failures do not enable
+fallback, even with saved consent. Other files in the shared directory are not recursively hardened.
+
+Replace any symlink/reparse-point directory or secret file with a regular directory/file in the existing
+location before retrying. Studio refuses links before changing their permissions or reading their contents.
+
+If key inputs are missing or invalid, close Studio and restore `secrets.salt`, the generated `machine.id`
+(where used), and `secrets.json` from the same backup on the original machine and user account. Do not
+remove the salt or generated ID to try to repair an existing ciphertext file. Linux system machine IDs
+are read-only inputs and are not altered by Studio.
+
+A failed save before atomic replacement retains the prior complete file. After replacement, the new
+complete file is authoritative. Abandoned `.secret-*.tmp` files are ignored; they are not a recovery
+source. File contents are flushed, but directory-entry durability during power loss depends on the
+filesystem. Backups remain necessary.
+
+If an error says **the secret change completed, but its reference index could not be updated**, the
+secret change already committed. Repair the index's access and retry. For deletion from fallback, an
+old index entry can still report a missing stored reference; restore a consistent backup or repair that
+reference index while Studio is closed. These files are not a single transaction. Do not assume a failed
+multi-file operation rolled back the secret change.
+
 ## The INSECURE banner won't go away
 
 A tab is using a TLS profile with certificate verification disabled. That's intended for testing only and

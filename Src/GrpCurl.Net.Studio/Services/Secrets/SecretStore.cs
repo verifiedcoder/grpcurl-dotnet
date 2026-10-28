@@ -18,6 +18,7 @@ internal sealed class SecretStore : ISecretStore, ISecretStoreControl, IDisposab
     private readonly ISecretBackend _fallback;
     private readonly ISecretBackend? _native;
     private readonly string _indexPath;
+    private readonly SecureSecretFile _files;
     private readonly ISettingsStore? _settings;
     private readonly SecretFallbackPolicy _policy;
     private readonly SecretFallbackMode _mode;
@@ -45,8 +46,9 @@ internal sealed class SecretStore : ISecretStore, ISecretStoreControl, IDisposab
     // backends and a machine policy without changing private fields or touching the user's keychain.
     internal SecretStore(string directory, ISecretBackend? native, ISecretBackend fallback,
         SecretFallbackPolicy? policy = null, ISettingsStore? settings = null,
-        Action<string>? log = null, Action<string>? warning = null)
+        Action<string>? log = null, Action<string>? warning = null, SecureSecretFile? files = null)
     {
+        _files = files ?? new();
         _native = native;
         _fallback = fallback;
         _indexPath = Path.Combine(directory, "secret-keyrefs.json");
@@ -93,6 +95,7 @@ internal sealed class SecretStore : ISecretStore, ISecretStoreControl, IDisposab
     private void SelectNativeOrUnavailable()
     {
         var knownUnavailable = _native is null;
+        string? storageProblem = null;
         try
         {
             if (_native is not null)
@@ -103,6 +106,11 @@ internal sealed class SecretStore : ISecretStore, ISecretStoreControl, IDisposab
                     EncryptedFileSecretStore.FallbackLimitation));
                 return;
             }
+        }
+        catch (SecretStorageException ex)
+        {
+            knownUnavailable = false;
+            storageProblem = ex.Message;
         }
         catch (Exception ex) when (IsUnavailable(ex))
         {
@@ -117,7 +125,7 @@ internal sealed class SecretStore : ISecretStore, ISecretStoreControl, IDisposab
             knownUnavailable = false;
         }
 
-        var message = _policy.Problem ?? (_mode == SecretFallbackMode.Block
+        var message = storageProblem ?? _policy.Problem ?? (_mode == SecretFallbackMode.Block
             ? "Encrypted-file fallback is blocked by policy or security settings. " + RecoveryHint
             : knownUnavailable
                 ? "Native secret storage is unavailable. " + RecoveryHint + " File storage requires explicit consent."
@@ -331,7 +339,8 @@ internal sealed class SecretStore : ISecretStore, ISecretStoreControl, IDisposab
     }
 
     private static bool IsUnavailable(Exception ex)
-        => ex is SecretBackendUnavailableException or DllNotFoundException or EntryPointNotFoundException;
+        => ex is not SecretStorageException
+            && ex is SecretBackendUnavailableException or DllNotFoundException or EntryPointNotFoundException;
 
     private async Task UpdateIndexAsync(string keyRef, bool present, CancellationToken token)
     {
@@ -349,6 +358,10 @@ internal sealed class SecretStore : ISecretStore, ISecretStoreControl, IDisposab
                 WriteIndex(keys);
             }
         }
+        catch (SecretStorageException ex)
+        {
+            throw new SecretStorageException("The secret change completed, but its reference index could not be updated. Repair index access and reconcile stored references before retrying. " + ex.Message);
+        }
         finally { _ = _indexGate.Release(); }
     }
 
@@ -356,7 +369,12 @@ internal sealed class SecretStore : ISecretStore, ISecretStoreControl, IDisposab
     {
         try
         {
-            var keys = JsonSerializer.Deserialize<List<string>>(File.ReadAllText(_indexPath));
+            var json = _files.Read(_indexPath);
+            if (json is null)
+            {
+                return [];
+            }
+            var keys = JsonSerializer.Deserialize<List<string>>(json);
             if (requireReadable && (keys is null || keys.Any(string.IsNullOrWhiteSpace)))
             {
                 throw new JsonException("Invalid secret-reference index.");
@@ -378,12 +396,7 @@ internal sealed class SecretStore : ISecretStore, ISecretStoreControl, IDisposab
     }
 
     private void WriteIndex(List<string> keys)
-    {
-        _ = Directory.CreateDirectory(Path.GetDirectoryName(_indexPath)!);
-        var tempPath = _indexPath + ".tmp";
-        File.WriteAllText(tempPath, JsonSerializer.Serialize(keys));
-        File.Move(tempPath, _indexPath, overwrite: true);
-    }
+        => _files.Write(_indexPath, JsonSerializer.Serialize(keys));
 
     /// <summary>
     ///     Admits one public operation, or rejects it because the store is disposed. The count is

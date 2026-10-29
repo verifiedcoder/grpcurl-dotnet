@@ -83,6 +83,8 @@ files are ignored. This does not promise directory-entry durability across power
 
 The fallback salt (`secrets.salt`) and generated `machine.id` are published without overwriting existing
 inputs. Concurrent initialization loads the winning value. System machine-ID sources remain read-only.
+On Unix, publishing a new input uses an atomic hard link from the complete private temporary file;
+filesystems without hard-link support fail visibly instead of copying a partial input into place.
 Missing or invalid inputs alongside ciphertext cause a recovery error; Studio does not generate a new
 key that would orphan the existing secrets. Back up and restore the fallback files together on the same
 machine and user account.

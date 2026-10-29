@@ -85,15 +85,34 @@ internal sealed class SecureSecretFile(Action<SecretFileStage, string>? checkpoi
             // protected directory; same-identity hostile races are outside this boundary.
             _ = EnsureDirectory(directory, create: false);
             _ = ProtectFile(path);
-            try
+            if (!overwrite && !OperatingSystem.IsWindows())
             {
-                File.Move(temporary, path, overwrite);
+                // File.Move(overwrite: false) on .NET Unix can check for absence then rename over
+                // a concurrent winner. link() atomically publishes the complete private inode only
+                // if the destination is absent. Keep ownership of the temporary alias for finally.
+                if (Link(temporary, path) != 0)
+                {
+                    var error = Marshal.GetLastPInvokeError();
+                    if (error == 17 && ProtectFile(path)) // POSIX EEXIST on Linux and macOS
+                    {
+                        return false;
+                    }
+                    // Fail closed if the filesystem cannot publish atomically; never copy into place.
+                    throw new Win32Exception(error);
+                }
             }
-            catch (IOException) when (!overwrite && ProtectFile(path))
+            else
             {
-                return false;
+                try
+                {
+                    File.Move(temporary, path, overwrite);
+                }
+                catch (IOException) when (!overwrite && ProtectFile(path))
+                {
+                    return false;
+                }
+                owned = false;
             }
-            owned = false;
             checkpoint?.Invoke(SecretFileStage.Replaced, path);
             return true;
         }
@@ -108,6 +127,11 @@ internal sealed class SecureSecretFile(Action<SecretFileStage, string>? checkpoi
             }
         }
     }
+
+    [DllImport("libc", EntryPoint = "link", SetLastError = true, BestFitMapping = false, ThrowOnUnmappableChar = true)]
+    private static extern int Link(
+        [MarshalAs(UnmanagedType.LPUTF8Str)] string existing,
+        [MarshalAs(UnmanagedType.LPUTF8Str)] string destination);
 
     private bool EnsureDirectory(string path, bool create)
     {

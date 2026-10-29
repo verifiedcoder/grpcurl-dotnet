@@ -31,6 +31,23 @@ secret change. Persistence failures retain PRD-013's commit-point semantics. Lis
 readable backend secrets remain accessible; fallback missing-reference decisions require a valid index.
 Storage errors never authorize fallback (PRD-006).
 
+### PRD-013 publication correction found during CI
+
+The required macOS regression run exposed competing publishers loading different key inputs. The
+[.NET 10 Unix `File.Move` implementation](https://github.com/dotnet/runtime/blob/v10.0.0/src/libraries/System.Private.CoreLib/src/System/IO/FileSystem.Unix.cs#L193-L214)
+can check destination absence and then rename over a concurrent winner, even with `overwrite: false`.
+To preserve PRD-013's intended winner-only publication guarantee, new key inputs on Unix are published
+with [`link()`](https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/link.2.html)
+from the already flushed, closed, private temporary file. Creation of the destination entry is atomic
+and fails if it exists; the temporary alias is then removed by the existing owned-file cleanup. Readers
+load the winner. Filesystems lacking this capability fail through the sanitized storage-error path;
+there is no copy-in-place fallback. Existing-file replacement and Windows publication are unchanged.
+
+The concurrency regression now uses 32 fresh Unicode destinations. Additional tests cover failures
+before/after publication, private permissions, temporary-alias cleanup, and retaining the committed
+winner on a subsequent attempt. This corrects single-file input publication; it adds no transaction
+across the secret data, index, or workspace.
+
 ## Verification
 
 `SecretPlaintextBufferTests` observes nonzero encryption inputs/decrypted outputs and retains the real
@@ -49,7 +66,7 @@ Validation results and delivery evidence are recorded with the PR. The required 
 restore, Release build, filtered solution tests, ViewModels line coverage at least 80%, documentation,
 and the complete Linux/Windows/macOS CI matrix.
 
-Local Linux validation: locked restore and Release build passed with zero warnings/errors; the filtered
+Initial Linux validation (`66a38a6`): locked restore and Release build passed with zero warnings/errors; the filtered
 solution with coverage passed 2,270 tests with 12 platform skips and zero failures. ViewModels coverage
 was 4,904/5,382 = 91.1%. DocFX passed with warnings treated as errors. Against `e925e8e`, the unchanged
 index suite had 26 expected failures and six passes. Removing only transient-buffer cleanup in an

@@ -44,6 +44,8 @@ protected ACL with only the current user and SYSTEM. Filesystems or redirected p
 establish and retain these protections cause a visible storage error. Repair access, then retry the
 operation, or **Retry native keystore** if the startup DPAPI probe failed. Storage failures do not enable
 fallback, even with saved consent. Other files in the shared directory are not recursively hardened.
+On Unix, initializing fallback key inputs also requires a filesystem that supports atomic hard-link
+publication; unsupported filesystems produce the same storage error.
 
 Replace any symlink/reparse-point directory or secret file with a regular directory/file in the existing
 location before retrying. Studio refuses links before changing their permissions or reading their contents.

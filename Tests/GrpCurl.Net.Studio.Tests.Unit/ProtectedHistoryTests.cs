@@ -334,9 +334,19 @@ public sealed class ProtectedHistoryTests : IDisposable
         {
             using var secrets = new SecretStore(shared, null, new EncryptedFileSecretStore(shared),
                 new(GrpCurl.Net.Studio.ViewModels.Models.SecretFallbackMode.Allow));
-            using var store = new JsonHistoryStore(Path.Combine(shared, "history.ndjson"), secrets);
-            File.WriteAllText(Path.Combine(shared, Environment.ProcessId + ".ready"), "ready");
-            await store.AppendAsync(Entry(), Ct);
+            using var childTimeout = CancellationTokenSource.CreateLinkedTokenSource(Ct);
+            childTimeout.CancelAfter(TimeSpan.FromSeconds(30));
+            var ready = Path.Combine(shared, Environment.ProcessId + ".ready");
+            var waiting = Path.Combine(shared, Environment.ProcessId + ".waiting");
+            var files = new SecureSecretFile((stage, path) =>
+            {
+                if (stage == SecretFileStage.BeforeFileProtection && path.EndsWith(".lock", StringComparison.Ordinal))
+                { File.WriteAllText(waiting, "waiting"); }
+            });
+            using var store = new JsonHistoryStore(Path.Combine(shared, "history.ndjson"), secrets, files: files);
+            File.WriteAllText(ready, "ready");
+            while (!File.Exists(Path.Combine(shared, "begin"))) { await Task.Delay(20, childTimeout.Token).ConfigureAwait(false); }
+            await store.AppendAsync(Entry(), childTimeout.Token).ConfigureAwait(false);
             return;
         }
         using var held = new SecureSecretFile().TryOpenExclusive(Path_ + ".lock").ShouldNotBeNull();
@@ -361,11 +371,15 @@ public sealed class ProtectedHistoryTests : IDisposable
             }
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(Ct);
             timeout.CancelAfter(TimeSpan.FromSeconds(30));
-            while (Directory.GetFiles(_directory, "*.ready").Length != 2) { await Task.Delay(20, timeout.Token); }
+            // Process startup is outside the production lock deadline. Observe both attempts before
+            // releasing the held lock, without queueing coordination behind xUnit's test scheduler.
+            while (Directory.GetFiles(_directory, "*.ready").Length != 2) { await Task.Delay(20, timeout.Token).ConfigureAwait(false); }
+            File.WriteAllText(Path.Combine(_directory, "begin"), "begin");
+            while (Directory.GetFiles(_directory, "*.waiting").Length != 2) { await Task.Delay(20, timeout.Token).ConfigureAwait(false); }
             File.Exists(Path_).ShouldBeFalse("both processes must wait behind the held lock");
             held.Dispose();
-            foreach (var child in children) { await child.WaitForExitAsync(timeout.Token); }
-            var diagnostics = string.Join("\n", await Task.WhenAll(output));
+            foreach (var child in children) { await child.WaitForExitAsync(timeout.Token).ConfigureAwait(false); }
+            var diagnostics = string.Join("\n", await Task.WhenAll(output).ConfigureAwait(false));
             children.ShouldAllBe(p => p.ExitCode == 0, diagnostics);
             using var secrets = new SecretStore(_directory, null, new EncryptedFileSecretStore(_directory),
                 new(GrpCurl.Net.Studio.ViewModels.Models.SecretFallbackMode.Allow));

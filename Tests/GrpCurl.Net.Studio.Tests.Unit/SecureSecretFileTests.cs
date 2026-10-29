@@ -164,12 +164,39 @@ public sealed class SecureSecretFileTests : IDisposable
             }
         });
         var ct = TestContext.Current.CancellationToken;
-        var results = await Task.WhenAll(
-            Task.Run(() => files.PublishNew(Target, "first"), ct),
-            Task.Run(() => files.PublishNew(Target, "second"), ct));
-        results[0].ShouldBe(results[1]);
-        File.ReadAllText(Target).ShouldBe(results[0]);
+        // Repeated fresh destinations exercise the absence-check/rename race in .NET's Unix Move.
+        // Include Unicode to cover the native publication path's UTF-8 marshaling.
+        for (var i = 0; i < 32; i++)
+        {
+            var target = Target + "-密碼-" + i;
+            var results = await Task.WhenAll(
+                Task.Run(() => files.PublishNew(target, "first"), ct),
+                Task.Run(() => files.PublishNew(target, "second"), ct));
+            results[0].ShouldBe(results[1]);
+            File.ReadAllText(target).ShouldBe(results[0]);
+            AssertPrivate(target, false);
+        }
         Directory.GetFiles(Path.GetDirectoryName(Target)!, "*.tmp").ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData("BeforeReplace")]
+    [InlineData("Replaced")]
+    public void New_input_publication_preserves_its_commit_point_and_cleans_only_the_temporary_alias(string failure)
+    {
+        var files = new SecureSecretFile((stage, _) =>
+        {
+            if (stage.ToString() == failure) { throw new IOException("raw-canary"); }
+        });
+        var error = Should.Throw<SecretStorageException>(() => files.PublishNew(Target, "complete input"));
+        error.ToString().ShouldNotContain("raw-canary");
+        new SecureSecretFile().Read(Target).ShouldBe(failure == "Replaced" ? "complete input" : null);
+        Directory.GetFiles(Path.GetDirectoryName(Target)!, "*.tmp").ShouldBeEmpty();
+        if (failure == "Replaced")
+        {
+            new SecureSecretFile().PublishNew(Target, "must not replace").ShouldBe("complete input");
+            AssertPrivate(Target, false);
+        }
     }
 
     [Theory]

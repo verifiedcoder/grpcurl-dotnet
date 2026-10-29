@@ -44,6 +44,8 @@ protected ACL with only the current user and SYSTEM. Filesystems or redirected p
 establish and retain these protections cause a visible storage error. Repair access, then retry the
 operation, or **Retry native keystore** if the startup DPAPI probe failed. Storage failures do not enable
 fallback, even with saved consent. Other files in the shared directory are not recursively hardened.
+On Unix, initializing fallback key inputs also requires a filesystem that supports atomic hard-link
+publication; unsupported filesystems produce the same storage error.
 
 Replace any symlink/reparse-point directory or secret file with a regular directory/file in the existing
 location before retrying. Studio refuses links before changing their permissions or reading their contents.
@@ -59,10 +61,25 @@ source. File contents are flushed, but directory-entry durability during power l
 filesystem. Backups remain necessary.
 
 If an error says **the secret change completed, but its reference index could not be updated**, the
-secret change already committed. Repair the index's access and retry. For deletion from fallback, an
-old index entry can still report a missing stored reference; restore a consistent backup or repair that
-reference index while Studio is closed. These files are not a single transaction. Do not assume a failed
-multi-file operation rolled back the secret change.
+secret change already committed. Close Studio, repair access if necessary, and restore a consistent
+backup before retrying. For deletion from fallback, an old index entry can still report a missing
+stored reference. These files are not a single transaction. Do not assume a failed multi-file operation
+rolled back the secret change.
+
+## "The secret-reference index is invalid or unreadable"
+
+Close Studio and restore a valid `secret-keyrefs.json` from backup in its existing application-data
+directory, then retry. Studio requires an array of unique, nonblank string references. It preserves
+valid reference text exactly and refuses malformed JSON, nulls, other types, and duplicate entries.
+It does not repair, reconstruct, or rewrite an invalid index. Do not delete it or replace it with an
+empty array to bypass the error: a missing index is indistinguishable from first use and can lose the
+record of references belonging to another backend.
+
+While the index is corrupt, listing and all secret writes/deletes fail. Secrets the selected backend
+can still read remain accessible. Missing-reference checks in fallback also fail because Studio cannot
+determine reference ownership. This error never enables fallback. If the error reports that the secret
+change completed, restore a backup consistent with the backend's state; the backend change was not
+rolled back. For native keystores, use the corresponding platform backup/recovery facilities.
 
 ## The INSECURE banner won't go away
 

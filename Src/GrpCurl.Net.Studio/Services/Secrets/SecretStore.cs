@@ -215,8 +215,10 @@ internal sealed class SecretStore : ISecretStore, ISecretStoreControl, IDisposab
         Enter();
         try
         {
+            ValidateMutationReference(keyRef);
             _ = await RunAsync(async store =>
             {
+                await ValidateIndexAsync(cancellationToken).ConfigureAwait(false);
                 await GuardFallbackReferenceAsync(store, keyRef, cancellationToken).ConfigureAwait(false);
                 await store.SetAsync(keyRef, value, cancellationToken).ConfigureAwait(false);
                 return true;
@@ -267,8 +269,10 @@ internal sealed class SecretStore : ISecretStore, ISecretStoreControl, IDisposab
         Enter();
         try
         {
+            ValidateMutationReference(keyRef);
             _ = await RunAsync(async store =>
             {
+                await ValidateIndexAsync(cancellationToken).ConfigureAwait(false);
                 await GuardFallbackReferenceAsync(store, keyRef, cancellationToken).ConfigureAwait(false);
                 await store.DeleteAsync(keyRef, cancellationToken).ConfigureAwait(false);
                 return true;
@@ -307,7 +311,7 @@ internal sealed class SecretStore : ISecretStore, ISecretStoreControl, IDisposab
         await _indexGate.WaitAsync(token).ConfigureAwait(false);
         try
         {
-            if (ReadIndex(requireReadable: true).Contains(keyRef))
+            if (ReadIndex().Contains(keyRef, StringComparer.Ordinal))
             {
                 throw new SecretBackendUnavailableException(
                     "This stored reference is not available in the selected file backend. Restore native keystore access and restart Studio. The reference has been retained.");
@@ -348,7 +352,7 @@ internal sealed class SecretStore : ISecretStore, ISecretStoreControl, IDisposab
         try
         {
             var keys = ReadIndex();
-            if (present && !keys.Contains(keyRef))
+            if (present && !keys.Contains(keyRef, StringComparer.Ordinal))
             {
                 keys.Add(keyRef);
                 WriteIndex(keys);
@@ -360,12 +364,28 @@ internal sealed class SecretStore : ISecretStore, ISecretStoreControl, IDisposab
         }
         catch (SecretStorageException ex)
         {
-            throw new SecretStorageException("The secret change completed, but its reference index could not be updated. Repair index access and reconcile stored references before retrying. " + ex.Message);
+            throw new SecretStorageException("The secret change completed, but its reference index could not be updated. " + ex.Message);
         }
         finally { _ = _indexGate.Release(); }
     }
 
-    private List<string> ReadIndex(bool requireReadable = false)
+    private static void ValidateMutationReference(string keyRef)
+    {
+        if (string.IsNullOrWhiteSpace(keyRef))
+        {
+            throw new ArgumentException("A secret reference must contain non-whitespace text.", nameof(keyRef));
+        }
+    }
+
+    private async Task ValidateIndexAsync(CancellationToken token)
+    {
+        // Preflight only: release before backend work, then re-read during UpdateIndexAsync.
+        await _indexGate.WaitAsync(token).ConfigureAwait(false);
+        try { _ = ReadIndex(); }
+        finally { _ = _indexGate.Release(); }
+    }
+
+    private List<string> ReadIndex()
     {
         try
         {
@@ -375,25 +395,21 @@ internal sealed class SecretStore : ISecretStore, ISecretStoreControl, IDisposab
                 return [];
             }
             var keys = JsonSerializer.Deserialize<List<string>>(json);
-            if (requireReadable && (keys is null || keys.Any(string.IsNullOrWhiteSpace)))
+            var unique = new HashSet<string>(StringComparer.Ordinal);
+            if (keys is null || keys.Any(key => string.IsNullOrWhiteSpace(key) || !unique.Add(key)))
             {
-                throw new JsonException("Invalid secret-reference index.");
+                throw InvalidIndex();
             }
-            return keys ?? [];
-        }
-        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
-        {
-            return [];
+            return keys;
         }
         catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
         {
-            if (requireReadable)
-            {
-                throw new SecretBackendUnavailableException("The secret-reference index cannot be read. File storage cannot determine reference ownership; repair the index before retrying.");
-            }
-            return [];
+            throw InvalidIndex();
         }
     }
+
+    private static SecretStorageException InvalidIndex() => new(
+        "The secret-reference index is invalid or unreadable. Close Studio and restore a valid secret-keyrefs.json from backup before retrying. Existing index contents have been retained.");
 
     private void WriteIndex(List<string> keys)
         => _files.Write(_indexPath, JsonSerializer.Serialize(keys));

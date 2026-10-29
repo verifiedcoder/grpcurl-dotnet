@@ -18,7 +18,8 @@ settings write leaves storage blocked. Native secrets are not copied into the fa
 On upgrade, existing fallback files are retained but require consent before use. A stored reference that
 is missing from the selected fallback remains unavailable, including for overwrite/delete; recover the
 native keystore and restart Studio. The key-name index is not a list of decrypted or currently readable
-values. A corrupt/unreadable index prevents file operations that need to determine reference ownership.
+values. A corrupt/unreadable index prevents all mutations and listing, and prevents fallback decisions
+that need to determine missing-reference ownership. Successful backend reads remain available.
 
 A selected backend stays selected for the session. Restart after changing administrator policy or resetting
 saved consent. Resetting all settings clears user consent for subsequent sessions and does not delete
@@ -82,6 +83,8 @@ files are ignored. This does not promise directory-entry durability across power
 
 The fallback salt (`secrets.salt`) and generated `machine.id` are published without overwriting existing
 inputs. Concurrent initialization loads the winning value. System machine-ID sources remain read-only.
+On Unix, publishing a new input uses an atomic hard link from the complete private temporary file;
+filesystems without hard-link support fail visibly instead of copying a partial input into place.
 Missing or invalid inputs alongside ciphertext cause a recovery error; Studio does not generate a new
 key that would orphan the existing secrets. Back up and restore the fallback files together on the same
 machine and user account.
@@ -90,3 +93,17 @@ Permission, link, and persistence errors are reported without raw filesystem err
 values. They never authorize fallback. Secret data and its reference index are independent commits;
 if the secret changed but the index update failed, the error says so. There is no cross-process
 transaction coordination. See [troubleshooting](troubleshooting.md#secret-storage-could-not-protect-or-access-its-files).
+
+The reference index must be a JSON array of unique, non-null, non-whitespace strings, compared ordinally.
+Valid text is preserved exactly. Every mutation validates the index before backend changes and again
+before updating the index. Corruption is reported without parser diagnostics or reference names, and
+existing index bytes are retained. Recovery requires closing Studio and restoring a valid index from
+backup; there is no automatic reconstruction. A missing index is still treated as empty for first use,
+so deletion/loss cannot be distinguished from a new installation. The index is not authenticated and
+does not prove reference ownership. See [index recovery](troubleshooting.md#the-secret-reference-index-is-invalid-or-unreadable).
+
+Application-owned plaintext byte arrays in fallback AES-GCM and Windows DPAPI are cleared after use,
+including exceptional exits, before later persistence work. This does not erase immutable input/output
+strings or copies inside cryptographic libraries. macOS buffer cleanup is unchanged; native Secret
+Service internals are outside this boundary. The shared fallback key remains alive under its operation
+gate and is cleared on disposal, after admitted operations drain.

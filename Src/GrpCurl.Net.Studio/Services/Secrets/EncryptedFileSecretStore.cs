@@ -28,6 +28,7 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
 
     private readonly SecureSecretFile _files;
     private readonly Func<string?> _systemMachineId;
+    private readonly Action<PlaintextBufferStage, byte[]>? _plaintextCheckpoint;
     private readonly string _dataPath;
     private readonly string _saltPath;
     private readonly string _machineIdPath;
@@ -58,10 +59,12 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
     /// </summary>
     internal SemaphoreSlim GateForTests => _gate;
 
-    public EncryptedFileSecretStore(string directory, SecureSecretFile? files = null, Func<string?>? systemMachineId = null)
+    public EncryptedFileSecretStore(string directory, SecureSecretFile? files = null, Func<string?>? systemMachineId = null,
+        Action<PlaintextBufferStage, byte[]>? plaintextCheckpoint = null)
     {
         _files = files ?? new();
         _systemMachineId = systemMachineId ?? ReadSystemMachineId;
+        _plaintextCheckpoint = plaintextCheckpoint;
         _dataPath = Path.Combine(directory, "secrets.json");
         _saltPath = Path.Combine(directory, "secrets.salt");
         _machineIdPath = Path.Combine(directory, "machine.id");
@@ -281,20 +284,30 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
         return Encoding.UTF8.GetBytes(Environment.UserName);
     }
 
-    private static string Encrypt(string value, byte[] key)
+    // Clear application-owned plaintext arrays, including when allocation checkpoints or crypto fail.
+    // Immutable input/output strings and copies owned by cryptographic libraries are outside this boundary.
+    private string Encrypt(string value, byte[] key)
     {
+        byte[] nonce, cipher, tag;
         var plaintext = Encoding.UTF8.GetBytes(value);
-        var nonce = RandomNumberGenerator.GetBytes(AesGcm.NonceByteSizes.MaxSize);
-        var cipher = new byte[plaintext.Length];
-        var tag = new byte[AesGcm.TagByteSizes.MaxSize];
-
-        using var aes = new AesGcm(key, tag.Length);
-        aes.Encrypt(nonce, plaintext, cipher, tag);
+        try
+        {
+            _plaintextCheckpoint?.Invoke(PlaintextBufferStage.EncryptInput, plaintext);
+            nonce = RandomNumberGenerator.GetBytes(AesGcm.NonceByteSizes.MaxSize);
+            cipher = new byte[plaintext.Length];
+            tag = new byte[AesGcm.TagByteSizes.MaxSize];
+            using var aes = new AesGcm(key, tag.Length);
+            aes.Encrypt(nonce, plaintext, cipher, tag);
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(plaintext);
+        }
 
         return $"{Convert.ToBase64String(nonce)}.{Convert.ToBase64String(tag)}.{Convert.ToBase64String(cipher)}";
     }
 
-    private static string Decrypt(string blob, byte[] key)
+    private string Decrypt(string blob, byte[] key)
     {
         var parts = blob.Split('.');
         if (parts.Length != 3)
@@ -306,11 +319,18 @@ internal sealed class EncryptedFileSecretStore : ISecretBackend, IDisposable
         var tag = Convert.FromBase64String(parts[1]);
         var cipher = Convert.FromBase64String(parts[2]);
         var plaintext = new byte[cipher.Length];
-
-        using var aes = new AesGcm(key, tag.Length);
-        aes.Decrypt(nonce, cipher, tag, plaintext);
-
-        return Encoding.UTF8.GetString(plaintext);
+        try
+        {
+            _plaintextCheckpoint?.Invoke(PlaintextBufferStage.DecryptAllocated, plaintext);
+            using var aes = new AesGcm(key, tag.Length);
+            aes.Decrypt(nonce, cipher, tag, plaintext);
+            _plaintextCheckpoint?.Invoke(PlaintextBufferStage.DecryptOutput, plaintext);
+            return Encoding.UTF8.GetString(plaintext);
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(plaintext);
+        }
     }
 
     [DllImport("libc")]

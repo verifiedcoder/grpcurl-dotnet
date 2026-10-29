@@ -34,6 +34,8 @@
       href: studio/keyboard-shortcuts.md
     - name: Common workflows
       href: studio/workflows.md
+    - name: History privacy and recovery
+      href: studio/history-privacy.md
     - name: Troubleshooting
       href: studio/troubleshooting.md
     - name: Secret storage policy

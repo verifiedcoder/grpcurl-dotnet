@@ -80,6 +80,18 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel, IDisp
     [ObservableProperty]
     public partial string? ProtocStatus { get; set; }
 
+    private readonly IHistoryPolicy? _historyPolicy;
+    public bool CanConfigureHistory => _historyPolicy?.AllowHistory ?? true;
+    public bool CanCaptureHistoryRequests => CanConfigureHistory && (_historyPolicy?.AllowRequests ?? true);
+    public bool CanCaptureHistoryResponses => CanConfigureHistory && (_historyPolicy?.AllowResponses ?? true);
+    public string? HistoryPolicyMessage => _historyPolicy?.Message;
+
+    [ObservableProperty]
+    public partial bool HistoryCaptureRequestBodies { get; set; }
+
+    [ObservableProperty]
+    public partial string HistoryRedactFields { get; set; } = string.Empty;
+
     // ── History (FR-158) ─────────────────────────────────────────────────────
 
     [ObservableProperty]
@@ -161,9 +173,11 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel, IDisp
         ILauncherService? launcher = null,
         IDiagnosticsLog? diagnostics = null,
         IClipboardService? clipboard = null,
-        IUiDispatcher? dispatcher = null)
+        IUiDispatcher? dispatcher = null,
+        IHistoryPolicy? historyPolicy = null)
     {
         _settings = settings;
+        _historyPolicy = historyPolicy;
         _themeService = themeService;
         _dialogs = dialogs;
         _protoc = protoc;
@@ -425,6 +439,8 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel, IDisp
     partial void OnNetworkDefaultDeadlineChanged(string value) => Persist(s => s.Network.DefaultDeadline = value);
     partial void OnProtocPathChanged(string value) => Persist(s => s.Protoc.Path = value);
     partial void OnHistoryCaptureEnabledChanged(bool value) => Persist(s => s.History.Enabled = value);
+    partial void OnHistoryCaptureRequestBodiesChanged(bool value) => Persist(s => s.History.CaptureRequestBodies = value);
+    partial void OnHistoryRedactFieldsChanged(string value) => Persist(s => s.History.RedactFields = value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Distinct(StringComparer.OrdinalIgnoreCase).ToList());
     partial void OnHistoryCaptureResponsesChanged(bool value) => Persist(s => s.History.CaptureResponses = value);
     partial void OnHistoryMaxEntriesChanged(int value) => Persist(s => s.History.MaxEntries = Math.Max(1, value));
     partial void OnHistoryMaxSizeMiBChanged(int value) => Persist(s => s.History.MaxBytes = Math.Max(1, value) * 1024L * 1024L);
@@ -666,6 +682,8 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel, IDisp
         NetworkDefaultDeadline = s.Network.DefaultDeadline;
         ProtocPath = s.Protoc.Path;
         HistoryCaptureEnabled = s.History.Enabled;
+        HistoryCaptureRequestBodies = s.History.CaptureRequestBodies;
+        HistoryRedactFields = string.Join(", ", s.History.RedactFields ?? []);
         HistoryCaptureResponses = s.History.CaptureResponses;
         HistoryMaxEntries = s.History.MaxEntries;
         HistoryMaxSizeMiB = (int)Math.Max(1, s.History.MaxBytes / (1024L * 1024L));

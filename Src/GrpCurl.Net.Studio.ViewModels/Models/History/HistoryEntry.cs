@@ -33,7 +33,7 @@ public sealed record HistoryEntry(
 
     /// <summary>
     ///     The literal marker stored in place of a redacted secret header value (FR-121). ASCII, matching
-    ///     SPEC-040 §5.1's normative shape, so the on-disk audit can grep for it (and never find a secret).
+    ///     SPEC-040 §5.1's normative shape. Redaction does not classify arbitrary payload values.
     /// </summary>
     public const string RedactedMarker = "[redacted]";
 }
@@ -44,7 +44,8 @@ public sealed record HistoryConnection(string Name, string Address, string Trans
 /// <summary>A recorded request header. Secret values are stored as <see cref="HistoryEntry.RedactedMarker" />.</summary>
 public sealed record HistoryHeader(string Name, string Value);
 
-/// <summary>The redacted request snapshot (SPEC-040 §5.1).</summary>
+/// <summary>The stored request snapshot. BodyDisposition is null for unmodified/legacy bodies;
+/// "omitted" or "redacted" disables replay. Legacy payloads are preserved during migration (SPEC-040 §5.1).</summary>
 public sealed record HistoryRequest(
     string BodyFormat,
     string Body,
@@ -55,7 +56,8 @@ public sealed record HistoryRequest(
     bool AllowUnknownFields,
     long? MaxSendBytes,
     long? MaxReceiveBytes,
-    string? EnvironmentName);
+    string? EnvironmentName,
+    string? BodyDisposition = null);
 
 /// <summary>The call outcome (SPEC-040 §5.1). <paramref name="Category" /> mirrors the CLI error categories.</summary>
 public sealed record HistoryOutcome(

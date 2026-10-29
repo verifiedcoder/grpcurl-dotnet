@@ -119,6 +119,10 @@ public sealed class HistorySettings
     /// <summary>Opt-in to storing response bodies (off by default; SPEC-040 §5.1).</summary>
     public bool CaptureResponses { get; set; }
 
+    public bool CaptureRequestBodies { get; set; }
+
+    public List<string> RedactFields { get; set; } = [];
+
     /// <summary>Per-entry request/response body cap; beyond it the body is truncated and flagged.</summary>
     public int ResponseCapBytes { get; set; } = 256 * 1024;
 

@@ -63,7 +63,8 @@ public sealed class HistoryRecorderTests
     [Fact]
     public async Task Records_a_graphql_execution_as_a_graphql_entry_with_redacted_headers()
     {
-        var recorder = Recorder(out var store, out _);
+        var recorder = Recorder(out var store, out var settings);
+        settings.Current.History.CaptureRequestBodies = true;
         var context = new GraphQlHistoryContext(
             new SavedConnection { Name = "staging", Address = "api.example.com:443", Transport = TransportMode.Tls },
             OperationLabel: "GetUser",
@@ -156,16 +157,18 @@ public sealed class HistoryRecorderTests
     }
 
     [Fact]
-    public async Task A_body_over_the_cap_is_truncated_at_a_utf8_boundary()
+    public async Task Malformed_json_is_omitted_before_it_can_be_capped()
     {
         var recorder = Recorder(out var store, out var settings);
         settings.Current.History.ResponseCapBytes = 8;
+        settings.Current.History.CaptureRequestBodies = true;
 
         await recorder.RecordUnaryAsync(Request(body: "0123456789ABCDEF"), OkResult(), Ct);
 
         var request = store.Last!.Request;
-        request.BodyTruncated.ShouldBeTrue();
-        request.Body.ShouldBe("01234567"); // 8 bytes, cut at a char boundary
+        request.BodyTruncated.ShouldBeFalse();
+        request.Body.ShouldBeEmpty();
+        request.BodyDisposition.ShouldBe("omitted");
     }
 
     [Fact]
@@ -185,4 +188,17 @@ public sealed class HistoryRecorderTests
         entry.Outcome.DurationMs.ShouldBe(1200);
         entry.Outcome.Category.ShouldBe("success");
     }
+    [Fact]
+    public async Task Default_recording_never_passes_request_response_or_error_canaries_to_storage()
+    {
+        var recorder = Recorder(out var store, out _);
+        await recorder.RecordUnaryAsync(Request(body: "{\"password\":\"canary\"}"),
+            ErrorResult() with { ErrorMessage = "canary", ResponseJson = "{\"value\":\"canary\"}" }, Ct);
+        var context = new GraphQlHistoryContext(new SavedConnection { Name = "test", Address = "h:1" },
+            "Q", "query Q { f(a: \"canary\") }", [], null, false, false, null, false, "Error", "rpc-error", "canary", 1, "canary");
+        await recorder.RecordGraphQlAsync(context, Ct);
+        System.Text.Json.JsonSerializer.Serialize(store.Entries).ShouldNotContain("canary");
+        store.Entries.Count.ShouldBe(2);
+    }
+
 }

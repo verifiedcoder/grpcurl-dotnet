@@ -34,6 +34,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
     private readonly IThemeService _theme;
     private readonly IProtocService? _protoc;
     private readonly ISecretStore? _secrets;
+    private readonly IHistoryPolicy? _historyPolicy;
     private readonly ISavedRequestStore? _savedRequests;
     private readonly IEnvironmentService? _environment;
     private readonly IUpdateService? _updates;
@@ -151,7 +152,8 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         IDiagnosticsLog? diagnostics = null,
         ISessionStore? session = null,
         IGraphQlService? graphql = null,
-        TimeSpan? sessionDebounce = null)
+        TimeSpan? sessionDebounce = null,
+        IHistoryPolicy? historyPolicy = null)
     {
         _descriptors = descriptors;
         _dispatcher = dispatcher;
@@ -172,6 +174,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
         _history = history;
         _workspace = workspace;
         _secrets = secrets;
+        _historyPolicy = historyPolicy;
         _savedRequests = savedRequests;
         _environment = environment;
         _updates = updates;
@@ -562,7 +565,7 @@ public sealed partial class DocumentsViewModel : ViewModelBase, IDocumentHost
             }
 
             var document = new SettingsDocumentViewModel(
-                _settings, _theme, _dialogs, _protoc, _secrets, _updates, _launcher, _diagnostics, _clipboard, _dispatcher);
+                _settings, _theme, _dialogs, _protoc, _secrets, _updates, _launcher, _diagnostics, _clipboard, _dispatcher, _historyPolicy);
             AdmitAndAdd(document);
         }
         finally

@@ -104,3 +104,16 @@ is still shown in full, just without colour. This is expected for very large pay
 
 Open an issue from **Help → Report an Issue**, or file one directly on the
 [issue tracker](https://github.com/verifiedcoder/grpcurl-dotnet/issues/new).
+
+## History is unavailable or cannot be replayed
+
+History requires access to the selected secret store even for metadata. It never silently authorizes
+fallback. The History tab shows recovery guidance if the key is missing, storage is unavailable, or
+an encrypted record is corrupt. Restore matching history and key backups with Studio closed, or
+explicitly **Clear all** to discard the history file. Clear unpinned, pinning, deletion, and export need
+a readable key. A busy notice means another Studio process holds the history lock; retry after it
+finishes, without deleting the lock file.
+
+New request payloads are omitted by default. Redacted, omitted, or truncated bodies cannot be replayed;
+enabling capture later does not reconstruct them. Existing legacy bodies are preserved during migration.
+See [History privacy and recovery](history-privacy.md) for complete recovery and machine-policy instructions.

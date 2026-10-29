@@ -22,14 +22,17 @@ internal sealed class WindowsDpapiSecretStore : ISecretBackend, IDisposable
 
     private readonly string _dataPath;
     private readonly SecureSecretFile _files;
+    private readonly Action<PlaintextBufferStage, byte[]>? _plaintextCheckpoint;
     private readonly SemaphoreSlim _gate = new(1, 1);
 
     private int _disposed;
 
-    public WindowsDpapiSecretStore(string directory, SecureSecretFile? files = null)
+    public WindowsDpapiSecretStore(string directory, SecureSecretFile? files = null,
+        Action<PlaintextBufferStage, byte[]>? plaintextCheckpoint = null)
     {
         _dataPath = Path.Combine(directory, "secrets.dpapi.json");
         _files = files ?? new();
+        _plaintextCheckpoint = plaintextCheckpoint;
     }
 
     public SecretStoreInfo Info { get; } = new("Windows DPAPI", IsOsKeychain: true, LimitationNote: null);
@@ -57,7 +60,18 @@ internal sealed class WindowsDpapiSecretStore : ISecretBackend, IDisposable
         try
         {
             var store = Load();
-            var protectedBytes = ProtectedData.Protect(Encoding.UTF8.GetBytes(value), optionalEntropy: null, DataProtectionScope.CurrentUser);
+            byte[] protectedBytes;
+            var plaintext = Encoding.UTF8.GetBytes(value);
+            try
+            {
+                _plaintextCheckpoint?.Invoke(PlaintextBufferStage.EncryptInput, plaintext);
+                protectedBytes = ProtectedData.Protect(plaintext, optionalEntropy: null, DataProtectionScope.CurrentUser);
+            }
+            finally
+            {
+                // Strings and copies inside DPAPI are outside the application-owned buffer boundary.
+                CryptographicOperations.ZeroMemory(plaintext);
+            }
             store[keyRef] = Convert.ToBase64String(protectedBytes);
             Save(store);
         }
@@ -80,7 +94,15 @@ internal sealed class WindowsDpapiSecretStore : ISecretBackend, IDisposable
             }
 
             var bytes = ProtectedData.Unprotect(Convert.FromBase64String(b64), optionalEntropy: null, DataProtectionScope.CurrentUser);
-            return Encoding.UTF8.GetString(bytes);
+            try
+            {
+                _plaintextCheckpoint?.Invoke(PlaintextBufferStage.DecryptOutput, bytes);
+                return Encoding.UTF8.GetString(bytes);
+            }
+            finally
+            {
+                CryptographicOperations.ZeroMemory(bytes);
+            }
         }
         finally
         {

@@ -68,7 +68,7 @@ public sealed class DisposalContractTests : IDisposable
     public void History_store_disposes_twice_without_throwing()
         => Should.NotThrow(() =>
         {
-            var store = new JsonHistoryStore(Path.Combine(_dir, "history.ndjson"));
+            var store = new JsonHistoryStore(Path.Combine(_dir, "history.ndjson"), new GrpCurl.Net.Studio.TestSupport.FakeSecretStore());
 
             store.Dispose();
             store.Dispose();
@@ -197,7 +197,7 @@ public sealed class DisposalContractTests : IDisposable
         // Registered the way ServiceRegistration registers them — as singletons the container creates
         // and therefore tracks for disposal — but pointed at a temp directory instead of ApplicationData.
         _ = services.AddSingleton<ISecretStore>(_ => new SecretStore(_dir));
-        _ = services.AddSingleton<IHistoryStore>(_ => new JsonHistoryStore(Path.Combine(_dir, "history.ndjson")));
+        _ = services.AddSingleton<IHistoryStore>(_ => new JsonHistoryStore(Path.Combine(_dir, "history.ndjson"), new GrpCurl.Net.Studio.TestSupport.FakeSecretStore()));
         _ = services.AddSingleton<IRequestValidator>(_ => new RequestValidator(new InvocationService()));
 
         var provider = services.BuildServiceProvider();

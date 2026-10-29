@@ -9,7 +9,7 @@ namespace GrpCurl.Net.Studio.ViewModels.Documents;
 
 /// <summary>
 ///     The History tab (FR-120..129): a searchable/filterable grid over the recorded invocations, with
-///     pin, clear, NDJSON export, and replay-to-tab. Entries are already redacted on disk; this view only
+///     pin, clear, NDJSON export, and replay-to-tab. New entries follow capture/redaction policy; legacy payloads are preserved. This view only
 ///     reads + manages them. When capture is disabled (FR-129) a banner is shown.
 /// </summary>
 public sealed partial class HistoryDocumentViewModel : DocumentViewModel, IOwnsBackgroundWork
@@ -30,6 +30,9 @@ public sealed partial class HistoryDocumentViewModel : DocumentViewModel, IOwnsB
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsEmpty))]
     public partial bool CaptureEnabled { get; set; } = true;
+
+    [ObservableProperty]
+    public partial string? HistoryMessage { get; set; }
 
     [ObservableProperty]
     public partial string SearchText { get; set; } = string.Empty;
@@ -87,10 +90,17 @@ public sealed partial class HistoryDocumentViewModel : DocumentViewModel, IOwnsB
     public async Task LoadAsync()
     {
         CaptureEnabled = _settings.Current.History.Enabled;
-        var entries = await _history.ReadAllAsync().ConfigureAwait(false);
+        IReadOnlyList<HistoryEntry> entries;
+        try { entries = await _history.ReadAllAsync().ConfigureAwait(false); }
+        catch (HistoryStorageException ex)
+        {
+            await _dispatcher.InvokeAsync(() => { HistoryMessage = ex.Message; _all = []; ApplyFilter(); });
+            return;
+        }
 
         await _dispatcher.InvokeAsync(() =>
         {
+            HistoryMessage = (_history as IHistoryStatus)?.Message ?? "Request payloads require capture consent. Omitted or redacted bodies cannot be replayed.";
             _all = entries.Reverse().ToList(); // newest first
 
             var names = _all.Select(e => e.Connection.Name).Distinct().OrderBy(n => n, StringComparer.Ordinal);
@@ -141,7 +151,7 @@ public sealed partial class HistoryDocumentViewModel : DocumentViewModel, IOwnsB
            || entry.Request.Body.Contains(search, StringComparison.OrdinalIgnoreCase);
 
     private bool IsReplayable(HistoryEntry entry)
-        => !entry.Request.BodyTruncated && HistoryReplay.ResolveConnection(_workspace.Current, entry) is not null;
+        => !entry.Request.BodyTruncated && entry.Request.BodyDisposition is null && HistoryReplay.ResolveConnection(_workspace.Current, entry) is not null;
 
     private static string KindLabel(HistoryKind kind) => kind == HistoryKind.Grpc ? "gRPC" : "GraphQL";
 
@@ -154,7 +164,7 @@ public sealed partial class HistoryDocumentViewModel : DocumentViewModel, IOwnsB
     {
         if (row is not null)
         {
-            await _history.SetPinnedAsync(row.Id, !row.Pinned);
+            if (!await TryHistoryAsync(() => _history.SetPinnedAsync(row.Id, !row.Pinned))) { return; }
             await LoadAsync();
         }
     }
@@ -168,9 +178,9 @@ public sealed partial class HistoryDocumentViewModel : DocumentViewModel, IOwnsB
             return;
         }
 
-        if (row.Entry.Request.BodyTruncated)
+        if (row.Entry.Request.BodyTruncated || row.Entry.Request.BodyDisposition is not null)
         {
-            await _dialogs.ShowMessageAsync("Replay unavailable", "This entry's body was truncated, so it cannot be replayed.");
+            await _dialogs.ShowMessageAsync("Replay unavailable", "This entry's body was omitted, redacted, or truncated, so it cannot be replayed.");
             return;
         }
 
@@ -194,7 +204,7 @@ public sealed partial class HistoryDocumentViewModel : DocumentViewModel, IOwnsB
 
         if (ids.Count > 0)
         {
-            await _history.DeleteAsync(ids);
+            if (!await TryHistoryAsync(() => _history.DeleteAsync(ids))) { return; }
             await LoadAsync();
         }
     }
@@ -204,7 +214,7 @@ public sealed partial class HistoryDocumentViewModel : DocumentViewModel, IOwnsB
     {
         if (await _dialogs.ConfirmAsync("Clear unpinned history?", "Delete every unpinned entry? This cannot be undone."))
         {
-            await _history.ClearAsync(keepPinned: true);
+            if (!await TryHistoryAsync(() => _history.ClearAsync(keepPinned: true))) { return; }
             await LoadAsync();
         }
     }
@@ -214,12 +224,12 @@ public sealed partial class HistoryDocumentViewModel : DocumentViewModel, IOwnsB
     {
         if (await _dialogs.ConfirmAsync("Clear all history?", "Delete every entry, including pinned ones? This cannot be undone."))
         {
-            await _history.ClearAsync(keepPinned: false);
+            if (!await TryHistoryAsync(() => _history.ClearAsync(keepPinned: false))) { return; }
             await LoadAsync();
         }
     }
 
-    /// <summary>FR-128: export the currently-filtered entries (already redacted) to an NDJSON file.</summary>
+    /// <summary>FR-128: export the currently-filtered entries to an explicitly confirmed plaintext NDJSON file.</summary>
     [RelayCommand]
     private async Task Export()
     {
@@ -228,18 +238,25 @@ public sealed partial class HistoryDocumentViewModel : DocumentViewModel, IOwnsB
             return;
         }
 
+        if (!await _dialogs.ConfirmAsync("Export plaintext history?", "The export is not encrypted and may contain sensitive historical payloads. Store and share it carefully.")) { return; }
         var path = await _filePicker.SaveFileAsync("Export history", "history.ndjson", ["ndjson", "json"]);
 
         if (path is not null)
         {
             var entries = Rows.Select(r => r.Entry).ToList();
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-            await _history.ExportAsync(path, entries);
+            if (!await TryHistoryAsync(() => _history.ExportAsync(path, entries))) { return; }
             RecordExportActivity($"Export history: {entries.Count} entr{(entries.Count == 1 ? "y" : "ies")}", stopwatch.Elapsed);
         }
     }
 
-    // FR-004/#14: mirror the export to the console (operation + duration; the NDJSON holds no secret values).
+    private async Task<bool> TryHistoryAsync(Func<Task> operation)
+    {
+        try { await operation(); return true; }
+        catch (HistoryStorageException ex) { HistoryMessage = ex.Message; return false; }
+    }
+
+    // FR-004/#14: mirror the export to the console (operation + duration; no payload is logged to the console).
     private void RecordExportActivity(string title, TimeSpan elapsed)
     {
         if (_console is null)

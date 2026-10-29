@@ -50,6 +50,53 @@ internal sealed class SecureSecretFile(Action<SecretFileStage, string>? checkpoi
         return Read(path) ?? throw InvalidInput();
     }
 
+    // A stable lock inode is never replaced/deleted. Cooperating history processes hold the handle
+    // throughout key initialization, reads, appends and replacement.
+    internal FileStream? TryOpenExclusive(string path) => Guard(() =>
+    {
+        _ = EnsureDirectory(Path.GetDirectoryName(path)!, create: true);
+        try
+        {
+            if (!ProtectFile(path)) { return Create(path); }
+            return new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+        }
+        catch (IOException) when (File.Exists(path)) { return null; }
+    });
+
+    internal void Delete(string path) => Guard(() =>
+    {
+        if (EnsureDirectory(Path.GetDirectoryName(path)!, create: false) && ProtectFile(path)) { File.Delete(path); }
+        return true;
+    });
+
+    internal void Append(string path, string ciphertext) => Guard(() =>
+    {
+        _ = EnsureDirectory(Path.GetDirectoryName(path)!, create: true);
+        using var stream = ProtectFile(path)
+            ? new FileStream(path, FileMode.Append, FileAccess.Write, FileShare.None, 4096, FileOptions.WriteThrough)
+            : Create(path);
+        Verify(path, directory: false);
+        var bytes = Encoding.UTF8.GetBytes(ciphertext);
+        stream.Write(bytes);
+        stream.Flush(flushToDisk: true);
+        return true;
+    });
+
+    // Explicit exports protect the file, without changing the permissions of a user-selected directory.
+    internal void Export(string path, string contents) => Guard(() =>
+    {
+        _ = Attributes(Path.GetDirectoryName(Path.GetFullPath(path))!, directory: true);
+        _ = ProtectFile(path);
+        using var stream = File.Exists(path)
+            ? new FileStream(path, FileMode.Truncate, FileAccess.Write, FileShare.None)
+            : Create(path);
+        Verify(path, directory: false);
+        var bytes = Encoding.UTF8.GetBytes(contents);
+        try { stream.Write(bytes); stream.Flush(flushToDisk: true); }
+        finally { System.Security.Cryptography.CryptographicOperations.ZeroMemory(bytes); }
+        return true;
+    });
+
     internal static SecretStorageException InvalidInput() => new(
         "Secret storage key inputs are missing or invalid. Restore secrets.salt and machine.id from the same backup as secrets.json, then restart Studio. Existing files have been retained.");
 

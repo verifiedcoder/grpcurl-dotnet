@@ -41,4 +41,42 @@ public sealed class HistoryDocumentUiTests(HeadlessSessionFixture fixture) : Hea
         list.GetVisualDescendants().OfType<ListBoxItem>().ShouldNotBeEmpty();
         window.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text).ShouldContain("pkg.Svc/First");
     });
+    [Fact]
+    public Task Missing_key_renders_recovery_message_and_clear_all_remains_available() => RunOnUiThread(() =>
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "grpcn-history-ui-" + Guid.NewGuid().ToString("N"));
+        var path = Path.Combine(directory, "history.ndjson");
+        var secrets = new FakeSecretStore();
+        using var store = new JsonHistoryStore(path, secrets);
+        store.AppendAsync(Entry("e1", "Svc/Call")).GetAwaiter().GetResult();
+        secrets.DeleteAsync(HistoryCipher.KeyReference).GetAwaiter().GetResult();
+        var before = File.ReadAllText(path);
+        var dialogs = new FakeDialogService { ConfirmResult = true };
+        var vm = new HistoryDocumentViewModel(store, new InMemorySettingsStore(), new FakeWorkspaceStore(),
+            new FakeDocumentHost(), dialogs, new ImmediateUiDispatcher());
+        vm.LoadAsync().GetAwaiter().GetResult();
+        var window = new Window { Content = new HistoryDocumentView { DataContext = vm }, Width = 900, Height = 500 };
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            var status = window.GetVisualDescendants().OfType<TextBlock>().Single(t =>
+                Equals(t.GetValue(Avalonia.Automation.AutomationProperties.NameProperty), "History storage status"));
+            status.Text.ShouldNotBeNull().ShouldContain("Restore the original keystore");
+            vm.Rows.ShouldBeEmpty();
+            File.ReadAllText(path).ShouldBe(before);
+            var clear = window.GetVisualDescendants().OfType<Button>().Single(b =>
+                Equals(b.GetValue(Avalonia.Automation.AutomationProperties.NameProperty), "Clear history"));
+            clear.IsEnabled.ShouldBeTrue();
+            clear.Flyout!.ShowAt(clear);
+            Dispatcher.UIThread.RunJobs();
+            var all = ((MenuFlyout)clear.Flyout).Items.OfType<MenuItem>().Single(i => Equals(i.Header, "Clear all…"));
+            all.Command!.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+            File.Exists(path).ShouldBeFalse();
+            dialogs.ConfirmCount.ShouldBe(1);
+        }
+        finally { window.Close(); Directory.Delete(directory, true); }
+    });
+
 }

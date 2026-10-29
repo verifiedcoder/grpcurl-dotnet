@@ -53,6 +53,7 @@ internal static class ServiceRegistration
         _ = services.AddSingleton<ISessionStore, JsonSessionStore>();
 
         // History (E3.3): append-only NDJSON store of redacted invocations + the recorder (SPEC-040 §5).
+        _ = services.AddSingleton<IHistoryPolicy>(_ => HistoryPolicy.Load(HistoryPolicy.DefaultPath));
         _ = services.AddSingleton<IHistoryStore, JsonHistoryStore>();
         _ = services.AddSingleton<IHistoryRecorder, HistoryRecorder>();
 

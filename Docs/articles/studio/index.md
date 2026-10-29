@@ -11,6 +11,7 @@ This guide covers Studio specifically. For the command-line tools see the
 - [Install Studio](install.md) — download, verify, and run on Windows, macOS, and Linux.
 - [First run](first-run.md) — from an empty workspace to your first invocation.
 - [Keyboard shortcuts](keyboard-shortcuts.md) — the complete shortcut map.
+- [History privacy and recovery](history-privacy.md) — capture consent, encrypted storage, policy, and backups.
 - [Common workflows](workflows.md) — environments, history, saved requests, GraphQL, copy-as-CLI.
 - [Troubleshooting](troubleshooting.md) — workspace locks, read-only files, `protoc`, secrets, updates.
 - [Accessibility charter](accessibility-charter.md) — the per-release manual accessibility pass.

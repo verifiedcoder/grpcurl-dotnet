@@ -12,7 +12,7 @@
         </Style>
     </UserControl.Styles>
 
-    <Grid RowDefinitions="Auto,Auto,*">
+    <Grid RowDefinitions="Auto,Auto,Auto,*">
 
         <!-- FR-129: banner when capture is off -->
         <Border Grid.Row="0" Background="{DynamicResource Status.Caller}" Padding="10,4" IsVisible="{Binding !CaptureEnabled}">
@@ -20,8 +20,10 @@
                        Foreground="White" FontSize="12" />
         </Border>
 
+        <TextBlock Grid.Row="1" Text="{Binding HistoryMessage}" TextWrapping="Wrap" Margin="10,4" AutomationProperties.Name="History storage status" />
+
         <!-- Toolbar: search + filters + actions -->
-        <Border Grid.Row="1" Background="{DynamicResource Surface.PaneHeader}" Padding="8,6"
+        <Border Grid.Row="2" Background="{DynamicResource Surface.PaneHeader}" Padding="8,6"
                 BorderBrush="{DynamicResource Divider}" BorderThickness="0,0,0,1">
             <DockPanel LastChildFill="False">
                 <TextBox DockPanel.Dock="Left" Width="200" Watermark="Search method / connection / body"
@@ -51,7 +53,7 @@
             </DockPanel>
         </Border>
 
-        <Panel Grid.Row="2">
+        <Panel Grid.Row="3">
             <TextBlock Margin="14" Opacity="0.6" IsVisible="{Binding IsEmpty}"
                        Text="No history entries match the current filters." />
 

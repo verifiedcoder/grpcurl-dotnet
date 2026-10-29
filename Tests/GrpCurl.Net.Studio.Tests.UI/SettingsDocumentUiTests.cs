@@ -155,4 +155,43 @@ public sealed class SettingsDocumentUiTests(HeadlessSessionFixture fixture) : He
 
         store.Current.Editor.FormatOnPaste.ShouldBeFalse();
     });
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task History_consent_controls_persist_preferences_and_respect_policy(bool managed) => RunOnUiThread(() =>
+    {
+        var store = new InMemorySettingsStore();
+        var policy = new HistoryPolicy(!managed, !managed, !managed, managed ? "History is managed by your organization." : null);
+        using var vm = new SettingsDocumentViewModel(store, new FakeThemeService(), new FakeDialogService(), historyPolicy: policy);
+        var window = new Window { Content = new SettingsDocumentView { DataContext = vm }, Width = 900, Height = 800 };
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            CheckBox Toggle(string name) => window.GetVisualDescendants().OfType<CheckBox>().Single(c =>
+                Equals(c.GetValue(Avalonia.Automation.AutomationProperties.NameProperty), name));
+            var requests = Toggle("Capture request bodies");
+            requests.IsChecked.ShouldBe(false);
+            requests.IsEnabled.ShouldBe(!managed);
+            Toggle("Capture response bodies").IsEnabled.ShouldBe(!managed);
+            Toggle("Capture history").IsEnabled.ShouldBe(!managed);
+            requests.BringIntoView();
+            _ = requests.Focus();
+            requests.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Space });
+            requests.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyUpEvent, Key = Key.Space });
+            Dispatcher.UIThread.RunJobs();
+            store.Current.History.CaptureRequestBodies.ShouldBe(!managed);
+            if (managed)
+            {
+                window.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text).ShouldContain(policy.Message);
+            }
+            var fields = window.GetVisualDescendants().OfType<TextBox>().Single(t =>
+                Equals(t.GetValue(Avalonia.Automation.AutomationProperties.NameProperty), "History redact fields"));
+            fields.Text = "private, ACCOUNT, private";
+            Dispatcher.UIThread.RunJobs();
+            store.Current.History.RedactFields.ShouldBe(["private", "ACCOUNT"]);
+        }
+        finally { window.Close(); }
+    });
+
 }

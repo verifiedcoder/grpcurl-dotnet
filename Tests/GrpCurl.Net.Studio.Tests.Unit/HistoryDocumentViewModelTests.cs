@@ -177,7 +177,8 @@ public sealed class HistoryDocumentViewModelTests
     [Fact]
     public async Task Export_writes_the_filtered_entries_to_the_picked_path()
     {
-        var doc = Create(out var store, out _, out _, out var picker, Entry("e1"), Entry("e2"));
+        var doc = Create(out var store, out _, out var dialogs, out var picker, Entry("e1"), Entry("e2"));
+        dialogs.ConfirmResult = true;
         picker.SaveResult = "/tmp/history.ndjson";
 
         await doc.ExportCommand.ExecuteAsync(null);
@@ -195,7 +196,7 @@ public sealed class HistoryDocumentViewModelTests
         var console = new ConsoleViewModel();
         var doc = new HistoryDocumentViewModel(
             store, new FakeSettingsStore(), new FakeWorkspaceStore(), new FakeDocumentHost(),
-            new FakeDialogService(), new ImmediateUiDispatcher(), picker, console);
+            new FakeDialogService { ConfirmResult = true }, new ImmediateUiDispatcher(), picker, console);
         await doc.LoadAsync();
 
         await doc.ExportCommand.ExecuteAsync(null);
@@ -218,4 +219,28 @@ public sealed class HistoryDocumentViewModelTests
 
         doc.CaptureEnabled.ShouldBeFalse();
     }
+    [Theory]
+    [InlineData("omitted")]
+    [InlineData("redacted")]
+    public async Task Sanitized_bodies_cannot_be_replayed_even_by_direct_command(string disposition)
+    {
+        var entry = Entry("e1", connection: "staging");
+        entry = entry with { Request = entry.Request with { BodyDisposition = disposition } };
+        var doc = Create(out _, out var host, out var dialogs, out _, entry);
+        doc.Rows[0].Replayable.ShouldBeFalse();
+        await doc.ReplayCommand.ExecuteAsync(doc.Rows[0]);
+        host.Prefills.ShouldBeEmpty();
+        dialogs.LastMessageBody.ShouldNotBeNull().ShouldContain("omitted, redacted, or truncated");
+    }
+
+    [Fact]
+    public async Task Declining_plaintext_warning_does_not_export()
+    {
+        var doc = Create(out var store, out _, out var dialogs, out var picker, Entry("e1"));
+        picker.SaveResult = "/tmp/history.ndjson";
+        await doc.ExportCommand.ExecuteAsync(null);
+        dialogs.ConfirmCount.ShouldBe(1);
+        store.ExportedPath.ShouldBeNull();
+    }
+
 }

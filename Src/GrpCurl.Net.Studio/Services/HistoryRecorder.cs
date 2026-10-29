@@ -4,7 +4,6 @@ using GrpCurl.Net.Studio.ViewModels.Models.History;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
 using GrpCurl.Net.Studio.ViewModels.Services;
 using GrpCurl.Net.Utilities;
-using System.Text;
 
 namespace GrpCurl.Net.Studio.Services;
 
@@ -12,31 +11,32 @@ namespace GrpCurl.Net.Studio.Services;
 ///     Default <see cref="IHistoryRecorder" /> (FR-120/121). Snapshots the connection (display fields
 ///     only), redacts request headers through Core's <see cref="SecretRedactor" /> (secret-classified
 ///     names become <see cref="HistoryEntry.RedactedMarker" />; <c>${VAR}</c> placeholders are kept
-///     unexpanded), caps bodies at the configured size, and appends through <see cref="IHistoryStore" />.
+///     unexpanded), sanitizes opted-in payloads, and appends for final capping through <see cref="IHistoryStore" />.
 ///     Response bodies are stored only when opt-in capture is enabled.
 /// </summary>
 internal sealed class HistoryRecorder(
     IHistoryStore store,
     ISettingsStore settings,
     IWorkspaceStore? workspace = null,
-    ITlsProfileStore? profiles = null) : IHistoryRecorder
+    ITlsProfileStore? profiles = null,
+    IHistoryPolicy? policy = null) : IHistoryRecorder
 {
     public async Task RecordUnaryAsync(InvocationRequestModel request, InvocationResultModel result, CancellationToken cancellationToken = default)
     {
         var history = settings.Current.History;
 
-        if (!history.Enabled)
+        if (!history.Enabled || !(policy?.AllowHistory ?? true))
         {
             return;
         }
 
-        var body = Cap(request.RequestJson, history.ResponseCapBytes, out var bodyTruncated);
+        var body = request.RequestJson;
         var responseBody = history.CaptureResponses && result.ResponseJson is not null
-            ? Cap(result.ResponseJson, history.ResponseCapBytes, out _)
+            ? result.ResponseJson
             : null;
 
         var requestSnapshot = new HistoryRequest(
-            BodyFormat(request.BodyFormat), body, bodyTruncated, RedactHeaders(request.Headers),
+            BodyFormat(request.BodyFormat), body, false, RedactHeaders(request.Headers),
             request.Deadline, request.EmitDefaults, request.AllowUnknownFields,
             ParseBytes(request.MaxMessageSize), MaxReceiveBytes: null, EnvironmentName: null);
 
@@ -45,7 +45,7 @@ internal sealed class HistoryRecorder(
             TotalMs(result.Timing), MessagesSent: 1, MessagesReceived: result.Ok && result.ResponseJson is not null ? 1 : 0,
             responseBody, ResponseTruncated: false, result.ErrorMessage);
 
-        await store.AppendAsync(
+        await AppendAsync(
             Build(HistoryKind.Grpc, request.Connection, request.MethodSymbol, requestSnapshot, outcome),
             cancellationToken).ConfigureAwait(false);
     }
@@ -56,7 +56,7 @@ internal sealed class HistoryRecorder(
     {
         var history = settings.Current.History;
 
-        if (!history.Enabled)
+        if (!history.Enabled || !(policy?.AllowHistory ?? true))
         {
             return;
         }
@@ -74,7 +74,7 @@ internal sealed class HistoryRecorder(
             durationMs, messagesSent, messagesReceived,
             ResponseBody: null, ResponseTruncated: false, status.Code == 0 ? null : status.Detail);
 
-        await store.AppendAsync(
+        await AppendAsync(
             Build(HistoryKind.Grpc, request.Connection, request.MethodSymbol, requestSnapshot, outcome),
             cancellationToken).ConfigureAwait(false);
     }
@@ -83,19 +83,19 @@ internal sealed class HistoryRecorder(
     {
         var history = settings.Current.History;
 
-        if (!history.Enabled)
+        if (!history.Enabled || !(policy?.AllowHistory ?? true))
         {
             return;
         }
 
-        var body = Cap(context.Document, history.ResponseCapBytes, out var bodyTruncated);
+        var body = context.Document;
         var responseBody = history.CaptureResponses && context.ResponseEnvelope is not null
-            ? Cap(context.ResponseEnvelope, history.ResponseCapBytes, out _)
+            ? context.ResponseEnvelope
             : null;
 
         // GraphQL documents are not protobuf bodies, so BodyFormat records the surface ("graphql").
         var requestSnapshot = new HistoryRequest(
-            "graphql", body, bodyTruncated, RedactHeaders(context.Headers),
+            "graphql", body, false, RedactHeaders(context.Headers),
             context.Deadline, context.EmitDefaults, context.AllowUnknownFields,
             MaxSendBytes: null, MaxReceiveBytes: null, context.EnvironmentName);
 
@@ -104,7 +104,7 @@ internal sealed class HistoryRecorder(
             context.DurationMs, MessagesSent: 0, MessagesReceived: context.MessagesReceived,
             responseBody, ResponseTruncated: false, context.ErrorMessage);
 
-        await store.AppendAsync(
+        await AppendAsync(
             Build(HistoryKind.Graphql, context.Connection, context.OperationLabel, requestSnapshot, outcome),
             cancellationToken).ConfigureAwait(false);
     }
@@ -126,36 +126,14 @@ internal sealed class HistoryRecorder(
             : null;
 
     // FR-121: secret-classified header values are dropped to the marker; everything else (including
-    // ${VAR} placeholders) is stored verbatim, unexpanded — the file never holds a secret literal.
+    // ${VAR} placeholders) is stored verbatim, unexpanded. Unclassified values may still be sensitive.
     private static IReadOnlyList<HistoryHeader> RedactHeaders(IReadOnlyList<HeaderEntry> headers)
         => headers.Select(h => new HistoryHeader(
             h.Name, SecretRedactor.ShouldRedact(h.Name) ? HistoryEntry.RedactedMarker : h.Value)).ToList();
 
-    private static string Cap(string text, int capBytes, out bool truncated)
-    {
-        if (Encoding.UTF8.GetByteCount(text) <= capBytes)
-        {
-            truncated = false;
-            return text;
-        }
-
-        var builder = new StringBuilder();
-        var bytes = 0;
-
-        foreach (var rune in text.EnumerateRunes())
-        {
-            if (bytes + rune.Utf8SequenceLength > capBytes)
-            {
-                break; // cut at the last whole UTF-8 sequence within the cap
-            }
-
-            bytes += rune.Utf8SequenceLength;
-            _ = builder.Append(rune.ToString());
-        }
-
-        truncated = true;
-        return builder.ToString();
-    }
+    private async Task AppendAsync(HistoryEntry entry, CancellationToken token)
+        => await store.AppendAsync(await HistorySanitizer.SanitizeAsync(entry, settings.Current.History,
+            policy ?? new HistoryPolicy(), token, truncate: false).ConfigureAwait(false), token).ConfigureAwait(false);
 
     private static string BodyFormat(RequestBodyFormat format) => format == RequestBodyFormat.Text ? "text" : "json";
 

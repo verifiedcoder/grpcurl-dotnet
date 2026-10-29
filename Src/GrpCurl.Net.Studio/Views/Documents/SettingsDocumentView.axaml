@@ -266,14 +266,23 @@
             <!-- ───────── History (FR-158) ───────── -->
             <TextBlock Classes="sectionHeader" Text="History" />
 
+            <TextBlock Classes="settingHint" Text="{Binding HistoryPolicyMessage}" />
             <StackPanel Spacing="2">
-                <CheckBox IsChecked="{Binding HistoryCaptureEnabled}" Content="Capture invocation history"
-                          AutomationProperties.Name="Capture history" />
-                <TextBlock Classes="settingHint" Text="Record every call (redacted) to the History tab (default: on)." />
+                <CheckBox IsEnabled="{Binding CanCaptureHistoryRequests}" IsChecked="{Binding HistoryCaptureRequestBodies}"
+                          Content="Capture request bodies and error details" AutomationProperties.Name="Capture request bodies" />
+                <TextBlock Classes="settingHint" Text="JSON secret fields and all GraphQL literals are redacted. Server error text may still contain sensitive data. Unsupported payload formats are omitted." />
+                <TextBox Text="{Binding HistoryRedactFields}" Watermark="Additional JSON field names, separated by commas"
+                         AutomationProperties.Name="History redact fields" />
             </StackPanel>
 
             <StackPanel Spacing="2">
-                <CheckBox IsChecked="{Binding HistoryCaptureResponses}" Content="Capture response bodies"
+                <CheckBox IsEnabled="{Binding CanConfigureHistory}" IsChecked="{Binding HistoryCaptureEnabled}" Content="Capture invocation history"
+                          AutomationProperties.Name="Capture history" />
+                <TextBlock Classes="settingHint" Text="Keep encrypted call metadata (method, status, timing). Payload capture is off by default." />
+            </StackPanel>
+
+            <StackPanel Spacing="2">
+                <CheckBox IsEnabled="{Binding CanCaptureHistoryResponses}" IsChecked="{Binding HistoryCaptureResponses}" Content="Capture response bodies"
                           AutomationProperties.Name="Capture response bodies" />
                 <TextBlock Classes="settingHint" Text="Store response payloads in history, capped below (default: off)." />
             </StackPanel>

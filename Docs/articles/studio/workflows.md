@@ -29,12 +29,15 @@ non-dismissable **INSECURE** banner on any tab using it — verification-off is 
 
 ## History and replay
 
-Every call is recorded in **History** (`Ctrl+H`) — method, connection, status, duration, timestamp.
-Filter by text (`< 100 ms` over large histories), connection, category, or kind, and **pin** entries you
-return to. **Replay** re-opens a call as a fresh draft (secret header values are redacted and prompted
-for). History capture can be toggled in **Settings → History**.
+History (`Ctrl+H`) keeps encrypted call metadata when capture is enabled and secret storage is available.
+Request bodies and error details require explicit consent; response capture is separately opt-in.
+Filter by text, connection, category, or kind, and **pin** entries you return to. Replay opens a fresh
+draft only for complete, unmodified request bodies whose connection still resolves. Omitted, redacted,
+and truncated bodies cannot be replayed. Manage capture and extra JSON redaction fields in **Settings → History**.
 
-> _📷 Screenshot: the history tab with the filter bar and a row's Replay/Pin actions._
+See [History privacy and recovery](history-privacy.md) for migration, administrator policy, retention,
+plaintext export, and backup requirements.
+
 
 ## GraphQL
 

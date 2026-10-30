@@ -16,6 +16,8 @@ public abstract class WorkspacePreparation
     public abstract WorkspaceModel Workspace { get; }
     public abstract string Path { get; }
     public abstract IReadOnlyList<WorkspaceFileReference> References { get; }
+    /// <summary>Reject ambiguous source profile identities before import consent or commit.</summary>
+    public virtual void ValidateImportSource() => WorkspaceMerger.ValidateSourceProfiles(Workspace);
     public bool RequiresApproval => References.Any(r => r.ApprovalReason is not null);
 }
 

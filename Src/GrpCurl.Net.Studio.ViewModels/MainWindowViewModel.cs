@@ -781,7 +781,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                 return;
             }
 
-            var (_, summary) = WorkspaceMerger.Merge(_workspaceStore.Current, preparation.Workspace);
+            var importDialog = new WorkspaceImportDialogViewModel(preparation, _workspaceStore.Current);
+            var summary = importDialog.Summary;
 
             if (summary.IsEmpty)
             {
@@ -789,8 +790,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                 return;
             }
 
-            if (!await _dialogs.ConfirmAsync(
-                    $"Import {summary.TotalAdded} item(s) from '{Path.GetFileName(path)}'?", summary.Describe()))
+            var decision = await _dialogs.ShowDialogAsync(importDialog);
+            if (decision is null)
             {
                 return;
             }
@@ -803,7 +804,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                 supplied = await _dialogs.ShowDialogAsync(new ImportSecretsDialogViewModel(summary.MissingSecrets));
             }
             await _workspaceStore.ValidatePreparationAsync(preparation);
-            await _workspaceStore.CommitImportAsync(preparation);
+            await _workspaceStore.CommitImportAsync(preparation, decision);
             OnWorkspaceSwitched();
             if (supplied is not null && _secrets is not null)
             {

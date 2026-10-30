@@ -6,6 +6,8 @@ namespace GrpCurl.Net.DescriptorSources;
 /// </summary>
 public sealed record DescriptorSourceOptions
 {
+    /// <summary>Optional host authorization invoked before local descriptor reads or directory lookup.</summary>
+    public Action<string, bool>? FileAccessGuard { get; init; }
     /// <summary>
     ///     Default maximum size, in bytes, for a single local protoset file.
     /// </summary>

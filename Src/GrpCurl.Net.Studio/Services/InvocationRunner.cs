@@ -21,7 +21,7 @@ namespace GrpCurl.Net.Studio.Services;
 ///     later optimisation. User cancellation propagates; resolution/parse failures become a failed
 ///     <see cref="InvocationResultModel" />.
 /// </summary>
-internal sealed partial class InvocationRunner(IInvocationService invocation, ITlsProfileResolver? tlsResolver = null, IEnvironmentService? environment = null) : IInvocationRunner
+internal sealed partial class InvocationRunner(IInvocationService invocation, ITlsProfileResolver? tlsResolver = null, IEnvironmentService? environment = null, WorkspaceFileAccess? fileAccess = null) : IInvocationRunner
 {
     [GeneratedRegex(@"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")]
     private static partial Regex EnvVarPattern();
@@ -29,8 +29,10 @@ internal sealed partial class InvocationRunner(IInvocationService invocation, IT
     public async Task<InvocationResultModel> InvokeUnaryAsync(InvocationRequestModel request, CancellationToken cancellationToken)
     {
         var connection = request.Connection;
+        using var access = fileAccess?.Begin(connection, cancellationToken);
+        cancellationToken = access?.Token ?? cancellationToken;
         var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
-        var options = ConnectionChannelMapper.ToChannelOptions(connection, ParseSizeOrNull(request.MaxMessageSize), profile, password);
+        var options = ConnectionChannelMapper.ToChannelOptions(connection, ParseSizeOrNull(request.MaxMessageSize), profile, password, fileAccess);
         var reflectionMetadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
         var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
         var deadline = ParseDeadline(request.Deadline);
@@ -45,7 +47,7 @@ internal sealed partial class InvocationRunner(IInvocationService invocation, IT
                 channelOptions: options,
                 reflectionMetadata: reflectionMetadata,
                 cancellationToken: cancellationToken,
-                measureChannelConnect: true).ConfigureAwait(false);
+                measureChannelConnect: true, descriptorOptions: fileAccess?.DescriptorOptions(connection)).ConfigureAwait(false);
 
             // Accept both the dotted FQN and the pkg.Service/Method invocation grammar.
             var symbol = request.MethodSymbol.Replace('/', '.');
@@ -141,8 +143,10 @@ internal sealed partial class InvocationRunner(IInvocationService invocation, IT
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var connection = request.Connection;
+        using var access = fileAccess?.Begin(connection, cancellationToken);
+        cancellationToken = access?.Token ?? cancellationToken;
         var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
-        var options = ConnectionChannelMapper.ToChannelOptions(connection, ParseSizeOrNull(request.MaxMessageSize), profile, password);
+        var options = ConnectionChannelMapper.ToChannelOptions(connection, ParseSizeOrNull(request.MaxMessageSize), profile, password, fileAccess);
         var reflectionMetadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
         var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
         var deadline = ParseDeadline(request.Deadline);
@@ -152,7 +156,7 @@ internal sealed partial class InvocationRunner(IInvocationService invocation, IT
             connection.Address, protosets, protos, imports,
             channelOptions: options,
             reflectionMetadata: reflectionMetadata,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+            cancellationToken: cancellationToken, descriptorOptions: fileAccess?.DescriptorOptions(connection)).ConfigureAwait(false);
 
         var symbol = request.MethodSymbol.Replace('/', '.');
 

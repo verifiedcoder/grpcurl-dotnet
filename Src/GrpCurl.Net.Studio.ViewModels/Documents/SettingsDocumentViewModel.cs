@@ -34,6 +34,7 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel, IDisp
     private readonly ISecretStore? _secrets;
     private readonly ISecretStoreControl? _secretControl;
     private readonly IUiDispatcher? _dispatcher;
+    private readonly IWorkspaceTrustStore? _workspaceTrust;
     private SecretStoreInfo? SecretInfo => _secrets?.Info;
     private readonly bool _loaded;
     private bool _applying;
@@ -174,9 +175,12 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel, IDisp
         IDiagnosticsLog? diagnostics = null,
         IClipboardService? clipboard = null,
         IUiDispatcher? dispatcher = null,
-        IHistoryPolicy? historyPolicy = null)
+        IHistoryPolicy? historyPolicy = null,
+        IWorkspaceTrustStore? workspaceTrust = null)
     {
         _settings = settings;
+        _workspaceTrust = workspaceTrust;
+        RefreshWorkspaceApprovals();
         _historyPolicy = historyPolicy;
         _themeService = themeService;
         _dialogs = dialogs;
@@ -216,6 +220,39 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel, IDisp
     }
 
     // ── Security (SEC-024 / PRD-006): live backend and explicit fallback consent ──
+
+    public bool HasWorkspaceTrust => _workspaceTrust is not null;
+    public System.Collections.ObjectModel.ObservableCollection<string> ApprovedWorkspaceLocations { get; } = [];
+    [ObservableProperty]
+    public partial string? WorkspaceTrustStatus { get; set; }
+
+    [RelayCommand]
+    private void RefreshWorkspaceApprovals()
+    {
+        ApprovedWorkspaceLocations.Clear();
+        foreach (var path in _workspaceTrust?.ApprovedWorkspaces ?? []) { ApprovedWorkspaceLocations.Add(path); }
+        WorkspaceTrustStatus = _workspaceTrust?.RecoveryMessage;
+    }
+
+    [RelayCommand]
+    private void RevokeWorkspaceApproval(string path) => RevokeApproval(path);
+
+    [RelayCommand]
+    private void RevokeAllWorkspaceApprovals() => RevokeApproval(null);
+
+    private void RevokeApproval(string? path)
+    {
+        try
+        {
+            _workspaceTrust?.Revoke(path);
+            RefreshWorkspaceApprovals();
+            WorkspaceTrustStatus = "Approval revoked. Affected operations are cancelled; reopen the workspace to approve file access again. Your workspace edits are retained.";
+        }
+        catch (Exception ex) when (ex is WorkspaceTrustException or IOException or UnauthorizedAccessException)
+        {
+            WorkspaceTrustStatus = ex.Message;
+        }
+    }
 
     /// <summary>Whether the secret-store backend is known (wired in the real app; null in bare constructions).</summary>
     public bool HasSecretBackend => SecretInfo is not null;

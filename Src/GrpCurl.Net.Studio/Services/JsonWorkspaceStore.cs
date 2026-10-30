@@ -11,7 +11,7 @@ namespace GrpCurl.Net.Studio.Services;
 ///     strictly (surfacing <see cref="WorkspaceSchemaException" />). All writes are atomic temp-file moves
 ///     through <see cref="WorkspaceSerializer" /> (canonical LF / no-BOM format).
 /// </summary>
-internal sealed class JsonWorkspaceStore : IWorkspaceStore
+internal sealed partial class JsonWorkspaceStore : IWorkspaceStore
 {
     private const string AppFolderName = "GrpCurlNet.Studio";
     private const string DefaultFileName = "workspace.json";
@@ -44,13 +44,14 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
     // Test seam: point the store at a temp file; recents live beside it. Tests default to a zero
     // debounce so an autosave flushes synchronously within the awaited SaveAsync, and inject a lock
     // manager with a deterministic identity/clock to exercise the SPEC-040 §8 multi-instance rules.
-    internal JsonWorkspaceStore(string path, TimeSpan? autosaveDebounce = null, WorkspaceLockManager? lockManager = null)
+    internal JsonWorkspaceStore(string path, TimeSpan? autosaveDebounce = null, WorkspaceLockManager? lockManager = null, WorkspaceTrustStore? trust = null)
     {
         _defaultPath = path;
         CurrentPath = path;
         _debounce = autosaveDebounce ?? TimeSpan.Zero;
         _lock = lockManager ?? WorkspaceLockManager.Default();
         _recentPath = Path.Combine(Path.GetDirectoryName(path) ?? ".", RecentFileName);
+        _trust = trust ?? new WorkspaceTrustStore(Path.Combine(Path.GetDirectoryName(path)!, "workspace-trust.json"));
         LoadRecent();
     }
 
@@ -77,56 +78,59 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
 
     public async Task<WorkspaceModel> LoadAsync(CancellationToken cancellationToken = default)
     {
-        CurrentPath = _defaultPath;
-        RefreshReadOnly(_defaultPath);
-        AcquireLockFor(_defaultPath);
-
         if (!File.Exists(_defaultPath))
         {
+            CurrentPath = _defaultPath;
+            RefreshReadOnly(_defaultPath);
+            AcquireLockFor(_defaultPath);
             return Current = WorkspaceModel.Empty();
         }
-
         try
         {
-            var json = await File.ReadAllTextAsync(_defaultPath, cancellationToken).ConfigureAwait(false);
-            Current = DeserializeResolved(json, _defaultPath);
+            var prepared = await PrepareAsync(_defaultPath, cancellationToken).ConfigureAwait(false);
+            if (prepared.RequiresApproval)
+            {
+                PendingStartupPath = _defaultPath;
+                CurrentPath = null;
+                return Current = WorkspaceModel.Empty();
+            }
+            return await CommitOpenAsync(prepared, cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex) when (ex is WorkspaceSchemaException or IOException)
+        catch (WorkspaceTrustException ex)
         {
-            // The default startup workspace stays resilient: a corrupt/newer file is set aside so the app
-            // always starts. OpenAsync is the strict, user-facing path that surfaces the error instead.
-            TryQuarantine(_defaultPath);
-            Current = WorkspaceModel.Empty();
+            // Trust failures must never quarantine or overwrite the selected document.
+            TrustMessage = ex.Message;
+            PendingStartupPath = _defaultPath;
+            CurrentPath = null;
+            return Current = WorkspaceModel.Empty();
         }
-
-        SetDirty(false);
-        return Current;
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            TrustMessage = "The startup workspace could not be read. Check its permissions and open it again. " + ex.Message;
+            PendingStartupPath = _defaultPath;
+            CurrentPath = null;
+            return Current = WorkspaceModel.Empty();
+        }
+        catch (WorkspaceSchemaException)
+        {
+            TryQuarantine(_defaultPath);
+            CurrentPath = _defaultPath;
+            RefreshReadOnly(_defaultPath);
+            AcquireLockFor(_defaultPath);
+            SetDirty(false);
+            return Current = WorkspaceModel.Empty();
+        }
     }
 
     public async Task<WorkspaceModel> OpenAsync(string path, CancellationToken cancellationToken = default)
-    {
-        var json = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
-
-        // Strict: WorkspaceSerializer throws WorkspaceSchemaException for a corrupt/newer file. We let it
-        // propagate so the open flow can show the message, leaving Current/CurrentPath untouched.
-        var workspace = DeserializeResolved(json, path);
-
-        CancelPendingFlush();
-        ReleaseHeldLock();
-        Current = workspace;
-        CurrentPath = path;
-        SetDirty(false);
-        RefreshReadOnly(path);
-        AcquireLockFor(path);
-        await PromoteRecentAsync(path, cancellationToken).ConfigureAwait(false);
-        return workspace;
-    }
+        => await CommitOpenAsync(await PrepareAsync(path, cancellationToken).ConfigureAwait(false), cancellationToken).ConfigureAwait(false);
 
     public async Task SaveAsync(WorkspaceModel workspace, CancellationToken cancellationToken = default)
     {
         // Apply the mutation in memory and autosave: flush now when the debounce is zero, otherwise
         // schedule a debounced flush. An untitled workspace (no path) stays dirty until Save As.
-        Current = workspace;
+        await AuthorizeMutationAsync(workspace, AuthorizationPath, null, cancellationToken).ConfigureAwait(false);
+        Current = WorkspacePathPortability.ToAbsolute(workspace, DirectoryOf(AuthorizationPath));
         SetDirty(true);
         CancelPendingFlush();
 
@@ -158,23 +162,48 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
             return; // untitled — nothing on disk to reload from
         }
 
-        CancelPendingFlush();
-        var json = await File.ReadAllTextAsync(CurrentPath, cancellationToken).ConfigureAwait(false);
-        Current = DeserializeResolved(json, CurrentPath); // strict — surfaces a corrupt/newer file
-        SetDirty(false);
-        RefreshReadOnly(CurrentPath); // the file's permissions may have changed since open
+        _ = await OpenAsync(CurrentPath, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task SaveAsAsync(WorkspaceModel workspace, string path, CancellationToken cancellationToken = default)
     {
+        path = Path.GetFullPath(path);
+        var previousPersistence = _persistenceVersion;
+        var previousApprovals = _activeApprovals;
+        var previousTargets = _activeTargets;
+        var previousGeneration = _generation;
+        try
+        {
+            await AuthorizeMutationAsync(workspace, path, null, cancellationToken).ConfigureAwait(false);
+            await PersistAuthorizedAsync(path, workspace, cancellationToken).ConfigureAwait(false);
+        }
+        catch
+        {
+            if (_persistenceVersion != previousPersistence)
+            {
+                CancelPendingFlush();
+                ReleaseHeldLock();
+                Current = WorkspacePathPortability.ToAbsolute(workspace, DirectoryOf(path));
+                CurrentPath = path;
+                SetDirty(false);
+                RefreshReadOnly(path);
+                AcquireLockFor(path);
+            }
+            else
+            {
+                _activeApprovals = previousApprovals;
+                _activeTargets = previousTargets;
+                _generation = previousGeneration;
+            }
+            throw;
+        }
         CancelPendingFlush();
         ReleaseHeldLock();
-        await WriteAtomicAsync(path, workspace, cancellationToken).ConfigureAwait(false);
-        Current = workspace;
+        Current = WorkspacePathPortability.ToAbsolute(workspace, DirectoryOf(path));
         CurrentPath = path;
         SetDirty(false);
-        RefreshReadOnly(path); // FR-148: Save As to a writable path clears read-only
-        AcquireLockFor(path);  // SPEC-040 §8: hold the lock on the new active file
+        RefreshReadOnly(path);
+        AcquireLockFor(path);
         await PromoteRecentAsync(path, cancellationToken).ConfigureAwait(false);
     }
 
@@ -184,9 +213,9 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
 
     public async Task<WorkspaceModel> ReadAsync(string path, CancellationToken cancellationToken = default)
     {
-        // Read-only preview for a merge: deserialize strictly, but leave Current/CurrentPath/recents alone.
-        var json = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
-        return DeserializeResolved(json, path);
+        var prepared = await PrepareAsync(path, cancellationToken).ConfigureAwait(false);
+        await ValidatePreparationAsync(prepared, cancellationToken).ConfigureAwait(false);
+        return prepared.Workspace;
     }
 
     public WorkspaceModel NewWorkspace(bool withStarterConnection = false)
@@ -195,6 +224,13 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
         ReleaseHeldLock();
         Current = withStarterConnection ? WorkspaceModel.StarterTemplate() : WorkspaceModel.Empty();
         CurrentPath = null; // untitled until the first Save As
+        PendingStartupPath = null;
+        _admittedFingerprint = null;
+        _admittedLocation = null;
+        _admissionId = null;
+        _activeApprovals = new(WorkspaceReferenceAssessment.Comparer);
+        _activeTargets = new(WorkspaceReferenceAssessment.Comparer);
+        _generation = _trust.Read().Generation;
         SetDirty(false);
         SetReadOnly(false); // a fresh untitled workspace has nothing on disk
         SetLocked(false, null);
@@ -225,7 +261,7 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
             return;
         }
 
-        await WriteAtomicAsync(CurrentPath, Current, cancellationToken).ConfigureAwait(false);
+        await PersistAuthorizedAsync(CurrentPath, Current, cancellationToken).ConfigureAwait(false);
         SetDirty(false);
     }
 
@@ -246,6 +282,16 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
         catch (OperationCanceledException)
         {
             // Superseded by a newer mutation or an explicit save/reload.
+        }
+        catch (Exception ex) when (ex is WorkspaceTrustException or IOException or UnauthorizedAccessException)
+        {
+            TrustMessage = ex.Message;
+            if (ApprovalDialogs is not null)
+            {
+                Task Show() => ApprovalDialogs.ShowMessageAsync("Workspace autosave needs attention", ex.Message, CancellationToken.None);
+                if (Dispatcher is null) { await Show().ConfigureAwait(false); }
+                else { await (await Dispatcher.InvokeAsync(Show).ConfigureAwait(false)).ConfigureAwait(false); }
+            }
         }
     }
 
@@ -327,24 +373,20 @@ internal sealed class JsonWorkspaceStore : IWorkspaceStore
 
     public void ReleaseLock() => ReleaseHeldLock();
 
-    // Deserialise then resolve FR-147 relative file references back to absolute against the file's directory,
-    // so the in-memory model always holds absolute paths regardless of how they were stored on disk.
-    private static WorkspaceModel DeserializeResolved(string json, string filePath)
-        => WorkspacePathPortability.ToAbsolute(WorkspaceSerializer.Deserialize(json), DirectoryOf(filePath));
-
     private static string DirectoryOf(string path) => Path.GetDirectoryName(Path.GetFullPath(path))!;
 
-    private static async Task WriteAtomicAsync(string path, WorkspaceModel workspace, CancellationToken cancellationToken)
+    private static async Task<string> WriteAtomicAsync(string path, WorkspaceModel workspace, CancellationToken cancellationToken)
     {
         _ = Directory.CreateDirectory(Path.GetDirectoryName(path)!);
 
         // FR-147: store file references relative to this file's directory when they live beneath it.
         var portable = WorkspacePathPortability.ToRelative(workspace, DirectoryOf(path));
 
+        var bytes = WorkspaceSerializer.SerializeToUtf8(portable);
         var tempPath = path + ".tmp";
-        await File.WriteAllBytesAsync(tempPath, WorkspaceSerializer.SerializeToUtf8(portable), cancellationToken).ConfigureAwait(false);
-
+        await File.WriteAllBytesAsync(tempPath, bytes, cancellationToken).ConfigureAwait(false);
         File.Move(tempPath, path, overwrite: true);
+        return Fingerprint(bytes);
     }
 
     private async Task PromoteRecentAsync(string path, CancellationToken cancellationToken)

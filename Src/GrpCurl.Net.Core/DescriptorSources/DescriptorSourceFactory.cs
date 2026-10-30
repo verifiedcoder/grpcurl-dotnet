@@ -85,46 +85,56 @@ internal sealed class DescriptorSourceFactory : IAsyncDisposable
         GrpcChannel? channel = null;
         TimeSpan? channelConnectDuration = null;
 
-        if (hasAddress)
+        try
         {
-            channel = GrpcChannelFactory.Create(address!, channelOptions);
-
-            // FR-110: eagerly establish the connection so its cost is a distinct, measured phase rather
-            // than hidden inside the first reflection/business RPC. Opt-in — the lazy default is unchanged.
-            // ConnectAsync requires a plain SocketsHttpHandler; channels with a custom ConnectCallback
-            // (e.g. Unix domain sockets) reject it, so fall back to lazy connect (no channel phase) there.
-            if (measureChannelConnect)
+            if (hasAddress)
             {
-                try
+                channel = GrpcChannelFactory.Create(address!, channelOptions);
+
+                // FR-110: eagerly establish the connection so its cost is a distinct, measured phase rather
+                // than hidden inside the first reflection/business RPC. Opt-in — the lazy default is unchanged.
+                // ConnectAsync requires a plain SocketsHttpHandler; channels with a custom ConnectCallback
+                // (e.g. Unix domain sockets) reject it, so fall back to lazy connect (no channel phase) there.
+                if (measureChannelConnect)
                 {
-                    var connect = System.Diagnostics.Stopwatch.StartNew();
-                    await channel.ConnectAsync(cancellationToken).ConfigureAwait(false);
-                    channelConnectDuration = connect.Elapsed;
-                }
-                catch (InvalidOperationException)
-                {
-                    channelConnectDuration = null;
+                    try
+                    {
+                        var connect = System.Diagnostics.Stopwatch.StartNew();
+                        await channel.ConnectAsync(cancellationToken).ConfigureAwait(false);
+                        channelConnectDuration = connect.Elapsed;
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        channelConnectDuration = null;
+                    }
                 }
             }
-        }
 
-        var options = descriptorOptions ?? DescriptorSourceOptions.Default;
-        IDescriptorSource source;
+            var options = descriptorOptions ?? DescriptorSourceOptions.Default;
+            IDescriptorSource source;
 
-        if (hasProtoFiles)
-        {
-            // Highest precedence: shell out to protoc and use the resulting protoset.
-            source = await ProtoSource.LoadFromProtoFilesAsync(protoFiles, importPaths, cancellationToken, warningSink, options).ConfigureAwait(false);
-        }
-        else if (hasProtosets)
-        {
-            source = await ProtosetSource.LoadFromFilesAsync(protosetPaths, options, cancellationToken, warningSink).ConfigureAwait(false);
-        }
-        else
-        {
-            source = new ReflectionSource(channel!, reflectionMetadata, options: options, warningSink: warningSink);
-        }
+            if (hasProtoFiles)
+            {
+                // Highest precedence: shell out to protoc and use the resulting protoset.
+                source = await ProtoSource.LoadFromProtoFilesAsync(protoFiles, importPaths, cancellationToken, warningSink, options).ConfigureAwait(false);
+            }
+            else if (hasProtosets)
+            {
+                source = await ProtosetSource.LoadFromFilesAsync(protosetPaths, options, cancellationToken, warningSink).ConfigureAwait(false);
+            }
+            else
+            {
+                source = new ReflectionSource(channel!, reflectionMetadata, options: options, warningSink: warningSink);
+            }
 
-        return new DescriptorSourceFactory(channel, source, channelConnectDuration);
+            return new DescriptorSourceFactory(channel, source, channelConnectDuration);
+        }
+        catch
+        {
+            // A host policy can revoke access between channel creation and descriptor loading.
+            // No session is returned on failure, so the factory owns channel cleanup here.
+            channel?.Dispose();
+            throw;
+        }
     }
 }

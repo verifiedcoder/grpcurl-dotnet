@@ -207,7 +207,29 @@
             </StackPanel>
 
             <!-- ───────── Security (SEC-024): live secret-store backend ───────── -->
-            <TextBlock Classes="sectionHeader" Text="Security" IsVisible="{Binding HasSecretBackend}" />
+            <TextBlock Classes="sectionHeader" Text="Security" />
+
+            <StackPanel Spacing="6" IsVisible="{Binding HasWorkspaceTrust}">
+                <TextBlock Classes="settingLabel" Text="Workspace file approvals" />
+                <TextBlock Classes="settingHint" Text="Approvals belong to a workspace location and its document contents on this computer. Revoke to stop file access until you approve the references again. Workspace edits are retained." />
+                <ItemsControl ItemsSource="{Binding ApprovedWorkspaceLocations}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <Grid ColumnDefinitions="*,Auto" Margin="0,3">
+                                <TextBlock Text="{Binding}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                                <Button Grid.Column="1" Content="Revoke" Margin="8,0,0,0"
+                                        Command="{Binding #Root.((docs:SettingsDocumentViewModel)DataContext).RevokeWorkspaceApprovalCommand}"
+                                        CommandParameter="{Binding}" AutomationProperties.Name="Revoke workspace approval" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Refresh approvals" Command="{Binding RefreshWorkspaceApprovalsCommand}" AutomationProperties.Name="Refresh workspace approvals" />
+                    <Button Content="Revoke all" Command="{Binding RevokeAllWorkspaceApprovalsCommand}" AutomationProperties.Name="Revoke all workspace approvals" />
+                </StackPanel>
+                <TextBlock Text="{Binding WorkspaceTrustStatus}" TextWrapping="Wrap" />
+            </StackPanel>
 
             <StackPanel Spacing="2" IsVisible="{Binding HasSecretBackend}">
                 <TextBlock Classes="settingLabel" Text="Secret storage backend" />

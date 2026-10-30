@@ -11,6 +11,14 @@ namespace GrpCurl.Net.Studio.ViewModels.Services;
 /// </summary>
 public interface IWorkspaceStore
 {
+    IWorkspaceTrustStore? Trust { get; }
+    string? PendingStartupPath { get; }
+    string? TrustMessage { get; }
+    Task<WorkspacePreparation> PrepareAsync(string path, CancellationToken cancellationToken = default);
+    Task<WorkspacePreparation> ApproveAsync(WorkspacePreparation preparation, IReadOnlyList<string> approvedKeys, CancellationToken cancellationToken = default);
+    Task ValidatePreparationAsync(WorkspacePreparation preparation, CancellationToken cancellationToken = default);
+    Task<WorkspaceModel> CommitOpenAsync(WorkspacePreparation preparation, CancellationToken cancellationToken = default);
+    Task CommitImportAsync(WorkspacePreparation preparation, CancellationToken cancellationToken = default);
     /// <summary>The workspace currently loaded in memory.</summary>
     WorkspaceModel Current { get; }
 

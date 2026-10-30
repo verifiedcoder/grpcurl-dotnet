@@ -36,6 +36,8 @@
       href: studio/workflows.md
     - name: History privacy and recovery
       href: studio/history-privacy.md
+    - name: Workspace file approvals
+      href: studio/workspace-file-approvals.md
     - name: Troubleshooting
       href: studio/troubleshooting.md
     - name: Secret storage policy

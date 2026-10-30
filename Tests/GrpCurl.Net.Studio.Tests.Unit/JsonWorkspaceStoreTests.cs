@@ -80,7 +80,15 @@ public sealed class JsonWorkspaceStoreTests : IDisposable
             TlsProfiles = [new TlsProfile { Name = "p", CaCertPath = caAbs }]
         };
 
-        await new JsonWorkspaceStore(Path_).SaveAsync(workspace, ct);
+        var consentingStore = new JsonWorkspaceStore(Path_)
+        {
+            ApprovalDialogs = new GrpCurl.Net.Studio.TestSupport.FakeDialogService
+            {
+                OnShowDialog = dialog => dialog is GrpCurl.Net.Studio.ViewModels.WorkspaceApprovalDialogViewModel approval
+                    ? approval.Items.Select(i => i.Reference.ApprovalKey).ToArray() : null
+            }
+        };
+        await consentingStore.SaveAsync(workspace, ct);
 
         // On disk: paths beneath the workspace dir are relative (forward-slash); the outside one stays absolute.
         var raw = await File.ReadAllTextAsync(Path_, ct);

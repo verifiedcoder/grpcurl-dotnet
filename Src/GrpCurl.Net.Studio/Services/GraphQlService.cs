@@ -24,7 +24,7 @@ namespace GrpCurl.Net.Studio.Services;
 ///     <c>gql2grpc</c> run the same engine (GQL-007). PR-1 covers query/mutation execution; subscriptions
 ///     (E4.3), the mapping designer (E4.2), and introspection (E4.4) layer on later.
 /// </summary>
-internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IEnvironmentService? environment = null) : IGraphQlService
+internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IEnvironmentService? environment = null, WorkspaceFileAccess? fileAccess = null) : IGraphQlService
 {
     public GraphQlParseResult Parse(string document)
     {
@@ -68,8 +68,10 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
         var mappingResolver = new MappingResolver(mappingConfig, request.DefaultService);
 
         var connection = request.Connection;
+        using var access = fileAccess?.Begin(connection, cancellationToken);
+        cancellationToken = access?.Token ?? cancellationToken;
         var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
-        var options = ConnectionChannelMapper.ToChannelOptions(connection, null, profile, password);
+        var options = ConnectionChannelMapper.ToChannelOptions(connection, null, profile, password, fileAccess);
         var reflectionMetadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
         var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
 
@@ -77,7 +79,7 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
             connection.Address, protosets, protos, imports,
             channelOptions: options,
             reflectionMetadata: reflectionMetadata,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+            cancellationToken: cancellationToken, descriptorOptions: fileAccess?.DescriptorOptions(connection)).ConfigureAwait(false);
 
         if (session.Channel is not { } channel)
         {
@@ -154,8 +156,10 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
         var mappingResolver = new MappingResolver(mappingConfig, request.DefaultService);
 
         var connection = request.Connection;
+        using var access = fileAccess?.Begin(connection, cancellationToken);
+        cancellationToken = access?.Token ?? cancellationToken;
         var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
-        var options = ConnectionChannelMapper.ToChannelOptions(connection, null, profile, password);
+        var options = ConnectionChannelMapper.ToChannelOptions(connection, null, profile, password, fileAccess);
         var reflectionMetadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
         var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
 
@@ -163,7 +167,7 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
             connection.Address, protosets, protos, imports,
             channelOptions: options,
             reflectionMetadata: reflectionMetadata,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+            cancellationToken: cancellationToken, descriptorOptions: fileAccess?.DescriptorOptions(connection)).ConfigureAwait(false);
 
         if (session.Channel is not { } channel)
         {
@@ -251,8 +255,10 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
     {
         var mappingConfig = await LoadMappingAsync(request, cancellationToken).ConfigureAwait(false);
         var connection = request.Connection;
+        using var access = fileAccess?.Begin(connection, cancellationToken);
+        cancellationToken = access?.Token ?? cancellationToken;
         var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
-        var options = ConnectionChannelMapper.ToChannelOptions(connection, null, profile, password);
+        var options = ConnectionChannelMapper.ToChannelOptions(connection, null, profile, password, fileAccess);
         var reflectionMetadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
         var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
 
@@ -266,7 +272,7 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
                 connection.Address, protosets, protos, imports,
                 channelOptions: options,
                 reflectionMetadata: reflectionMetadata,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                cancellationToken: cancellationToken, descriptorOptions: fileAccess?.DescriptorOptions(connection)).ConfigureAwait(false);
 
             // GQL-075: __schema answered locally from the descriptor set — no business RPC.
             var schema = new GraphQLSchemaBuilder(session.Source, mappingConfig).BuildSchema();
@@ -552,8 +558,10 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
         var translator = new JsonRequestTranslator();
 
         var connection = request.Connection;
+        using var access = fileAccess?.Begin(connection, cancellationToken);
+        cancellationToken = access?.Token ?? cancellationToken;
         var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
-        var options = ConnectionChannelMapper.ToChannelOptions(connection, null, profile, password);
+        var options = ConnectionChannelMapper.ToChannelOptions(connection, null, profile, password, fileAccess);
         var reflectionMetadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
         var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
 
@@ -561,7 +569,7 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
             connection.Address, protosets, protos, imports,
             channelOptions: options,
             reflectionMetadata: reflectionMetadata,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+            cancellationToken: cancellationToken, descriptorOptions: fileAccess?.DescriptorOptions(connection)).ConfigureAwait(false);
 
         // GQL-047: index every argument's document position so a dropped argument can be squiggled.
         var argumentLocations = BuildArgumentLocations(operation, request.Document);
@@ -750,8 +758,10 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
         }
 
         var connection = request.Connection;
+        using var access = fileAccess?.Begin(connection, cancellationToken);
+        cancellationToken = access?.Token ?? cancellationToken;
         var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
-        var options = ConnectionChannelMapper.ToChannelOptions(connection, null, profile, password);
+        var options = ConnectionChannelMapper.ToChannelOptions(connection, null, profile, password, fileAccess);
         var reflectionMetadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
         var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
 
@@ -759,7 +769,7 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
             connection.Address, protosets, protos, imports,
             channelOptions: options,
             reflectionMetadata: reflectionMetadata,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+            cancellationToken: cancellationToken, descriptorOptions: fileAccess?.DescriptorOptions(connection)).ConfigureAwait(false);
 
         return await ValidateEntriesAsync(config, session.Source, request.DefaultService, cancellationToken).ConfigureAwait(false);
     }
@@ -928,8 +938,10 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
         var resolver = new MappingResolver(mappingConfig, request.DefaultService);
 
         var connection = request.Connection;
+        using var access = fileAccess?.Begin(connection, cancellationToken);
+        cancellationToken = access?.Token ?? cancellationToken;
         var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
-        var options = ConnectionChannelMapper.ToChannelOptions(connection, null, profile, password);
+        var options = ConnectionChannelMapper.ToChannelOptions(connection, null, profile, password, fileAccess);
         var reflectionMetadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
         var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
 
@@ -937,7 +949,7 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
             connection.Address, protosets, protos, imports,
             channelOptions: options,
             reflectionMetadata: reflectionMetadata,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+            cancellationToken: cancellationToken, descriptorOptions: fileAccess?.DescriptorOptions(connection)).ConfigureAwait(false);
 
         var rootFields = new List<string>();
 

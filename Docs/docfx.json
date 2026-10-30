@@ -42,7 +42,8 @@
     "resource": [
       {
         "files": [
-          "assets/**"
+          "assets/**",
+          "engineering/evidence/**"
         ]
       }
     ]

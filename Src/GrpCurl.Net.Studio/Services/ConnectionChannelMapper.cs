@@ -17,7 +17,8 @@ internal static class ConnectionChannelMapper
         SavedConnection connection,
         int? maxMessageSize = null,
         TlsProfile? profile = null,
-        string? clientCertPassword = null)
+        string? clientCertPassword = null,
+        WorkspaceFileAccess? fileAccess = null)
     {
         var tls = connection.Transport == TransportMode.Tls;
 
@@ -26,6 +27,7 @@ internal static class ConnectionChannelMapper
 
         return new GrpcChannelFactory.ChannelOptions
         {
+            FileAccessGuard = fileAccess?.Guard(connection),
             Plaintext = connection.Transport == TransportMode.Plaintext,
             ConnectTimeout = ParseOrNull(connection.ConnectTimeout),
             KeepaliveTime = ParseOrNull(connection.Keepalive.Time),

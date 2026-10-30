@@ -9,11 +9,13 @@ namespace GrpCurl.Net.Studio.Services;
 ///     password secret, fetches it from <see cref="ISecretStore" /> at call time — the literal never
 ///     touches the workspace JSON (SEC-017).
 /// </summary>
-internal sealed class TlsProfileResolver(IWorkspaceStore workspace, ISecretStore secrets) : ITlsProfileResolver
+internal sealed class TlsProfileResolver(IWorkspaceStore workspace, ISecretStore secrets, WorkspaceFileAccess? fileAccess = null) : ITlsProfileResolver
 {
     public async Task<(TlsProfile? Profile, string? Password)> ResolveAsync(
         SavedConnection connection, CancellationToken cancellationToken = default)
     {
+        // Also guards descriptor-only connections before any secret is resolved.
+        if (fileAccess is not null) { _ = ((JsonWorkspaceStore)workspace).AuthorizeConnection(connection); }
         // TLS material is meaningless for a plaintext target.
         if (connection.Transport != TransportMode.Tls || string.IsNullOrWhiteSpace(connection.TlsProfileId))
         {

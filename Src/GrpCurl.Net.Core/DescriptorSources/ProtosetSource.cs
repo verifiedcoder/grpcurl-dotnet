@@ -94,6 +94,7 @@ public sealed class ProtosetSource : IDescriptorSource
 
     private async Task LoadProtosetAsync(string filePath, CancellationToken cancellationToken)
     {
+        _options.FileAccessGuard?.Invoke(filePath, false);
         var bytes = await InputFileGuard.ReadAllBytesAsync(
             filePath,
             _options.MaxProtosetFileBytes,

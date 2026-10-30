@@ -32,8 +32,12 @@ public sealed class FakeWorkspaceStore : IWorkspaceStore
         SetDirty(false);
         return OpenAsync(preparation.Path, cancellationToken);
     }
-    public Task CommitImportAsync(WorkspacePreparation preparation, CancellationToken cancellationToken = default)
-        => SaveAsync(WorkspaceMerger.Merge(Current, preparation.Workspace).Merged, cancellationToken);
+    public Task CommitImportAsync(WorkspacePreparation preparation, WorkspaceImportDecision? decision = null, CancellationToken cancellationToken = default)
+    {
+        preparation.ValidateImportSource();
+        decision?.ValidateFor(preparation);
+        return SaveAsync(WorkspaceMerger.Merge(Current, preparation.Workspace, decision?.ApprovedBypassProfileIds).Merged, cancellationToken);
+    }
     private readonly List<string> _recent = [];
 
     public FakeWorkspaceStore(WorkspaceModel? initial = null) => Current = initial ?? WorkspaceModel.Empty();

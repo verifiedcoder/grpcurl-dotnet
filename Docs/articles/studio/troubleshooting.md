@@ -94,6 +94,23 @@ determine reference ownership. This error never enables fallback. If the error r
 change completed, restore a backup consistent with the backend's state; the backend change was not
 rolled back. For native keystores, use the corresponding platform backup/recovery facilities.
 
+## Imported connections now report certificate errors
+
+Import Workspace enables certificate verification unless you explicitly select the bypass checkbox for
+that source profile. Check the server certificate, server name and custom CA path. A custom CA is retained
+when verification is enabled; its file access still needs [workspace approval](workspace-file-approvals.md).
+For a test or diagnostic target, use the existing TLS profile editor confirmation to disable verification,
+or select that profile's checkbox during a new import. Do not disable checks to hide an unexpected error.
+See [Workspace import TLS choices](workspace-import-tls.md).
+
+If import reports a missing, malformed or duplicate source profile ID, repair the source file or re-export
+it with unique profile IDs and matching connection references. Duplicate display names are supported;
+the summary shows their source IDs and destination names. If the source bytes, link target or path approval
+changes during review, start the import again. An error saying the workspace was saved but approvals were
+not is a partial result: the imported TLS settings were saved, supplied secrets were not written, and file
+access must be approved again after repairing approval storage. Review the current workspace before retrying
+an import to avoid adding duplicates.
+
 ## The INSECURE banner won't go away
 
 A tab is using a TLS profile with certificate verification disabled. That's intended for testing only and

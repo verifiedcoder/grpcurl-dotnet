@@ -43,7 +43,8 @@ public sealed class WorkspaceApprovalFlowTests : IDisposable
         });
         incoming.TlsProfiles.Add(new TlsProfile
         {
-            Id = "tls", Name = "TLS", ClientKeyPath = "../external/private.key", ClientCertPasswordSecretRef = "imported-secret"
+            Id = "tls", Name = "TLS", InsecureSkipVerify = true,
+            ClientKeyPath = "../external/private.key", ClientCertPasswordSecretRef = "imported-secret"
         });
         await File.WriteAllBytesAsync(selected, WorkspaceSerializer.SerializeToUtf8(incoming));
         var before = await File.ReadAllBytesAsync(selected);
@@ -78,6 +79,7 @@ public sealed class WorkspaceApprovalFlowTests : IDisposable
                     store.CurrentPath.ShouldBe(originalPath);
                     return consent ? approval.Items.Select(i => i.Reference.ApprovalKey).ToArray() : null;
                 }
+                if (dialog is WorkspaceImportDialogViewModel import) { return import.CreateDecision(); }
                 return dialog is ImportSecretsDialogViewModel ? new Dictionary<string, string> { ["imported-secret"] = "supplied" } : null;
             }
         };
@@ -106,6 +108,7 @@ public sealed class WorkspaceApprovalFlowTests : IDisposable
         if (consent)
         {
             store.Current.Connections.Count.ShouldBe(1);
+            store.Current.TlsProfiles.Single().InsecureSkipVerify.ShouldBe(operation != "import");
             if (operation == "import") { (await secrets.GetAsync("imported-secret")).ShouldBe("supplied"); }
         }
         else

@@ -11,8 +11,10 @@ namespace GrpCurl.Net.Studio.ViewModels.Services;
 /// </summary>
 public static class WorkspaceMerger
 {
-    public static (WorkspaceModel Merged, WorkspaceMergeSummary Summary) Merge(WorkspaceModel current, WorkspaceModel incoming)
+    public static (WorkspaceModel Merged, WorkspaceMergeSummary Summary) Merge(WorkspaceModel current, WorkspaceModel incoming,
+        IReadOnlyCollection<string>? approvedBypassProfileIds = null)
     {
+        var approved = ValidateSelections(incoming, approvedBypassProfileIds ?? []);
         var merged = current.Copy();
 
         var connectionNames = new HashSet<string>(merged.Connections.Select(c => c.Name), StringComparer.Ordinal);
@@ -24,13 +26,23 @@ public static class WorkspaceMerger
         // Profiles first: imported connections reference them, so build the old→new id map here.
         var profileIdMap = new Dictionary<string, string>(StringComparer.Ordinal);
         var addedProfiles = new List<string>();
+        var tlsSecurity = new List<WorkspaceTlsSecurityEntry>();
 
-        foreach (var profile in incoming.TlsProfiles)
+        foreach (var source in incoming.TlsProfiles)
         {
+            var profile = source.Copy();
+            // Consent is keyed to the source identity, before any destination IDs are generated.
+            profile.InsecureSkipVerify = approved.Contains(source.Id);
             var newId = NewId();
             profileIdMap[profile.Id] = newId;
             profile.Id = newId;
             profile.Name = Dedup(profile.Name, profileNames);
+
+            if (source.InsecureSkipVerify || !string.IsNullOrWhiteSpace(source.CaCertPath))
+            {
+                tlsSecurity.Add(new WorkspaceTlsSecurityEntry(source.Id, source.Name, profile.Name,
+                    source.InsecureSkipVerify, profile.InsecureSkipVerify, source.CaCertPath));
+            }
 
             if (!string.IsNullOrWhiteSpace(profile.ClientCertPasswordSecretRef))
             {
@@ -44,9 +56,9 @@ public static class WorkspaceMerger
 
         var addedConnections = new List<string>();
 
-        foreach (var connection in incoming.Connections)
+        foreach (var source in incoming.Connections)
         {
-            connection.Id = NewId();
+            var connection = source.Clone();
             connection.Name = Dedup(connection.Name, connectionNames);
 
             // Re-point the TLS reference at the imported profile's new id; drop a reference to a profile
@@ -61,8 +73,9 @@ public static class WorkspaceMerger
 
         var addedEnvironments = new List<string>();
 
-        foreach (var environment in incoming.Environments)
+        foreach (var source in incoming.Environments)
         {
+            var environment = source.Copy();
             environment.Id = NewId();
             environment.Name = Dedup(environment.Name, environmentNames);
 
@@ -76,7 +89,40 @@ public static class WorkspaceMerger
             addedEnvironments.Add(environment.Name);
         }
 
-        return (merged, new WorkspaceMergeSummary(addedConnections, addedProfiles, addedEnvironments, missingSecrets));
+        return (merged, new WorkspaceMergeSummary(addedConnections, addedProfiles, addedEnvironments, missingSecrets, tlsSecurity));
+    }
+
+    /// <summary>Import IDs are opaque, ordinal strings; blank, padded, control-bearing or duplicate IDs are ambiguous.</summary>
+    public static void ValidateSourceProfiles(WorkspaceModel incoming)
+    {
+        var identities = new HashSet<string>(StringComparer.Ordinal);
+        if (incoming.TlsProfiles is null)
+        {
+            throw new WorkspaceTrustException("Imported TLS profiles must be a list with explicit, unique source IDs.");
+        }
+        foreach (var profile in incoming.TlsProfiles)
+        {
+            if (profile is null || string.IsNullOrWhiteSpace(profile.Id) || profile.Id != profile.Id.Trim()
+                || profile.Id.Any(char.IsControl) || !identities.Add(profile.Id))
+            {
+                throw new WorkspaceTrustException("Imported TLS profiles have a missing, malformed or duplicate source ID. Correct the source workspace before importing it.");
+            }
+        }
+    }
+
+    internal static HashSet<string> ValidateSelections(WorkspaceModel incoming, IReadOnlyCollection<string> selections)
+    {
+        ValidateSourceProfiles(incoming);
+        var eligible = incoming.TlsProfiles.Where(p => p.InsecureSkipVerify).Select(p => p.Id).ToHashSet(StringComparer.Ordinal);
+        var approved = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var id in selections)
+        {
+            if (id is null || !eligible.Contains(id) || !approved.Add(id))
+            {
+                throw new WorkspaceTrustException("TLS bypass consent contains an unknown, duplicate or ineligible source profile ID. Review the import again.");
+            }
+        }
+        return approved;
     }
 
     private static string NewId() => Guid.NewGuid().ToString();
@@ -99,6 +145,11 @@ public static class WorkspaceMerger
 /// <summary>One secret an import will leave dangling locally (SEC-041): a display name + the keyref to supply a value for.</summary>
 public sealed record MissingSecret(string DisplayName, string KeyRef);
 
+/// <summary>Security settings requested by a source profile and the outcome selected for this import.</summary>
+public sealed record WorkspaceTlsSecurityEntry(
+    string SourceProfileId, string OriginalName, string DestinationName,
+    bool RequestedBypass, bool SelectedBypass, string? CustomCaPath);
+
 /// <summary>
 ///     What a <see cref="WorkspaceMerger.Merge" /> will add, for the pre-merge confirmation (FR-164) and for
 ///     surfacing the secrets the user can supply inline afterwards (SEC-041).
@@ -107,7 +158,8 @@ public sealed record WorkspaceMergeSummary(
     IReadOnlyList<string> Connections,
     IReadOnlyList<string> Profiles,
     IReadOnlyList<string> Environments,
-    IReadOnlyList<MissingSecret> MissingSecrets)
+    IReadOnlyList<MissingSecret> MissingSecrets,
+    IReadOnlyList<WorkspaceTlsSecurityEntry> TlsSecurity)
 {
     /// <summary>The number of secret values the import can't carry (they live only in the source machine's keychain).</summary>
     public int SecretsToReenter => MissingSecrets.Count;
@@ -117,7 +169,7 @@ public sealed record WorkspaceMergeSummary(
     public bool IsEmpty => TotalAdded == 0;
 
     /// <summary>A human-readable pre-merge summary for the confirmation dialog.</summary>
-    public string Describe()
+    public string Describe(bool includeSecurity = true)
     {
         if (IsEmpty)
         {
@@ -136,6 +188,19 @@ public sealed record WorkspaceMergeSummary(
                 + "keychain) and must be re-entered in the relevant editor.");
         }
 
+        if (includeSecurity)
+        {
+            foreach (var entry in TlsSecurity)
+            {
+                lines.Add($"TLS profile '{entry.OriginalName}' [source ID: {entry.SourceProfileId}] → '{entry.DestinationName}': "
+                    + (entry.RequestedBypass ? "source requests certificate verification bypass; " : string.Empty)
+                    + (entry.SelectedBypass ? "certificate verification disabled." : "certificate verification enabled."));
+                if (!string.IsNullOrWhiteSpace(entry.CustomCaPath))
+                {
+                    lines.Add($"Custom CA: {entry.CustomCaPath} (retained; ignored when certificate verification is disabled).");
+                }
+            }
+        }
         return string.Join("\n", lines);
     }
 

@@ -6,6 +6,34 @@ namespace GrpCurl.Net.Studio.TestSupport;
 /// <summary>In-memory <see cref="IWorkspaceStore" /> recording saves, opens, and recents.</summary>
 public sealed class FakeWorkspaceStore : IWorkspaceStore
 {
+    public IWorkspaceTrustStore? Trust => null;
+    public string? PendingStartupPath { get; set; }
+    public string? TrustMessage => null;
+    private sealed class Preparation(string path, WorkspaceModel model) : WorkspacePreparation
+    {
+        public override string Path => path;
+        public override WorkspaceModel Workspace => model;
+        public override IReadOnlyList<WorkspaceFileReference> References => [];
+    }
+    public Task<WorkspacePreparation> PrepareAsync(string path, CancellationToken cancellationToken = default)
+    {
+        if (ReadError is not null) { throw ReadError; }
+        if (OpenError is not null) { throw OpenError; }
+        if (ReloadError is not null) { throw ReloadError; }
+        return Task.FromResult<WorkspacePreparation>(new Preparation(path, path == CurrentPath && ReloadResult is not null ? ReloadResult : ReadResult ?? OpenResult ?? Current));
+    }
+    public Task<WorkspacePreparation> ApproveAsync(WorkspacePreparation preparation, IReadOnlyList<string> approvedKeys, CancellationToken cancellationToken = default)
+        => Task.FromResult(preparation);
+    public Task ValidatePreparationAsync(WorkspacePreparation preparation, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    public Task<WorkspaceModel> CommitOpenAsync(WorkspacePreparation preparation, CancellationToken cancellationToken = default)
+    {
+        if (preparation.Path == CurrentPath) { ReloadCount++; }
+        OpenResult = preparation.Workspace;
+        SetDirty(false);
+        return OpenAsync(preparation.Path, cancellationToken);
+    }
+    public Task CommitImportAsync(WorkspacePreparation preparation, CancellationToken cancellationToken = default)
+        => SaveAsync(WorkspaceMerger.Merge(Current, preparation.Workspace).Merged, cancellationToken);
     private readonly List<string> _recent = [];
 
     public FakeWorkspaceStore(WorkspaceModel? initial = null) => Current = initial ?? WorkspaceModel.Empty();

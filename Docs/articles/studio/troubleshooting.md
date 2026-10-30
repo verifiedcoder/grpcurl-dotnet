@@ -1,5 +1,18 @@
 # Troubleshooting
 
+## Workspace file access needs approval
+
+Open, Import, Open Recent, Reload, and startup restoration review descriptor and TLS file references.
+Approve every required path to continue, or cancel to keep your current workspace. An external link may
+require another review for its resolved target. Repair broken links or ambiguous paths before retrying.
+If the document changed during review, select it again; Studio never activates the earlier assessment.
+
+Use **Settings → Security → Workspace file approvals** to revoke access or reset malformed approval
+storage with **Revoke all**. Restore filesystem access first if the storage directory is inaccessible.
+A message saying the workspace was saved but its approvals were not means the workspace write committed;
+reopen it and approve access again after repairing storage. See [Workspace file approvals](workspace-file-approvals.md)
+for the full lifecycle and protection boundary.
+
 ## "Locked by another instance" banner
 
 Studio takes an advisory lock on the open workspace so two running instances don't clobber each other's

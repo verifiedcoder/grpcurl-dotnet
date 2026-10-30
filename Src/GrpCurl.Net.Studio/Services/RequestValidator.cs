@@ -13,7 +13,7 @@ namespace GrpCurl.Net.Studio.Services;
 ///     the channel) and probes <c>CreateMessageFromJson</c>. JSON syntax errors surface a line/column;
 ///     semantic errors surface a message only. Advisory: an unresolvable schema yields no problems.
 /// </summary>
-internal sealed class RequestValidator(IInvocationService invocation, ITlsProfileResolver? tlsResolver = null) : IRequestValidator, IDisposable
+internal sealed class RequestValidator(IInvocationService invocation, ITlsProfileResolver? tlsResolver = null, WorkspaceFileAccess? fileAccess = null) : IRequestValidator, IDisposable
 {
     /// <summary>
     ///     How long disposal waits for an in-flight operation to leave the critical section before
@@ -72,6 +72,8 @@ internal sealed class RequestValidator(IInvocationService invocation, ITlsProfil
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
+            using var access = fileAccess?.Begin(connection, cancellationToken);
+            cancellationToken = access?.Token ?? cancellationToken;
             if (_inputCache.TryGetValue(key, out var cached))
             {
                 return cached;
@@ -80,7 +82,7 @@ internal sealed class RequestValidator(IInvocationService invocation, ITlsProfil
             var (profile, password) = tlsResolver is null
                 ? default
                 : await tlsResolver.ResolveAsync(connection, cancellationToken).ConfigureAwait(false);
-            var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password);
+            var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password, fileAccess);
             var reflectionMetadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
             var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
 
@@ -88,7 +90,7 @@ internal sealed class RequestValidator(IInvocationService invocation, ITlsProfil
                 connection.Address, protosets, protos, imports,
                 channelOptions: options,
                 reflectionMetadata: reflectionMetadata,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                cancellationToken: cancellationToken, descriptorOptions: fileAccess?.DescriptorOptions(connection)).ConfigureAwait(false);
 
             var symbol = methodSymbol.Replace('/', '.');
 
@@ -99,6 +101,11 @@ internal sealed class RequestValidator(IInvocationService invocation, ITlsProfil
 
             _inputCache[key] = method.InputType;
             return method.InputType;
+        }
+        catch
+        {
+            _inputCache.Clear();
+            throw;
         }
         finally
         {

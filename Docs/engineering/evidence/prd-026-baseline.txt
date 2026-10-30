@@ -1,0 +1,161 @@
+Running tests from /tmp/prd026-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Studio.Tests.Unit.dll (net10.0|x64)
+failed GrpCurl.Net.Studio.Tests.Unit.WorkspaceReferenceBaselineTests.Opening_a_traversing_reference_requires_approval(field: "ca") (78ms)
+  from /tmp/prd026-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Studio.Tests.Unit.dll (net10.0|x64)
+  Shouldly.ShouldAssertException : Task `store.OpenAsync(path)`
+      should throw
+  System.InvalidOperationException
+      but did not
+    at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+    at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)
+    at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+    at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+    at GrpCurl.Net.Studio.Tests.Unit.WorkspaceReferenceBaselineTests.Opening_a_traversing_reference_requires_approval(String field) in /tmp/prd026-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/WorkspaceReferenceBaselineTests.cs:37
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+failed GrpCurl.Net.Studio.Tests.Unit.WorkspaceReferenceBaselineTests.Opening_a_traversing_reference_requires_approval(field: "key") (2ms)
+  from /tmp/prd026-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Studio.Tests.Unit.dll (net10.0|x64)
+  Shouldly.ShouldAssertException : Task `store.OpenAsync(path)`
+      should throw
+  System.InvalidOperationException
+      but did not
+    at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+    at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)
+    at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+    at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+    at GrpCurl.Net.Studio.Tests.Unit.WorkspaceReferenceBaselineTests.Opening_a_traversing_reference_requires_approval(String field) in /tmp/prd026-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/WorkspaceReferenceBaselineTests.cs:37
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+failed GrpCurl.Net.Studio.Tests.Unit.WorkspaceReferenceBaselineTests.Opening_a_traversing_reference_requires_approval(field: "proto") (3ms)
+  from /tmp/prd026-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Studio.Tests.Unit.dll (net10.0|x64)
+  Shouldly.ShouldAssertException : Task `store.OpenAsync(path)`
+      should throw
+  System.InvalidOperationException
+      but did not
+    at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+    at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)
+    at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+    at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+    at GrpCurl.Net.Studio.Tests.Unit.WorkspaceReferenceBaselineTests.Opening_a_traversing_reference_requires_approval(String field) in /tmp/prd026-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/WorkspaceReferenceBaselineTests.cs:37
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+failed GrpCurl.Net.Studio.Tests.Unit.WorkspaceReferenceBaselineTests.Opening_a_traversing_reference_requires_approval(field: "imports") (3ms)
+  from /tmp/prd026-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Studio.Tests.Unit.dll (net10.0|x64)
+  Shouldly.ShouldAssertException : Task `store.OpenAsync(path)`
+      should throw
+  System.InvalidOperationException
+      but did not
+    at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+    at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)
+    at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+    at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+    at GrpCurl.Net.Studio.Tests.Unit.WorkspaceReferenceBaselineTests.Opening_a_traversing_reference_requires_approval(String field) in /tmp/prd026-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/WorkspaceReferenceBaselineTests.cs:37
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+failed GrpCurl.Net.Studio.Tests.Unit.WorkspaceReferenceBaselineTests.Opening_a_traversing_reference_requires_approval(field: "cert") (12ms)
+  from /tmp/prd026-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Studio.Tests.Unit.dll (net10.0|x64)
+  Shouldly.ShouldAssertException : Task `store.OpenAsync(path)`
+      should throw
+  System.InvalidOperationException
+      but did not
+    at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+    at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)
+    at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+    at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+    at GrpCurl.Net.Studio.Tests.Unit.WorkspaceReferenceBaselineTests.Opening_a_traversing_reference_requires_approval(String field) in /tmp/prd026-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/WorkspaceReferenceBaselineTests.cs:37
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+failed GrpCurl.Net.Studio.Tests.Unit.WorkspaceReferenceBaselineTests.Opening_a_traversing_reference_requires_approval(field: "protoset") (22ms)
+  from /tmp/prd026-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Studio.Tests.Unit.dll (net10.0|x64)
+  Shouldly.ShouldAssertException : Task `store.OpenAsync(path)`
+      should throw
+  System.InvalidOperationException
+      but did not
+    at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+    at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)
+    at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+    at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+    at GrpCurl.Net.Studio.Tests.Unit.WorkspaceReferenceBaselineTests.Opening_a_traversing_reference_requires_approval(String field) in /tmp/prd026-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/WorkspaceReferenceBaselineTests.cs:37
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+/tmp/prd026-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Studio.Tests.Unit.dll (net10.0|x64) failed with 6 error(s) (795ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 6
+  failed: 6
+  succeeded: 0
+  skipped: 0
+  duration: 1s 035ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

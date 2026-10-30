@@ -47,7 +47,14 @@ public sealed partial class WorkspaceSessionViewModel : ViewModelBase
 
     /// <summary>Flushes any pending autosave to disk immediately (explicit Save).</summary>
     [RelayCommand]
-    private Task Save() => _store.SaveNowAsync();
+    private async Task Save()
+    {
+        try { await _store.SaveNowAsync(); }
+        catch (Exception ex) when (ex is WorkspaceTrustException or IOException or UnauthorizedAccessException)
+        {
+            await _dialogs.ShowMessageAsync("Workspace save needs attention", ex.Message);
+        }
+    }
 
     /// <summary>
     ///     Reloads the workspace from disk, discarding unsaved changes after a confirmation. A corrupt or
@@ -66,9 +73,12 @@ public sealed partial class WorkspaceSessionViewModel : ViewModelBase
 
         try
         {
-            await _store.ReloadAsync();
+            if (_store.CurrentPath is null) { return false; }
+            var preparation = await WorkspaceApproval.PrepareAsync(_store, _dialogs, _store.CurrentPath);
+            if (preparation is null) { return false; }
+            _ = await _store.CommitOpenAsync(preparation);
         }
-        catch (WorkspaceSchemaException ex)
+        catch (Exception ex) when (ex is WorkspaceSchemaException or WorkspaceTrustException or IOException or UnauthorizedAccessException)
         {
             await _dialogs.ShowMessageAsync("Could not reload workspace", ex.Message);
             return false;

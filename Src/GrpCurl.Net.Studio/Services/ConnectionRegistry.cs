@@ -11,7 +11,7 @@ namespace GrpCurl.Net.Studio.Services;
 ///     <c>ListServices</c> round-trip bounded by a 10s deadline (SPEC-030 §7, FR-018). The cached
 ///     business channel used by invocation is added with E1.4.
 /// </summary>
-internal sealed class ConnectionRegistry(ITlsProfileResolver? tlsResolver = null) : IConnectionRegistry
+internal sealed class ConnectionRegistry(ITlsProfileResolver? tlsResolver = null, WorkspaceFileAccess? fileAccess = null) : IConnectionRegistry
 {
     private static readonly TimeSpan ProbeDeadline = TimeSpan.FromSeconds(10);
 
@@ -29,10 +29,12 @@ internal sealed class ConnectionRegistry(ITlsProfileResolver? tlsResolver = null
 
         try
         {
+            using var access = fileAccess?.Begin(connection, deadlineCts.Token);
+            using var accessDeadline = CancellationTokenSource.CreateLinkedTokenSource(access?.Token ?? deadlineCts.Token);
             var (profile, password) = tlsResolver is null
                 ? default
                 : await tlsResolver.ResolveAsync(connection, cancellationToken).ConfigureAwait(false);
-            var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password);
+            var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password, fileAccess);
             var metadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
             var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
 
@@ -43,9 +45,9 @@ internal sealed class ConnectionRegistry(ITlsProfileResolver? tlsResolver = null
                 importPaths: imports,
                 channelOptions: options,
                 reflectionMetadata: metadata,
-                cancellationToken: deadlineCts.Token).ConfigureAwait(false);
+                cancellationToken: accessDeadline.Token, descriptorOptions: fileAccess?.DescriptorOptions(connection)).ConfigureAwait(false);
 
-            var services = await session.Source.ListServicesAsync(deadlineCts.Token).ConfigureAwait(false);
+            var services = await session.Source.ListServicesAsync(accessDeadline.Token).ConfigureAwait(false);
 
             return TestConnectionResult.Success(services.Count);
         }

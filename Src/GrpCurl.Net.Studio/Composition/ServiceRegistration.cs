@@ -47,7 +47,13 @@ internal static class ServiceRegistration
             warning: message => sp.GetRequiredService<IDiagnosticsLog>()
                 .Log(ViewModels.Models.Diagnostics.DiagnosticsLevel.Warning, "SecretStore", message)));
 
-        _ = services.AddSingleton<IWorkspaceStore, JsonWorkspaceStore>();
+        _ = services.AddSingleton<IWorkspaceStore>(sp => new JsonWorkspaceStore
+        {
+            ApprovalDialogs = sp.GetRequiredService<IDialogService>(),
+            Dispatcher = sp.GetRequiredService<IUiDispatcher>()
+        });
+
+        _ = services.AddSingleton<WorkspaceFileAccess>();
 
         // UI session (FR-146): machine-local record of open tabs, restored on launch per the startup setting.
         _ = services.AddSingleton<ISessionStore, JsonSessionStore>();

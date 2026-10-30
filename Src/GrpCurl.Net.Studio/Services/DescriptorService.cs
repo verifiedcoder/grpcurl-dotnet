@@ -18,14 +18,16 @@ namespace GrpCurl.Net.Studio.Services;
 ///     session (and its channel) is disposed once read; the long-lived business channel for
 ///     invocation arrives with E1.4.
 /// </summary>
-internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null, ISettingsStore? settings = null) : IDescriptorService
+internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null, ISettingsStore? settings = null, WorkspaceFileAccess? fileAccess = null) : IDescriptorService
 {
     public async Task<DescriptorLoadResult> LoadAsync(SavedConnection connection, CancellationToken cancellationToken = default)
     {
         try
         {
+            using var access = fileAccess?.Begin(connection, cancellationToken);
+            cancellationToken = access?.Token ?? cancellationToken;
             var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
-            var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password);
+            var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password, fileAccess);
             var metadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
             var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
             var warnings = new CollectingWarningSink();
@@ -40,7 +42,7 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null,
                 reflectionMetadata: metadata,
                 cancellationToken: cancellationToken,
                 warningSink: warnings,
-                descriptorOptions: BuildDescriptorOptions(connection)).ConfigureAwait(false);
+                descriptorOptions: fileAccess?.DescriptorOptions(connection, BuildDescriptorOptions(connection)) ?? BuildDescriptorOptions(connection)).ConfigureAwait(false);
 
             var serviceNames = await session.Source.ListServicesAsync(cancellationToken).ConfigureAwait(false);
             var services = new List<ServiceEntry>(serviceNames.Count);
@@ -86,8 +88,10 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null,
     {
         try
         {
+            using var access = fileAccess?.Begin(connection, cancellationToken);
+            cancellationToken = access?.Token ?? cancellationToken;
             var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
-            var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password);
+            var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password, fileAccess);
             var metadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
             var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
             var warnings = new CollectingWarningSink();
@@ -101,7 +105,7 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null,
                 reflectionMetadata: metadata,
                 cancellationToken: cancellationToken,
                 warningSink: warnings,
-                descriptorOptions: BuildDescriptorOptions(connection)).ConfigureAwait(false);
+                descriptorOptions: fileAccess?.DescriptorOptions(connection, BuildDescriptorOptions(connection)) ?? BuildDescriptorOptions(connection)).ConfigureAwait(false);
 
             // Accept both the dotted FQN and the invocation grammar (pkg.Service/Method) for methods.
             var normalized = symbol.Replace('/', '.');
@@ -144,6 +148,8 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null,
             }
 
             var stopwatch = Stopwatch.StartNew();
+            using var access = fileAccess?.Begin(connection, cancellationToken);
+            cancellationToken = access?.Token ?? cancellationToken;
             await using var session = await OpenSessionAsync(connection, cancellationToken).ConfigureAwait(false);
 
             // Empty symbols => the whole active set, byte-parity with the CLI's --protoset-out.
@@ -168,6 +174,8 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null,
         try
         {
             var stopwatch = Stopwatch.StartNew();
+            using var access = fileAccess?.Begin(connection, cancellationToken);
+            cancellationToken = access?.Token ?? cancellationToken;
             await using var session = await OpenSessionAsync(connection, cancellationToken).ConfigureAwait(false);
 
             // Warm the source so a reflection set populates its FileDescriptorSet before we read it.
@@ -210,6 +218,8 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null,
     {
         try
         {
+            using var access = fileAccess?.Begin(connection, cancellationToken);
+            cancellationToken = access?.Token ?? cancellationToken;
             await using var session = await OpenSessionAsync(connection, cancellationToken).ConfigureAwait(false);
 
             var normalized = symbol.Replace('/', '.');
@@ -241,13 +251,13 @@ internal sealed class DescriptorService(ITlsProfileResolver? tlsResolver = null,
     private async Task<DescriptorSourceFactory> OpenSessionAsync(SavedConnection connection, CancellationToken cancellationToken)
     {
         var (profile, password) = await ResolveTlsAsync(connection, cancellationToken).ConfigureAwait(false);
-        var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password);
+        var options = ConnectionChannelMapper.ToChannelOptions(connection, maxMessageSize: null, profile, password, fileAccess);
         var metadata = ConnectionChannelMapper.BuildReflectionMetadata(connection);
         var (protosets, protos, imports) = ConnectionChannelMapper.DescriptorPaths(connection);
 
         return await DescriptorSourceFactory.CreateAsync(
             connection.Address, protosets, protos, imports, options, metadata, cancellationToken,
-            descriptorOptions: BuildDescriptorOptions(connection)).ConfigureAwait(false);
+            descriptorOptions: fileAccess?.DescriptorOptions(connection, BuildDescriptorOptions(connection)) ?? BuildDescriptorOptions(connection)).ConfigureAwait(false);
     }
 
     /// <summary>

@@ -62,8 +62,7 @@ public sealed partial class TlsProfileManagerViewModel : DialogViewModel<bool>
 
         if (saved is not null)
         {
-            await _store.SaveAsync(saved);
-            MarkChangedAndReload();
+            await SaveEditedProfileAsync(saved);
         }
     }
 
@@ -80,8 +79,27 @@ public sealed partial class TlsProfileManagerViewModel : DialogViewModel<bool>
 
         if (saved is not null)
         {
-            await _store.SaveAsync(saved);
-            MarkChangedAndReload();
+            await SaveEditedProfileAsync(saved);
+        }
+    }
+
+    private async Task SaveEditedProfileAsync(TlsProfile profile)
+    {
+        while (true)
+        {
+            try
+            {
+                await _store.SaveAsync(profile);
+                MarkChangedAndReload();
+                return;
+            }
+            catch (WorkspaceTrustException ex)
+            {
+                await _dialogService.ShowMessageAsync("TLS profile needs file approval", ex.Message + " Your edited profile will reopen so you can change its references or retry.");
+                var edited = await _dialogService.ShowDialogAsync(new TlsProfileEditorViewModel(_filePicker, _dialogService, _secretStore, profile));
+                if (edited is null) { return; }
+                profile = edited;
+            }
         }
     }
 
@@ -123,7 +141,7 @@ public sealed partial class TlsProfileManagerViewModel : DialogViewModel<bool>
             await _store.SaveAsync(copy);
             MarkChangedAndReload();
         }
-        catch (SecretBackendUnavailableException ex)
+        catch (Exception ex) when (ex is SecretBackendUnavailableException or WorkspaceTrustException)
         {
             await _dialogService.ShowMessageAsync("Secret storage unavailable", ex.Message);
             Reload();
@@ -152,7 +170,7 @@ public sealed partial class TlsProfileManagerViewModel : DialogViewModel<bool>
                 MarkChangedAndReload();
             }
         }
-        catch (SecretBackendUnavailableException ex)
+        catch (Exception ex) when (ex is SecretBackendUnavailableException or WorkspaceTrustException)
         {
             await _dialogService.ShowMessageAsync("Secret storage unavailable", ex.Message);
             Reload();

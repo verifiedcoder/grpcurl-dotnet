@@ -1,4 +1,5 @@
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
+using GrpCurl.Net.Studio.ViewModels.Services;
 
 namespace GrpCurl.Net.Studio.Services;
 
@@ -29,29 +30,38 @@ internal static class WorkspacePathPortability
 
     private static WorkspaceModel Transform(WorkspaceModel workspace, string baseDir, Func<string, string, string?> convert)
     {
-        foreach (var connection in workspace.Connections)
+        foreach (var reference in Enumerate(workspace))
         {
-            var ds = connection.DescriptorSource;
-            ConvertList(ds.ProtosetPaths, baseDir, convert);
-            ConvertList(ds.ProtoFiles, baseDir, convert);
-            ConvertList(ds.ImportPaths, baseDir, convert);
+            reference.Set(convert(reference.Path, baseDir));
         }
-
-        foreach (var profile in workspace.TlsProfiles)
-        {
-            profile.CaCertPath = convert(profile.CaCertPath ?? string.Empty, baseDir);
-            profile.ClientCertPath = convert(profile.ClientCertPath ?? string.Empty, baseDir);
-            profile.ClientKeyPath = convert(profile.ClientKeyPath ?? string.Empty, baseDir);
-        }
-
         return workspace;
     }
 
-    private static void ConvertList(List<string> paths, string baseDir, Func<string, string, string?> convert)
+    internal sealed record Reference(string OwnerId, string Owner, string Field, string Path, bool IsDirectory, Action<string?> Set);
+
+    internal static IEnumerable<Reference> Enumerate(WorkspaceModel workspace)
     {
-        for (var i = 0; i < paths.Count; i++)
+        foreach (var connection in workspace.Connections)
         {
-            paths[i] = convert(paths[i], baseDir) ?? paths[i];
+            foreach (var (field, paths, directory) in new[]
+            {
+                ("Descriptor protoset", connection.DescriptorSource.ProtosetPaths, false),
+                ("Proto source", connection.DescriptorSource.ProtoFiles, false),
+                ("Proto import directory", connection.DescriptorSource.ImportPaths, true)
+            })
+            {
+                for (var i = 0; i < paths.Count; i++)
+                {
+                    var index = i;
+                    yield return new(connection.Id, connection.Name, field, paths[i], directory, value => paths[index] = value ?? string.Empty);
+                }
+            }
+        }
+        foreach (var profile in workspace.TlsProfiles)
+        {
+            yield return new(profile.Id, profile.Name, "TLS CA certificate", profile.CaCertPath ?? string.Empty, false, value => profile.CaCertPath = value);
+            yield return new(profile.Id, profile.Name, "TLS client certificate", profile.ClientCertPath ?? string.Empty, false, value => profile.ClientCertPath = value);
+            yield return new(profile.Id, profile.Name, "TLS client private key", profile.ClientKeyPath ?? string.Empty, false, value => profile.ClientKeyPath = value);
         }
     }
 
@@ -67,7 +77,7 @@ internal static class WorkspacePathPortability
 
         // GetRelativePath returns a rooted path (or the input verbatim) when no relative route exists
         // (different drive/root); a leading ".." means the target sits outside the workspace directory.
-        if (Path.IsPathFullyQualified(relative) || relative.StartsWith("..", StringComparison.Ordinal))
+        if (!WorkspaceReferenceAssessment.Contains(baseDir, path))
         {
             return path;
         }
@@ -83,9 +93,36 @@ internal static class WorkspacePathPortability
             return null;
         }
 
-        return Path.IsPathFullyQualified(path)
-            ? path
-            : Path.GetFullPath(Path.Combine(baseDir, path));
+        return Resolve(path, baseDir);
+    }
+
+    internal static string Resolve(string path, string baseDir)
+    {
+        // Reject foreign platform syntax rather than interpreting it as a local filename. Drive-relative,
+        // root-relative Windows paths, device namespaces, ADS, and trailing-dot aliases are ambiguous.
+        if (string.IsNullOrWhiteSpace(path) || path.Any(char.IsControl)
+            || path != path.Trim() || path.IndexOfAny(['*', '?', '"', '<', '>', '|']) >= 0
+            || (!OperatingSystem.IsWindows() && (path.Contains('\\') || path.Contains(':') || path.StartsWith("//", StringComparison.Ordinal)))
+            || (OperatingSystem.IsWindows() && (Path.IsPathRooted(path) && !Path.IsPathFullyQualified(path)
+                || path.StartsWith(@"\\.\", StringComparison.Ordinal) || path.StartsWith(@"\\?\", StringComparison.Ordinal)
+                || path[System.IO.Path.GetPathRoot(path)!.Length..].Contains(':')
+                || path.Split(['/', '\\']).Any(p => p is not "." and not ".." && (p.EndsWith('.') || p.EndsWith(' ') || IsWindowsDevice(p))))))
+        {
+            throw new WorkspaceTrustException($"Ambiguous file reference '{path}'. Use a normal absolute path for this platform or a relative path with forward slashes.");
+        }
+        try { return Path.GetFullPath(path, baseDir); }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            throw new WorkspaceTrustException($"Invalid file reference '{path}'. Correct it in the workspace and try again.", ex);
+        }
+    }
+
+    private static bool IsWindowsDevice(string component)
+    {
+        var stem = component.Split('.')[0].ToUpperInvariant();
+        return stem is "CON" or "PRN" or "AUX" or "NUL" or "CONIN$" or "CONOUT$"
+            || stem.Length > 3 && (stem.StartsWith("COM", StringComparison.Ordinal) || stem.StartsWith("LPT", StringComparison.Ordinal))
+                && stem[3..].All(char.IsNumber);
     }
 
     // A faithful deep clone (ids, overflow, every field) so relativising the write copy never touches

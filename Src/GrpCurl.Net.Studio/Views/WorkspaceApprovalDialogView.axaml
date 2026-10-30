@@ -1,0 +1,34 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GrpCurl.Net.Studio.ViewModels"
+             x:Class="GrpCurl.Net.Studio.Views.WorkspaceApprovalDialogView"
+             x:DataType="vm:WorkspaceApprovalDialogViewModel">
+  <StackPanel Margin="24" Spacing="12" Width="680">
+    <TextBlock Text="Review external file references" FontSize="20" FontWeight="SemiBold" />
+    <TextBlock Text="{Binding WorkspacePath}" TextWrapping="Wrap" />
+    <TextBlock Text="This workspace requests access to the locations below. Select each reference to approve it, or cancel to keep your current workspace. Directory approval permits descriptor lookup beneath that directory. Linked targets may require another review." TextWrapping="Wrap" />
+    <ScrollViewer MaxHeight="420">
+      <ItemsControl ItemsSource="{Binding Items}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:WorkspaceApprovalItemViewModel">
+            <Border BorderThickness="1" BorderBrush="Gray" Padding="10" Margin="0,4">
+              <StackPanel Spacing="4">
+                <CheckBox IsChecked="{Binding IsApproved}" Content="{Binding Reference.Purpose}"
+                          AutomationProperties.Name="{Binding Reference.Purpose}" />
+                <TextBlock Text="{Binding Reference.OriginalPath, StringFormat='Original: {0}'}" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding Reference.AbsolutePath, StringFormat='Absolute: {0}'}" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding Reference.ResolvedTarget, StringFormat='Target: {0}'}" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding Reference.ApprovalReason}" TextWrapping="Wrap" />
+              </StackPanel>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+    <TextBlock Text="Approvals are stored only on this computer. Revoke them in Settings → Security. Approval permits access to a location; it does not verify the file's contents." TextWrapping="Wrap" FontSize="12" />
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button Content="Cancel" Command="{Binding CancelCommand}" AutomationProperties.Name="Cancel workspace file approval" />
+      <Button Content="Approve selected references" Command="{Binding ApproveCommand}" AutomationProperties.Name="Approve selected workspace references" />
+    </StackPanel>
+  </StackPanel>
+</UserControl>

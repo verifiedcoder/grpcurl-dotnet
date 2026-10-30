@@ -50,6 +50,9 @@ internal static class ProtoSource
                  "Alternative: pre-compile with 'protoc --descriptor_set_out=svc.protoset " +
                  "--include_imports *.proto' and pass --protoset instead.");
 
+        foreach (var proto in protoFiles) { options?.FileAccessGuard?.Invoke(proto, false); }
+        foreach (var directory in importPaths) { options?.FileAccessGuard?.Invoke(directory, true); }
+
         // Collect import paths: explicit -I roots + each proto file's directory + cwd.
         var allImportPaths = importPaths
                              .Where(Directory.Exists)
@@ -62,11 +65,13 @@ internal static class ProtoSource
 
             if (!string.IsNullOrEmpty(dir) && !allImportPaths.Contains(dir))
             {
+                options?.FileAccessGuard?.Invoke(dir, true);
                 allImportPaths.Add(dir);
             }
         }
 
-        allImportPaths.Add(Environment.CurrentDirectory);
+        // A host with a file policy supplies explicit lookup authority. Do not silently add cwd.
+        if (options?.FileAccessGuard is null) { allImportPaths.Add(Environment.CurrentDirectory); }
 
         var tempProtoset = CreateTempProtosetPath();
 
@@ -121,7 +126,7 @@ internal static class ProtoSource
 
                 if (process.ExitCode == 0)
                 {
-                    return await ProtosetSource.LoadFromFilesAsync([tempProtoset], options ?? DescriptorSourceOptions.Default, cancellationToken, warningSink).ConfigureAwait(false);
+                    return await ProtosetSource.LoadFromFilesAsync([tempProtoset], (options ?? DescriptorSourceOptions.Default) with { FileAccessGuard = null }, cancellationToken, warningSink).ConfigureAwait(false);
                 }
 
                 var stderr = await stderrTask.ConfigureAwait(false);

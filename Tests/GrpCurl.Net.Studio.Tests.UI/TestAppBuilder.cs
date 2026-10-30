@@ -11,6 +11,10 @@ namespace GrpCurl.Net.Studio.Tests.UI;
 public static class TestAppBuilder
 {
     public static AppBuilder BuildAvaloniaApp()
-        => AppBuilder.Configure<App>()
-            .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = true });
+    {
+        var capture = Environment.GetEnvironmentVariable("GRPCN_TRUST_SCREENSHOT_DIR") is not null;
+        var builder = AppBuilder.Configure<App>()
+            .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = !capture });
+        return capture ? builder.UseSkia() : builder;
+    }
 }

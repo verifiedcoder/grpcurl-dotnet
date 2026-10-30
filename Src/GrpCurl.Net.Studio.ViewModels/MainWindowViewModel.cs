@@ -600,7 +600,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        await _workspaceStore.SaveNowAsync();
+        try { await _workspaceStore.SaveNowAsync(); }
+        catch (Exception ex) when (ex is WorkspaceTrustException or IOException or UnauthorizedAccessException)
+        {
+            if (_dialogs is not null) { await _dialogs.ShowMessageAsync("Workspace save needs attention", ex.Message); }
+        }
         Session?.Refresh();
         OnPropertyChanged(nameof(Title));
     }
@@ -624,7 +628,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                 return;
             }
 
-            await _workspaceStore.SaveAsAsync(_workspaceStore.Current, path);
+            try { await _workspaceStore.SaveAsAsync(_workspaceStore.Current, path); }
+            catch (Exception ex) when (ex is WorkspaceTrustException or IOException or UnauthorizedAccessException)
+            {
+                if (_dialogs is not null) { await _dialogs.ShowMessageAsync("Workspace save needs attention", ex.Message); }
+            }
             Session?.Refresh();
             RefreshRecents();
             OnPropertyChanged(nameof(Title));
@@ -760,19 +768,20 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                 return;
             }
 
-            WorkspaceModel incoming;
+            WorkspacePreparation? preparation;
 
             try
             {
-                incoming = await _workspaceStore.ReadAsync(path);
+                preparation = await WorkspaceApproval.PrepareAsync(_workspaceStore, _dialogs, path);
+                if (preparation is null) { return; }
             }
-            catch (WorkspaceSchemaException ex)
+            catch (Exception ex) when (ex is WorkspaceSchemaException or WorkspaceTrustException or IOException or UnauthorizedAccessException)
             {
                 await _dialogs.ShowMessageAsync("Could not import workspace", ex.Message);
                 return;
             }
 
-            var (merged, summary) = WorkspaceMerger.Merge(_workspaceStore.Current, incoming);
+            var (_, summary) = WorkspaceMerger.Merge(_workspaceStore.Current, preparation.Workspace);
 
             if (summary.IsEmpty)
             {
@@ -786,25 +795,27 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                 return;
             }
 
-            // SEC-041: offer to supply the dangling secrets inline (masked). The imported keyrefs are preserved by
-            // the merge, so storing a value under the same keyref makes the imported item resolve locally.
-            if (summary.MissingSecrets.Count > 0 && _secrets is not null
-                && await _dialogs.ShowDialogAsync(new ImportSecretsDialogViewModel(summary.MissingSecrets)) is { } supplied)
+            // Collect supplied secrets without writing them until the document and reference approvals
+            // have committed. Imported secret-reference ownership is tracked separately (PRD-057).
+            IReadOnlyDictionary<string, string>? supplied = null;
+            if (summary.MissingSecrets.Count > 0 && _secrets is not null)
             {
-                foreach (var (keyRef, value) in supplied)
-                {
-                    await _secrets.SetAsync(keyRef, value);
-                }
+                supplied = await _dialogs.ShowDialogAsync(new ImportSecretsDialogViewModel(summary.MissingSecrets));
             }
-
-            await _workspaceStore.SaveAsync(merged);
+            await _workspaceStore.ValidatePreparationAsync(preparation);
+            await _workspaceStore.CommitImportAsync(preparation);
             OnWorkspaceSwitched();
+            if (supplied is not null && _secrets is not null)
+            {
+                foreach (var (keyRef, value) in supplied) { await _secrets.SetAsync(keyRef, value); }
+            }
         }
-        catch (SecretBackendUnavailableException ex)
+        catch (Exception ex) when (ex is SecretBackendUnavailableException or WorkspaceTrustException or IOException or UnauthorizedAccessException)
         {
+            if (ex is WorkspaceTrustException { WorkspaceSaved: true }) { OnWorkspaceSwitched(); }
             if (_dialogs is not null)
             {
-                await _dialogs.ShowMessageAsync("Workspace was not imported", ex.Message);
+                await _dialogs.ShowMessageAsync("Workspace import needs attention", ex.Message);
             }
         }
     }
@@ -813,16 +824,32 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     {
         try
         {
-            _ = await _workspaceStore!.OpenAsync(path);
+            var preparation = await WorkspaceApproval.PrepareAsync(_workspaceStore!, _dialogs, path);
+            if (preparation is null) { return; }
+            _ = await _workspaceStore!.CommitOpenAsync(preparation);
             OnWorkspaceSwitched();
         }
-        catch (WorkspaceSchemaException ex)
+        catch (Exception ex) when (ex is WorkspaceSchemaException or WorkspaceTrustException or IOException or UnauthorizedAccessException)
         {
             if (_dialogs is not null)
             {
                 await _dialogs.ShowMessageAsync("Could not open workspace", ex.Message);
             }
         }
+    }
+
+    public async Task<bool> CompleteStartupAsync()
+    {
+        if (_workspaceStore?.TrustMessage is { } message && _dialogs is not null)
+        {
+            await _dialogs.ShowMessageAsync("Workspace approval needs attention", message);
+        }
+        if (_workspaceStore?.PendingStartupPath is { } path)
+        {
+            await OpenPathAsync(path);
+            return _workspaceStore.CurrentPath is not null;
+        }
+        return true;
     }
 
     /// <summary>Refreshes the panes/tabs after the active workspace changes (open / new / reload).</summary>

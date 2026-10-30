@@ -46,7 +46,13 @@ public sealed partial class App : Application
 
             // FR-146: reopen the previously open tabs (per the FR-151 startup setting) once the UI thread and
             // dispatcher are running. Fire-and-forget: the restored tabs stream into the bound document list.
-            _ = _services.GetRequiredService<DocumentsViewModel>().RestoreSessionOnStartupAsync();
+            desktop.MainWindow.Opened += async (_, _) =>
+            {
+                if (await viewModel.CompleteStartupAsync())
+                {
+                    await _services.GetRequiredService<DocumentsViewModel>().RestoreSessionOnStartupAsync();
+                }
+            };
 
             // FR-156: when the user opted into checking on launch, compare against the latest release in the
             // background (offline-safe) and surface a status-bar link if a newer version exists. No auto-apply.

@@ -345,13 +345,17 @@ public sealed partial class ConnectionsPaneViewModel : ViewModelBase
     private void OnConnectionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         => OnPropertyChanged(nameof(HasConnections));
 
-    private Task PersistAsync()
+    private async Task PersistAsync()
     {
         // Clone the live workspace so the connection-list save preserves everything else — the workspace
         // id/name (which namespaces secrets), TLS profiles, and any forward-compat fields.
         var workspace = _workspaceStore.Current.Copy();
         workspace.Connections = Connections.Select(i => i.Connection).ToList();
 
-        return _workspaceStore.SaveAsync(workspace);
+        try { await _workspaceStore.SaveAsync(workspace); }
+        catch (WorkspaceTrustException ex)
+        {
+            await _dialogService.ShowMessageAsync("Connection changes need file approval", ex.Message);
+        }
     }
 }

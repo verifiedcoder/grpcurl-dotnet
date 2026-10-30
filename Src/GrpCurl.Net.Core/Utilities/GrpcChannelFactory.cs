@@ -113,6 +113,12 @@ internal static partial class GrpcChannelFactory
             httpHandler.SslOptions.TargetHost = options.ServerName;
         }
 
+        // Host policy runs before any certificate/key content is opened.
+        foreach (var path in new[] { options.CaCertPath, options.ClientCertPath, options.ClientKeyPath })
+        {
+            if (path is not null) { options.FileAccessGuard?.Invoke(path, false); }
+        }
+
         // Configure TLS
         if (options.InsecureSkipVerify)
         {
@@ -639,6 +645,8 @@ internal static partial class GrpcChannelFactory
 
     public class ChannelOptions
     {
+        /// <summary>Optional host authorization invoked before reading a TLS certificate or key.</summary>
+        public Action<string, bool>? FileAccessGuard { get; init; }
         public bool Plaintext { get; init; }
 
         public bool InsecureSkipVerify { get; init; }

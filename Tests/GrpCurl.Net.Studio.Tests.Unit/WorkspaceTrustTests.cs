@@ -388,10 +388,13 @@ public sealed class WorkspaceTrustTests : IDisposable
         _ = File.CreateSymbolicLink(link, middle);
         var store = Store();
         _ = await store.CommitOpenAsync(await Approve(store, WorkspacePath));
+        var guard = new WorkspaceFileAccess(store).Guard(store.Current.Connections[0]);
+        guard(link, false);
         File.Delete(middle);
         await File.WriteAllTextAsync(middle, "different final location");
         (await Store().PrepareAsync(WorkspacePath)).RequiresApproval.ShouldBeTrue();
         _ = Should.Throw<WorkspaceTrustException>(() => store.AuthorizeConnection(store.Current.Connections[0]));
+        _ = Should.Throw<WorkspaceTrustException>(() => guard(link, false));
     }
 
     [Fact]
@@ -444,14 +447,19 @@ public sealed class WorkspaceTrustTests : IDisposable
         var outside = Path.Combine(_root, "outside");
         _ = Directory.CreateDirectory(outside);
         await File.WriteAllTextAsync(Path.Combine(outside, "api.protoset"), "not read");
+        var junction = Path.Combine(_root, "project", "junction");
         var start = new System.Diagnostics.ProcessStartInfo("cmd.exe") { UseShellExecute = false, CreateNoWindow = true };
-        foreach (var argument in new[] { "/c", "mklink", "/J", Path.Combine(_root, "project", "junction"), outside }) { start.ArgumentList.Add(argument); }
+        foreach (var argument in new[] { "/c", "mklink", "/J", junction, outside }) { start.ArgumentList.Add(argument); }
         using var process = System.Diagnostics.Process.Start(start)!;
         await process.WaitForExitAsync(TestContext.Current.CancellationToken);
         process.ExitCode.ShouldBe(0);
-        var store = Store();
-        (await store.PrepareAsync(WorkspacePath)).RequiresApproval.ShouldBeTrue();
-        _ = await store.CommitOpenAsync(await Approve(store, WorkspacePath));
+        try
+        {
+            var store = Store();
+            (await store.PrepareAsync(WorkspacePath)).RequiresApproval.ShouldBeTrue();
+            _ = await store.CommitOpenAsync(await Approve(store, WorkspacePath));
+        }
+        finally { Directory.Delete(junction); }
     }
 
     [Fact]
@@ -465,5 +473,85 @@ public sealed class WorkspaceTrustTests : IDisposable
         store.Trust.Revoke(Path.Combine(alias, "workspace.json"));
         store.Trust.ApprovedWorkspaces.ShouldBeEmpty();
         _ = Should.Throw<WorkspaceTrustException>(() => store.AuthorizeConnection(store.Current.Connections[0]));
+    }
+
+    [Fact]
+    public async Task Parent_traversal_inside_a_link_target_cannot_be_collapsed_across_another_link()
+    {
+        _ = await Write("reference.protoset");
+        var project = Path.GetDirectoryName(WorkspacePath)!;
+        var external = Path.Combine(_root, "external");
+        _ = Directory.CreateDirectory(Path.Combine(external, "child"));
+        await File.WriteAllTextAsync(Path.Combine(project, "file.protoset"), "contained lexical target");
+        await File.WriteAllTextAsync(Path.Combine(external, "file.protoset"), "external physical target");
+        _ = Directory.CreateSymbolicLink(Path.Combine(project, "nested"), Path.Combine(external, "child"));
+        _ = File.CreateSymbolicLink(Path.Combine(project, "reference.protoset"), "nested/../file.protoset");
+        var error = await Should.ThrowAsync<WorkspaceTrustException>(() => Store().PrepareAsync(WorkspacePath));
+        error.Message.ShouldContain("absolute canonical target");
+    }
+
+    [Fact]
+    public async Task Import_transfers_contained_references_from_a_selected_directory_alias()
+    {
+        _ = await Write("inside.protoset");
+        var sourceDirectory = Path.Combine(_root, "source");
+        var source = Path.Combine(sourceDirectory, "workspace.json");
+        _ = await Write("local.protoset", source);
+        var alias = Path.Combine(_root, "source-alias");
+        _ = Directory.CreateSymbolicLink(alias, sourceDirectory);
+        var store = Store();
+        _ = await store.OpenAsync(WorkspacePath);
+        var preparation = await store.PrepareAsync(Path.Combine(alias, "workspace.json"));
+        preparation.RequiresApproval.ShouldBeFalse();
+        await store.CommitImportAsync(preparation);
+        store.Current.Connections.Count.ShouldBe(2);
+        (await Store().PrepareAsync(WorkspacePath)).RequiresApproval.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Known_directory_aliases_preserve_containment_and_approved_linked_lookup()
+    {
+        var physical = Path.Combine(_root, "physical");
+        _ = Directory.CreateDirectory(physical);
+        var alias = Path.Combine(_root, "alias");
+        _ = Directory.CreateSymbolicLink(alias, physical);
+        var selected = Path.Combine(alias, "project", "workspace.json");
+        var model = await Write("local-link", selected);
+        var project = Path.GetDirectoryName(selected)!;
+        await File.WriteAllTextAsync(Path.Combine(project, "local.protoset"), "not read");
+        _ = File.CreateSymbolicLink(Path.Combine(project, "local-link"), Path.Combine(project, "local.protoset"));
+        var store = Store();
+        (await store.PrepareAsync(selected)).RequiresApproval.ShouldBeFalse();
+
+        var imports = Path.Combine(project, "protos");
+        var outside = Path.Combine(alias, "outside");
+        _ = Directory.CreateDirectory(imports);
+        _ = Directory.CreateDirectory(outside);
+        await File.WriteAllTextAsync(Path.Combine(outside, "api.proto"), "not read");
+        _ = Directory.CreateSymbolicLink(Path.Combine(imports, "linked"), outside);
+        model.Connections[0].DescriptorSource.ImportPaths.Add(imports);
+        await File.WriteAllBytesAsync(selected, WorkspaceSerializer.SerializeToUtf8(model));
+        (await store.PrepareAsync(selected)).RequiresApproval.ShouldBeTrue();
+        _ = await store.CommitOpenAsync(await Approve(store, selected));
+        var guard = new WorkspaceFileAccess(store).Guard(store.Current.Connections[0]);
+        guard(Path.Combine(project, "local-link"), false);
+        guard(Path.Combine(imports, "linked", "api.proto"), false);
+    }
+
+    [Fact]
+    public async Task External_cycles_through_known_directory_aliases_fail_after_consent()
+    {
+        var physical = Path.Combine(_root, "physical");
+        _ = Directory.CreateDirectory(physical);
+        var alias = Path.Combine(_root, "alias");
+        _ = Directory.CreateSymbolicLink(alias, physical);
+        var selected = Path.Combine(alias, "project", "workspace.json");
+        _ = await Write("../loop", selected);
+        _ = File.CreateSymbolicLink(Path.Combine(alias, "loop"), "loop");
+        var store = Store();
+        var prepared = await store.PrepareAsync(selected);
+        prepared.RequiresApproval.ShouldBeTrue();
+        var error = await Should.ThrowAsync<WorkspaceTrustException>(() => store.ApproveAsync(prepared, [prepared.References[0].ApprovalKey]));
+        error.Message.ShouldContain("cycle");
     }
 }

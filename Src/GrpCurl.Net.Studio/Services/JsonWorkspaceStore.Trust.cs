@@ -150,6 +150,7 @@ internal sealed partial class JsonWorkspaceStore
         // references were admitted automatically, and become explicit local grants in the destination.
         var transferred = new HashSet<string>(_activeApprovals, WorkspaceReferenceAssessment.Comparer);
         transferred.UnionWith(document.Approvals);
+        transferred.UnionWith(document.References.Select(r => r.AbsolutePath + "\n" + r.AbsolutePath));
         transferred.UnionWith(document.References.Select(r => r.ApprovalKey));
         var previousApprovals = _activeApprovals;
         var previousTargets = _activeTargets;
@@ -225,6 +226,13 @@ internal sealed partial class JsonWorkspaceStore
             throw new WorkspaceTrustException($"File access needs approval: {denied.Purpose}: '{denied.AbsolutePath}' → '{denied.ResolvedTarget}'. Save or reopen the workspace to review this reference.");
         }
         return references;
+    }
+
+    internal IEnumerable<string> ApprovedInspectionTargets(WorkspaceFileReference reference)
+    {
+        var prefix = reference.AbsolutePath + "\n";
+        return _activeApprovals.Where(a => a.StartsWith(prefix, WorkspaceReferenceAssessment.Comparison))
+            .Select(a => a[prefix.Length..]);
     }
 
     private async Task AuthorizeMutationAsync(WorkspaceModel model, string path, HashSet<string>? transferred, CancellationToken cancellationToken)

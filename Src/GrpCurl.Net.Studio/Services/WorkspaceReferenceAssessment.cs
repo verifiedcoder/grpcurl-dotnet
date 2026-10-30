@@ -38,7 +38,14 @@ internal static class WorkspaceReferenceAssessment
             throw new WorkspaceTrustException("The workspace has malformed connection or TLS file references. Correct the document before opening it.");
         }
         var directory = Path.GetDirectoryName(Path.GetFullPath(workspacePath))!;
-        var physicalDirectory = ResolveTarget(directory, _ => true).Target;
+        var aliases = new Dictionary<string, string>(Comparer);
+        var physicalDirectory = ResolveTarget(directory, _ => true, aliases).Target;
+        var canonicalApprovals = approvals.Select(key =>
+        {
+            var separator = key.IndexOf('\n');
+            return key[..(separator + 1)] + ResolveKnownAliases(key[(separator + 1)..], aliases);
+        }).ToHashSet(Comparer);
+        bool Approved(string absolute, string target) => canonicalApprovals.Contains(absolute + "\n" + ResolveKnownAliases(target, aliases));
         var references = new List<WorkspaceFileReference>();
         var slots = WorkspacePathPortability.Enumerate(workspace).ToList();
         // protoc searches beside each source too. Make that directory authority visible to the user.
@@ -53,11 +60,11 @@ internal static class WorkspaceReferenceAssessment
             var absolute = WorkspacePathPortability.Resolve(slot.Path, directory);
             var candidate = Contains(directory, absolute)
                 ? Path.GetFullPath(Path.GetRelativePath(directory, absolute), physicalDirectory) : absolute;
-            bool Allowed(string target) => Contains(physicalDirectory, target)
-                || approvals.Contains(absolute + "\n" + target);
+            bool Allowed(string target) => Contains(physicalDirectory, ResolveKnownAliases(target, aliases))
+                || Approved(absolute, target);
             var (target, resolved) = ResolveTarget(candidate, Allowed);
             var external = !Contains(physicalDirectory, target) || !Contains(directory, absolute);
-            var reason = !resolved || external && !approvals.Contains(absolute + "\n" + target)
+            var reason = !resolved || external && !Approved(absolute, target)
                 ? target.Equals(absolute, Comparison)
                     ? "Outside the workspace directory. Approval permits access to this location."
                     : "A symbolic link or junction points outside the workspace directory. Approve this resolved target separately."
@@ -94,8 +101,8 @@ internal static class WorkspaceReferenceAssessment
                 var target = child;
                 if ((attributes & FileAttributes.ReparsePoint) != 0)
                 {
-                    bool Allowed(string candidate) => Contains(root.ResolvedTarget!, candidate) || Contains(physicalDirectory, candidate)
-                        || approvals.Contains(logicalChild + "\n" + candidate);
+                    bool Allowed(string candidate) => Contains(root.ResolvedTarget!, ResolveKnownAliases(candidate, aliases))
+                        || Contains(physicalDirectory, ResolveKnownAliases(candidate, aliases)) || Approved(logicalChild, candidate);
                     var result = ResolveTarget(child, Allowed);
                     target = result.Target;
                     var reason = result.Resolved ? null : "A linked entry escapes its descriptor lookup directory. Approve this target separately.";
@@ -107,7 +114,21 @@ internal static class WorkspaceReferenceAssessment
         }
     }
 
-    internal static (string Target, bool Resolved) ResolveTarget(string path, Func<string, bool> mayProbe)
+    // These aliases come only from resolving the user-selected workspace directory. Translating
+    // them performs no additional filesystem access, including for external/network references.
+    internal static string ResolveKnownAliases(string path, IReadOnlyDictionary<string, string> aliases)
+    {
+        for (var i = 0; i < 40; i++)
+        {
+            var alias = aliases.Where(a => Contains(a.Key, path)).OrderByDescending(a => a.Key.Length).FirstOrDefault();
+            if (alias.Key is null) { return path; }
+            path = Path.GetFullPath(Path.GetRelativePath(alias.Key, path), alias.Value);
+        }
+        throw new WorkspaceTrustException("Cannot resolve workspace directory aliases. Correct the link cycle and try again.");
+    }
+
+    internal static (string Target, bool Resolved) ResolveTarget(string path, Func<string, bool> mayProbe,
+        IDictionary<string, string>? discoveredAliases = null)
     {
         var candidate = Path.GetFullPath(path);
         var seen = new HashSet<string>(Comparer);
@@ -150,7 +171,17 @@ internal static class WorkspaceReferenceAssessment
                 {
                     link = link[4..];
                 }
+                // GetFullPath must not collapse "directory/.." inside a link target: the named
+                // directory can itself be a link, so the OS's physical parent differs from the
+                // lexical parent. Leading ../ segments are safe here because current's ancestors
+                // have already been resolved. Reject the ambiguous form before probing its target.
+                var linkComponents = link.Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], StringSplitOptions.RemoveEmptyEntries);
+                if (linkComponents.SkipWhile(c => c is "." or "..").Any(c => c == ".."))
+                {
+                    throw new WorkspaceTrustException($"Cannot safely resolve link '{current}': its target traverses a parent after a named directory. Recreate the link with an absolute canonical target and try again.");
+                }
                 candidate = WorkspacePathPortability.Resolve(link, Path.GetDirectoryName(current)!);
+                if (discoveredAliases is not null) { discoveredAliases[current] = candidate; }
                 requiredLinkTarget = candidate;
                 for (var j = i + 1; j < components.Length; j++) { candidate = Path.Combine(candidate, components[j]); }
                 restart = true;

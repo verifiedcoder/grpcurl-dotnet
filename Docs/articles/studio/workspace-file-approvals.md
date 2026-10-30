@@ -6,6 +6,8 @@ Files beneath the selected workspace's directory are usable automatically. Refer
 
 Symbolic links and Windows junctions are resolved using filesystem metadata. An external location is not probed before consent. A link that leads to another external target can require another review before Studio inspects that target. Unresolvable, inaccessible, unsupported, or cyclic links fail closed with instructions to repair the path. Ordinary missing files can stay configured after approval; using them reports the normal missing-file error.
 
+A link target containing parent traversal after a named directory, such as `nested/../file.proto`, is rejected because `nested` could itself be a link. Recreate that link with an absolute canonical target. Leading `../` segments in a relative link target remain supported.
+
 Directory approval permits descriptor lookup beneath that directory. Linked entries escaping it need separate approval. `protoc` also searches beside each source file, so external source lookup directories appear in the dialog. Studio does not implicitly add the process working directory to guarded compiler searches. Keep lookup directories narrow: assessment refuses trees exceeding 20,000 entries.
 
 ## Approval lifecycle

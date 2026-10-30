@@ -22,16 +22,22 @@ internal sealed class WorkspaceFileAccess(IWorkspaceStore workspace)
     internal Action<string, bool> Guard(SavedConnection connection) => (path, directory) =>
     {
         var references = Store.AuthorizeConnection(connection);
+        var aliases = new Dictionary<string, string>(WorkspaceReferenceAssessment.Comparer);
+        _ = WorkspaceReferenceAssessment.ResolveTarget(Path.GetDirectoryName(Store.AuthorizationPath)!, _ => true, aliases);
+        string Canonical(string path) => WorkspaceReferenceAssessment.ResolveKnownAliases(path, aliases);
         var absolute = WorkspacePathPortability.Resolve(path, Path.GetDirectoryName(Store.AuthorizationPath)!);
         var candidates = references.Where(r => r.AbsolutePath.Equals(absolute, WorkspaceReferenceAssessment.Comparison)
             && (!directory || r.IsDirectory) || r.IsDirectory && WorkspaceReferenceAssessment.Contains(r.AbsolutePath, absolute)).ToArray();
         foreach (var candidate in candidates)
         {
+            var inspectionTargets = Store.ApprovedInspectionTargets(candidate).Select(Canonical).ToArray();
             var resolved = WorkspaceReferenceAssessment.ResolveTarget(absolute, target =>
-                target.Equals(candidate.AbsolutePath, WorkspaceReferenceAssessment.Comparison)
-                || target.Equals(candidate.ResolvedTarget, WorkspaceReferenceAssessment.Comparison)
-                || candidate.IsDirectory && (WorkspaceReferenceAssessment.Contains(candidate.AbsolutePath, target)
-                    || WorkspaceReferenceAssessment.Contains(candidate.ResolvedTarget!, target)));
+                Canonical(target).Equals(Canonical(candidate.AbsolutePath), WorkspaceReferenceAssessment.Comparison)
+                || Canonical(target).Equals(candidate.ResolvedTarget, WorkspaceReferenceAssessment.Comparison)
+                || candidate.IsDirectory && (WorkspaceReferenceAssessment.Contains(Canonical(candidate.AbsolutePath), Canonical(target))
+                    || WorkspaceReferenceAssessment.Contains(candidate.ResolvedTarget!, Canonical(target)))
+                || inspectionTargets.Any(approved => Canonical(target).Equals(approved, WorkspaceReferenceAssessment.Comparison)
+                    || candidate.IsDirectory && WorkspaceReferenceAssessment.Contains(approved, Canonical(target))));
             if (resolved.Resolved && (resolved.Target.Equals(candidate.ResolvedTarget, WorkspaceReferenceAssessment.Comparison)
                 || candidate.IsDirectory && WorkspaceReferenceAssessment.Contains(candidate.ResolvedTarget!, resolved.Target)))
             {

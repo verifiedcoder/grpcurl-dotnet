@@ -6,6 +6,8 @@ Base: `feature/bug-fixes` at `ebbfd59`. This expands the original import-only is
 
 `WorkspacePathPortability` owns portable serialization and the shared enumeration/normalization of descriptor and TLS references. `WorkspaceReferenceAssessment` performs component-aware containment, rejects ambiguous platform syntax, resolves symlinks/junctions, and stops before probing unapproved external targets. Descriptor lookup directories are assessed recursively for linked escapes, without opening file contents. A missing ordinary target remains configured; a broken or uninspectable link fails closed.
 
+Known aliases encountered while resolving the selected workspace directory (including macOS `/var` → `/private/var`) remain equivalent during assessment and consumption without probing additional locations. Approved intermediate link targets permit inspection of a chain, while its final resolved target remains separately bound. Link targets containing `directory/..` fail closed because lexical normalization could conceal a linked-directory escape.
+
 `IWorkspaceStore` exposes preparation, explicit per-reference consent, validation, and separate open/import commit operations. Preparations are owned by the issuing store and retain an immutable source snapshot; callers receive a cloned preview. Commit rechecks document bytes and resolved targets. Legacy direct store entry points also refuse unapproved references. UI cancellation leaves workspace state, recents, locks, pending autosave, and secrets untouched. Startup defers activation until the shell can present the dialog, and trust failures never take the corrupt-workspace quarantine path.
 
 The private versioned `workspace-trust.json` uses PRD-013's permission/atomic-replacement helper and a stable exclusive writer lock. Records bind canonical location, SHA-256 document fingerprint, individual consent paths, and final resolved reference targets. Intermediate link-inspection consent cannot silently become final-target authorization after retargeting. Studio saves prune removed references and advance admitted fingerprints; imports transfer the final admitted references across ID/path transformations. If a workspace write commits and the approval write fails, the error explicitly reports partial success and access requires approval again.
@@ -21,9 +23,9 @@ Tests cover containment, sibling prefixes, traversal, absolute paths, malformed/
 Local verification:
 
 - Locked restore and Release build passed with zero warnings/errors.
-- Filtered solution tests with coverage: 2,370 passed, 14 platform skips, zero failures (headless D-Bus configuration).
-- ViewModels line coverage: 4,989/5,476 = 91.1%, above the 80% gate.
-- Final focused workspace and shell suite after canonical-alias revocation and partial-success reporting: 169 passed, two Windows-only skips.
+- Filtered solution tests with coverage: 2,375 passed, 14 platform skips, zero failures (headless D-Bus configuration).
+- ViewModels line coverage: 4,989/5,477 = 91.1%, above the 80% gate.
+- Final full run includes directory-alias, approved link-chain, ambiguous link-target, and import-transfer regressions. Windows junction cleanup is verified by the Windows CI leg.
 - Rendered approval/Settings tests: three passed, including actual checkbox, cancel, revoke, and recovery bindings.
 - CLI smoke validation: ten scenarios passed. Core and Studio conformance: 634/634 each.
 - DocFX with warnings as errors passed with zero warnings/errors.

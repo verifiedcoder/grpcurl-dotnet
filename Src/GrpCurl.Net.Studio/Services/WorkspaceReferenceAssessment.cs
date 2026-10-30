@@ -182,7 +182,10 @@ internal static class WorkspaceReferenceAssessment
                 }
                 candidate = WorkspacePathPortability.Resolve(link, Path.GetDirectoryName(current)!);
                 if (discoveredAliases is not null) { discoveredAliases[current] = candidate; }
-                requiredLinkTarget = candidate;
+                // Resolving an ancestor alias must retain the original link's existence requirement.
+                // Otherwise /var -> /private/var could hide a dangling target further down the path.
+                requiredLinkTarget = requiredLinkTarget is not null && Contains(current, requiredLinkTarget)
+                    ? Path.GetFullPath(Path.GetRelativePath(current, requiredLinkTarget), candidate) : candidate;
                 for (var j = i + 1; j < components.Length; j++) { candidate = Path.Combine(candidate, components[j]); }
                 restart = true;
                 break;

@@ -536,6 +536,8 @@ public sealed class WorkspaceTrustTests : IDisposable
         var guard = new WorkspaceFileAccess(store).Guard(store.Current.Connections[0]);
         guard(Path.Combine(project, "local-link"), false);
         guard(Path.Combine(imports, "linked", "api.proto"), false);
+        File.Delete(Path.Combine(project, "local.protoset"));
+        _ = await Should.ThrowAsync<WorkspaceTrustException>(() => store.PrepareAsync(selected));
     }
 
     [Fact]

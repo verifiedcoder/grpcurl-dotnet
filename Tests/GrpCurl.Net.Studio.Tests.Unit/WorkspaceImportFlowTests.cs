@@ -119,7 +119,7 @@ public sealed class WorkspaceImportFlowTests
                 (await File.ReadAllBytesAsync(active)).ShouldBe(activeBytes);
                 (await secrets.ListAsync()).ShouldBeEmpty();
                 connections.Connections.ShouldBeEmpty();
-                if (outcome == "malformed") { stages.ShouldBe(["files"]); }
+                if (outcome == "malformed") { stages.ShouldBeEmpty(); }
                 else if (outcome == "cancel") { stages.ShouldBe(["files", "tls"]); }
                 if (outcome != "cancel") { dialogs.LastMessageBody.ShouldNotBeNullOrWhiteSpace(); }
             }

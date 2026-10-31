@@ -35,9 +35,10 @@ public interface IWorkspaceTrustStore
 
 public static class WorkspaceApproval
 {
-    public static async Task<WorkspacePreparation?> PrepareAsync(IWorkspaceStore store, IDialogService? dialogs, string path)
+    public static async Task<WorkspacePreparation?> PrepareAsync(IWorkspaceStore store, IDialogService? dialogs, string path, bool forImport = false)
     {
         var preparation = await store.PrepareAsync(path);
+        if (forImport) { preparation.ValidateImportSource(); }
         while (preparation.RequiresApproval)
         {
             if (dialogs is null || await dialogs.ShowDialogAsync(new WorkspaceApprovalDialogViewModel(preparation)) is not { } approved)

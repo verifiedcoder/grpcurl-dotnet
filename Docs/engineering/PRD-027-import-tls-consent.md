@@ -14,7 +14,7 @@ start unchecked on every import. Cancel returns no decision and cancels the whol
 
 `WorkspaceImportDecision` defensively copies the selected source IDs and binds them by object identity to
 the exact `WorkspacePreparation` reviewed after PRD-026 approval. Creation and commit reject foreign
-preparations and unknown, duplicate or ineligible selections. Import rejects missing, empty, padded,
+preparations and unknown, duplicate or ineligible selections. Before either consent dialog, import rejects missing, empty, padded,
 control-bearing or duplicate profile IDs, including absent or repeated JSON `id` properties. IDs remain
 opaque ordinal strings; legacy non-UUID IDs are supported. Existing open behavior remains unchanged.
 
@@ -62,7 +62,7 @@ Local verification: locked restore and Release build passed with zero warnings/e
 solution run passed 2,423 tests with 14 platform-specific skips and no failures. ViewModels line coverage
 was 5,059/5,545 (91.2%), above the 80% gate. The rendered dialog and view-location suite passed 24 tests.
 CLI validation passed all ten scenarios; core and Studio conformance each passed 634/634.
-DocFX with warnings as errors passed with zero warnings/errors. Complete three-OS CI results will be recorded when available.
+DocFX with warnings as errors passed with zero warnings/errors. Complete three-OS CI results and any retries are recorded in [PR #170](https://github.com/verifiedcoder/grpcurl-dotnet/pull/170).
 The implementer's acceptance evidence is not independent review approval. Independent review and fresh
 explicit user merge authorization are required before merge.
 

@@ -772,7 +772,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
             try
             {
-                preparation = await WorkspaceApproval.PrepareAsync(_workspaceStore, _dialogs, path);
+                preparation = await WorkspaceApproval.PrepareAsync(_workspaceStore, _dialogs, path, forImport: true);
                 if (preparation is null) { return; }
             }
             catch (Exception ex) when (ex is WorkspaceSchemaException or WorkspaceTrustException or IOException or UnauthorizedAccessException)

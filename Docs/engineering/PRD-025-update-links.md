@@ -54,3 +54,21 @@ The initial full test run exposed the existing exit-139 issue. The user required
 a fix, not acceptance of a passing retry. The separate
 [PRD-044 correction](PRD-044-native-schema.md) restores libsecret’s complete native
 schema layout and adds fail-fast stability verification.
+
+The final Windows matrix then exposed two existing storage-test failures. A local
+Windows repetition reproduced concurrent secret-file replacement failing with
+`ERROR_ACCESS_DENIED` at `File.Move`. Windows overwrite commits now retry only
+error codes 5, 32 and 33, at most ten attempts with 10 ms between attempts. Each
+retry rechecks the directory and target protections and reuses the same complete
+temporary file. Persistent denial and unrelated failures still preserve the old
+file, clean up the owned temporary and report a sanitized error. This is bounded
+handling inside the file operation, not a test-run retry or a cross-process
+read/modify/write transaction. The original race passed 50 consecutive local
+Windows repetitions after this correction. Fault-injection tests cover transient
+success, persistent denial, disk-full rejection and temporary-file cleanup.
+
+The cross-process history test exceeded the production five-second lock deadline
+under CI load. Its serialization scenario now explicitly uses a 30-second lock
+budget and 60-second test coordination budget. The production default remains
+five seconds; the separate contention test still verifies timeout, cancellation
+and disposal. These validation-driven corrections are separately committed.

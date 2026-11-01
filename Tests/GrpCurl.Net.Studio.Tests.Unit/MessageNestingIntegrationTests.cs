@@ -1,7 +1,6 @@
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
-using GrpCurl.Net.Commands;
 using GrpCurl.Net.Studio.Services;
 using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Models.Invocation;
@@ -75,7 +74,7 @@ public sealed class MessageNestingIntegrationTests
     {
         await using var server = await Server.Start(any);
         var start = new ProcessStartInfo("dotnet") { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
-        foreach (var arg in new[] { typeof(InvokeCommandHandler).Assembly.Location, "invoke", "--plaintext", "--protoset", server.Protoset, "--max-time", "10s", "-d", "{}", server.Connection.Address, "nest.Probe/" + (streaming ? "Stream" : "Unary") })
+        foreach (var arg in new[] { CliAssemblyPath(), "invoke", "--plaintext", "--protoset", server.Protoset, "--max-time", "10s", "-d", "{}", server.Connection.Address, "nest.Probe/" + (streaming ? "Stream" : "Unary") })
         {
             start.ArgumentList.Add(arg);
         }
@@ -90,6 +89,22 @@ public sealed class MessageNestingIntegrationTests
         string.Join(" ", (output + await stderr).Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)).ShouldContain("limit of 100");
         output.ShouldNotContain("\"child\"");
         output.ShouldNotContain("\"@type\"");
+    }
+
+    private static string CliAssemblyPath()
+    {
+        // Studio's test output relies on the ASP.NET shared framework and does not copy all
+        // dependencies needed by the standalone CLI. Run the CLI's own build output instead.
+        var output = new DirectoryInfo(AppContext.BaseDirectory);
+        var repository = output;
+        while (repository is not null && !File.Exists(Path.Combine(repository.FullName, "GrpCurl.Net.slnx")))
+        {
+            repository = repository.Parent;
+        }
+        _ = repository.ShouldNotBeNull("could not locate the repository from the test assembly");
+        var path = Path.Combine(repository.FullName, "Src", "GrpCurl.Net", "bin", output.Parent!.Name, output.Name, "GrpCurl.Net.dll");
+        File.Exists(path).ShouldBeTrue("the CLI project reference must be built before these tests run");
+        return path;
     }
 
     private static async IAsyncEnumerable<string> Requests()

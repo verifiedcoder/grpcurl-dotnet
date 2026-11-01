@@ -792,7 +792,7 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
 
             if (await source.FindSymbolAsync(serviceName, cancellationToken).ConfigureAwait(false) is not Google.Protobuf.Reflection.ServiceDescriptor service)
             {
-                var hint = Closest(await source.ListServicesAsync(cancellationToken).ConfigureAwait(false), serviceName);
+                var hint = Closest(await source.ListServicesAsync(cancellationToken).ConfigureAwait(false), serviceName, cancellationToken);
                 problems.Add(Problem($"`{entry.GraphqlField}`: service '{serviceName}' was not found{Did(hint)}."));
                 continue;
             }
@@ -801,7 +801,7 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
 
             if (method is null)
             {
-                var hint = Closest(service.Methods.Select(m => m.Name), entry.Method);
+                var hint = Closest(service.Methods.Select(m => m.Name), entry.Method, cancellationToken);
                 problems.Add(Problem($"`{entry.GraphqlField}`: method '{serviceName}/{entry.Method}' was not found{Did(hint)}."));
                 continue;
             }
@@ -823,18 +823,18 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
 
                 if (path is not null)
                 {
-                    AddPathProblem(problems, entry.GraphqlField, $"argument `{argName}`", path, method.InputType);
+                    AddPathProblem(problems, entry.GraphqlField, $"argument `{argName}`", path, method.InputType, cancellationToken);
                 }
             }
 
             if (entry.SelectionFieldMaskPath is { } maskPath)
             {
-                AddPathProblem(problems, entry.GraphqlField, "$selection fieldMask", maskPath, method.InputType);
+                AddPathProblem(problems, entry.GraphqlField, "$selection fieldMask", maskPath, method.InputType, cancellationToken);
             }
 
             if (entry.Response?.Unwrap is { } unwrap && method.OutputType.FindFieldByName(unwrap) is null)
             {
-                var hint = Closest(method.OutputType.Fields.InDeclarationOrder().Select(f => f.Name), unwrap);
+                var hint = Closest(method.OutputType.Fields.InDeclarationOrder().Select(f => f.Name), unwrap, cancellationToken);
                 problems.Add(Problem($"`{entry.GraphqlField}`: response.unwrap '{unwrap}' is not a field of {method.OutputType.Name}{Did(hint)}."));
             }
         }
@@ -842,7 +842,7 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
         return problems;
     }
 
-    private static void AddPathProblem(List<GraphQlProblem> problems, string field, string label, string path, Google.Protobuf.Reflection.MessageDescriptor inputType)
+    private static void AddPathProblem(List<GraphQlProblem> problems, string field, string label, string path, Google.Protobuf.Reflection.MessageDescriptor inputType, CancellationToken cancellationToken)
     {
         var current = inputType;
         var segments = path.Split('.');
@@ -853,7 +853,7 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
 
             if (f is null)
             {
-                var hint = Closest(current.Fields.InDeclarationOrder().Select(x => x.Name), segments[i]);
+                var hint = Closest(current.Fields.InDeclarationOrder().Select(x => x.Name), segments[i], cancellationToken);
                 problems.Add(Problem($"`{field}`: {label} path '{path}' — '{segments[i]}' is not a field of {current.Name}{Did(hint)}."));
                 return;
             }
@@ -877,49 +877,65 @@ internal sealed class GraphQlService(ITlsProfileResolver? tlsResolver = null, IE
 
     private static string Did(string? hint) => hint is null ? string.Empty : $" (did you mean '{hint}'?)";
 
-    /// <summary>The closest candidate within a small edit distance, or null when none is close enough.</summary>
-    internal static string? Closest(IEnumerable<string> candidates, string target)
-    {
-        string? best = null;
-        var bestDistance = int.MaxValue;
+    internal const int MaxSuggestionIdentifierLength = 256;
+    internal const int MaxSuggestionEditDistance = 3;
 
+    /// <summary>Finds the first closest bounded-length candidate within three ordinal UTF-16 edits.</summary>
+    internal static string? Closest(IEnumerable<string> candidates, string target, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (target.Length > MaxSuggestionIdentifierLength) { return null; }
+
+        // Allocate once, outside enumeration: neither long names nor candidate count grow scratch space.
+        Span<int> previous = stackalloc int[MaxSuggestionIdentifierLength + 1];
+        Span<int> current = stackalloc int[MaxSuggestionIdentifierLength + 1];
+        string? best = null;
+        var bestDistance = MaxSuggestionEditDistance + 1;
         foreach (var candidate in candidates)
         {
-            var distance = Levenshtein(candidate, target);
+            cancellationToken.ThrowIfCancellationRequested();
+            if (candidate.Length > MaxSuggestionIdentifierLength ||
+                Math.Abs(candidate.Length - target.Length) > MaxSuggestionEditDistance)
+            {
+                continue;
+            }
+            var distance = BoundedDistance(candidate, target, previous, current);
             if (distance < bestDistance)
             {
                 bestDistance = distance;
                 best = candidate;
+                if (distance == 0) { return best; }
             }
         }
-
-        return best is not null && bestDistance <= 3 ? best : null;
+        return best;
     }
 
-    private static int Levenshtein(string a, string b)
+    private static int BoundedDistance(string a, string b, Span<int> previous, Span<int> current)
     {
-        var d = new int[a.Length + 1, b.Length + 1];
-
-        for (var i = 0; i <= a.Length; i++)
-        {
-            d[i, 0] = i;
-        }
-
-        for (var j = 0; j <= b.Length; j++)
-        {
-            d[0, j] = j;
-        }
+        const int outside = MaxSuggestionEditDistance + 1;
+        previous.Fill(outside);
+        for (var j = 0; j <= Math.Min(b.Length, MaxSuggestionEditDistance); j++) { previous[j] = j; }
 
         for (var i = 1; i <= a.Length; i++)
         {
-            for (var j = 1; j <= b.Length; j++)
+            var start = Math.Max(1, i - MaxSuggestionEditDistance);
+            var end = Math.Min(b.Length, i + MaxSuggestionEditDistance);
+            current[0] = Math.Min(i, outside);
+            if (start > 1) { current[start - 1] = outside; }
+            if (end < b.Length) { current[end + 1] = outside; }
+            var rowMinimum = current[0];
+            for (var j = start; j <= end; j++)
             {
                 var cost = a[i - 1] == b[j - 1] ? 0 : 1;
-                d[i, j] = Math.Min(Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1), d[i - 1, j - 1] + cost);
+                current[j] = Math.Min(outside, Math.Min(Math.Min(previous[j] + 1, current[j - 1] + 1), previous[j - 1] + cost));
+                rowMinimum = Math.Min(rowMinimum, current[j]);
             }
+            if (rowMinimum > MaxSuggestionEditDistance) { return outside; }
+            var swap = previous;
+            previous = current;
+            current = swap;
         }
-
-        return d[a.Length, b.Length];
+        return previous[b.Length];
     }
 
     public async Task<GraphQlCompletions> GetCompletionsAsync(GraphQlExecutionRequest request, CancellationToken cancellationToken)

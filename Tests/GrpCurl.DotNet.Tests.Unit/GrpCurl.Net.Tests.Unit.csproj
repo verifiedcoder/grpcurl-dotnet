@@ -39,4 +39,8 @@
         <Using Include="Xunit" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Compile Include="../NestingShared/NestingData.cs" Link="Shared/NestingData.cs" />
+    </ItemGroup>
+
 </Project>

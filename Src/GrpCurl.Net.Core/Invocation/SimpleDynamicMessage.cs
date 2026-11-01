@@ -436,7 +436,7 @@ internal class SimpleDynamicMessage : IMessage
     ///     <c>value</c> payload by resolving <c>@type</c>. Unresolvable types fall back to a
     ///     base64 rendering (upstream-grpcurl style) so no information is lost.
     /// </summary>
-    private void WriteAnyJson(StringBuilder sb, SimpleDynamicMessage any, bool includeDefaults)
+    private void WriteAnyJson(StringBuilder sb, SimpleDynamicMessage any, bool includeDefaults, int depth)
     {
         var typeUrlField = any.Descriptor.FindFieldByNumber(1);
         var valueField = any.Descriptor.FindFieldByNumber(2);
@@ -470,21 +470,22 @@ internal class SimpleDynamicMessage : IMessage
             return;
         }
 
+        MessageNesting.Check(depth + 1, "JSON rendering");
         var embedded = new SimpleDynamicMessage(embeddedDescriptor);
 
         using (var input = new CodedInputStream(valueBytes.ToByteArray()))
         {
-            embedded.MergeFrom(input);
+            ProtobufReader.MergeFrom(embedded, input, depth + 1);
         }
 
         if (SpecialJsonWktNames.Contains(embeddedDescriptor.FullName))
         {
             _ = sb.Append(",\"value\":");
-            WriteSpecialWktInline(sb, embedded, embeddedDescriptor, includeDefaults);
+            WriteSpecialWktInline(sb, embedded, embeddedDescriptor, includeDefaults, depth + 1);
         }
         else
         {
-            var inner = embedded.ToJson(includeDefaults).Trim();
+            var inner = embedded.ToJson(includeDefaults, depth + 1).Trim();
 
             // Inline the embedded fields after @type; ToJson always returns a JSON object.
             if (inner.Length > 2 && inner[0] == '{' && inner[^1] == '}')
@@ -496,7 +497,7 @@ internal class SimpleDynamicMessage : IMessage
         _ = sb.Append('}');
     }
 
-    private void WriteSpecialWktInline(StringBuilder sb, SimpleDynamicMessage embedded, MessageDescriptor descriptor, bool includeDefaults)
+    private void WriteSpecialWktInline(StringBuilder sb, SimpleDynamicMessage embedded, MessageDescriptor descriptor, bool includeDefaults, int depth)
     {
         switch (descriptor.FullName)
         {
@@ -520,26 +521,26 @@ internal class SimpleDynamicMessage : IMessage
 
             case "google.protobuf.Struct":
 
-                WellKnownTypeHandler.WriteStructJson(sb, embedded, WriteValueJson);
+                WriteStructJson(sb, embedded, depth);
 
                 break;
 
             case "google.protobuf.Value":
 
-                WellKnownTypeHandler.WriteValueJson(sb, embedded, WriteStructJson, WriteListValueJson);
+                WriteValueJson(sb, embedded, depth);
 
                 break;
 
             case "google.protobuf.ListValue":
 
-                WellKnownTypeHandler.WriteListValueJson(sb, embedded, WriteValueJson);
+                WriteListValueJson(sb, embedded, depth);
 
                 break;
 
             default:
 
                 WellKnownTypeHandler.WriteWrapperJson(sb, embedded, descriptor,
-                                                      (s, f, val) => WriteJsonValue(s, f, val, includeDefaults));
+                                                      (s, f, val) => WriteJsonValue(s, f, val, includeDefaults, depth));
 
                 break;
         }
@@ -609,8 +610,11 @@ internal class SimpleDynamicMessage : IMessage
     ///         not emitted. Use includeDefaults=true (--emit-defaults CLI flag) to see all fields.
     ///     </para>
     /// </remarks>
-    public string ToJson(bool includeDefaults = false)
+    public string ToJson(bool includeDefaults = false) => ToJson(includeDefaults, 0);
+
+    internal string ToJson(bool includeDefaults, int depth)
     {
+        MessageNesting.Check(depth, "JSON rendering");
         var sb = new StringBuilder().Append('{');
 
         var first = true;
@@ -638,7 +642,7 @@ internal class SimpleDynamicMessage : IMessage
             _ = sb.Append("\":");
 
             // Write field value
-            WriteJsonValue(sb, field, value, includeDefaults);
+            WriteJsonValue(sb, field, value, includeDefaults, depth);
         }
 
         // Write repeated fields as arrays
@@ -669,7 +673,7 @@ internal class SimpleDynamicMessage : IMessage
                     _ = sb.Append(',');
                 }
 
-                WriteJsonValue(sb, field, values[i], includeDefaults);
+                WriteJsonValue(sb, field, values[i], includeDefaults, depth);
             }
 
             _ = sb.Append(']');
@@ -718,7 +722,8 @@ internal class SimpleDynamicMessage : IMessage
                 // Write value
                 if (valueField is not null)
                 {
-                    WriteJsonValue(sb, valueField, value, includeDefaults);
+                    MessageNesting.Check(depth + 1, "JSON rendering");
+                    WriteJsonValue(sb, valueField, value, includeDefaults, depth + 1);
                 }
             }
 
@@ -893,7 +898,7 @@ internal class SimpleDynamicMessage : IMessage
         return true;
     }
 
-    private void WriteJsonValue(StringBuilder sb, FieldDescriptor field, object? value, bool includeDefaults = false)
+    private void WriteJsonValue(StringBuilder sb, FieldDescriptor field, object? value, bool includeDefaults, int depth)
     {
         if (value is null)
         {
@@ -997,6 +1002,7 @@ internal class SimpleDynamicMessage : IMessage
                 // Recursively serialize nested message
                 if (value is SimpleDynamicMessage nestedMessage)
                 {
+                    MessageNesting.Check(depth + 1, "JSON rendering");
                     // Check for well-known types with special JSON encoding
                     var fullName = field.MessageType.FullName;
 
@@ -1025,13 +1031,13 @@ internal class SimpleDynamicMessage : IMessage
                         case "google.protobuf.BytesValue":
 
                             WellKnownTypeHandler.WriteWrapperJson(sb, nestedMessage, field.MessageType,
-                                                                  (s, f, v) => WriteJsonValue(s, f, v, includeDefaults));
+                                                                  (s, f, v) => WriteJsonValue(s, f, v, includeDefaults, depth + 1));
 
                             break;
 
                         case "google.protobuf.Any":
 
-                            WriteAnyJson(sb, nestedMessage, includeDefaults);
+                            WriteAnyJson(sb, nestedMessage, includeDefaults, depth + 1);
 
                             break;
 
@@ -1049,26 +1055,26 @@ internal class SimpleDynamicMessage : IMessage
 
                         case "google.protobuf.Struct":
 
-                            WellKnownTypeHandler.WriteStructJson(sb, nestedMessage, WriteValueJson);
+                            WriteStructJson(sb, nestedMessage, depth + 1);
 
                             break;
 
                         case "google.protobuf.Value":
 
-                            WellKnownTypeHandler.WriteValueJson(sb, nestedMessage, WriteStructJson, WriteListValueJson);
+                            WriteValueJson(sb, nestedMessage, depth + 1);
 
                             break;
 
                         case "google.protobuf.ListValue":
 
-                            WellKnownTypeHandler.WriteListValueJson(sb, nestedMessage, WriteValueJson);
+                            WriteListValueJson(sb, nestedMessage, depth + 1);
 
                             break;
 
                         default:
 
                             // Regular message — pass includeDefaults for recursive emit-defaults
-                            _ = sb.Append(nestedMessage.ToJson(includeDefaults));
+                            _ = sb.Append(nestedMessage.ToJson(includeDefaults, depth + 1));
 
                             break;
                     }
@@ -1096,13 +1102,24 @@ internal class SimpleDynamicMessage : IMessage
         }
     }
 
-    // Adapter methods for WellKnownTypeHandler JSON serialization callbacks
-    private void WriteStructJson(StringBuilder sb, SimpleDynamicMessage structMsg)
-        => WellKnownTypeHandler.WriteStructJson(sb, structMsg, WriteValueJson);
+    // These callbacks retain logical protobuf depth, including Struct's implicit map entry.
+    private void WriteStructJson(StringBuilder sb, SimpleDynamicMessage message, int depth)
+    {
+        MessageNesting.Check(depth, "JSON rendering");
+        if (message.MapFields.Values.Any(map => map.Count > 0)) { MessageNesting.Check(depth + 1, "JSON rendering"); }
+        WellKnownTypeHandler.WriteStructJson(sb, message, (s, v) => WriteValueJson(s, v, depth + 2));
+    }
 
-    private void WriteValueJson(StringBuilder sb, SimpleDynamicMessage value)
-        => WellKnownTypeHandler.WriteValueJson(sb, value, WriteStructJson, WriteListValueJson);
+    private void WriteValueJson(StringBuilder sb, SimpleDynamicMessage message, int depth)
+    {
+        MessageNesting.Check(depth, "JSON rendering");
+        WellKnownTypeHandler.WriteValueJson(sb, message,
+            (s, v) => WriteStructJson(s, v, depth + 1), (s, v) => WriteListValueJson(s, v, depth + 1));
+    }
 
-    private void WriteListValueJson(StringBuilder sb, SimpleDynamicMessage listValue)
-        => WellKnownTypeHandler.WriteListValueJson(sb, listValue, WriteValueJson);
+    private void WriteListValueJson(StringBuilder sb, SimpleDynamicMessage message, int depth)
+    {
+        MessageNesting.Check(depth, "JSON rendering");
+        WellKnownTypeHandler.WriteListValueJson(sb, message, (s, v) => WriteValueJson(s, v, depth + 1));
+    }
 }

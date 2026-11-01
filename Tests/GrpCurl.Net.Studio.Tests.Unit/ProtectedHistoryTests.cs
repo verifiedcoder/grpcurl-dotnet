@@ -335,7 +335,7 @@ public sealed class ProtectedHistoryTests : IDisposable
             using var secrets = new SecretStore(shared, null, new EncryptedFileSecretStore(shared),
                 new(GrpCurl.Net.Studio.ViewModels.Models.SecretFallbackMode.Allow));
             using var childTimeout = CancellationTokenSource.CreateLinkedTokenSource(Ct);
-            childTimeout.CancelAfter(TimeSpan.FromSeconds(30));
+            childTimeout.CancelAfter(TimeSpan.FromSeconds(60));
             var ready = Path.Combine(shared, Environment.ProcessId + ".ready");
             var waiting = Path.Combine(shared, Environment.ProcessId + ".waiting");
             var files = new SecureSecretFile((stage, path) =>
@@ -343,7 +343,10 @@ public sealed class ProtectedHistoryTests : IDisposable
                 if (stage == SecretFileStage.BeforeFileProtection && path.EndsWith(".lock", StringComparison.Ordinal))
                 { File.WriteAllText(waiting, "waiting"); }
             });
-            using var store = new JsonHistoryStore(Path.Combine(shared, "history.ndjson"), secrets, files: files);
+            // This checks serialization under process startup/crypto load, with an explicit test
+            // lock budget. Production's five-second default is unchanged; contention tests cover timeout behavior.
+            using var store = new JsonHistoryStore(Path.Combine(shared, "history.ndjson"), secrets, files: files,
+                lockTimeout: TimeSpan.FromSeconds(30));
             File.WriteAllText(ready, "ready");
             while (!File.Exists(Path.Combine(shared, "begin"))) { await Task.Delay(20, childTimeout.Token).ConfigureAwait(false); }
             await store.AppendAsync(Entry(), childTimeout.Token).ConfigureAwait(false);
@@ -370,7 +373,7 @@ public sealed class ProtectedHistoryTests : IDisposable
                 output.Add(child.StandardError.ReadToEndAsync(Ct));
             }
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(Ct);
-            timeout.CancelAfter(TimeSpan.FromSeconds(30));
+            timeout.CancelAfter(TimeSpan.FromSeconds(60));
             // Process startup is outside the production lock deadline. Observe both attempts before
             // releasing the held lock, without queueing coordination behind xUnit's test scheduler.
             while (Directory.GetFiles(_directory, "*.ready").Length != 2) { await Task.Delay(20, timeout.Token).ConfigureAwait(false); }

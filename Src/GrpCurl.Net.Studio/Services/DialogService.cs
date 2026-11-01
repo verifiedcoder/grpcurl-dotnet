@@ -16,6 +16,15 @@ namespace GrpCurl.Net.Studio.Services;
 internal sealed class DialogService : IDialogService
 {
     private readonly ViewLocator _viewLocator = new();
+    private readonly Func<Window?> _owner;
+
+    public DialogService() : this(() =>
+        (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow)
+    {
+    }
+
+    // Allows headless tests to exercise real modal prompts without replacing the application lifetime.
+    internal DialogService(Func<Window?> owner) => _owner = owner;
 
     public Task ShowMessageAsync(string title, string message, CancellationToken cancellationToken = default)
         => ShowPromptAsync(title, message, ["OK"]);
@@ -63,7 +72,7 @@ internal sealed class DialogService : IDialogService
         return result;
     }
 
-    private static async Task<string> ShowPromptAsync(string title, string message, IReadOnlyList<string> buttons)
+    private async Task<string> ShowPromptAsync(string title, string message, IReadOnlyList<string> buttons)
     {
         var chosen = buttons[0];
 
@@ -111,13 +120,13 @@ internal sealed class DialogService : IDialogService
         return chosen;
     }
 
-    private static async Task ShowModalAsync(Window window)
+    private async Task ShowModalAsync(Window window)
     {
         // SPEC-020 §6: move keyboard focus into the dialog as soon as it opens, so it is fully operable
         // without reaching for the mouse (the first input for an editor, the default button for a prompt).
         window.Opened += (_, _) => FocusFirstFocusable(window);
 
-        var owner = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+        var owner = _owner();
 
         if (owner is not null)
         {

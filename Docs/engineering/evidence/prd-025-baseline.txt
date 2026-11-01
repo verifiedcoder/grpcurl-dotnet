@@ -1,0 +1,141 @@
+Running tests from /tmp/prd025-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Studio.Tests.Unit.dll (net10.0|x64)
+failed GrpCurl.Net.Studio.Tests.Unit.UpdateUrlBoundaryTests.Feed_discards_unsafe_links_without_losing_version_information(url: "file:///tmp/update") (56ms)
+  from /tmp/prd025-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Studio.Tests.Unit.dll (net10.0|x64)
+  Shouldly.ShouldAssertException : result.ReleaseUrl
+      should be
+  ""
+      but was
+  "file:///tmp/update"
+      difference
+  Difference     |  |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+                 | \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/
+  Index          | 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17
+  Expected Value |
+  Actual Value   | f    i    l    e    :    /    /    /    t    m    p    /    u    p    d    a    t    e
+  Expected Code  |
+  Actual Code    | 102  105  108  101  58   47   47   47   116  109  112  47   117  112  100  97   116  101
+    at GrpCurl.Net.Studio.Tests.Unit.UpdateUrlBoundaryTests.Feed_discards_unsafe_links_without_losing_version_information(String url) in /tmp/prd025-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/UpdateUrlBoundaryTests.cs:22
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+failed GrpCurl.Net.Studio.Tests.Unit.UpdateUrlBoundaryTests.Feed_discards_unsafe_links_without_losing_version_information(url: "https://evil.example/update") (6ms)
+  from /tmp/prd025-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Studio.Tests.Unit.dll (net10.0|x64)
+  Shouldly.ShouldAssertException : result.ReleaseUrl
+      should be
+  ""
+      but was
+  "https://evil.example/update"
+      difference
+  Difference     |  |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+                 | \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/
+  Index          | 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   ...
+  Expected Value |                                                                                                          ...
+  Actual Value   | h    t    t    p    s    :    /    /    e    v    i    l    .    e    x    a    m    p    l    e    /    ...
+  Expected Code  |                                                                                                          ...
+  Actual Code    | 104  116  116  112  115  58   47   47   101  118  105  108  46   101  120  97   109  112  108  101  47   ...
+
+  Difference     |       |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+                 |      \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/
+  Index          | ...  6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21   22   23   24   25   26
+  Expected Value | ...
+  Actual Value   | ...  /    /    e    v    i    l    .    e    x    a    m    p    l    e    /    u    p    d    a    t    e
+  Expected Code  | ...
+  Actual Code    | ...  47   47   101  118  105  108  46   101  120  97   109  112  108  101  47   117  112  100  97   116  101
+    at GrpCurl.Net.Studio.Tests.Unit.UpdateUrlBoundaryTests.Feed_discards_unsafe_links_without_losing_version_information(String url) in /tmp/prd025-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/UpdateUrlBoundaryTests.cs:22
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+failed GrpCurl.Net.Studio.Tests.Unit.UpdateUrlBoundaryTests.Feed_discards_unsafe_links_without_losing_version_information(url: "ms-msdt:/id PCWDiagnostic") (0ms)
+  from /tmp/prd025-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Studio.Tests.Unit.dll (net10.0|x64)
+  Shouldly.ShouldAssertException : result.ReleaseUrl
+      should be
+  ""
+      but was
+  "ms-msdt:/id PCWDiagnostic"
+      difference
+  Difference     |  |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+                 | \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/
+  Index          | 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   ...
+  Expected Value |                                                                                                          ...
+  Actual Value   | m    s    -    m    s    d    t    :    /    i    d    \s   P    C    W    D    i    a    g    n    o    ...
+  Expected Code  |                                                                                                          ...
+  Actual Code    | 109  115  45   109  115  100  116  58   47   105  100  32   80   67   87   68   105  97   103  110  111  ...
+
+  Difference     |       |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+                 |      \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/  \|/
+  Index          | ...  4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21   22   23   24
+  Expected Value | ...
+  Actual Value   | ...  s    d    t    :    /    i    d    \s   P    C    W    D    i    a    g    n    o    s    t    i    c
+  Expected Code  | ...
+  Actual Code    | ...  115  100  116  58   47   105  100  32   80   67   87   68   105  97   103  110  111  115  116  105  99
+    at GrpCurl.Net.Studio.Tests.Unit.UpdateUrlBoundaryTests.Feed_discards_unsafe_links_without_losing_version_information(String url) in /tmp/prd025-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/UpdateUrlBoundaryTests.cs:22
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+failed GrpCurl.Net.Studio.Tests.Unit.UpdateUrlBoundaryTests.Direct_service_result_cannot_launch_an_unsafe_link(url: "https://evil.example/update") (15ms)
+  from /tmp/prd025-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Studio.Tests.Unit.dll (net10.0|x64)
+  Shouldly.ShouldAssertException : launcher.LaunchCount
+      should be
+  0
+      but was
+  1
+    at GrpCurl.Net.Studio.Tests.Unit.UpdateUrlBoundaryTests.Direct_service_result_cannot_launch_an_unsafe_link(String url) in /tmp/prd025-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/UpdateUrlBoundaryTests.cs:37
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+failed GrpCurl.Net.Studio.Tests.Unit.UpdateUrlBoundaryTests.Direct_service_result_cannot_launch_an_unsafe_link(url: "file:///tmp/update") (0ms)
+  from /tmp/prd025-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Studio.Tests.Unit.dll (net10.0|x64)
+  Shouldly.ShouldAssertException : launcher.LaunchCount
+      should be
+  0
+      but was
+  1
+    at GrpCurl.Net.Studio.Tests.Unit.UpdateUrlBoundaryTests.Direct_service_result_cannot_launch_an_unsafe_link(String url) in /tmp/prd025-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/UpdateUrlBoundaryTests.cs:37
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+failed GrpCurl.Net.Studio.Tests.Unit.UpdateUrlBoundaryTests.Direct_service_result_cannot_launch_an_unsafe_link(url: "ms-msdt:/id PCWDiagnostic") (0ms)
+  from /tmp/prd025-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Studio.Tests.Unit.dll (net10.0|x64)
+  Shouldly.ShouldAssertException : launcher.LaunchCount
+      should be
+  0
+      but was
+  1
+    at GrpCurl.Net.Studio.Tests.Unit.UpdateUrlBoundaryTests.Direct_service_result_cannot_launch_an_unsafe_link(String url) in /tmp/prd025-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/UpdateUrlBoundaryTests.cs:37
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+/tmp/prd025-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Studio.Tests.Unit.dll (net10.0|x64) failed with 6 error(s) (937ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 6
+  failed: 6
+  succeeded: 0
+  skipped: 0
+  duration: 1s 287ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

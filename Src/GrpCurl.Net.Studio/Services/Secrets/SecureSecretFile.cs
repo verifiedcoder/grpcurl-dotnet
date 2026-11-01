@@ -16,7 +16,7 @@ internal sealed class SecretStorageException(string message) : SecretBackendUnav
 internal enum SecretFileStage
 {
     DirectoryCreated, BeforeDirectoryProtection, BeforeFileProtection, BeforeCreate, Created,
-    PartialWrite, BeforeFlush, Flushed, BeforeClose, Closed, BeforeReplace, Replaced
+    PartialWrite, BeforeFlush, Flushed, BeforeClose, Closed, BeforeReplace, BeforeCommitAttempt, Replaced
 }
 
 /// <summary>
@@ -152,7 +152,7 @@ internal sealed class SecureSecretFile(Action<SecretFileStage, string>? checkpoi
             {
                 try
                 {
-                    File.Move(temporary, path, overwrite);
+                    Commit(temporary, path, overwrite);
                 }
                 catch (IOException) when (!overwrite && ProtectFile(path))
                 {
@@ -171,6 +171,29 @@ internal sealed class SecureSecretFile(Action<SecretFileStage, string>? checkpoi
                 try { File.Delete(temporary); }
                 catch (IOException) { }
                 catch (UnauthorizedAccessException) { }
+            }
+        }
+    }
+
+    private void Commit(string temporary, string path, bool overwrite)
+    {
+        for (var attempt = 0; ; attempt++)
+        {
+            try
+            {
+                checkpoint?.Invoke(SecretFileStage.BeforeCommitAttempt, path);
+                File.Move(temporary, path, overwrite);
+                return;
+            }
+            catch (Exception ex) when (OperatingSystem.IsWindows() && overwrite && attempt < 9
+                && ex is IOException or UnauthorizedAccessException && (ex.HResult & 0xffff) is 5 or 32 or 33)
+            {
+                // Windows may deny replacement briefly while a competing rename or ACL handle
+                // is being closed. Retry only this commit (at most 10 attempts / 90ms delay),
+                // never encryption or a partial write. Permanent denial still fails closed.
+                Thread.Sleep(10);
+                _ = EnsureDirectory(Path.GetDirectoryName(path)!, create: false);
+                _ = ProtectFile(path);
             }
         }
     }

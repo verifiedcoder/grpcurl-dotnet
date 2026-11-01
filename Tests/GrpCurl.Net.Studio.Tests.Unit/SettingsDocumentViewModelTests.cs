@@ -343,7 +343,7 @@ public sealed class SettingsDocumentViewModelTests
     [Fact]
     public async Task Check_now_reports_an_available_update_without_auto_opening()
     {
-        var updates = new FakeUpdateService { CheckResult = UpdateCheckResult.Available("v2.0.0", "https://example.test/v2") };
+        var updates = new FakeUpdateService { CheckResult = UpdateCheckResult.Available("v2.0.0", "https://github.com/verifiedcoder/grpcurl-dotnet/v2") };
         var launcher = new FakeLauncherService();
         var vm = CreateForUpdates(updates, launcher);
 
@@ -355,7 +355,7 @@ public sealed class SettingsDocumentViewModelTests
 
         vm.OpenLatestReleaseCommand.CanExecute(null).ShouldBeTrue();
         await vm.OpenLatestReleaseCommand.ExecuteAsync(null);
-        launcher.LastUri.ShouldBe("https://example.test/v2");
+        launcher.LastUri.ShouldBe("https://github.com/verifiedcoder/grpcurl-dotnet/v2");
     }
 
     [Fact]
@@ -380,7 +380,7 @@ public sealed class SettingsDocumentViewModelTests
         await vm.CheckForUpdatesCommand.ExecuteAsync(null);
 
         launcher.LaunchCount.ShouldBe(1);
-        launcher.LastUri.ShouldBe("https://example.test/releases/latest"); // manual fallback
+        launcher.LastUri.ShouldBe("https://github.com/verifiedcoder/grpcurl-dotnet/releases/latest"); // manual fallback
     }
 
     [Fact]

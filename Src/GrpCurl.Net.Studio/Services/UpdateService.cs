@@ -68,8 +68,9 @@ internal sealed class UpdateService : IUpdateService
             }
 
             var prerelease = element.TryGetProperty("prerelease", out var pre) && pre.ValueKind == JsonValueKind.True;
-            var htmlUrl = element.TryGetProperty("html_url", out var url) ? url.GetString() ?? string.Empty : string.Empty;
-            releases.Add(new ReleaseInfo(tagName, prerelease, htmlUrl));
+            var htmlUrl = element.TryGetProperty("html_url", out var url) && url.ValueKind == JsonValueKind.String
+                ? url.GetString() : null;
+            releases.Add(new ReleaseInfo(tagName, prerelease, UpdateUrlPolicy.IsAllowed(htmlUrl) ? htmlUrl! : string.Empty));
         }
 
         return releases;

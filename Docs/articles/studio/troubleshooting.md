@@ -166,3 +166,16 @@ finishes, without deleting the lock file.
 New request payloads are omitted by default. Redacted, omitted, or truncated bodies cannot be replayed;
 enabling capture later does not reconstruct them. Existing legacy bodies are preserved during migration.
 See [History privacy and recovery](history-privacy.md) for complete recovery and machine-policy instructions.
+
+## An update link is unavailable or blocked
+
+Studio opens update links only over HTTPS on `github.com` or its subdomains.
+If the release feed contains an invalid link, **Open latest release** opens the
+trusted releases page for the selected channel instead. The version information
+can still be displayed; updates remain manual.
+
+If a link is rejected immediately before opening, **Unsupported link** offers to
+copy it for inspection. **OK** copies only; **Cancel** neither copies nor opens it.
+Studio never launches a rejected link. If the browser cannot open a valid link,
+Settings reports that failure. See [update-link validation](../../engineering/PRD-025-update-links.md)
+for the policy and verification boundaries.

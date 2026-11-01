@@ -524,8 +524,10 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel, IDisp
 
             default: // CheckFailed — offline or unreachable; let the user check manually.
                 UpdateAvailable = false;
+                LatestVersion = null;
+                _latestReleaseUrl = null;
                 UpdateStatus = "Couldn't check for updates (offline or GitHub unreachable). Opening the releases page…";
-                _ = await _launcher.LaunchUriAsync(_updates.ReleasesUrl(UpdateChannel));
+                await LaunchUpdateUrlAsync(_updates.ReleasesUrl(UpdateChannel));
                 break;
         }
     }
@@ -538,7 +540,30 @@ public sealed partial class SettingsDocumentViewModel : DocumentViewModel, IDisp
     {
         if (_launcher is not null)
         {
-            _ = await _launcher.LaunchUriAsync(_latestReleaseUrl ?? _updates?.ReleasesUrl(UpdateChannel) ?? string.Empty);
+            await LaunchUpdateUrlAsync(string.IsNullOrWhiteSpace(_latestReleaseUrl)
+                ? _updates?.ReleasesUrl(UpdateChannel) : _latestReleaseUrl);
+        }
+    }
+
+    private async Task LaunchUpdateUrlAsync(string? url)
+    {
+        // Validate the final target, including service-supplied fallback URLs, at the launch boundary.
+        if (!UpdateUrlPolicy.IsAllowed(url))
+        {
+            UpdateStatus = "Studio will only open HTTPS update links on github.com or its subdomains.";
+            if (_clipboard is not null && !string.IsNullOrWhiteSpace(url)
+                && await _dialogs.ConfirmAsync("Unsupported link",
+                    $"{UpdateStatus} This update link will not be opened.\n\n{url}\n\nCopy it to the clipboard instead?"))
+            {
+                await _clipboard.SetTextAsync(url);
+            }
+
+            return;
+        }
+
+        if (_launcher is not null && !await _launcher.LaunchUriAsync(url!))
+        {
+            UpdateStatus = "Couldn't open the releases page in your browser.";
         }
     }
 

@@ -8,8 +8,12 @@ public sealed class FakeUpdateService : IUpdateService
 {
     public string CurrentVersion { get; set; } = "9.9.9";
 
+    public string? ReleasesUrlOverride { get; set; }
+
     public string ReleasesUrl(UpdateChannel channel)
-        => channel == UpdateChannel.Stable ? "https://example.test/releases/latest" : "https://example.test/releases";
+        => ReleasesUrlOverride ?? (channel == UpdateChannel.Stable
+            ? "https://github.com/verifiedcoder/grpcurl-dotnet/releases/latest"
+            : "https://github.com/verifiedcoder/grpcurl-dotnet/releases");
 
     /// <summary>Scripted result for <see cref="CheckForUpdateAsync" /> (FR-156).</summary>
     public UpdateCheckResult CheckResult { get; set; } = UpdateCheckResult.UpToDate;

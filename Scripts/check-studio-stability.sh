@@ -3,7 +3,10 @@
 # Build Release first. Usage: Scripts/check-studio-stability.sh [runs=5] [log-directory]
 set -euo pipefail
 runs="${1:-5}"
-case "$runs" in ''|*[!0-9]*|0) echo 'runs must be a positive integer' >&2; exit 2 ;; esac
+if [[ ! "$runs" =~ ^[1-9][0-9]*$ ]]; then
+    echo 'runs must be a positive integer without leading zeros' >&2
+    exit 2
+fi
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 log_directory="${2:-$repo_root/TestResults/stability}"
 mkdir -p "$log_directory"

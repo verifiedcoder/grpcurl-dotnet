@@ -141,6 +141,14 @@ and is independent of response size. The error identifies binary parsing or JSON
 Above ~4 MiB the response viewer drops syntax highlighting and code folding to stay responsive — the body
 is still shown in full, just without colour. This is expected for very large payloads.
 
+## GraphQL mapping errors have no typo suggestion
+
+Mapping validation suggests a service, method or field only when its name is within three edits of the
+requested name and both names are at most 256 UTF-16 code units long. Matching is case-sensitive.
+Longer names can still resolve and execute normally; Studio omits their typo suggestions to bound
+comparison work. Check the exact name in the service explorer or schema and correct the mapping.
+There is no setting to raise the suggestion limit.
+
 ## Still stuck?
 
 Open an issue from **Help → Report an Issue**, or file one directly on the

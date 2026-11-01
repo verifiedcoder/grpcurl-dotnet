@@ -149,6 +149,18 @@ internal sealed class LinuxLibsecretSecretStore : ISecretBackend
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
         public SecretSchemaAttribute[] Attributes;
+
+        // Native SecretSchema has a reference count and seven reserved pointers after attributes.
+        // libsecret reads/writes Reserved even for synchronous calls. Omitting this tail lets it
+        // modify the marshaller's adjacent stack memory, corrupting managed GC roots (PRD-044).
+        public int Reserved;
+        public IntPtr Reserved1;
+        public IntPtr Reserved2;
+        public IntPtr Reserved3;
+        public IntPtr Reserved4;
+        public IntPtr Reserved5;
+        public IntPtr Reserved6;
+        public IntPtr Reserved7;
     }
 
     // BestFitMapping=false + ThrowOnUnmappableChar=true (CA2101): on Ansi string marshaling, disable

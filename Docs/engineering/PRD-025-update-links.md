@@ -47,3 +47,10 @@ hosts, fallback selection, copy/cancel, missing clipboard and failed-check state
 
 See the PR description and companion PRD-025 fix-review record for final validation
 and independent review status. Implementation evidence is not independent approval.
+
+## Validation-time native crash
+
+The initial full test run exposed the existing exit-139 issue. The user required
+a fix, not acceptance of a passing retry. The separate
+[PRD-044 correction](PRD-044-native-schema.md) restores libsecret’s complete native
+schema layout and adds fail-fast stability verification.

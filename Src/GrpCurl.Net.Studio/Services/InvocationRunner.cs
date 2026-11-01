@@ -193,7 +193,25 @@ internal sealed partial class InvocationRunner(IInvocationService invocation, IT
                            .InvokeStreamingAsync(session.Channel!, method, messages, callHeaders, deadline, cancellationToken)
                            .ConfigureAwait(false))
         {
-            yield return MapEvent(ev, ctx);
+            StreamEventModel row;
+            var renderingFailed = false;
+            try
+            {
+                row = MapEvent(ev, ctx);
+            }
+            catch (RpcException ex)
+            {
+                // Any payloads are decoded while creating the preview. Report a rejected message
+                // through the same terminal-status path as binary parse failures.
+                row = StatusRow(ErrorMapper.FromRpcException(ex, ctx));
+                renderingFailed = true;
+            }
+
+            yield return row;
+            if (renderingFailed)
+            {
+                yield break; // Dispose the invocation enumerator and cancel the live RPC.
+            }
         }
     }
 

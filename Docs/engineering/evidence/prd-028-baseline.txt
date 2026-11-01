@@ -1,0 +1,84 @@
+Isolated baseline: 6e06c91. Two child-process probes, 2,000 levels, 512 KiB worker stack.
+Command: dotnet test --project Tests/GrpCurl.DotNet.Tests.Unit -c Release -- --filter-class "*NestingCrashProbeTests"
+Full trace retained in the local PRD-028 evidence folder.
+
+failed GrpCurl.Net.Tests.Unit.Invocation.NestingCrashProbeTests.Deep_input_is_rejected_without_terminating_process(mode: "any") (1s 196ms)
+  from /tmp/grpcurl-prd028-baseline/Tests/GrpCurl.DotNet.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Tests.Unit.dll (net10.0|x64)
+  Shouldly.ShouldAssertException : process.ExitCode
+      should be
+  0
+      but was
+  134
+
+  Additional Info:
+      xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.0)
+    Discovering: GrpCurl.Net.Tests.Unit
+    Discovered:  GrpCurl.Net.Tests.Unit
+    Starting:    GrpCurl.Net.Tests.Unit
+  Stack overflow.
+     at Google.Protobuf.ParsingPrimitives.ReadRawBytes(System.ReadOnlySpan`1<Byte> ByRef, Google.Protobuf.ParserInternalState ByRef, Int32)
+     at Google.Protobuf.ParsingPrimitives.ReadBytes(System.ReadOnlySpan`1<Byte> ByRef, Google.Protobuf.ParserInternalState ByRef)
+     at Google.Protobuf.CodedInputStream.ReadBytes()
+     at GrpCurl.Net.Invocation.ProtobufReader.ReadSingleFieldValue(Google.Protobuf.CodedInputStream, Google.Protobuf.Reflection.FieldDescriptor)
+     at GrpCurl.Net.Invocation.ProtobufReader.MergeFrom(GrpCurl.Net.Invocation.SimpleDynamicMessage, Google.Protobuf.CodedInputStream)
+     at GrpCurl.Net.Invocation.ProtobufReader.ReadNestedMessage(Google.Protobuf.CodedInputStream, Google.Protobuf.Reflection.FieldDescriptor)
+     at GrpCurl.Net.Invocation.ProtobufReader.ReadSingleFieldValue(Google.Protobuf.CodedInputStream, Google.Protobuf.Reflection.FieldDescriptor)
+     at GrpCurl.Net.Invocation.ProtobufReader.MergeFrom(GrpCurl.Net.Invocation.SimpleDynamicMessage, Google.Protobuf.CodedInputStream)
+     at GrpCurl.Net.Invocation.SimpleDynamicMessage.MergeFrom(Google.Protobuf.CodedInputStream)
+     at GrpCurl.Net.Invocation.SimpleDynamicMessage.WriteAnyJson(System.Text.StringBuilder, GrpCurl.Net.Invocation.SimpleDynamicMessage, Boolean)
+     at GrpCurl.Net.Invocation.SimpleDynamicMessage.WriteJsonValue(System.Text.StringBuilder, Google.Protobuf.Reflection.FieldDescriptor, System.Object, Boolean)
+     at GrpCurl.Net.Invocation.SimpleDynamicMessage.ToJson(Boolean)
+     at GrpCurl.Net.Invocation.SimpleDynamicMessage.WriteAnyJson(System.Text.StringBuilder, GrpCurl.Net.Invocation.SimpleDynamicMessage, Boolean)
+     at GrpCurl.Net.Invocation.SimpleDynamicMessage.WriteJsonValue(System.Text.StringBuilder, Google.Protobuf.Reflection.FieldDescriptor, System.Object, Boolean)
+     at GrpCurl.Net.Invocation.SimpleDynamicMessage.ToJson(Boolean)
+     at GrpCurl.Net.Invocation.SimpleDynamicMessage.WriteAnyJson(System.Text.StringBuilder, GrpCurl.Net.Invocation.SimpleDynamicMessage, Boolean)
+     at GrpCurl.Net.Invocation.SimpleDynamicMessage.WriteJsonValue(System.Text.StringBuilder, Google.Protobuf.Reflection.FieldDescriptor, System.Object, Boolean)
+     at GrpCurl.Net.Invocation.SimpleDynamicMessage.ToJson(Boolean)
+     at GrpCurl.Net.Invocation.SimpleDynamicMessage.WriteAnyJson(System.Text.StringBuilder, GrpCurl.Net.Invocation.SimpleDynamicMessage, Boolean)
+     at GrpCurl.Net.Invocation.SimpleDynamicMessage.WriteJsonValue(System.Text.StringBuilder, Google.Protobuf.Reflection.FieldDescriptor, System.Object, Boolean)
+[Repeated stack frames omitted from this excerpt.]
+failed GrpCurl.Net.Tests.Unit.Invocation.NestingCrashProbeTests.Deep_input_is_rejected_without_terminating_process(mode: "binary") (677ms)
+  from /tmp/grpcurl-prd028-baseline/Tests/GrpCurl.DotNet.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Tests.Unit.dll (net10.0|x64)
+  Shouldly.ShouldAssertException : process.ExitCode
+      should be
+  0
+      but was
+  134
+
+  Additional Info:
+      xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.0)
+    Discovering: GrpCurl.Net.Tests.Unit
+    Discovered:  GrpCurl.Net.Tests.Unit
+    Starting:    GrpCurl.Net.Tests.Unit
+  Stack overflow.
+     at System.ReadOnlyMemory`1[[System.Byte, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]].ToArray()
+     at Google.Protobuf.ByteString.ToByteArray()
+     at GrpCurl.Net.Invocation.ProtobufReader.ReadNestedMessage(Google.Protobuf.CodedInputStream, Google.Protobuf.Reflection.FieldDescriptor)
+     at GrpCurl.Net.Invocation.ProtobufReader.ReadSingleFieldValue(Google.Protobuf.CodedInputStream, Google.Protobuf.Reflection.FieldDescriptor)
+     at GrpCurl.Net.Invocation.ProtobufReader.MergeFrom(GrpCurl.Net.Invocation.SimpleDynamicMessage, Google.Protobuf.CodedInputStream)
+     at GrpCurl.Net.Invocation.ProtobufReader.ReadNestedMessage(Google.Protobuf.CodedInputStream, Google.Protobuf.Reflection.FieldDescriptor)
+     at GrpCurl.Net.Invocation.ProtobufReader.ReadSingleFieldValue(Google.Protobuf.CodedInputStream, Google.Protobuf.Reflection.FieldDescriptor)
+     at GrpCurl.Net.Invocation.ProtobufReader.MergeFrom(GrpCurl.Net.Invocation.SimpleDynamicMessage, Google.Protobuf.CodedInputStream)
+     at GrpCurl.Net.Invocation.ProtobufReader.ReadNestedMessage(Google.Protobuf.CodedInputStream, Google.Protobuf.Reflection.FieldDescriptor)
+     at GrpCurl.Net.Invocation.ProtobufReader.ReadSingleFieldValue(Google.Protobuf.CodedInputStream, Google.Protobuf.Reflection.FieldDescriptor)
+     at GrpCurl.Net.Invocation.ProtobufReader.MergeFrom(GrpCurl.Net.Invocation.SimpleDynamicMessage, Google.Protobuf.CodedInputStream)
+     at GrpCurl.Net.Invocation.ProtobufReader.ReadNestedMessage(Google.Protobuf.CodedInputStream, Google.Protobuf.Reflection.FieldDescriptor)
+     at GrpCurl.Net.Invocation.ProtobufReader.ReadSingleFieldValue(Google.Protobuf.CodedInputStream, Google.Protobuf.Reflection.FieldDescriptor)
+     at GrpCurl.Net.Invocation.ProtobufReader.MergeFrom(GrpCurl.Net.Invocation.SimpleDynamicMessage, Google.Protobuf.CodedInputStream)
+     at GrpCurl.Net.Invocation.ProtobufReader.ReadNestedMessage(Google.Protobuf.CodedInputStream, Google.Protobuf.Reflection.FieldDescriptor)
+     at GrpCurl.Net.Invocation.ProtobufReader.ReadSingleFieldValue(Google.Protobuf.CodedInputStream, Google.Protobuf.Reflection.FieldDescriptor)
+     at GrpCurl.Net.Invocation.ProtobufReader.MergeFrom(GrpCurl.Net.Invocation.SimpleDynamicMessage, Google.Protobuf.CodedInputStream)
+     at GrpCurl.Net.Invocation.ProtobufReader.ReadNestedMessage(Google.Protobuf.CodedInputStream, Google.Protobuf.Reflection.FieldDescriptor)
+     at GrpCurl.Net.Invocation.ProtobufReader.ReadSingleFieldValue(Google.Protobuf.CodedInputStream, Google.Protobuf.Reflection.FieldDescriptor)
+     at GrpCurl.Net.Invocation.ProtobufReader.MergeFrom(GrpCurl.Net.Invocation.SimpleDynamicMessage, Google.Protobuf.CodedInputStream)
+[Repeated stack frames omitted from this excerpt.]
+/tmp/grpcurl-prd028-baseline/Tests/GrpCurl.DotNet.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Tests.Unit.dll (net10.0|x64) failed with 2 error(s) (2s 761ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 2
+  failed: 2
+  succeeded: 0
+  skipped: 0
+  duration: 3s 019ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

@@ -11,8 +11,9 @@ internal static class ProtobufReader
     /// <summary>
     ///     Reads and merges data from a CodedInputStream into the message.
     /// </summary>
-    public static void MergeFrom(SimpleDynamicMessage message, CodedInputStream input)
+    public static void MergeFrom(SimpleDynamicMessage message, CodedInputStream input, int depth = 0)
     {
+        MessageNesting.Check(depth, "binary parsing");
         uint tag;
 
         while ((tag = input.ReadTag()) != 0)
@@ -23,7 +24,7 @@ internal static class ProtobufReader
             if (field is null)
             {
                 // Skip unknown field
-                input.SkipLastField();
+                SkipUnknownField(input, tag, depth);
 
                 continue;
             }
@@ -34,7 +35,7 @@ internal static class ProtobufReader
                 _ = message.MapFields.TryAdd(field, []);
 
                 // Read the map entry message
-                if (ReadSingleFieldValue(input, field) is not SimpleDynamicMessage entryMessage)
+                if (ReadSingleFieldValue(input, field, depth) is not SimpleDynamicMessage entryMessage)
                 {
                     continue;
                 }
@@ -75,14 +76,14 @@ internal static class ProtobufReader
                 else
                 {
                     // Unpacked encoding (each element has its own tag)
-                    var value = ReadSingleFieldValue(input, field);
+                    var value = ReadSingleFieldValue(input, field, depth);
 
                     message.RepeatedFields[field].Add(value);
                 }
             }
             else
             {
-                var value = ReadSingleFieldValue(input, field);
+                var value = ReadSingleFieldValue(input, field, depth);
 
                 // If this field is part of oneof, clear other fields in the same oneof
                 if (field.ContainingOneof is { IsSynthetic: false })
@@ -105,7 +106,7 @@ internal static class ProtobufReader
     }
 
     // Handle different field types
-    private static object? ReadSingleFieldValue(CodedInputStream input, FieldDescriptor field)
+    private static object? ReadSingleFieldValue(CodedInputStream input, FieldDescriptor field, int depth)
         => field.FieldType switch
         {
             FieldType.String   => input.ReadString(),
@@ -124,18 +125,43 @@ internal static class ProtobufReader
             FieldType.Double   => input.ReadDouble(),
             FieldType.Bytes    => input.ReadBytes(),
             FieldType.Enum     => input.ReadEnum(),
-            FieldType.Message  => ReadNestedMessage(input, field),
+            FieldType.Message  => ReadNestedMessage(input, field, depth + 1),
             // proto2 groups: wire types StartGroup (3) and EndGroup (4) bracket a sub-message.
             // The fields between the SGROUP tag (already consumed by ReadTag) and the matching
             // EGROUP tag are parsed as a nested message. Not common in modern gRPC, but real
             // proto2 services still use them — see CODE-REVIEW.md P2 "proto2 / legacy
             // descriptor support partial".
-            FieldType.Group => ReadGroup(input, field),
+            FieldType.Group => ReadGroup(input, field, depth + 1),
             _               => throw new InvalidOperationException($"Unsupported field type: {field.FieldType}")
         };
 
-    private static SimpleDynamicMessage ReadNestedMessage(CodedInputStream input, FieldDescriptor field)
+    private static void SkipUnknownField(CodedInputStream input, uint tag, int depth)
     {
+        if (WireFormat.GetTagWireType(tag) != WireFormat.WireType.StartGroup)
+        {
+            input.SkipLastField();
+            return;
+        }
+        MessageNesting.Check(depth + 1, "binary parsing");
+        uint nestedTag;
+        while ((nestedTag = input.ReadTag()) != 0)
+        {
+            if (WireFormat.GetTagWireType(nestedTag) == WireFormat.WireType.EndGroup)
+            {
+                if (WireFormat.GetTagFieldNumber(nestedTag) != WireFormat.GetTagFieldNumber(tag))
+                {
+                    throw new InvalidDataException("Mismatched end of unknown group.");
+                }
+                return;
+            }
+            SkipUnknownField(input, nestedTag, depth + 1);
+        }
+        throw new InvalidDataException("Unterminated unknown group.");
+    }
+
+    private static SimpleDynamicMessage ReadNestedMessage(CodedInputStream input, FieldDescriptor field, int depth)
+    {
+        MessageNesting.Check(depth, "binary parsing");
         // Read the length-delimited message bytes
         var nestedBytes = input.ReadBytes();
 
@@ -144,13 +170,14 @@ internal static class ProtobufReader
 
         using var nestedInput = new CodedInputStream(nestedBytes.ToByteArray());
 
-        MergeFrom(nestedMessage, nestedInput);
+        MergeFrom(nestedMessage, nestedInput, depth);
 
         return nestedMessage;
     }
 
-    private static SimpleDynamicMessage ReadGroup(CodedInputStream input, FieldDescriptor field)
+    private static SimpleDynamicMessage ReadGroup(CodedInputStream input, FieldDescriptor field, int depth)
     {
+        MessageNesting.Check(depth, "binary parsing");
         // The SGROUP tag has already been consumed by ReadTag(). Read fields until we
         // see an EGROUP tag with the same field number, then return the assembled
         // sub-message. This mirrors Google.Protobuf's MergeGroupFrom behaviour for the
@@ -179,12 +206,12 @@ internal static class ProtobufReader
 
             if (groupField is null)
             {
-                input.SkipLastField();
+                SkipUnknownField(input, tag, depth);
 
                 continue;
             }
 
-            var value = ReadSingleFieldValue(input, groupField);
+            var value = ReadSingleFieldValue(input, groupField, depth);
 
             if (groupField.IsRepeated)
             {

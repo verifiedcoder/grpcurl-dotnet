@@ -24,6 +24,19 @@ The certificate was issued for a hostname that doesn't match the URL you're conn
 - For `.p12` / `.pfx` containers: pass `--cert <file.p12> --cert-password <password>` and omit `--key`.
 - If you see `certificate not yet valid` / `certificate has expired`, check system clock skew and certificate validity windows (`openssl x509 -in cert.pem -noout -dates`).
 
+## Response message nesting limit
+
+`Protobuf message nesting exceeds the limit of 100` means the server's response is too deeply nested
+to parse or render safely. The call fails with gRPC `Internal`; the CLI reports the diagnostic and exits
+unsuccessfully. The root is depth zero, so 100 nested levels are allowed and level 101 is rejected.
+An `Any` wrapper and its resolved payload each count as a level, as do a map entry and its message value.
+
+Ask the service owner to return a shallower response or reduce recursive expansion in the request.
+Increasing the message-size limit will not change the nesting limit. There is no flag to disable or
+increase it. The error identifies binary parsing or JSON rendering; both use the same limit.
+For a stream, earlier valid responses may already have been printed, but the rejected response is not
+printed partially.
+
 ## Reflection errors
 
 ### `StatusCode.Unimplemented` on `grpc.reflection.v1alpha.ServerReflection`

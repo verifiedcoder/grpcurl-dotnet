@@ -125,6 +125,17 @@ opens the [Releases page](https://github.com/verifiedcoder/grpcurl-dotnet/releas
 replace the app yourself (see [Install](install.md)). If the check finds nothing, it stays silent; it is
 offline-safe and never blocks startup.
 
+## Response message nesting limit
+
+`Protobuf message nesting exceeds the limit of 100` means the server returned a response that is too
+deeply nested to parse or display safely. The call fails with gRPC `Internal`, and Studio remains usable
+for another call. A failed stream is stopped; any earlier valid messages remain available.
+
+The root is depth zero. Level 100 is allowed and level 101 is rejected. An `Any` wrapper and its resolved
+payload each count as a level, as do a map entry and its message value. Ask the service owner to return
+a shallower response or reduce recursive expansion in the request. This fixed limit has no Studio setting
+and is independent of response size. The error identifies binary parsing or JSON rendering.
+
 ## A large response feels sluggish to scroll
 
 Above ~4 MiB the response viewer drops syntax highlighting and code folding to stay responsive — the body

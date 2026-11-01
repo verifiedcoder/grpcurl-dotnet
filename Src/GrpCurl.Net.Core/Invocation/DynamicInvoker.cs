@@ -17,13 +17,15 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
     private static readonly JsonSerializerOptions IndentedJsonOptions = new()
     {
         WriteIndented = true,
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        MaxDepth = MessageNesting.MaxJsonDepth
     };
 
     private static readonly JsonSerializerOptions CompactJsonOptions = new()
     {
         WriteIndented = false,
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        MaxDepth = MessageNesting.MaxJsonDepth
     };
 
     /// <summary>
@@ -784,7 +786,12 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
 
                     dynamicMessage.MergeFrom(input);
                 }
-                catch (InvalidProtocolBufferException ex)
+                catch (MessageNestingException ex)
+                {
+                    // Keep this distinct from grpc-dotnet's empty-response/cardinality diagnostic.
+                    throw new RpcException(new Status(StatusCode.Internal, $"Rejected response message: {ex.Message}", ex));
+                }
+                catch (Exception ex) when (ex is InvalidProtocolBufferException or InvalidDataException)
                 {
                     // A malformed response message is INTERNAL per the gRPC spec; a raw
                     // protobuf exception escaping the marshaller would surface as
@@ -816,7 +823,11 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
         // Handle SimpleDynamicMessage specially
         if (message is SimpleDynamicMessage dynamicMessage)
         {
-            compactJson = dynamicMessage.ToJson(includeDefaults);
+            try { compactJson = dynamicMessage.ToJson(includeDefaults); }
+            catch (MessageNestingException ex)
+            {
+                throw new RpcException(new Status(StatusCode.Internal, $"Failed to render response message: {ex.Message}", ex));
+            }
         }
         else
         {
@@ -826,7 +837,7 @@ internal sealed class DynamicInvoker(GrpcChannel channel)
             compactJson = formatter.Format(message);
         }
 
-        using var doc = JsonDocument.Parse(compactJson);
+        using var doc = JsonDocument.Parse(compactJson, new JsonDocumentOptions { MaxDepth = MessageNesting.MaxJsonDepth });
 
         return JsonSerializer.Serialize(doc.RootElement, indent ? IndentedJsonOptions : CompactJsonOptions);
     }

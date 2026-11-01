@@ -16,6 +16,8 @@ public abstract class WorkspacePreparation
     public abstract WorkspaceModel Workspace { get; }
     public abstract string Path { get; }
     public abstract IReadOnlyList<WorkspaceFileReference> References { get; }
+    /// <summary>Reject ambiguous source profile identities before import consent or commit.</summary>
+    public virtual void ValidateImportSource() => WorkspaceMerger.ValidateSourceProfiles(Workspace);
     public bool RequiresApproval => References.Any(r => r.ApprovalReason is not null);
 }
 
@@ -33,9 +35,10 @@ public interface IWorkspaceTrustStore
 
 public static class WorkspaceApproval
 {
-    public static async Task<WorkspacePreparation?> PrepareAsync(IWorkspaceStore store, IDialogService? dialogs, string path)
+    public static async Task<WorkspacePreparation?> PrepareAsync(IWorkspaceStore store, IDialogService? dialogs, string path, bool forImport = false)
     {
         var preparation = await store.PrepareAsync(path);
+        if (forImport) { preparation.ValidateImportSource(); }
         while (preparation.RequiresApproval)
         {
             if (dialogs is null || await dialogs.ShowDialogAsync(new WorkspaceApprovalDialogViewModel(preparation)) is not { } approved)

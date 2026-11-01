@@ -60,3 +60,10 @@ A workspace bundles your connections, saved requests, environments, and TLS prof
 `.gcnws.json` file. Use **File → New / Open / Save / Save As**, **Import** to merge another workspace in,
 or **Export** for a secret-free copy to share. Recently opened workspaces are under **File → Open Recent**.
 Studio can reopen your last workspace and tabs on launch (**Settings → General → Startup**).
+
+**Import Workspace** first reviews referenced file access, then shows the items and TLS security settings
+being added. Imported profiles verify certificates by default. For a source profile requesting bypass,
+select **Disable certificate verification for '[profile]'** only if you intend to turn off all certificate
+checks for its connections. Each checkbox starts unchecked. Custom CA paths stay configured and are
+ignored while bypass is enabled. **Cancel** cancels the whole import. See
+[Workspace import TLS choices](workspace-import-tls.md) for details and screenshots.

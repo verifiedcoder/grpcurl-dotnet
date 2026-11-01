@@ -57,7 +57,8 @@ public sealed class WorkspaceMergerTests
         var (merged, _) = WorkspaceMerger.Merge(current, incoming);
 
         merged.Connections.Select(c => c.Id).Distinct().Count().ShouldBe(2); // no id collision
-        shared.Id.ShouldNotBe("dup"); // the imported item was re-identified
+        shared.Id.ShouldBe("dup"); // the source remains available for consent and retry
+        merged.Connections[1].Id.ShouldNotBe("dup"); // only the imported copy is re-identified
     }
 
     [Fact]

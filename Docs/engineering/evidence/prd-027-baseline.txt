@@ -1,0 +1,55 @@
+Running tests from /tmp/grpcurl-prd027-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Studio.Tests.Unit.dll (net10.0|x64)
+failed GrpCurl.Net.Studio.Tests.Unit.WorkspaceImportTlsBaselineTests.Import_summary_discloses_requested_certificate_verification_bypass (45ms)
+  from /tmp/grpcurl-prd027-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Studio.Tests.Unit.dll (net10.0|x64)
+  Shouldly.ShouldAssertException : var (_, summary) = WorkspaceMerger.Merge(new WorkspaceModel(), new WorkspaceModel
+          {
+              TlsProfiles = [new TlsProfile { Name = "Shared TLS", InsecureSkipVerify = true }]
+          });
+          summary.Describe()
+      should contain (case insensitive comparison)
+  "certificate verification"
+      but was actually
+  "1 TLS profile: Shared TLS"
+    at GrpCurl.Net.Studio.Tests.Unit.WorkspaceImportTlsBaselineTests.Import_summary_discloses_requested_certificate_verification_bypass() in /tmp/grpcurl-prd027-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/WorkspaceImportTlsBaselineTests.cs:38
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+failed GrpCurl.Net.Studio.Tests.Unit.WorkspaceImportTlsBaselineTests.Import_without_explicit_consent_persists_certificate_verification_enabled (66ms)
+  from /tmp/grpcurl-prd027-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Studio.Tests.Unit.dll (net10.0|x64)
+  Shouldly.ShouldAssertException : WorkspaceSerializer.Deserialize(await File.ReadAllTextAsync(destination));
+              saved.TlsProfiles.Single().InsecureSkipVerify
+      should be
+  False
+      but was
+  True
+    at GrpCurl.Net.Studio.Tests.Unit.WorkspaceImportTlsBaselineTests.Import_without_explicit_consent_persists_certificate_verification_enabled() in /tmp/grpcurl-prd027-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/WorkspaceImportTlsBaselineTests.cs:25
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+    --- End of stack trace from previous location ---
+    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+    at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+    at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+failed GrpCurl.Net.Studio.Tests.Unit.WorkspaceImportTlsBaselineTests.Import_summary_discloses_custom_CA_path (0ms)
+  from /tmp/grpcurl-prd027-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Studio.Tests.Unit.dll (net10.0|x64)
+  Shouldly.ShouldAssertException : var (_, summary) = WorkspaceMerger.Merge(new WorkspaceModel(), new WorkspaceModel
+          {
+              TlsProfiles = [new TlsProfile { Name = "Shared TLS", CaCertPath = "certs/team-ca.pem" }]
+          });
+          summary.Describe()
+      should contain (case insensitive comparison)
+  "certs/team-ca.pem"
+      but was actually
+  "1 TLS profile: Shared TLS"
+    at GrpCurl.Net.Studio.Tests.Unit.WorkspaceImportTlsBaselineTests.Import_summary_discloses_custom_CA_path() in /tmp/grpcurl-prd027-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/WorkspaceImportTlsBaselineTests.cs:48
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+/tmp/grpcurl-prd027-baseline/Tests/GrpCurl.Net.Studio.Tests.Unit/bin/Release/net10.0/GrpCurl.Net.Studio.Tests.Unit.dll (net10.0|x64) failed with 3 error(s) (845ms)
+Exit code: 2
+
+Test run summary: Failed!
+  total: 3
+  failed: 3
+  succeeded: 0
+  skipped: 0
+  duration: 1s 262ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)

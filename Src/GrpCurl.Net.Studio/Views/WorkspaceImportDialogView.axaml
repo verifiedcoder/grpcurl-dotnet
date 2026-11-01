@@ -1,0 +1,44 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GrpCurl.Net.Studio.ViewModels"
+             x:Class="GrpCurl.Net.Studio.Views.WorkspaceImportDialogView"
+             x:DataType="vm:WorkspaceImportDialogViewModel">
+  <StackPanel Margin="24" Spacing="12" Width="680">
+    <TextBlock Text="Review workspace import" FontSize="20" FontWeight="SemiBold" />
+    <ScrollViewer MaxHeight="520">
+      <StackPanel Spacing="12">
+        <TextBlock Text="{Binding SummaryText}" TextWrapping="Wrap" />
+        <StackPanel Spacing="8" IsVisible="{Binding HasTlsSecurity}">
+          <TextBlock Text="TLS security" FontSize="16" FontWeight="SemiBold" />
+          <TextBlock Text="Imported profiles use certificate verification by default. Selecting a checkbox turns off all certificate checks for connections using that profile. Use this only for test or diagnostic targets." TextWrapping="Wrap" />
+          <ItemsControl ItemsSource="{Binding TlsProfiles}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:WorkspaceImportTlsItemViewModel">
+                <Border BorderThickness="1" BorderBrush="Gray" Padding="10" Margin="0,4">
+                  <StackPanel Spacing="4">
+                    <TextBlock Text="{Binding Entry.OriginalName, StringFormat='Source profile: {0}'}" TextWrapping="Wrap" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding Entry.SourceProfileId, StringFormat='Source ID: {0}'}" TextWrapping="Wrap" FontSize="12" />
+                    <TextBlock Text="{Binding Entry.DestinationName, StringFormat='Import as: {0}'}" TextWrapping="Wrap" />
+                    <TextBlock Text="This source profile requests certificate verification bypass." IsVisible="{Binding Entry.RequestedBypass}" TextWrapping="Wrap" />
+                    <CheckBox IsVisible="{Binding Entry.RequestedBypass}" IsChecked="{Binding DisableCertificateVerification, Mode=TwoWay}"
+                              AutomationProperties.Name="{Binding BypassLabel}">
+                      <TextBlock Text="{Binding BypassLabel}" TextWrapping="Wrap" />
+                    </CheckBox>
+                    <TextBlock Text="{Binding Outcome}" TextWrapping="Wrap" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding Entry.CustomCaPath, StringFormat='Custom CA: {0}'}" IsVisible="{Binding HasCustomCa}" TextWrapping="Wrap" />
+                    <TextBlock Text="The custom CA path is retained and is ignored when certificate verification is disabled. File access uses workspace file approvals; this summary does not read certificates." IsVisible="{Binding HasCustomCa}" TextWrapping="Wrap" FontSize="12" />
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+    <TextBlock Text="Import applies these choices to this import only. Cancel keeps your current workspace." TextWrapping="Wrap" FontSize="12" />
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button Content="Cancel" Command="{Binding CancelCommand}" AutomationProperties.Name="Cancel workspace import" />
+      <Button Content="Import" Command="{Binding ImportCommand}" AutomationProperties.Name="Import workspace" />
+    </StackPanel>
+  </StackPanel>
+</UserControl>

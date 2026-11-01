@@ -12,7 +12,8 @@ public static class TestAppBuilder
 {
     public static AppBuilder BuildAvaloniaApp()
     {
-        var capture = Environment.GetEnvironmentVariable("GRPCN_TRUST_SCREENSHOT_DIR") is not null;
+        var capture = Environment.GetEnvironmentVariable("GRPCN_TRUST_SCREENSHOT_DIR") is not null
+            || Environment.GetEnvironmentVariable("GRPCN_IMPORT_SCREENSHOT_DIR") is not null;
         var builder = AppBuilder.Configure<App>()
             .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = !capture });
         return capture ? builder.UseSkia() : builder;

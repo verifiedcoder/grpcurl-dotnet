@@ -18,7 +18,7 @@ public interface IWorkspaceStore
     Task<WorkspacePreparation> ApproveAsync(WorkspacePreparation preparation, IReadOnlyList<string> approvedKeys, CancellationToken cancellationToken = default);
     Task ValidatePreparationAsync(WorkspacePreparation preparation, CancellationToken cancellationToken = default);
     Task<WorkspaceModel> CommitOpenAsync(WorkspacePreparation preparation, CancellationToken cancellationToken = default);
-    Task CommitImportAsync(WorkspacePreparation preparation, CancellationToken cancellationToken = default);
+    Task CommitImportAsync(WorkspacePreparation preparation, WorkspaceImportDecision? decision = null, CancellationToken cancellationToken = default);
     /// <summary>The workspace currently loaded in memory.</summary>
     WorkspaceModel Current { get; }
 

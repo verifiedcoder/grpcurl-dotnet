@@ -34,4 +34,6 @@ public sealed class TlsProfile
 
     /// <summary>FR-036 / SEC-018: load PKCS12 client keys as exportable (advanced; default off).</summary>
     public bool ExportableClientKey { get; set; }
+    /// <summary>A separate profile preserving its source identity and path-only configuration.</summary>
+    public TlsProfile Copy() => (TlsProfile)MemberwiseClone();
 }

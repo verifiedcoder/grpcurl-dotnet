@@ -3,6 +3,7 @@ using GrpCurl.Net.Studio.ViewModels.Models.Connections;
 using GrpCurl.Net.Studio.ViewModels.Services;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 
 namespace GrpCurl.Net.Studio.Services;
 
@@ -25,8 +26,17 @@ internal sealed partial class JsonWorkspaceStore
 
     private sealed class PreparedDocument(JsonWorkspaceStore issuer, string path, string location, string fingerprint,
         WorkspaceModel source, string generation, string? rememberedId, HashSet<string> approvals,
-        IReadOnlyList<WorkspaceFileReference> references) : WorkspacePreparation
+        IReadOnlyList<WorkspaceFileReference> references, bool hasExplicitProfileIds = true) : WorkspacePreparation
     {
+        internal bool HasExplicitProfileIds { get; } = hasExplicitProfileIds;
+        public override void ValidateImportSource()
+        {
+            if (!HasExplicitProfileIds)
+            {
+                throw new WorkspaceTrustException("Imported TLS profiles need exactly one explicit source ID each. Correct the source workspace before importing it.");
+            }
+            WorkspaceMerger.ValidateSourceProfiles(Source);
+        }
         internal JsonWorkspaceStore Issuer { get; } = issuer;
         public override string Path { get; } = path;
         internal string Location { get; } = location;
@@ -47,7 +57,8 @@ internal sealed partial class JsonWorkspaceStore
     {
         path = Path.GetFullPath(path);
         var bytes = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
-        var model = WorkspaceSerializer.Deserialize(Encoding.UTF8.GetString(bytes).TrimStart('\uFEFF'));
+        var json = Encoding.UTF8.GetString(bytes).TrimStart('\uFEFF');
+        var model = WorkspaceSerializer.Deserialize(json);
         var fingerprint = Fingerprint(bytes);
         var location = Location(path);
         var data = _trust.Read();
@@ -60,7 +71,20 @@ internal sealed partial class JsonWorkspaceStore
             RemoveRetargetedApprovals(approvals, references, record.Targets);
             references = WorkspaceReferenceAssessment.Assess(model, path, approvals);
         }
-        return new PreparedDocument(this, path, location, fingerprint, model, data.Generation, record?.AdmissionId, approvals, references);
+        return new PreparedDocument(this, path, location, fingerprint, model, data.Generation, record?.AdmissionId, approvals, references, HasExplicitImportProfileIds(json));
+    }
+
+    // Open/reload/startup retain legacy deserialization. Import must not silently manufacture an
+    // identity for a missing ID, or accept duplicate JSON identity properties before asking consent.
+    private static bool HasExplicitImportProfileIds(string json)
+    {
+        using var document = JsonDocument.Parse(json);
+        var collections = document.RootElement.EnumerateObject().Where(p => p.NameEquals("tlsProfiles")).ToArray();
+        if (collections.Length == 0) { return true; }
+        return collections.Length == 1 && collections[0].Value.ValueKind == JsonValueKind.Array
+            && collections[0].Value.EnumerateArray().All(p => p.ValueKind == JsonValueKind.Object
+                && p.EnumerateObject().Count(v => v.NameEquals("id")) == 1
+                && p.GetProperty("id").ValueKind == JsonValueKind.String);
     }
 
     public async Task<WorkspacePreparation> ApproveAsync(WorkspacePreparation preparation, IReadOnlyList<string> approvedKeys, CancellationToken cancellationToken = default)
@@ -76,7 +100,7 @@ internal sealed partial class JsonWorkspaceStore
         approvals.UnionWith(approvedKeys);
         return new PreparedDocument(this, document.Path, document.Location, document.Fingerprint, document.Source,
             document.Generation, document.RememberedId, approvals,
-            WorkspaceReferenceAssessment.Assess(document.Source, document.Path, approvals));
+            WorkspaceReferenceAssessment.Assess(document.Source, document.Path, approvals), document.HasExplicitProfileIds);
     }
 
     private PreparedDocument Owned(WorkspacePreparation preparation)
@@ -140,12 +164,14 @@ internal sealed partial class JsonWorkspaceStore
         return Current;
     }
 
-    public async Task CommitImportAsync(WorkspacePreparation preparation, CancellationToken cancellationToken = default)
+    public async Task CommitImportAsync(WorkspacePreparation preparation, WorkspaceImportDecision? decision = null, CancellationToken cancellationToken = default)
     {
         await ValidatePreparationAsync(preparation, cancellationToken).ConfigureAwait(false);
         ValidateActiveAuthorization();
         var document = Owned(preparation);
-        var (merged, _) = WorkspaceMerger.Merge(Current, document.Workspace);
+        document.ValidateImportSource();
+        decision?.ValidateFor(preparation);
+        var (merged, _) = WorkspaceMerger.Merge(Current, document.Workspace, decision?.ApprovedBypassProfileIds);
         // Bind the admitted source locations to the final IDs and portable paths. Contained source
         // references were admitted automatically, and become explicit local grants in the destination.
         var transferred = new HashSet<string>(_activeApprovals, WorkspaceReferenceAssessment.Comparer);

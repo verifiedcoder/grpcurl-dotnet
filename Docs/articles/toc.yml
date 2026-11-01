@@ -38,6 +38,8 @@
       href: studio/history-privacy.md
     - name: Workspace file approvals
       href: studio/workspace-file-approvals.md
+    - name: Workspace import TLS choices
+      href: studio/workspace-import-tls.md
     - name: Troubleshooting
       href: studio/troubleshooting.md
     - name: Secret storage policy

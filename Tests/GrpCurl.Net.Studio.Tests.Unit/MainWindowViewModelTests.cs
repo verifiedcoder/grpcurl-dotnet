@@ -506,11 +506,11 @@ public sealed class MainWindowViewModelTests
         var vm = CreateWithWorkspace(out var store, out var picker, out var dialogs, out var connections, out _);
         picker.OpenResult = "/ws/other.gcnws.json";
         store.ReadResult = new WorkspaceModel { Connections = [new SavedConnection { Name = "staging", Address = "h:2" }] };
-        dialogs.ConfirmResult = true;
+        dialogs.OnShowDialog = d => ((WorkspaceImportDialogViewModel)d).CreateDecision();
 
         await vm.ImportWorkspaceCommand.ExecuteAsync(null);
 
-        dialogs.ConfirmCount.ShouldBe(1);
+        dialogs.ConfirmCount.ShouldBe(0);
         store.Current.Connections.Select(c => c.Name).ShouldBe(["a", "staging"]);
         connections.Connections.Count.ShouldBe(2); // panes reloaded from the merged workspace
     }
@@ -798,9 +798,12 @@ public sealed class MainWindowViewModelTests
         var dialogs = new FakeDialogService
         {
             ConfirmResult = true, // accept the pre-merge summary
-            OnShowDialog = d => d is ImportSecretsDialogViewModel
-                ? new Dictionary<string, string> { ["ref-2"] = "tok" }
-                : null
+            OnShowDialog = d => d switch
+            {
+                WorkspaceImportDialogViewModel import => import.CreateDecision(),
+                ImportSecretsDialogViewModel => new Dictionary<string, string> { ["ref-2"] = "tok" },
+                _ => null
+            }
         };
         var secrets = new FakeSecretStore();
         var vm = new MainWindowViewModel(

@@ -41,6 +41,7 @@ public sealed class ViewLocatorTests(HeadlessSessionFixture fixture) : HeadlessT
         typeof(EnvironmentVariableRowViewModel), // editor variable rows render via an inline DataTemplate (FR-130)
         typeof(SavedRequestItemViewModel), // sidebar saved-request rows render via an inline DataTemplate (FR-145)
         typeof(ImportSecretRowViewModel), // import-secret rows render via an inline DataTemplate (SEC-041)
+        typeof(WorkspaceImportTlsItemViewModel), // TLS consent rows render inside the import dialog (PRD-027)
         typeof(WorkspaceApprovalItemViewModel) // approval rows render inside the dialog's DataTemplate (PRD-026)
     ];
 
